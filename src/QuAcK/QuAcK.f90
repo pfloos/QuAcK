@@ -23,13 +23,10 @@ program QuAcK
   logical                       :: do_SOSEX,do_2SOSEX,do_G3W2
   logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
 
-  logical                       :: file_exists
   logical                       :: error_P
   logical                       :: verbose_scGW,verbose_scGF2
   logical                       :: chem_pot_scG
 
-  integer                       :: iorb,jorb,korb,lorb
-  integer                       :: ifreq,kind_int
   integer                       :: nNuc
   integer                       :: nBas
   integer                       :: nOrb
@@ -38,7 +35,6 @@ program QuAcK
   integer                       :: nV(nspin)
   integer                       :: nR(nspin)
   double precision              :: ENuc
-  double precision              :: Val
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
 
@@ -220,13 +216,8 @@ program QuAcK
 ! Prepare Quadrature !
 !--------------------!
 
-  ntimes = 0
-  kind_int = 1
-  if(nfreqs<2) nfreqs=2
   allocate(wweight(nfreqs),wcoord(nfreqs))
-  call cgqf(nfreqs,kind_int,0d0,0d0,0d0,1d0,wcoord,wweight)
-  wweight(:)=wweight(:)/((1d0-wcoord(:))**2d0)
-  wcoord(:)=wcoord(:)/(1d0-wcoord(:))
+  call read_quadrature(nfreqs,ntimes,wcoord,wweight)
 
 !------------------!
 ! Hardware         !
@@ -302,35 +293,10 @@ end if
   X(1:nBas,1:nOrb) = X_tmp(1:nBas,1:nOrb)
   deallocate(X_tmp)
 
-! For the FCIDUMP read one-body integrals
+! For the FCIDUMP reading case, read one-body integrals
 
-  inquire(file='FCIDUMP', exist=file_exists)
-  if(file_exists .and. readFCIDUMP) then
-   write(*,*)
-   write(*,*) 'Reading FCIDUMP one-body integrals'
-   write(*,*)
-   S=0d0; T=0d0; V=0d0; Hc=0d0; X=0d0;
-   dipole_int_AO=0d0; ENuc=0d0; Znuc=0d0;
-   do iorb=1,nBas
-    S(iorb,iorb) = 1d0
-    X(iorb,iorb) = 1d0
-   enddo
-   open(unit=314, form='formatted', file='FCIDUMP', status='old')
-   do
-    read(314,*) Val,iorb,jorb,korb,lorb
-    if(korb==lorb .and. lorb==0) then
-     if(iorb==jorb .and. iorb==0) then
-      ENuc=Val
-      exit
-     else
-      T(iorb,jorb) =Val
-      T(jorb,iorb) =T(iorb,jorb)
-      Hc(iorb,jorb)=T(iorb,jorb)
-      Hc(jorb,iorb)=T(iorb,jorb)
-     endif
-    endif
-   enddo
-   close(314)
+  if (readFCIDUMP) then   
+    call read_fcidump_1body(nBas,nOrb,ncart,S,T,V,Hc,X,dipole_int_AO,ENuc,Znuc)
   endif
 
   call wall_time(end_int)
