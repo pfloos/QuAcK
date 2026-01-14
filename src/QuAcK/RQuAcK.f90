@@ -224,27 +224,11 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
 
-! For the FCIDUMP read two-body integrals
+! For the FCIDUMP case, read two-body integrals
 
-  inquire(file='FCIDUMP', exist=file_exists)
-  if(file_exists .and. readFCIDUMP) then
-   write(*,*)
-   write(*,*) 'Reading FCIDUMP two-body integrals'
-   write(*,*)
-   ERI_AO=0d0 
-   open(unit=314, form='formatted', file='FCIDUMP', status='old')
-   do
-    read(314,*) Val,iorb,jorb,korb,lorb
-    if(korb==lorb .and. lorb==0) then
-     if(iorb==jorb .and. iorb==0) then
-      exit
-     endif
-    else
-     ERI_AO(iorb,jorb,korb,lorb)=Val
-    endif
-   enddo
-  endif
-  close(314)
+  if (readFCIDUMP) then 
+    call read_fcidump_2body(nBas,ERI_AO)
+  endif  
   
   call wall_time(end_int)
   t_int = end_int - start_int
