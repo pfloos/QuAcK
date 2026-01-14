@@ -123,7 +123,7 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
   
   cGuess = c
   occupations(:) = occupationsGuess(:,1)
-  P = matmul(c(:,occupations(1:nO)),transpose(c(:,occupations(1:nO))))
+  P = 2 * matmul(c(:,occupations(1:nO)),transpose(c(:,occupations(1:nO))))
 
 ! Initialization
 
@@ -206,8 +206,7 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
 
     call MOM_density_matrix(nBas, nOrb, nO, S, c, cGuess, &
                               occupations, occupationsGuess(:,1), P)
-
-    call matout(nBas,nBas,P)
+    P  = 2 * P
     ! Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
