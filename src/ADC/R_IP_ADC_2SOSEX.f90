@@ -214,14 +214,14 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   
   end do
   
+  !------------------!
+  ! Block (K+C)_2p1h !
+  !------------------!
+
   do p=nC+1,nOrb-nR
     do q=nC+1,nOrb-nR
 
       omega = 0.5d0*(eHF(p) + eHF(q))
-
-      !------------------!
-      ! Block (K+C)_2p1h !
-      !------------------!
   
       K_2p1h(:,:) = 0d0
   

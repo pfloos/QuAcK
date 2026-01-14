@@ -1,23 +1,23 @@
-subroutine read_methods(working_dir,                                       &
-                        doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF,     &
-                        doMOMRHF,doMOMUHF,doMOMROHF,                       &
-                        doMP2,doMP3,                                       & 
-                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                 & 
-                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,                 &
-                        doCIS,doCIS_D,doCID,doCISD,doFCI,                  & 
-                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,           &
-                        doOORPA,                                           &
-                        doG0F2,doevGF2,doqsGF2,                            &
-                        doG0F3,doevGF3,                                    & 
-                        doG0W0,doevGW,doqsGW,                              &
-                        doscGW,doscGF2,                                    & 
-                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,             &
-                        doG0T0eh,doevGTeh,doqsGTeh,                        &
-                        doevParquet,doqsParquet,                           &
-                        do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3,              &
-                        do_SOSEX,do_2SOSEX,do_G3W2,                        &
-                        do_ADC_GW,do_ADC_2SOSEX,                           &
-                        do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,           &
+subroutine read_methods(working_dir,                                   &
+                        doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF, &
+                        doMOMRHF,doMOMUHF,doMOMROHF,                   &
+                        doMP2,doMP3,                                   & 
+                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,             & 
+                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,             &
+                        doCIS,doCIS_D,doCID,doCISD,doFCI,              & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,       &
+                        doOORPA,                                       &
+                        doG0F2,doevGF2,doqsGF2,                        &
+                        doG0F3,doevGF3,                                & 
+                        doG0W0,doevGW,doqsGW,                          &
+                        doscGW,doscGF2,                                & 
+                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,         &
+                        doG0T0eh,doevGTeh,doqsGTeh,                    &
+                        doevParquet,doqsParquet,                       &
+                        do_IPEA_ADC2,do_IPEA_ADC3,                     &
+                        do_SOSEX,do_2SOSEX,do_G3W2,                    &
+                        do_ADC_GW,do_ADC_2SOSEX,                       &
+                        do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,       &
                         doRtest,doUtest,doGtest)
 
 ! Read desired methods 
@@ -43,7 +43,7 @@ subroutine read_methods(working_dir,                                       &
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(out)           :: doevParquet,doqsParquet
-  logical,intent(out)           :: do_IPEA_ADC2,do_IP_ADC2,do_IPEA_ADC3
+  logical,intent(out)           :: do_IPEA_ADC2,do_IPEA_ADC3
   logical,intent(out)           :: do_SOSEX,do_2SOSEX,do_G3W2
   logical,intent(out)           :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
 
@@ -248,20 +248,18 @@ subroutine read_methods(working_dir,                                       &
       ! Read ADC methods - Take 1
      
       do_IPEA_ADC2  = .false. 
-      do_IP_ADC2    = .false. 
       do_IPEA_ADC3  = .false.
       do_SOSEX      = .false. 
       do_2SOSEX     = .false.
       do_G3W2       = .false.
 
       read(1,*)
-      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6
+      read(1,*) ans1,ans2,ans3,ans4,ans5
       if(ans1  == 'T') do_IPEA_ADC2  = .true.
-      if(ans2  == 'T') do_IP_ADC2    = .true.
-      if(ans3  == 'T') do_IPEA_ADC3  = .true.
-      if(ans4  == 'T') do_SOSEX      = .true.
-      if(ans5  == 'T') do_2SOSEX     = .true.
-      if(ans6  == 'T') do_G3W2       = .true.
+      if(ans2  == 'T') do_IPEA_ADC3  = .true.
+      if(ans3  == 'T') do_SOSEX      = .true.
+      if(ans4  == 'T') do_2SOSEX     = .true.
+      if(ans5  == 'T') do_G3W2       = .true.
 
       ! Read ADC methods
      

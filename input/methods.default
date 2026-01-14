@@ -24,8 +24,8 @@
   F      F      F
 # evParquet qsParquet
   F         F
-# IPEA-ADC2 IP-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2
-  F         F       F         F     F      F
+# IPEA-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2
+  F         F         F     F      F
 # ADC-GW ADC-2SOSEX ADC3-G3W2 ADC3x-G3W2 ADC4-G3W2
   F      F          F         F          F
 # Rtest Utest Gtest
