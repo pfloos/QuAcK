@@ -75,7 +75,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
-  nH = nOrb + n2h1p
+  nH = nO + n2h1p
 
 ! Memory allocation
 
@@ -124,15 +124,15 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   if(sig_inf) then
 
-    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
- 
-    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
-    call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
-    call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
- 
-    F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
- 
-    deallocate(Vh,Vx,DM)
+!   allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
+!
+!   call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+!   call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
+!   call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
+!
+!   F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
+!
+!   deallocate(Vh,Vx,DM)
 
   end if
 
@@ -156,13 +156,9 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   ! Block F !
   !---------!
 
-  do p=nC+1,nOrb-nR
+  do i=nC+1,nO
 
-    H(p,p) = eHF(p)
-
-    do q=nC+1,nOrb-nR
-      H(p,q) = H(p,q) + F(p,q)
-    end do
+    H(i,i) = eHF(i)
 
   end do
 
@@ -170,15 +166,15 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   ! Block static 2p1h !
   !-------------------!
 
-  do p=nC+1,nOrb-nR
-    do q=nC+1,nOrb-nR
+  do i=nC+1,nO
+    do j=nC+1,nO
 
       do mu=1,nS
         do a=nO+1,nOrb-nR
 
-          num = 2d0*rho(p,a,mu)*rho(q,a,mu)
-          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
-          H(p,q) = H(p,q) + num/dem
+          num = 2d0*rho(i,a,mu)*rho(j,a,mu)
+          dem = 0.5d0*(eHF(i) + eHF(j)) - eHF(a) - Om(mu)
+          H(i,j) = H(i,j) + num/dem
 
         end do
       end do
@@ -190,15 +186,15 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   ! Block U_2h1p !
   !--------------!
 
-  do p=nC+1,nOrb-nR
+  do k=nC+1,nO
 
     ija = 0
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
 
-        H(p       ,nOrb+ija) = sqrt(2d0)*rho(p,i,mu)
-        H(nOrb+ija,p       ) = sqrt(2d0)*rho(p,i,mu)
+        H(k       ,nO+ija) = sqrt(2d0)*rho(k,i,mu)
+        H(nO+ija,k       ) = sqrt(2d0)*rho(k,i,mu)
 
       end do
     end do
@@ -214,7 +210,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
     do mu=1,nS
       ija = ija + 1
 
-      H(nOrb+ija,nOrb+ija) = eHF(i) - Om(mu) 
+      H(nO+ija,nO+ija) = eHF(i) - Om(mu) 
 
     end do
   end do
@@ -247,8 +243,20 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   Z(:) = 0d0
   do s=1,nH
-    do p=nC+1,nOrb-nR
-      Z(s) = Z(s) + H(p,s)**2
+    do i=nC+1,nO
+
+      Z(s) = Z(s) + H(i,s)**2
+
+      do mu=1,nS
+        do a=nO+1,nOrb-nR
+
+          num = 2d0*rho(i,a,mu)*rho(i,a,mu)
+          dem = eHF(i) - eHF(a) - Om(mu)
+          Z(s) = Z(s) - num/dem**2
+
+        end do
+      end do
+
     end do
   end do
 
@@ -257,7 +265,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| ADC-GW energies for all orbitals          |'
+  write(*,'(1X,A45)')'| IP-ADC-GW energies for occupied orbitals  |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
@@ -293,36 +301,19 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
             write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
             '      (',p,'    )           ',H(p,s),H(p,s)**2
         end do
-        do p=nO+1,nOrb-nR
-          if(abs(H(p,s)) > cutoff2)                     &
-            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
-            '      (',p,'    )           ',H(p,s),H(p,s)**2
-        end do
 
         ija = 0
         do i=nC+1,nO
           do mu=1,nS
             ija = ija + 1
  
-            if(abs(H(nOrb+ija,s)) > cutoff2)                  &
+            if(abs(H(nO+ija,s)) > cutoff2)                  &
             write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-            '      (',i,',',mu,')           ',H(nOrb+ija,s),H(nOrb+ija,s)**2
+            '      (',i,',',mu,')           ',H(nO+ija,s),H(nO+ija,s)**2
        
           end do
         end do
        
-        iab = 0
-        do mu=1,nS
-          do b=nO+1,nOrb-nR
-            iab = iab + 1
-
-              if(abs(H(nOrb+n2h1p+iab,s)) > cutoff2)              &
-                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-                '      (',mu,',',b,')           ',H(nOrb+n2h1p+iab,s),H(nOrb+n2h1p+iab,s)**2
-              
-          end do
-        end do
-
         write(*,*)'-------------------------------------------------------------'
         write(*,*)
 
