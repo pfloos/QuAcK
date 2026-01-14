@@ -1,6 +1,3 @@
-
-! ---
-
 subroutine MOMROHF_fock_matrix(nBas, nOrb, nOa, nOb, S, c, FaAO, FbAO, FAO,occupations)
 
 ! Construct the ROHF Fock matrix in the AO basis for given occupations
@@ -68,10 +65,24 @@ subroutine MOMROHF_fock_matrix(nBas, nOrb, nOa, nOb, S, c, FaAO, FbAO, FAO,occup
   aV = -0.5d0
   bV = +1.5d0
 
-  call MOMROHF_determine_occupations(nOa, nOb,nOrb,occupations,                       &
+  call MOMROHF_determine_occupations(nOa, nOb ,nOrb,occupations,                       &
                                          nSA,nSB,nD,nV,                               &
                                          singlyOccupiedA,singlyOccupiedB,             &
                                          doublyOccupied,virtual)
+  if(debug) then
+            
+    print *, "-----------------------------------"
+    print *, "Double occupied", nD
+    print *, doublyOccupied(1:nD)
+    print *, "Only alpha occupied", nSA
+    print *, singlyOccupiedA(1:nSA)
+    print *, "Only beta occupied", nSB
+    print *, singlyOccupiedB(1:nSB)
+    print *, "Virtual", nV
+    print *, virtual(1:nV)
+    print *, "-----------------------------------"
+
+  end if
 
 ! Block-by-block Fock matrix 
 
@@ -82,77 +93,52 @@ subroutine MOMROHF_fock_matrix(nBas, nOrb, nOa, nOb, S, c, FaAO, FbAO, FAO,occup
   ! Initialize F to zero
   F = 0.0d0
   
-  ! Doubly occupied - Doubly occupied
+  ! Core-Core: Rcc = ac*Fa  + bc*Fb 
   F(doublyOccupied(1:nD), doublyOccupied(1:nD))     = aC * Fa(doublyOccupied(1:nD), doublyOccupied(1:nD)) &
                                                     + bC * Fb(doublyOccupied(1:nD), doublyOccupied(1:nD))
   
-  ! Doubly occupied - Singly occupied alpha
+  ! Core-Open: Fb
   F(doublyOccupied(1:nD), singlyOccupiedA(1:nSA))   = Fb(doublyOccupied(1:nD), singlyOccupiedA(1:nSA))
-  
-  ! Doubly occupied - Singly occupied beta
   F(doublyOccupied(1:nD), singlyOccupiedB(1:nSB))   = Fb(doublyOccupied(1:nD), singlyOccupiedB(1:nSB))
   
-  ! Doubly occupied - Virtual
+  ! Core-Virtual: (Fa+Fb)/2
   F(doublyOccupied(1:nD), virtual(1:nV))            = 0.5d0 * Fa(doublyOccupied(1:nD), virtual(1:nV)) &
                                                     + 0.5d0 * Fb(doublyOccupied(1:nD), virtual(1:nV))
   
-  ! Singly occupied alpha - Doubly occupied
+  ! Open-Core: Fb
   F(singlyOccupiedA(1:nSA), doublyOccupied(1:nD))   = Fb(singlyOccupiedA(1:nSA), doublyOccupied(1:nD))
-  
-  ! Singly occupied alpha - Singly occupied alpha
-  F(singlyOccupiedA(1:nSA), singlyOccupiedA(1:nSA)) = aO * Fa(singlyOccupiedA(1:nSA), singlyOccupiedA(1:nSA)) &
-                                                    + bO * Fb(singlyOccupiedA(1:nSA), singlyOccupiedA(1:nSA))
-  
-  ! Singly occupied alpha - Singly occupied beta
-  F(singlyOccupiedA(1:nSA), singlyOccupiedB(1:nSB)) = Fa(singlyOccupiedA(1:nSA), singlyOccupiedB(1:nSB))
-  
-  ! Singly occupied alpha - Virtual
-  F(singlyOccupiedA(1:nSA), virtual(1:nV))          = Fa(singlyOccupiedA(1:nSA), virtual(1:nV))
-  
-  ! Singly occupied beta - Doubly occupied
   F(singlyOccupiedB(1:nSB), doublyOccupied(1:nD))   = Fb(singlyOccupiedB(1:nSB), doublyOccupied(1:nD))
   
-  ! Singly occupied beta - Singly occupied alpha
-  F(singlyOccupiedB(1:nSB), singlyOccupiedA(1:nSA)) = Fb(singlyOccupiedB(1:nSB), singlyOccupiedA(1:nSA))
-  
-  ! Singly occupied beta - Singly occupied beta
+!  ! Open-Open: aO*Fa + bO*Fb
+  F(singlyOccupiedA(1:nSA), singlyOccupiedA(1:nSA)) = aO * Fa(singlyOccupiedA(1:nSA), singlyOccupiedA(1:nSA)) &
+                                                    + bO * Fb(singlyOccupiedA(1:nSA), singlyOccupiedA(1:nSA))
+  F(singlyOccupiedA(1:nSA), singlyOccupiedB(1:nSB)) = aO * Fa(singlyOccupiedA(1:nSA), singlyOccupiedB(1:nSB)) &
+                                                    + bO * Fb(singlyOccupiedA(1:nSA), singlyOccupiedB(1:nSB))
+  F(singlyOccupiedB(1:nSB), singlyOccupiedA(1:nSA)) = aO * Fa(singlyOccupiedB(1:nSB), singlyOccupiedA(1:nSA)) &  
+                                                    + bO * Fb(singlyOccupiedB(1:nSB), singlyOccupiedA(1:nSA))
   F(singlyOccupiedB(1:nSB), singlyOccupiedB(1:nSB)) = aO * Fa(singlyOccupiedB(1:nSB), singlyOccupiedB(1:nSB)) &
                                                     + bO * Fb(singlyOccupiedB(1:nSB), singlyOccupiedB(1:nSB))
   
-  ! Singly occupied beta - Virtual
+  ! Open-Virtual: Fa
+  F(singlyOccupiedA(1:nSA), virtual(1:nV))          = Fa(singlyOccupiedA(1:nSA), virtual(1:nV))
   F(singlyOccupiedB(1:nSB), virtual(1:nV))          = Fa(singlyOccupiedB(1:nSB), virtual(1:nV))
   
-  ! Virtual - Doubly occupied
+  ! Virtual-Core: (Fa+Fb)/2
   F(virtual(1:nV), doublyOccupied(1:nD))            = 0.5d0 * Fa(virtual(1:nV), doublyOccupied(1:nD)) &
                                                     + 0.5d0 * Fb(virtual(1:nV), doublyOccupied(1:nD))
-  ! Virtual - Singly occupied alpha
+  ! Virtual-Open: Fa
   F(virtual(1:nV), singlyOccupiedA(1:nSA))          = Fa(virtual(1:nV), singlyOccupiedA(1:nSA))
-  
-  ! Virtual - Singly occupied beta
   F(virtual(1:nV), singlyOccupiedB(1:nSB))          = Fa(virtual(1:nV), singlyOccupiedB(1:nSB))
   
-  ! Virtual - Virtual
+  ! Virtual-Virtual: aV*Fa + bV*Fb
   F(virtual(1:nV), virtual(1:nV))                   = aV * Fa(virtual(1:nV), virtual(1:nV)) &
                                                     + bV * Fb(virtual(1:nV), virtual(1:nV))
+
   call MOtoAO(nBas, nOrb, S, c, F, FAO) 
   call MOtoAO(nBas, nOrb, S, c, Fa, FaAO)
   call MOtoAO(nBas, nOrb, S, c, Fb, FbAO)
 
   deallocate(F, Fa, Fb)
 
-  if(debug) then
-            
-    print *, "-----------------------------------"
-    print *, "Double occupied"
-    print *, doublyOccupied(1:nD)
-    print *, "Only alpha occupied"
-    print *, singlyOccupiedA(1:nSA)
-    print *, "Only beta occupied"
-    print *, singlyOccupiedB(1:nSB)
-    print *, "Virtual"
-    print *, virtual(1:nV)
-    print *, "-----------------------------------"
-
-  end if
 
 end subroutine
