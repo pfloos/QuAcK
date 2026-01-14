@@ -138,7 +138,7 @@ subroutine MOMROHF_fock_matrix(nBas, nOrb, nOa, nOb, S, c, FaAO, FbAO, FAO,occup
   call MOtoAO(nBas, nOrb, S, c, Fa, FaAO)
   call MOtoAO(nBas, nOrb, S, c, Fb, FbAO)
 
-  deallocate(F, Fa, Fb)
+  deallocate(F, Fa, Fb, singlyOccupiedA, singlyOccupiedB , doublyOccupied, virtual)
 
 
 end subroutine

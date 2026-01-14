@@ -1,4 +1,5 @@
 subroutine MOM_idx(nO, nOrb, projO, idx)
+
   ! Returns the indices of the nO orbitals with maximum overlap
 
   implicit none
@@ -14,7 +15,9 @@ subroutine MOM_idx(nO, nOrb, projO, idx)
   ! Local variables
   integer                      :: i, j, imax,temp
   double precision             :: pmax
-  logical                      :: used(nOrb)
+  logical, allocatable         :: used(:)
+
+  allocate(used(nOrb))
 
   ! Initialize
   used(:) = .false.
@@ -47,4 +50,7 @@ subroutine MOM_idx(nO, nOrb, projO, idx)
         end if
      end do
   end do
+
+deallocate(used)
+
 end subroutine

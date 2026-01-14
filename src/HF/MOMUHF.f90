@@ -1,5 +1,5 @@
 subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F,occupations)
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F,occupationsGuess)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -24,7 +24,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: occupations(maxval(nO),nspin)
+  integer,intent(in)            :: occupationsGuess(maxval(nO),nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -50,8 +50,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision              :: dipole(ncart)
   
   double precision,allocatable  :: cGuess(:,:,:)
-  double precision,allocatable  :: O(:,:,:)
-  double precision,allocatable  :: projO(:,:)
+  integer,allocatable           :: occupations(:,:)
 
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
@@ -75,9 +74,9 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
 ! Hello world
 
   write(*,*)
-  write(*,*)'*******************************'
-  write(*,*)'* Unrestricted HF Calculation *'
-  write(*,*)'*******************************'
+  write(*,*)'******************************************************'
+  write(*,*)'* Maximum Overlap Method Unrestricted HF Calculation *'
+  write(*,*)'******************************************************'
   write(*,*)
 
 ! Useful stuff
@@ -89,23 +88,24 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   allocate(J(nBas,nBas,nspin),K(nBas,nBas,nspin),Fp(nBas,nBas,nspin), &
            err(nBas,nBas,nspin),cp(nBas,nBas,nspin),                  &
            err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
-  allocate(cGuess(nBas,nBas,nspin),O(nBas,nBas,nspin),projO(nBas,nspin))
+  allocate(cGuess(nBas,nBas,nspin),occupations(maxval(nO),nspin))
 
 ! Guess coefficients and density matrices
-
-  if(occupations(nO(1),1)==0) then
-    print *, "Number of alpha electrons has to be >= Number of beta electrons !"
-    stop
-  end if
+  
+  cGuess = c 
+  occupations = occupationsGuess
+  
   print *, "Ground state orbital occupations for MOM-guess:"
   print *, "Alpha:"
   print *, occupations(1:nO(1),1)
   print *, "Beta:"
   print *, occupations(1:nO(2),2)
-  
-  do ispin=1,nspin  
-    call MOM_guess(nO(ispin), nBas, nBas, occupations(:,ispin),c(:,:,ispin),cGuess(:,:,ispin),eHF(:,ispin))
+   
+  do ispin = 1,nspin
+    P(:,:,ispin) = matmul(c(:,occupations(1:nO(ispin),ispin),ispin),&
+                transpose(c(:,occupations(1:nO(ispin),ispin),ispin)))
   end do
+
 
 ! Initialization
 
@@ -228,24 +228,13 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
       c(:,:,ispin) = matmul(X,cp(:,:,ispin))
     end do
 
-! Projected Overlap
-    
-    do ispin=1,nspin
-      O(:,:,ispin) = matmul(matmul(transpose(cGuess(:,:,ispin)),S),c(:,:,ispin)) 
-      projO(:,ispin) = 0d0
-      do i = 1,nO(ispin)
-        projO(:,ispin) = projO(:,ispin) + O(i,:,ispin)**2
-      end do
-      ! Select orbitals with maximum overlap
-      call sort_MOM(nBas,nBas,projO(:,ispin),c(:,:,ispin),eHF(:,ispin))
+!   Compute mom occupations and the resulting density matrix
+    do ispin = 1,nspin 
+      call MOM_density_matrix(nBas, nBas, nO(ispin), S, c(:,:,ispin), cGuess(:,:,ispin), &
+                              occupations(:,ispin), occupationsGuess(:,ispin), P(:,:,ispin))
     end do
 
-!   Compute density matrix 
 
-    do ispin=1,nspin
-      P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
-    end do
- 
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &

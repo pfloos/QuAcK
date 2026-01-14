@@ -1,5 +1,5 @@
 subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F,occupations)
+               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F,occupationsGuess)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -21,7 +21,7 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
   integer,intent(in)            :: nNuc
-  integer,intent(in)            :: occupations(nO,nspin)
+  integer,intent(in)            :: occupationsGuess(nO,nspin)
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
@@ -63,9 +63,9 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
   double precision,allocatable  :: Fp(:,:)
 
   double precision,allocatable  :: cGuess(:,:)
-  double precision,allocatable  :: O(:,:)
-  double precision,allocatable  :: projO(:)
+  integer,allocatable           :: occupations(:)
   integer                       :: i
+  logical                       :: alphaEqualsBeta
 
 ! Output variables
 
@@ -78,9 +78,9 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
 ! Hello world
 
   write(*,*)
-  write(*,*)'*****************************'
-  write(*,*)'* Restricted HF Calculation *'
-  write(*,*)'*****************************'
+  write(*,*)'****************************************************'
+  write(*,*)'* Maximum Overlap Method Restricted HF Calculation *'
+  write(*,*)'****************************************************'
   write(*,*)
 
 ! Useful quantities
@@ -99,19 +99,31 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
   
-  allocate(cGuess(nBas,nOrb),O(nOrb,nOrb),projO(nOrb)) 
+  allocate(cGuess(nBas,nOrb),occupations(nO)) 
 
 ! Read input occupations (ground state) and prepare guess
+  ! Check if alpha equals beta occupation
+  alphaEqualsBeta = .true. 
   do i=1,nO
-    if(occupations(i,1)/= occupations(i,2)) then
-      write(*,*) "Alpha occupation does not match Beta Occupation."
-      write(*,*) "Proceeding with alpha occupation."
+    if(occupationsGuess(i,1)/= occupationsGuess(i,2)) then
+      alphaEqualsBeta = .false.
     end if
   end do
+  if(.not. alphaEqualsBeta) then
+      print *, ""
+      print *, "Warning: Alpha occupation does not match Beta Occupation."
+      print *, "Proceeding with alpha occupations..."
+      print *, ""
+  end if
+
+  print *, ""
   print *, "Ground state orbital occupations for MOM-guess:"
-  print *, occupations(:,1)
+  print *, occupationsGuess(:,1)
+  print *, ""
   
-  call MOM_guess(nO, nBas, nOrb, occupations(:,1),c,cGuess,eHF)
+  cGuess = c
+  occupations(:) = occupationsGuess(:,1)
+  P = matmul(c(:,occupations(1:nO)),transpose(c(:,occupations(1:nO))))
 
 ! Initialization
 
@@ -119,7 +131,6 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
   rcond         = 0d0
-  O(:,:)        = 0d0
 
   Conv = 1d0
   nSCF = 0
@@ -193,22 +204,10 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
       call diagonalize_matrix(nOrb,cp,eHF)
       c = matmul(X,cp)
 
-!   Projected overlap
-    
-    O = matmul(matmul(transpose(cGuess),S),c)
-    projO(:) = 0d0
-    do i=1,nO
-      projO(:) = projO(:) + O(i,:)**2 
-    end do
+    call MOM_density_matrix(nBas, nOrb, nO, S, c, cGuess, &
+                              occupations, occupationsGuess(:,1), P)
 
-! Select orbitals with maximum overlap
-   
-    call sort_MOM(nBas,nOrb,projO,c,eHF)
-
-    ! Density matrix
-
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
-
+    call matout(nBas,nBas,P)
     ! Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
