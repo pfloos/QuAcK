@@ -119,25 +119,9 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
 ! For the FCIDUMP read two-body parameters integrals
 
-  inquire(file='FCIDUMP', exist=file_exists)
-  if(file_exists .and. readFCIDUMP) then
-   write(*,*)
-   write(*,*) 'Reading FCIDUMP two-body integrals'
-   write(*,*)
-   ERI_AO=0d0
-   open(unit=314, form='formatted', file='FCIDUMP', status='old')
-   do
-    read(314,*) Val,iorb,jorb,korb,lorb
-    if(korb==lorb .and. lorb==0) then
-     if(iorb==jorb .and. iorb==0) then
-      exit
-     endif
-    else
-     ERI_AO(iorb,jorb,korb,lorb)=Val
-    endif
-   enddo
-   close(314)
-  endif
+  if (readFCIDUMP) then 
+    call read_fcidump_2body(nBas,ERI_AO)
+  endif  
   
   call wall_time(end_int)
   t_int = end_int - start_int
