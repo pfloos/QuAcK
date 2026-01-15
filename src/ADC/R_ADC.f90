@@ -76,7 +76,7 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 500d0
+  double precision,parameter    :: flow = 1d6
 
 ! Output variables
   
@@ -313,7 +313,7 @@ subroutine R_ADC(dotest,                                               &
       if(do_dyson) then
 
         if(diag_approx) then
-           call R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
           call R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
