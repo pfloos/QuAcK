@@ -127,6 +127,10 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
 
+  if(doMOMUHF) then
+    print *, "For MOM reference, only the following methods are available: GW(not implemented yet), RPA (not implemented yet)"
+  end if
+
 ! For the FCIDUMP case, read two-body integrals
 
   if (readFCIDUMP) then 
@@ -155,6 +159,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
     write(*,*)
 
   end if
+
   if(doMOMUHF) then
 
     call wall_time(start_HF)
@@ -320,11 +325,24 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
 
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
 
-  if(doRPA) then
+  if(doRPA .and. .not. doMOMUHF) then
 
     call wall_time(start_RPA)
     call URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,    & 
               nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
+    call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
+  
+  if(doRPA .and. doMOMUHF) then
+
+    call wall_time(start_RPA)
+    call CVSURPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip, & 
+              nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,mom_occupations)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -360,13 +378,29 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
 
   doGW = doG0W0 .or. doevGW .or. doqsGW 
 
-  if(doGW) then
+  if(doGW .and. .not. doMOMUHF) then
     
     call wall_time(start_GW)
     call UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                                         & 
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
              lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                        &  
              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+    call wall_time(end_GW)
+  
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GW = ',t_GW,' seconds'
+    write(*,*)
+
+  end if
+  
+  if(doGW .and. doMOMUHF) then
+    
+    call wall_time(start_GW)
+    print *, "CVSUGW is not implemented yet. TODO"
+   !! call CVSUGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                                         & 
+   !!          doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
+   !!          lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                        &  
+   !!          ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,mom_occupations)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
