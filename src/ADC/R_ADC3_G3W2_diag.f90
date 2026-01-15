@@ -128,17 +128,17 @@ subroutine R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 
     H(:,:) = 0d0
  
-    !-------------------------------------------------!
-    !     Compute ADC-G3W2 matrix up to 2h1p/2p1h     !
-    !-------------------------------------------------!
-    !                                                 !
-    !     | F      U_2h1p          U_2p1h           | ! 
-    !     |                                         | ! 
-    ! H = | U_2h1p (K+C)_2h1p-2h1p C_2p1h-2h1p      | ! 
-    !     |                                         | ! 
-    !     | U_2p1  C_2h1p-2p1h     (K+C)_2p1h-2p1h  | ! 
-    !                                                 !
-    !-------------------------------------------------!
+    !-----------------------------------------!
+    ! Compute ADC-G3W2 matrix up to 2h1p/2p1h !
+    !-----------------------------------------!
+    !                                         !
+    !     | F      U_2h1p     U_2p1h     |    ! 
+    !     |                              |    ! 
+    ! H = | U_2h1p (K+C)_2h1p 0          |    ! 
+    !     |                              |    ! 
+    !     | U_2p1h 0          (K+C)_2p1h |    ! 
+    !                                         !
+    !-----------------------------------------!
 
     call wall_time(start_timing)
 
@@ -228,9 +228,9 @@ subroutine R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
       end do
     end do
 
-    !-----------------------!
-    ! Block (K+C)_2h1p-2h1p !
-    !-----------------------!
+    !------------------!
+    ! Block (K+C)_2h1p !
+    !------------------!
  
     ija = 0
     do i=nC+1,nO
@@ -270,9 +270,9 @@ subroutine R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
       end do
     end do
 
-    !-----------------------!
-    ! Block (K+C)_2p1h-2p1h !
-    !-----------------------!
+    !------------------!
+    ! Block (K+C)_2p1h !
+    !------------------!
  
     iab = 0
     do a=nO+1,nOrb-nR
@@ -306,50 +306,6 @@ subroutine R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 
             end do
  
-          end do
-        end do
- 
-      end do
-    end do
- 
-    !-------------------!
-    ! Block C_2h1p-2p1h !
-    !-------------------!
- 
-    ija = 0
-    do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
-
-        kcd = 0
-        do a=nO+1,nOrb-nR
-          do nu=1,nS
-            kcd = kcd + 1
- 
-            do k=nC+1,nO
-
-              num = 2d0*rho(k,i,mu)*rho(a,k,nu)
-              dem = eHF(a) - eHF(k) + Om(nu)
-              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-              H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*reg
-
-              H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*reg
-
-            end do
-
-            do c=nO+1,nOrb-nR
-
-              num = 2d0*rho(c,i,mu)*rho(a,c,nu)
-              dem = eHF(i) - eHF(c) - Om(mu)
-              reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-              H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*reg
-
-              H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*reg
-
-            end do
-
           end do
         end do
  
