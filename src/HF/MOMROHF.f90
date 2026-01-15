@@ -208,15 +208,15 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
     end if
 
-!!   Level-shifting
-!
-!    if(level_shift > 0d0 .and. Conv > thresh) then
-!
-!      do ispin=1,nspin
-!        call level_shifting(level_shift,nBas,nOrb,maxval(nO),S,c,Ftot)
-!      end do
-!
-!    end if
+!   Level-shifting
+
+    if(level_shift > 0d0 .and. Conv > thresh) then
+
+      do ispin=1,nspin
+        call level_shifting(level_shift,nBas,nOrb,maxval(nO),S,c,Ftot)
+      end do
+
+    end if
 
 !  Transform Fock matrix in orthogonal basis
 
