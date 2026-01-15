@@ -232,7 +232,7 @@ subroutine MOMRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,n
 
   end if
 
-  call print_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+  call print_MOMRHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole,occupations)
 
 ! Print the 1-RDM and 2-RDM in AO basis
   if(doaordm) then

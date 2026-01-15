@@ -27,21 +27,25 @@ subroutine print_MOMROHF(nBas, nOrb, nO, eHF, c, ENuc, ET, EV, EJ, Ex, EROHF, di
   double precision                   :: S,S2
   
   integer,allocatable                :: doublyOccupied(:)
-  integer,allocatable                :: virtual(:)
+  integer,allocatable                :: virtual(:),unoccupied(:,:)
   integer,allocatable                :: singlyOccupiedA(:),singlyOccupiedB(:)
 
   logical                            :: dump_orb = .false.
 
  allocate(doublyOccupied(maxval(nO)),singlyOccupiedA(nO(1)),singlyOccupiedB(nO(2)),&
-         virtual(nOrb - maxval(nO)))
+         virtual(nOrb - maxval(nO)),unoccupied(nOrb - minval(nO),nspin))
 
 ! HOMO and LUMO
-
+  call MOMROHF_determine_occupations(nO(1), nO(2) ,nOrb,occupations,                  &
+                                         nSA,nSB,nD,nV,                               &
+                                         singlyOccupiedA,singlyOccupiedB,             &
+                                         doublyOccupied,virtual)
   do ispin=1,nspin
-    if(nO(ispin) > 0) then 
-      HOMO(ispin) = eHF(nO(ispin))
+    call non_occupied(nO(ispin),nOrb,occupations(:,ispin),unoccupied(:,ispin))
+    if(nO(ispin) > 0) then
+      HOMO(ispin) = eHF(maxval(occupations(:,ispin)))
       if(nO(ispin) < nOrb) then
-        LUMO(ispin) = eHF(nO(ispin)+1)
+        LUMO(ispin) = eHF(minval(unoccupied(1:nOrb - nO(ispin),ispin)))
       else
         LUMO(ispin) = 0d0
       end if
@@ -115,10 +119,6 @@ subroutine print_MOMROHF(nBas, nOrb, nO, eHF, c, ENuc, ET, EV, EJ, Ex, EROHF, di
     write(*,*)
   end if
 
-  call MOMROHF_determine_occupations(nO(1), nO(2) ,nOrb,occupations,                  &
-                                         nSA,nSB,nD,nV,                               &
-                                         singlyOccupiedA,singlyOccupiedB,             &
-                                         doublyOccupied,virtual)
   if(nD >0) then 
     write(*,'(A50)') '--------------------------------------------'
     write(*,'(A50)') ' Doubly occupied ROHF orbital energies (au) '
