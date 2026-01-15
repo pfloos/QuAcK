@@ -39,5 +39,21 @@ subroutine read_mom_occupations(working_dir,nO,occupations)
     occupations(:,ispin) = tmp(:)
 
   end do
+  
+  if(occupations(nO(1),1)==0) then
+    print *, "Not enough alpha occupations provided !"
+    print *, "Keep in mind that number of alpha electrons has to be >= number of beta electrons"
+    print *, "Alpha occupation:"
+    print *, occupations(:,1)
+    error stop
+  end if
+
+  if(occupations(nO(2),2)==0) then
+    print *, "Not enough beta occupations provided !"
+    print *, "Beta occupation:"
+    print *, occupations(:,2)
+    error stop
+  end if
+ 
   close(1)
 end subroutine
