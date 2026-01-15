@@ -310,10 +310,10 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A38,I3,A2)')'| ADC-2SOSEX energies (eV) for orbital',p,' |'
+    write(*,'(1X,A33,I3,A7)')'| ADC-2SOSEX energies for orbital',p,'|'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-              '|','#','|','e_QP','|','Z','|'
+              '|','#','|','e_QP (eV)','|','Z','|'
     write(*,*)'-------------------------------------------'
  
     do s=1,nH
