@@ -72,9 +72,8 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   logical                       :: add_K_2h1p
   logical                       :: add_K_2p1h
 
-  logical                       :: add_C1_2h1p_2h1p
-  logical                       :: add_C1_2p1h_2p1h
-  logical                       :: add_C1_2h1p_2p1h
+  logical                       :: add_C1_2h1p
+  logical                       :: add_C1_2p1h
 
 ! Output variables
 
@@ -96,9 +95,8 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
 ! ADC(3)-G3W2
 
-  add_C1_2h1p_2h1p = .true.
-  add_C1_2p1h_2p1h = .true.
-  add_C1_2h1p_2p1h = .true.
+  add_C1_2h1p = .true.
+  add_C1_2p1h = .true.
 
 ! ADC-SOSEX
 
@@ -182,17 +180,17 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   H(:,:) = 0d0
 
-  !-------------------------------------------------!
-  !     Compute ADC-G3W2 matrix up to 2h1p/2p1h     !
-  !-------------------------------------------------!
-  !                                                 !
-  !     | F      U_2h1p          U_2p1h           | ! 
-  !     |                                         | ! 
-  ! H = | U_2h1p (K+C)_2h1p-2h1p C_2p1h-2h1p      | ! 
-  !     |                                         | ! 
-  !     | U_2p1  C_2h1p-2p1h     (K+C)_2p1h-2p1h  | ! 
-  !                                                 !
-  !-------------------------------------------------!
+  !-----------------------------------------!
+  ! Compute ADC-G3W2 matrix up to 2h1p/2p1h !
+  !-----------------------------------------!
+  !                                         !
+  !     | F      U_2h1p     U_2p1h     |    ! 
+  !     |                              |    ! 
+  ! H = | U_2h1p (K+C)_2h1p 0          |    ! 
+  !     |                              |    ! 
+  !     | U_2p1h 0          (K+C)_2p1h |    ! 
+  !                                         !
+  !-----------------------------------------!
 
   call wall_time(start_timing)
 
@@ -348,7 +346,7 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
  ! First-order terms
 
-  if(add_C1_2h1p_2h1p) then
+  if(add_C1_2h1p) then
 
     ija = 0
     do i=nC+1,nO
@@ -406,7 +404,7 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   ! First-order terms
 
-  if(add_C1_2p1h_2p1h) then
+  if(add_C1_2p1h) then
 
     iab = 0
     do a=nO+1,nOrb-nR
@@ -433,56 +431,6 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
               H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) + num*reg
  
             end do
- 
-          end do
-        end do
- 
-      end do
-    end do
-
-  end if
-
-  !-------------------!
-  ! Block C_2h1p-2p1h !
-  !-------------------!
-
-  ! First-order terms
-
-  if(add_C1_2h1p_2p1h) then
-
-    ija = 0
-    do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
- 
-        kcd = 0
-        do a=nO+1,nOrb-nR
-          do nu=1,nS
-            kcd = kcd + 1
- 
-              do k=nC+1,nO
- 
-                num = 2d0*rho(k,i,mu)*rho(a,k,nu)
-                dem = eHF(a) - eHF(k) + Om(nu)
-                reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
- 
-                H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) + num*reg
- 
-                H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) + num*reg
- 
-              end do
- 
-              do c=nO+1,nOrb-nR
- 
-                num = 2d0*rho(c,i,mu)*rho(a,c,nu)
-                dem = eHF(i) - eHF(c) - Om(mu)
-                reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
- 
-                H(nOrb+ija      ,nOrb+n2h1p+kcd) = H(nOrb+ija      ,nOrb+n2h1p+kcd) + num*reg
- 
-                H(nOrb+n2h1p+kcd,nOrb+ija      ) = H(nOrb+n2h1p+kcd,nOrb+ija      ) + num*reg
- 
-              end do
  
           end do
         end do
