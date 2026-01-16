@@ -1,6 +1,6 @@
-subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_static_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson version of ADC-GW for IPs
+! Static version of ADC-GW for IPs
 
   implicit none
   include 'parameters.h'
@@ -37,7 +37,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   logical                       :: dRPA
   integer                       :: ispin
   double precision              :: EcRPA
-  integer                       :: n2h1p,nH
+  integer                       :: nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGW(:)
@@ -74,8 +74,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
 ! Dimension of the supermatrix
 
-  n2h1p = nO*nO*nV
-  nH = nO + n2h1p
+  nH = nO 
 
 ! Memory allocation
 
@@ -163,6 +162,26 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   end do
 
   !-------------------!
+  ! Block static 2h1p !
+  !-------------------!
+
+  do i=nC+1,nO
+    do j=nC+1,nO
+
+      do mu=1,nS
+        do k=nC+1,nO
+
+          num = 2d0*rho(i,k,mu)*rho(j,k,mu)
+          dem = 0.5d0*(eHF(i) + eHF(j)) - eHF(k) + Om(mu)
+          H(i,j) = H(i,j) + num/dem
+
+        end do
+      end do
+
+    end do
+  end do
+
+  !-------------------!
   ! Block static 2p1h !
   !-------------------!
 
@@ -178,39 +197,6 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
         end do
       end do
-
-    end do
-  end do
-
-  !--------------!
-  ! Block U_2h1p !
-  !--------------!
-
-  do k=nC+1,nO
-
-    ija = 0
-    do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
-
-        H(k       ,nO+ija) = sqrt(2d0)*rho(k,i,mu)
-        H(nO+ija,k       ) = sqrt(2d0)*rho(k,i,mu)
-
-      end do
-    end do
-
-  end do
-
-  !------------------!
-  ! Block (K+C)_2h1p !
-  !------------------!
-
-  ija = 0
-  do i=nC+1,nO
-    do mu=1,nS
-      ija = ija + 1
-
-      H(nO+ija,nO+ija) = eHF(i) - Om(mu) 
 
     end do
   end do
@@ -286,43 +272,6 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   if(verbose) then 
   
-    do s=1,nH
-
-      if(eGW(s) < eF .and. eGW(s) > eF - window) then
-
-        write(*,*)'-------------------------------------------------------------'
-        write(*,'(1X,A12,1X,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
-         'Eigenvalue #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
-        write(*,*)'-------------------------------------------------------------'
-        write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
-                  ' Conf. (p,mu)  ',' Coefficient ',' Weight ' 
-        write(*,*)'-------------------------------------------------------------'
-      
-        do p=nC+1,nO 
-          if(abs(H(p,s)) > cutoff2)                     &
-            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
-            '      (',p,'    )           ',H(p,s),H(p,s)**2
-        end do
-
-        ija = 0
-        do i=nC+1,nO
-          do mu=1,nS
-            ija = ija + 1
- 
-            if(abs(H(nO+ija,s)) > cutoff2)                  &
-            write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-            '      (',i,',',mu,')           ',H(nO+ija,s),H(nO+ija,s)**2
-       
-          end do
-        end do
-       
-        write(*,*)'-------------------------------------------------------------'
-        write(*,*)
-
-      end if
-
-    end do
-
   end if
 
 end subroutine 
