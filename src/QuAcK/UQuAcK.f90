@@ -165,7 +165,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
     call wall_time(start_HF)
     call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
-    call MOMUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call MOM_UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
     call wall_time(end_HF)
 
@@ -341,7 +341,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
   if(doRPA .and. doMOMUHF) then
 
     call wall_time(start_RPA)
-    call CVSURPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip, & 
+    call CVS_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip, & 
               nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,mom_occupations)
     call wall_time(end_RPA)
 
