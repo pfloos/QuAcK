@@ -1,6 +1,6 @@
-subroutine R_static_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Static version of ADC-GW for IPs
+! Static version of ADC-GW 
 
   implicit none
   include 'parameters.h'
@@ -67,14 +67,14 @@ subroutine R_static_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************'
-  write(*,*)'* Restricted IP-ADC-GW Calculation *'
-  write(*,*)'************************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Restricted ADC-qsGW Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
-  nH = nO 
+  nH = nOrb
 
 ! Memory allocation
 
@@ -155,9 +155,9 @@ subroutine R_static_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   ! Block F !
   !---------!
 
-  do i=nC+1,nO
+  do p=nC+1,nOrb-nR
 
-    H(i,i) = eHF(i)
+    H(p,p) = eHF(p)
 
   end do
 
@@ -165,15 +165,15 @@ subroutine R_static_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   ! Block static 2h1p !
   !-------------------!
 
-  do i=nC+1,nO
-    do j=nC+1,nO
+  do p=nC+1,nOrb-nR
+    do q=nC+1,nOrb-nR
 
       do mu=1,nS
         do k=nC+1,nO
 
-          num = 2d0*rho(i,k,mu)*rho(j,k,mu)
-          dem = 0.5d0*(eHF(i) + eHF(j)) - eHF(k) + Om(mu)
-          H(i,j) = H(i,j) + num/dem
+          num = 2d0*rho(p,k,mu)*rho(q,k,mu)
+          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(k) + Om(mu)
+          H(p,q) = H(p,q) + num/dem
 
         end do
       end do
@@ -185,15 +185,15 @@ subroutine R_static_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   ! Block static 2p1h !
   !-------------------!
 
-  do i=nC+1,nO
-    do j=nC+1,nO
+  do p=nC+1,nOrb-nR
+    do q=nC+1,nOrb-nR
 
       do mu=1,nS
         do a=nO+1,nOrb-nR
 
-          num = 2d0*rho(i,a,mu)*rho(j,a,mu)
-          dem = 0.5d0*(eHF(i) + eHF(j)) - eHF(a) - Om(mu)
-          H(i,j) = H(i,j) + num/dem
+          num = 2d0*rho(p,a,mu)*rho(q,a,mu)
+          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
+          H(p,q) = H(p,q) + num/dem
 
         end do
       end do
@@ -229,9 +229,9 @@ subroutine R_static_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 
   Z(:) = 0d0
   do s=1,nH
-    do i=nC+1,nO
+    do p=nC+1,nOrb-nR
 
-      Z(s) = Z(s) + H(i,s)**2
+      Z(s) = Z(s) + H(p,s)**2
 
 ! I must fix the computation of Z
 
@@ -253,7 +253,7 @@ subroutine R_static_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| IP-ADC-GW energies for occupied orbitals  |'
+  write(*,'(1X,A45)')'| IP-ADC-qsGW energies for all orbitals  |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
