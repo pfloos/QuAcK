@@ -31,7 +31,7 @@ subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ER
   integer                       :: a,b,c,d
   integer                       :: mu
   integer                       :: klc,kcd,ija,iab
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -140,7 +140,7 @@ subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ER
   H(:,:) = 0d0
 
   !------------------------------!
-  ! Compute IP-ADC-GW matrix     !
+  ! Compute ADC-GW matrix        !
   !------------------------------!
   !                              !
   !     | F      U_2h1p        | !
@@ -157,7 +157,13 @@ subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ER
 
   do p=nC+1,nOrb-nR
 
-    H(p,p) = eHF(p) + F(p,p)
+    H(p,p) = eHF(p)
+
+    do q=nC+1,nOrb-nR
+
+      H(p,q) = H(p,q) + F(p,q)
+
+    end do
 
   end do
 
@@ -173,7 +179,9 @@ subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ER
 
           num = 2d0*rho(p,k,mu)*rho(q,k,mu)
           dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(k) + Om(mu)
-          H(p,q) = H(p,q) + num/dem
+          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+          H(p,q) = H(p,q) + num*reg
 
         end do
       end do
@@ -193,7 +201,9 @@ subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ER
 
           num = 2d0*rho(p,a,mu)*rho(q,a,mu)
           dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
-          H(p,q) = H(p,q) + num/dem
+          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+          H(p,q) = H(p,q) + num*reg
 
         end do
       end do
@@ -253,7 +263,7 @@ subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ER
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| IP-ADC-qsGW energies for all orbitals  |'
+  write(*,'(1X,A45)')'| IP-ADC-qsGW energies for all orbitals     |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'

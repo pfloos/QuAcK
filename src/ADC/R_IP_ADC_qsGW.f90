@@ -31,7 +31,7 @@ subroutine R_IP_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
   integer                       :: a,b,c,d
   integer                       :: mu
   integer                       :: klc,kcd,ija,iab
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -179,7 +179,9 @@ subroutine R_IP_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
 
           num = 2d0*rho(i,k,mu)*rho(j,k,mu)
           dem = 0.5d0*(eHF(i) + eHF(j)) - eHF(k) + Om(mu)
-          H(i,j) = H(i,j) + num/dem
+          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+          H(i,j) = H(i,j) + num*reg
 
         end do
       end do
@@ -199,7 +201,9 @@ subroutine R_IP_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
 
           num = 2d0*rho(i,a,mu)*rho(j,a,mu)
           dem = 0.5d0*(eHF(i) + eHF(j)) - eHF(a) - Om(mu)
-          H(i,j) = H(i,j) + num/dem
+          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+          H(i,j) = H(i,j) + num*reg
 
         end do
       end do
@@ -259,7 +263,7 @@ subroutine R_IP_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| IP-ADC-qsGW energies for occupied orbitals  |'
+  write(*,'(1X,A45)')'| IP-ADC-qsGW energies for occupied orbitals |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
