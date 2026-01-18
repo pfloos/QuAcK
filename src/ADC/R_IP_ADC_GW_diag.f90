@@ -129,15 +129,15 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 
   if(sig_inf) then
 
-!   allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
-!
-!   call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
-!   call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
-!   call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
-!
-!   F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
-!
-!   deallocate(Vh,Vx,DM)
+    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
+ 
+    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
+    call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
+ 
+    F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
+ 
+    deallocate(Vh,Vx,DM)
 
   end if
 
@@ -165,7 +165,7 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
     ! Block F !
     !---------!
  
-    H(1,1) = eHF(i)
+    H(1,1) = eHF(i) + F(i,i)
  
     !-------------------!
     ! Block static 2p1h !
