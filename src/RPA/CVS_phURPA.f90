@@ -122,30 +122,30 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
 
     ispin = 2
     print *, "Spin flip transitions not yet implemented for CVS !"
-!    ! Memory allocation
-!
-!    nSa = (nO(1) - nC(1))*(nV(2) - nR(2))
-!    nSb = (nO(2) - nC(2))*(nV(1) - nR(1))
-!    nSt = nSa + nSb
-!
-!    allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
-!
-!    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-!    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
-!
-!    call phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-!    call print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
-!    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
-!
-!    deallocate(Aph,Bph,Om,XpY,XmY)
-!
-!  end if
-!
-!  if(exchange_kernel) then
-!
-!    EcRPA(1) = 0.5d0*EcRPA(1)
-!    EcRPA(2) = 1.5d0*EcRPA(2)
-!
+    ! Memory allocation
+    
+    nSa = (nBas - nO(2) - nCVS(2))*nO(1)
+    nSb = (nBas - nO(1) - nCVS(1))*nO(2) 
+    nSt = nSa + nSb
+
+    allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
+
+    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+
+    call phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    call print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+
+    deallocate(Aph,Bph,Om,XpY,XmY)
+
+  end if
+
+  if(exchange_kernel) then
+
+    EcRPA(1) = 0.5d0*EcRPA(1)
+    EcRPA(2) = 1.5d0*EcRPA(2)
+
   end if
 
   write(*,*)

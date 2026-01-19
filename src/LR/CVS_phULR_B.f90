@@ -130,46 +130,46 @@ subroutine CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
 !-----------------------------------------------
 ! Build B matrix for spin-flip transitions
 !-----------------------------------------------
-print *, "Spin flip transitions not yet implemented"
-!  if(ispin == 2) then
-!
-!    ! abba block
-!
-!    ia = 0
-!    do i=nC(1)+1,nO(1)
-!      do a=nO(2)+1,nBas-nR(2)
-!        ia = ia + 1
-!        jb = 0
-!        do j=nC(2)+1,nO(2)
-!          do b=nO(1)+1,nBas-nR(1)
-!            jb = jb + 1
-! 
-!            Bph(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,j,b,a)
-!
-!          end do
-!        end do
-!      end do
-!    end do
-!
-!    ! baab block
-!
-!    ia = 0
-!    do i=nC(2)+1,nO(2)
-!      do a=nO(1)+1,nBas-nR(1)
-!        ia = ia + 1
-!        jb = 0
-!        do j=nC(1)+1,nO(1)
-!          do b=nO(2)+1,nBas-nR(2)
-!            jb = jb + 1
-! 
-!            Bph(nSa+ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(j,i,a,b)
-!
-!          end do
-!        end do
-!      end do
-!    end do
-!  
-!  end if
-!
+
+  if(ispin == 2) then
+
+    ! abba block
+
+    ia = 0
+    do i=1,nO(1)
+      do a=nCVS(2)+1,nBas-nO(2)
+        ia = ia + 1
+        jb = 0
+        do j=1,nO(2)
+          do b=1,nBas-nO(1)
+            jb = jb + 1
+ 
+            Bph(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(occupations(i,1),occupations(j,2),virtuals(b,1),virtuals(a,2))
+
+          end do
+        end do
+      end do
+    end do
+
+    ! baab block
+
+    ia = 0
+    do i=1,nO(2)
+      do a=nCVS(1)+1,nBas-nO(1)
+        ia = ia + 1
+        jb = 0
+        do j=1,nO(1)
+          do b=nCVS(2)+1,nBas-nO(2)
+            jb = jb + 1
+ 
+            Bph(nSa+ia,jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(occupations(j,1),occupations(i,2),virtuals(a,1),virtuals(b,2))
+
+          end do
+        end do
+      end do
+    end do
+  
+  end if
+
 
 end subroutine 

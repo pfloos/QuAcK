@@ -133,45 +133,45 @@ subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
 !-----------------------------------------
 ! Build A matrix for spin-flip transitions
 !-----------------------------------------
-print *, "Spin flip is not implemented yet"
-!  if(ispin == 2) then 
-!
-!    ! abab block
-!
-!    ia = 0
-!    do i=nC(1)+1,nO(1)
-!      do a=nO(2)+1,nBas-nR(2)
-!        ia = ia + 1
-!        jb = 0
-!        do j=nC(1)+1,nO(1)
-!          do b=nO(2)+1,nBas-nR(2)
-!            jb = jb + 1
-!            Aph(ia,jb) = (eHF(a,2) - eHF(i,1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-!                       - (1d0 - delta_dRPA)*lambda*ERI_aabb(i,b,j,a)
-!           end do
-!         end do
-!       end do
-!     end do
-!
-!    ! baba block
-!
-!    ia = 0
-!    do i=nC(2)+1,nO(2)
-!      do a=nO(1)+1,nBas-nR(1)
-!        ia = ia + 1
-!        jb = 0
-!        do j=nC(2)+1,nO(2)
-!          do b=nO(1)+1,nBas-nR(1)
-!            jb = jb + 1
-! 
-!            Aph(nSa+ia,nSa+jb) = (eHF(a,1) - eHF(i,2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
-!                               - (1d0 - delta_dRPA)*lambda*ERI_aabb(b,i,a,j)
-!
-!           end do
-!         end do
-!       end do
-!     end do
-!
-!  end if
+  
+  if(ispin == 2) then 
+
+    ! abab block
+
+    ia = 0
+    do i=1,nO(1)
+      do a=nCVS(2)+1,nBas-nO(2)
+        ia = ia + 1
+        jb = 0
+        do j=1,nO(1)
+          do b=nCVS(2)+1,nBas-nO(2)
+            jb = jb + 1
+            Aph(ia,jb) = (eHF(virtuals(a,2),2) - eHF(occupations(i,1),1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                       - (1d0 - delta_dRPA)*lambda*ERI_aabb(occupations(i,1),virtuals(b,2),occupations(j,1),virtuals(a,2))
+           end do
+         end do
+       end do
+     end do
+
+    ! baba block
+
+    ia = 0
+    do i=1,nO(2)
+      do a=nCVS(1)+1,nBas-nO(1)
+        ia = ia + 1
+        jb = 0
+        do j=1,nO(2)
+          do b=nCVS(1)+1,nBas-nO(1)
+            jb = jb + 1
+ 
+            Aph(nSa+ia,nSa+jb) = (eHF(virtuals(a,1),1) - eHF(occupations(i,2),2))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
+                               - (1d0 - delta_dRPA)*lambda*ERI_aabb(virtuals(b,1),occupations(i,2),virtuals(a,1),occupations(j,2))
+
+           end do
+         end do
+       end do
+     end do
+
+  end if
 
 end subroutine 
