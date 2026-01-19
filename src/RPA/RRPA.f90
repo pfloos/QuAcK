@@ -1,5 +1,5 @@
 subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS,&
-                nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,occupations)
+                nBas,nC,nO,nV,nR,nS,nCVS,ENuc,ERHF,ERI,dipole_int,eHF,occupations)
 
 ! Random-phase approximation module
 
@@ -29,6 +29,7 @@ subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
+  integer,intent(in)            :: nCVS(nspin)
   integer,intent(in)            :: occupations(nO,nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
