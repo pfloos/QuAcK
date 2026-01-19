@@ -7,7 +7,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                                     & 
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
-                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
+                  nNuc,nBas,nOrb,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                                           &
                   S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,             &
                   mom_occupations,                                                                                          &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                                &
@@ -61,6 +61,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
+  integer,intent(in)            :: nCVS(nspin)
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
   double precision,intent(inout):: ENuc
@@ -533,7 +534,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
     call wall_time(start_RPA)
     call RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS, &
-              nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,mom_occupations)
+              nOrb,nC,nO,nV,nR,nS,nCVS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,mom_occupations)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

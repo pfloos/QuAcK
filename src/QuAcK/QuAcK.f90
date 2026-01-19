@@ -34,6 +34,7 @@ program QuAcK
   integer                       :: nO(nspin)
   integer                       :: nV(nspin)
   integer                       :: nR(nspin)
+  integer                       :: nCVS(nspin)
   double precision              :: ENuc
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
@@ -197,7 +198,7 @@ program QuAcK
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
                     readFCIDUMP,doMOM,reg_MP,                                                            &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
-                    TDA,spin_conserved,spin_flip,                                                        &
+                    TDA,spin_conserved,spin_flip,nCVS,                                                   &
                     max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
@@ -234,6 +235,7 @@ program QuAcK
 ! nR   = number of Rydberg orbitals  !
 ! nBas = number of basis functions   !
 ! nOrb = number of orbitals          !
+! nCSV = number of frozen virtuals   !
 !------------------------------------!
 
   call read_molecule(working_dir,nNuc,nO,nC,nR)
@@ -358,7 +360,7 @@ end if
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                                     &
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
-                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
+                  nNuc,nBas,nOrb,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                                           &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
                   mom_occupations,                                                                                          &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                       &
@@ -382,7 +384,7 @@ end if
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
-                readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                &
+                readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                           &
                 S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,mom_occupations,            &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &

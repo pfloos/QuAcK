@@ -1,4 +1,4 @@
-subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, & 
+subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,ENuc,EUHF, & 
                   ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,c,S,occupations)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
@@ -22,6 +22,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
+  integer,intent(in)            :: nCVS(nspin)
   integer,intent(in)            :: occupations(maxval(nO),nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EUHF
@@ -46,6 +47,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
+  integer,allocatable           :: virtuals(:,:)
 
 
   double precision              :: rho
@@ -54,10 +56,19 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
 ! Hello world
  
   write(*,*)
-  write(*,*)'***********************************'
-  write(*,*)'* Unrestricted ph-RPA Calculation *'
-  write(*,*)'***********************************'
+  write(*,*)'***************************************'
+  write(*,*)'* Unrestricted CVS ph-RPA Calculation *'
+  write(*,*)'***************************************'
   write(*,*)
+
+! CVS
+
+  print *, "No exications to the first", nCVS(1), "alpha orbital(s) are considered."
+  print *, "No exications to the first", nCVS(2), "beta orbital(s) are considered."
+  if(any(nC/=0)) then
+    print *, "Do not use frozen core with CVS !"
+    stop
+  end if
 
 ! TDA 
 
@@ -71,6 +82,13 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
   dRPA = .true.
   EcRPA(:) = 0d0
   lambda = 1d0
+  allocate(virtuals(nBas - minval(nO),nspin))
+  virtuals = 0
+  do ispin=1,nspin
+    call non_occupied(nO(ispin),nBas,occupations(1:nO(ispin),ispin),virtuals(1:nBas - nO(ispin),ispin))
+  end do
+  print *, virtuals(1:nBas - nO(1),1)
+  print *, virtuals(1:nBas - nO(2),2)
 
 ! Spin-conserved transitions
 
@@ -80,18 +98,21 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
 
     ! Memory allocation
 
-    nSa = nS(1)
-    nSb = nS(2)
+    nSa = (nBas - nO(1) - nCVS(1))*nO(1)
+    nSb = (nBas - nO(2) - nCVS(2))*nO(2) 
     nSt = nSa + nSb
 
-    allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
+    allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt),)
 
-    call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+    call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS, occupations, virtuals,&
+                            lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS, occupations, virtuals,&
+                             lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     call phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
-    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, &
+                               dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
@@ -141,31 +162,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
 ! Compute the correlation energy via the adiabatic connection 
 
   if(doACFDT) then
-
-    write(*,*) '---------------------------------------------------------'
-    write(*,*) ' Adiabatic connection version of URPA correlation energy '
-    write(*,*) '---------------------------------------------------------'
-    write(*,*)
-
-    call phUACFDT(exchange_kernel,.false.,.true.,.false.,TDA,.false.,spin_conserved,spin_flip, &
-                  nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eHF,eHF,EcRPA)
-
-    if(exchange_kernel) then
-   
-      EcRPA(1) = 0.5d0*EcRPA(1)
-      EcRPA(2) = 1.5d0*EcRPA(2)
-
-    end if
-
-    write(*,*)
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@phURPA correlation energy (spin-conserved) = ',EcRPA(1),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@phURPA correlation energy (spin-flip)      = ',EcRPA(2),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@phURPA correlation energy                  = ',sum(EcRPA),' au'
-    write(*,'(2X,A50,F20.10,A3)') 'AC@phURPA total energy                        = ',ENuc + EUHF + sum(EcRPA),' au'
-    write(*,*)'-------------------------------------------------------------------------------'
-    write(*,*)
-
+    print *, "No adiabatic connections yet with CVS !"
   end if
 
   if(dotest) then
