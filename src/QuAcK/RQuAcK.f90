@@ -528,7 +528,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 !-----------------------------------!
 
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
-  CVS = doMOM 
+  CVS = any(nCVS>0)
 
   if(doRPA) then
 
