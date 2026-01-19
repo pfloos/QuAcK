@@ -84,6 +84,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
 
   logical                       :: file_exists
   logical                       :: doMP,doCC,doCI,doRPA,doGF,doGW,doGT
+  logical                       :: CVS
   
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_stab   ,end_stab     ,t_stab
@@ -322,24 +323,12 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
 !-----------------------------------!
 
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
+  CVS = doMOM
 
-  if(doRPA .and. .not. doMOM) then
-
-    call wall_time(start_RPA)
-    call URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,    & 
-              nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S)
-    call wall_time(end_RPA)
-
-    t_RPA = end_RPA - start_RPA
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
-    write(*,*)
-
-  end if
-  
-  if(doRPA .and. doMOM) then
+  if(doRPA) then
 
     call wall_time(start_RPA)
-    call CVS_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip, & 
+    call URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,CVS,  & 
               nBas,nC,nO,nV,nR,nS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,mom_occupations)
     call wall_time(end_RPA)
 
@@ -376,8 +365,8 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
 
   doGW = doG0W0 .or. doevGW .or. doqsGW 
 
-  if(doGW .and. .not. doMOM) then
-    
+  if(doGW .and. .not. CVS) then
+   ! After implementation of CVS GW variants remove condition on CVS 
     call wall_time(start_GW)
     call UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                                         & 
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
@@ -391,22 +380,6 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
 
   end if
   
-  if(doGW .and. doMOM) then
-    
-    call wall_time(start_GW)
-    print *, "CVSUGW is not implemented yet. TODO"
-   !! call CVSUGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                                         & 
-   !!          doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-   !!          lin_GW,eta_GW,reg_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                        &  
-   !!          ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,mom_occupations)
-    call wall_time(end_GW)
-  
-    t_GW = end_GW - start_GW
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GW = ',t_GW,' seconds'
-    write(*,*)
-
-  end if
-
 !-----------------!
 ! T-matrix module !
 !-----------------!
