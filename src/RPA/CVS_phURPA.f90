@@ -100,7 +100,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     nSb = (nBas - nO(2) - nCVS(2))*nO(2) 
     nSt = nSa + nSb
 
-    allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt),)
+    allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
     call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS, occupations, virtuals,&
                             lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
