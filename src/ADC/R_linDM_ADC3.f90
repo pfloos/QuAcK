@@ -41,7 +41,6 @@ include 'parameters.h'
   double precision,allocatable  :: U2_2p1h(:,:)
   double precision,allocatable  :: C1_2h1p_2h1p(:,:)
   double precision,allocatable  :: C1_2p1h_2p1h(:,:)
-  double precision,allocatable  :: C1_2h1p_2p1h(:,:)
   
 ! Output variables
 
@@ -65,7 +64,6 @@ include 'parameters.h'
 
   allocate(C1_2h1p_2h1p(n2h1p,n2h1p))
   allocate(C1_2p1h_2p1h(n2p1h,n2p1h))
-  allocate(C1_2h1p_2p1h(n2h1p,n2p1h))
 
 ! Computing and storing intermediates (i.e. ADC block) for computation of linDM
   
@@ -235,50 +233,6 @@ include 'parameters.h'
   
     end do ! nu
   end do ! a
-  
-!--------------------!
-! Block C1_2h1p-2p1h !
-!--------------------!
-
-  C1_2h1p_2p1h(:,:) = 0d0
-
-  inu = 0
-  do i=nC+1,nO
-    do nu=1,nS
-      inu = inu + 1
- 
-      amu = 0
-      do a=nO+1,nOrb-nR
-        do mu=1,nS
-          amu = amu + 1
-  
-          ! First-order terms
-    
-          do j=nC+1,nO
-
-            num = 2d0*rho(j,i,nu)*rho(a,j,mu)
-            dem = e(a) - e(j) + Om(mu)
-            reg = (1d0 - exp(-2d0*s*dem*dem))/dem
-           
-            C1_2h1p_2p1h(inu,amu) = C1_2h1p_2p1h(inu,amu) + num*reg
-
-          end do ! j
-         
-          do b=nO+1,nOrb-nR
-
-            num = 2d0*rho(b,i,nu)*rho(a,b,mu)
-            dem = e(i) - e(b) - Om(nu)
-            reg = (1d0 - exp(-2d0*s*dem*dem))/dem
-          
-            C1_2h1p_2p1h(inu,amu) = C1_2h1p_2p1h(inu,amu) + num*reg
-         
-          end do ! b
-  
-        end do ! mu
-      end do ! a
-  
-    end do ! nu
-  end do ! i
     
 ! Computing the linDM
 
@@ -343,38 +297,7 @@ include 'parameters.h'
                 linDM(i,j) = linDM(i,j) + num*reg1*reg2*reg3
 
               end do ! mu
-           end do ! b
-
-           kmu = 0
-           do k=nC+1,nO
-             do mu=1,nS
-               kmu = kmu + 1
-            
-               num = - 2d0*U1_2p1h(anu,i)*C1_2h1p_2p1h(kmu,anu)*U1_2h1p(kmu,j)
-               dem1 = e(a) - e(i) + Om(nu)
-               dem3 = e(a) - e(k) + Om(nu) + Om(mu)
-               dem2 = e(a) - e(j) + Om(nu)
-               
-               reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
-               reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
-               reg3 = (1d0 - exp(-2d0*s*dem3*dem3))/dem3
-                
-               linDM(i,j) = linDM(i,j) + num*reg1*reg2*reg3
-            
-               num = - 2d0*U1_2p1h(anu,j)*C1_2h1p_2p1h(kmu,anu)*U1_2h1p(kmu,i)
-               dem1 = e(a) - e(i) + Om(nu)
-               dem3 = e(a) - e(k) + Om(nu) + Om(mu)
-               dem2 = e(a) - e(j) + Om(nu)
-               
-               reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
-               reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
-               reg3 = (1d0 - exp(-2d0*s*dem3*dem3))/dem3
-                
-               linDM(i,j) = linDM(i,j) + num*reg1*reg2*reg3
-               
-             end do ! mu
-           end do ! k
-           
+           end do ! b           
             
           end do ! nu
         end do ! a
@@ -445,37 +368,6 @@ include 'parameters.h'
                     
                  end do ! mu
               end do ! j
-
-              
-              cmu=0
-              do c=nO+1,nOrb-nR
-                 do mu=1,nS
-                    cmu = cmu + 1
-              
-                    num = 2d0*U1_2h1p(inu,a)*C1_2h1p_2p1h(inu,cmu)*U1_2p1h(cmu,b)
-                    dem1 = e(i) - e(a) - Om(nu)
-                    dem2 = e(i) - e(c) - Om(nu) - Om(mu)
-                    dem3 = e(i) - e(b) - Om(nu)
-                    
-                    reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
-                    reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
-                    reg3 = (1d0 - exp(-2d0*s*dem3*dem3))/dem3
-
-                    linDM(a,b) = linDM(a,b) + num*reg1*reg2*reg3
-
-                    num = 2d0*U1_2h1p(inu,b)*C1_2h1p_2p1h(inu,cmu)*U1_2p1h(cmu,a)
-                    dem1 = e(j) - e(a) - Om(mu)
-                    dem2 = e(i) - e(b) - Om(nu)
-                    dem3 = e(j) - e(b) - Om(mu)
-                    
-                    reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
-                    reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
-                    reg3 = (1d0 - exp(-2d0*s*dem3*dem3))/dem3
-
-                    linDM(a,b) = linDM(a,b) + num*reg1*reg2*reg3
-                    
-                 end do ! mu
-              end do ! c
               
            end do ! nu
         end do ! i
@@ -532,6 +424,81 @@ include 'parameters.h'
         end do
 
         ! Double pole terms
+        bnu = 0
+        do b=nO+1,nOrb-nR
+          do nu=1,nS
+            bnu = bnu + 1
+            
+            cmu = 0
+            do c=nO+1,nOrb-nR
+              do mu=1,nS
+                cmu = cmu + 1
+            
+                num = 2d0*U1_2p1h(bnu,i)*C1_2p1h_2p1h(bnu,cmu)*U1_2p1h(cmu,a)
+                dem1 = e(i) - e(a)
+                dem3 = e(i) - e(b) - Om(nu)
+                dem2 = e(i) - e(c) - Om(mu)
+                
+                reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
+                reg3 = (1d0 - exp(-2d0*s*dem3*dem3))/dem3
+                
+                linDM(i,a) = linDM(i,a) + num*reg1*reg2*reg3
+
+                num = 2d0*U1_2p1h(bnu,a)*C1_2p1h_2p1h(bnu,cmu)*U1_2p1h(cmu,i)
+                dem1 = e(i) - e(a)
+                dem3 = e(i) - e(b) - Om(nu)
+                dem2 = e(i) - e(c) - Om(mu)
+                
+                reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
+                reg3 = (1d0 - exp(-2d0*s*dem3*dem3))/dem3
+                
+                linDM(a,i) = linDM(a,i) + num*reg1*reg2*reg3
+
+              end do ! mu
+           end do ! c           
+            
+          end do ! nu
+        end do ! b
+        
+        jnu=0
+        do j=nC+1,nO
+           do nu=1,nS
+              jnu = jnu + 1
+
+              kmu=0
+              do k=nC+1,nO
+                 do mu=1,nS
+                    kmu = kmu + 1
+              
+                    num = - 2d0*U1_2h1p(jnu,i)*C1_2h1p_2h1p(jnu,kmu)*U1_2h1p(kmu,a)
+                    dem1 = e(a) - e(i)
+                    dem2 = e(a) - e(j) + Om(nu)
+                    dem3 = e(a) - e(k) + Om(mu)
+                    
+                    reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
+                    reg3 = (1d0 - exp(-2d0*s*dem3*dem3))/dem3
+
+                    linDM(i,a) = linDM(i,a) + num*reg1*reg2*reg3
+
+                    num = - 2d0*U1_2h1p(jnu,a)*C1_2h1p_2h1p(jnu,kmu)*U1_2h1p(kmu,i)
+                    dem1 = e(a) - e(i)
+                    dem2 = e(a) - e(j) + Om(nu)
+                    dem3 = e(a) - e(k) + Om(mu)
+                    
+                    reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
+                    reg3 = (1d0 - exp(-2d0*s*dem3*dem3))/dem3
+
+                    linDM(a,i) = linDM(a,i) + num*reg1*reg2*reg3
+                    
+                 end do ! mu
+              end do ! k
+              
+           end do ! nu
+        end do ! j
         
      end do ! a
   end do ! i

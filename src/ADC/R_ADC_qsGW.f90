@@ -1,6 +1,6 @@
-subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson version of ADC-GW for IPs
+! Static version of ADC-GW 
 
   implicit none
   include 'parameters.h'
@@ -31,13 +31,13 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   integer                       :: a,b,c,d
   integer                       :: mu
   integer                       :: klc,kcd,ija,iab
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
   integer                       :: ispin
   double precision              :: EcRPA
-  integer                       :: n2h1p,nH
+  integer                       :: nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGW(:)
@@ -67,15 +67,14 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************'
-  write(*,*)'* Restricted IP-ADC-GW Calculation *'
-  write(*,*)'************************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Restricted ADC-qsGW Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
-  n2h1p = nO*nO*nV
-  nH = nO + n2h1p
+  nH = nOrb
 
 ! Memory allocation
 
@@ -141,7 +140,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   H(:,:) = 0d0
 
   !------------------------------!
-  ! Compute IP-ADC-GW matrix     !
+  ! Compute ADC-GW matrix        !
   !------------------------------!
   !                              !
   !     | F      U_2h1p        | !
@@ -156,31 +155,33 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   ! Block F !
   !---------!
 
-  do i=nC+1,nO
+  do p=nC+1,nOrb-nR
 
-    H(i,i) = eHF(i)
+    H(p,p) = eHF(p)
 
-    do j=nC+1,nO
+    do q=nC+1,nOrb-nR
 
-      H(i,j) = H(i,j) + F(i,j)
+      H(p,q) = H(p,q) + F(p,q)
 
     end do
 
   end do
 
   !-------------------!
-  ! Block static 2p1h !
+  ! Block static 2h1p !
   !-------------------!
 
-  do i=nC+1,nO
-    do j=nC+1,nO
+  do p=nC+1,nOrb-nR
+    do q=nC+1,nOrb-nR
 
       do mu=1,nS
-        do a=nO+1,nOrb-nR
+        do k=nC+1,nO
 
-          num = 2d0*rho(i,a,mu)*rho(j,a,mu)
-          dem = 0.5d0*(eHF(i) + eHF(j)) - eHF(a) - Om(mu)
-          H(i,j) = H(i,j) + num/dem
+          num = 2d0*rho(p,k,mu)*rho(q,k,mu)
+          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(k) + Om(mu)
+          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+          H(p,q) = H(p,q) + num*reg
 
         end do
       end do
@@ -188,35 +189,24 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
     end do
   end do
 
-  !--------------!
-  ! Block U_2h1p !
-  !--------------!
+  !-------------------!
+  ! Block static 2p1h !
+  !-------------------!
 
-  do k=nC+1,nO
+  do p=nC+1,nOrb-nR
+    do q=nC+1,nOrb-nR
 
-    ija = 0
-    do i=nC+1,nO
       do mu=1,nS
-        ija = ija + 1
+        do a=nO+1,nOrb-nR
 
-        H(k       ,nO+ija) = sqrt(2d0)*rho(k,i,mu)
-        H(nO+ija,k       ) = sqrt(2d0)*rho(k,i,mu)
+          num = 2d0*rho(p,a,mu)*rho(q,a,mu)
+          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
+          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
+          H(p,q) = H(p,q) + num*reg
+
+        end do
       end do
-    end do
-
-  end do
-
-  !------------------!
-  ! Block (K+C)_2h1p !
-  !------------------!
-
-  ija = 0
-  do i=nC+1,nO
-    do mu=1,nS
-      ija = ija + 1
-
-      H(nO+ija,nO+ija) = eHF(i) - Om(mu) 
 
     end do
   end do
@@ -249,9 +239,9 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   Z(:) = 0d0
   do s=1,nH
-    do i=nC+1,nO
+    do p=nC+1,nOrb-nR
 
-      Z(s) = Z(s) + H(i,s)**2
+      Z(s) = Z(s) + H(p,s)**2
 
 ! I must fix the computation of Z
 
@@ -273,7 +263,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| IP-ADC-GW energies for occupied orbitals  |'
+  write(*,'(1X,A45)')'| IP-ADC-qsGW energies for all orbitals     |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
@@ -292,43 +282,6 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   if(verbose) then 
   
-    do s=1,nH
-
-      if(eGW(s) < eF .and. eGW(s) > eF - window) then
-
-        write(*,*)'-------------------------------------------------------------'
-        write(*,'(1X,A12,1X,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
-         'Eigenvalue #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
-        write(*,*)'-------------------------------------------------------------'
-        write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
-                  ' Conf. (p,mu)  ',' Coefficient ',' Weight ' 
-        write(*,*)'-------------------------------------------------------------'
-      
-        do p=nC+1,nO 
-          if(abs(H(p,s)) > cutoff2)                     &
-            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
-            '      (',p,'    )           ',H(p,s),H(p,s)**2
-        end do
-
-        ija = 0
-        do i=nC+1,nO
-          do mu=1,nS
-            ija = ija + 1
- 
-            if(abs(H(nO+ija,s)) > cutoff2)                  &
-            write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-            '      (',i,',',mu,')           ',H(nO+ija,s),H(nO+ija,s)**2
-       
-          end do
-        end do
-       
-        write(*,*)'-------------------------------------------------------------'
-        write(*,*)
-
-      end if
-
-    end do
-
   end if
 
 end subroutine 
