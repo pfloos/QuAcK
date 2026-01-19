@@ -324,7 +324,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
 !-----------------------------------!
 
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
-  CVS = doMOM
+  CVS = doMOM 
 
   if(doRPA) then
 
