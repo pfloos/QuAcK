@@ -1,11 +1,13 @@
 # HF: maxSCF thresh  DIIS guess mix shift stab search aordm readFCIDUMP MOM
-      256    0.0000001 5    1     0.0 0.0   F    F      F     F		F
+      1000   0.0000001 5    1     0.0 0.0   F    F      F     F		F
 # MP: reg
       F
 # CC: maxSCF thresh  DIIS
       64     0.00001 5
 # spin: TDA singlet triplet
         F   T       T
+# CVS: Alpha Beta
+       0     0
 # OORPA:  maxIter thresh  dRPA state diagHess
           256     0.00001 T    0     T    
 # GF: maxSCF thresh  DIIS lin eta renorm reg linDM restart_scGF2 verbose_scGF2
