@@ -1,5 +1,4 @@
-subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,                                                    &
-                  doMOMRHF,doMOMROHF,                                                                                       &
+subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,                                              &
                   dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                    &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                               &
@@ -34,7 +33,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
   logical,intent(in)            :: readFCIDUMP
 
   logical,intent(in)            :: doRHF,doROHF,docRHF,doeRHF
-  logical,intent(in)            :: doMOMRHF,doMOMROHF
+  logical,intent(in)            :: doMOM
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doaordm
@@ -236,6 +235,10 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
   write(*,*)
 
+  if(docRHF .and. (doMOM .or. doRHF .or. doROHF)) then
+    print *, "Complex Restricted-Hartree-Fock is not compatible with any other method than G0W0, evGW and qsGW !"
+    stop
+  end if
 !---------------------!
 ! Hartree-Fock module !
 !---------------------!
@@ -253,20 +256,6 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
 
   end if
   
-  if(doMOMRHF) then
-
-    call wall_time(start_HF)
-    call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
-    call MOM_RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations)
-    call wall_time(end_HF)
-
-    t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ROHF = ',t_HF,' seconds'
-    write(*,*)
-
-  end if
 
   if(doROHF) then
 
@@ -281,13 +270,13 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
 
   end if
   
-  if(doMOMROHF) then
+  if(doMOM) then
 
     call wall_time(start_HF)
-    call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
-    call MOM_ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations)
+    call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+    call MOM_RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -295,7 +284,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
     write(*,*)
 
   end if
-
+  
   if(docRHF) then
     call wall_time(start_HF)
     call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,ENuc, &
@@ -306,6 +295,10 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,        
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for cRHF = ',t_HF,' seconds'
     write(*,*)
 
+  end if
+  
+  if(doMOM .and. (.not. doRHF .and. .not. doROHF)) then
+    print *, "MOM is only available for RHF, ROHF and UHF."
   end if
 
 !------------------------------!

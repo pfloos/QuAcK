@@ -1,6 +1,6 @@
 subroutine read_options(working_dir,                                                                         &
                         maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
-                        readFCIDUMP,reg_MP,                                                                  &
+                        readFCIDUMP,doMOM,reg_MP,                                                            &
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
                         TDA,spin_conserved,spin_flip,                                                        &
                         max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
@@ -36,6 +36,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: dosearch
   logical,intent(out)           :: doaordm
   logical,intent(out)           :: readFCIDUMP
+  logical,intent(out)           :: doMOM
   logical,intent(out)           :: error_P
 
   logical,intent(out)           :: reg_MP
@@ -146,14 +147,16 @@ subroutine read_options(working_dir,                                            
       dosearch     = .false.
       doaordm      = .false.
       readFCIDUMP  = .false.
+      doMOM        = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,ans1,ans2,ans3,ans4
+      read(1,*) maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,ans1,ans2,ans3,ans4,ans5
     
       if(ans1 == 'T') dostab   = .true.
       if(ans2 == 'T') dosearch = .true.
       if(ans3 == 'T') doaordm  = .true.
       if(ans4 == 'T') readFCIDUMP  = .true.
+      if(ans5 == 'T') doMOM    = .true.
     
       ! Read MPn options
     

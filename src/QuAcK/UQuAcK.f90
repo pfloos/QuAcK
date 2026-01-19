@@ -1,4 +1,4 @@
-subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,    &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
@@ -18,7 +18,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
   logical,intent(in)            :: dotest
   logical,intent(in)            :: readFCIDUMP
 
-  logical,intent(in)            :: doUHF,doMOMUHF
+  logical,intent(in)            :: doUHF,doMOM
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2,doMP3
@@ -127,7 +127,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
 
-  if(doMOMUHF) then
+  if(doMOM) then
     print *, "For MOM reference, only the following methods are available: GW(not implemented yet), RPA (not implemented yet)"
   end if
 
@@ -160,7 +160,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
 
   end if
 
-  if(doMOMUHF) then
+  if(doMOM) then
 
     call wall_time(start_HF)
     call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
@@ -325,7 +325,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
 
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
 
-  if(doRPA .and. .not. doMOMUHF) then
+  if(doRPA .and. .not. doMOM) then
 
     call wall_time(start_RPA)
     call URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,    & 
@@ -338,7 +338,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
 
   end if
   
-  if(doRPA .and. doMOMUHF) then
+  if(doRPA .and. doMOM) then
 
     call wall_time(start_RPA)
     call CVS_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip, & 
@@ -378,7 +378,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
 
   doGW = doG0W0 .or. doevGW .or. doqsGW 
 
-  if(doGW .and. .not. doMOMUHF) then
+  if(doGW .and. .not. doMOM) then
     
     call wall_time(start_GW)
     call UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                                         & 
@@ -393,7 +393,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,
 
   end if
   
-  if(doGW .and. doMOMUHF) then
+  if(doGW .and. doMOM) then
     
     call wall_time(start_GW)
     print *, "CVSUGW is not implemented yet. TODO"

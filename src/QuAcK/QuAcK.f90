@@ -5,7 +5,7 @@ program QuAcK
 
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
   logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF
-  logical                       :: doMOMRHF,doMOMUHF,doMOMROHF
+  logical                       :: doMOM
   logical                       :: dostab,dosearch,doaordm,readFCIDUMP
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -163,7 +163,6 @@ program QuAcK
 
   call read_methods(working_dir,                                    &
                     doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF,  &
-                    doMOMRHF,doMOMUHF,doMOMROHF,                    &
                     doMP2,doMP3,                                    &
                     doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &
                     dodrCCD,dorCCD,docrCCD,dolCCD,                  &
@@ -196,7 +195,7 @@ program QuAcK
 
   call read_options(working_dir,                                                                         &
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
-                    readFCIDUMP,reg_MP,                                                                  &
+                    readFCIDUMP,doMOM,reg_MP,                                                            &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
                     TDA,spin_conserved,spin_flip,                                                        &
                     max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
@@ -269,7 +268,7 @@ program QuAcK
 
 ! Read occupations for MOM
 
-if(doMOMRHF .or. doMOMROHF .or. doMOMUHF) then
+if(doMOM) then
   allocate(mom_occupations(maxval(nO),nspin)) 
   call read_mom_occupations(working_dir,nO,mom_occupations)
 end if
@@ -312,10 +311,10 @@ end if
 !---------------------!
 
   doRQuAcK = .false.
-  if(doRHF .or. doROHF .or. docRHF .or. doMOMRHF .or. doMOMROHF) doRQuAcK = .true.
+  if(doRHF .or. doROHF .or. docRHF ) doRQuAcK = .true.
 
   doUQuAcK = .false.
-  if(doUHF .or. doMOMUHF) doUQuAcK = .true.
+  if(doUHF) doUQuAcK = .true.
 
   doGQuAcK = .false.
   if(doGHF) doGQuAcK = .true.
@@ -349,8 +348,7 @@ end if
                       TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
                       dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
     else
-      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,                                                   &
-                  doMOMRHF,doMOMROHF,                                                                                       &
+      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,doMOM,                                             &
                   dostab,dosearch,doaordm,                                                                                  &
                   doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                            &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     &
@@ -380,7 +378,7 @@ end if
 !---------------------------!
 
   if(doUQuAcK) &
-    call UQuAcK(working_dir,doUtest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,&
+    call UQuAcK(working_dir,doUtest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   &
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
