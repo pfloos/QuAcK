@@ -143,7 +143,8 @@ class Quack_Job:
             if result.stderr:
                 print("Error output:", result.stderr)
                 print("QuAcK output of failed test:")
-                print(result.stdout)
+                with open(file_out, 'r') as fobj:
+                    print(fobj.read())
                 sys.exit(1)
 
             os.chdir('tests')
