@@ -29,8 +29,8 @@ subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
-  integer,intent(in)            :: nCVS(nspin)
-  integer,intent(in)            :: occupations(nO,nspin)
+  integer,intent(in)            :: nCVS
+  integer,intent(in)            :: occupations(nO)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: eHF(nBas)
@@ -41,9 +41,8 @@ subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
 
   double precision              :: start_RPA    ,end_RPA      ,t_RPA
 
-  if(CVS) then
-    print *, "CVS for restricted branch is not implemented yet, sry... MOM and the RPA methods are not available."
-    stop
+  if(CVS .and. .not. dophRPA) then
+    print *, "CVS is only implemented for phRPA, sry..."
   endif
 
 !------------------------------------------------------------------------
@@ -56,7 +55,11 @@ subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
     if (use_gpu) then
       call phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
     else
-      call phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+      if(CVS) then
+        call CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,occupations,ENuc,ERHF,ERI,dipole_int,eHF)
+      else
+        call phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+      end if
     endif
     call wall_time(end_RPA)
 
