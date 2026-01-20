@@ -266,7 +266,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ROHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
   end if
@@ -534,7 +534,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
     call wall_time(start_RPA)
     call RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS, &
-              nOrb,nC,nO,nV,nR,nS,nCVS,ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,mom_occupations)
+              nOrb,nC,nO,nV,nR,nS,nCVS(1),ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,mom_occupations(:,1))
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
