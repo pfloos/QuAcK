@@ -92,19 +92,21 @@ subroutine CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
   end if
 
 ! Triplet manifold 
-print *, "Triplet manifold not yet implemented"
-!  if(triplet) then 
-!
-!    ispin = 2
-!
-!                 call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
-!    if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
-!
-!    call phRLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-!    call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
-!    call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
-!
-!  end if
+
+  if(triplet) then 
+
+    ispin = 2
+
+                 call phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,eHF,ERI,Aph)
+    if(.not.TDA) call phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS,lambda,ERI,Bph)
+                 call CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,occupations,virtuals,lambda,eHF,ERI,Aph)
+    if(.not.TDA) call CVS_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,occupations,virtuals,lambda,ERI,Bph)
+
+    call phRLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    call print_excitation_energies('phRPA@RHF','triplet',nS,Om)
+    call phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
+
+  end if
 
   if(exchange_kernel) then
 
