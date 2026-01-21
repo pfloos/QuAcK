@@ -1,6 +1,6 @@
-subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_diag_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson version of ADC-GW for IPs within the diagonal approximation
+! Half-and-half version of GW in the diagonal approximation
 
   implicit none
   include 'parameters.h'
@@ -67,9 +67,9 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************'
-  write(*,*)'* Restricted IP-ADC-GW Calculation *'
-  write(*,*)'************************************'
+  write(*,*)'************************************************'
+  write(*,*)'* Restricted diag-half-and-half-GW Calculation *'
+  write(*,*)'************************************************'
   write(*,*)
 
 ! Diagonal approximation
@@ -246,7 +246,7 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A32,I3,A8)')'| IP-ADC-GW energies for orbital',i,'     |'
+    write(*,'(1X,A29,I3,A11)')'| ADC-GW energies for orbital',i,'|'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP (eV)','|','Z','|'

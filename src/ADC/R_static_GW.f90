@@ -1,6 +1,6 @@
-subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Static version of ADC-GW 
+! Static version of GW in the 1h+1p space
 
   implicit none
   include 'parameters.h'
@@ -67,9 +67,9 @@ subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ER
 ! Hello world
 
   write(*,*)
-  write(*,*)'***********************************'
-  write(*,*)'* Restricted ADC-qsGW Calculation *'
-  write(*,*)'***********************************'
+  write(*,*)'******************************************'
+  write(*,*)'* Restricted 1h+1p-static-GW Calculation *'
+  write(*,*)'******************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -263,7 +263,7 @@ subroutine R_ADC_qsGW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ER
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| IP-ADC-qsGW energies for all orbitals     |'
+  write(*,'(1X,A45)')'| ADC-GW energies for all orbitals          |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'

@@ -1,6 +1,6 @@
-subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_diag_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! ADC version of GW within the diagonal approximation
+! Pure static version of GW in the diagonal approximation
 
   implicit none
   include 'parameters.h'
@@ -26,19 +26,18 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
 
 ! Local variables
 
-  integer                       :: p
-  integer                       :: s
+  integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
-  integer                       :: jb,kc,ia,ja
-  integer                       :: mu,nu
-  integer                       :: klc,kcd,ija,ijb,iab,jab
+  integer                       :: mu
+  integer                       :: klc,kcd,ija,iab
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
-  logical                       :: dRPA = .true.
-  integer                       :: isp_W
+  logical                       :: dRPA
+  integer                       :: ispin
   double precision              :: EcRPA
-  integer                       :: n2h1p,n2p1h,nH
+  integer                       :: n2h1p,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGW(:)
@@ -56,10 +55,10 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
   double precision,allocatable  :: DM(:,:)
 
   logical,parameter             :: verbose = .false.
-  double precision,parameter    :: cutoff1 = 0.01d0
+  double precision,parameter    :: cutoff1 = 0.1d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
-  double precision,parameter    :: window = 2.5d0
+  double precision,parameter    :: window = 1.5d0
 
   double precision              :: start_timing,end_timing,timing
 
@@ -68,9 +67,9 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted ADC-GW Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'************************************************'
+  write(*,*)'* Restricted diag-half-and-half-GW Calculation *'
+  write(*,*)'************************************************'
   write(*,*)
 
 ! Diagonal approximation
@@ -81,15 +80,15 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
-  n2p1h = nV*nV*nO
-  nH = 1 + n2h1p + n2p1h
+  nH = 1
 
 ! Memory allocation
 
   allocate(H(nH,nH),eGW(nH),Z(nH))
-  
+
 ! Initialization
 
+  dRPA = .true.
   EcRPA = 0d0
 
   eF = 0.5d0*(eHF(nO+1) + eHF(nO))
@@ -98,25 +97,25 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
 ! Compute screening !
 !-------------------!
 
-  ! Spin manifold 
- 
-  isp_W = 1
-
-  ! Memory allocation
+  ! Memory allocation 
 
   allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
- 
-  call phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
- 
+
+  ! Spin manifold 
+
+  ispin = 1
+
+  call phRLR_A(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
- 
+
   !--------------------------!
   ! Compute spectral weights !
   !--------------------------!
- 
+
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
   deallocate(Aph,Bph,XpY,XmY)
@@ -131,13 +130,13 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
   if(sig_inf) then
 
     allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
-
+ 
     call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
     call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
     call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
-
+ 
     F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
-
+ 
     deallocate(Vh,Vx,DM)
 
   end if
@@ -146,116 +145,89 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nC+1,nO
+  do i=nC+1,nO
 
     H(:,:) = 0d0
- 
+
     !------------------------------!
-    !    Compute ADC-GW matrix     !
+    ! Compute IP-ADC-GW matrix     !
     !------------------------------!
     !                              !
-    !     | F      U_2h1p U_2p1h | ! 
-    !     |                      | ! 
-    ! H = | U_2h1p C_2h1p 0      | ! 
-    !     |                      | ! 
-    !     | U_2p1h 0      C_2p1h | ! 
+    !     | F      U_2h1p        | !
+    ! H = |                      | ! 
+    !     | U_2h1p (K+C)_2h1p    | !
     !                              !
     !------------------------------!
 
     call wall_time(start_timing)
-
+ 
     !---------!
     ! Block F !
     !---------!
+ 
+    H(1,1) = eHF(i) + F(i,i)
+ 
+    !-------------------!
+    ! Block static 2h1p !
+    !-------------------!
+ 
+    do mu=1,nS
+      do k=nC+1,nO
+ 
+        num = 2d0*rho(i,k,mu)*rho(i,k,mu)
+        dem = eHF(i) - eHF(k) + Om(mu)
+        reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
-    H(1,1) = eHF(p) + F(p,p)
-
-    !-------------!
-    ! Block U2h1p !
-    !-------------!
- 
-    ija = 0
-    do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
- 
-        H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
-        H(1+ija,1    ) = sqrt(2d0)*rho(p,i,mu)
-
-      end do
-    end do
- 
-    !-------------!
-    ! Block U2p1h !
-    !-------------!
- 
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
- 
-        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
-        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,a,mu)
+        H(1,1) = H(1,1) + num*reg
  
       end do
     end do
 
-    !------------------!
-    ! Block C2h1p-2h1p !
-    !------------------!
+    !-------------------!
+    ! Block static 2p1h !
+    !-------------------!
  
-    ija = 0
-    do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
+    do mu=1,nS
+      do a=nO+1,nOrb-nR
  
-        H(1+ija,1+ija) = eHF(i) - Om(mu) 
-       
-      end do
-    end do
+        num = 2d0*rho(i,a,mu)*rho(i,a,mu)
+        dem = eHF(i) - eHF(a) - Om(mu)
+        reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
-    !------------------!
-    ! Block C2p1h-2p1h !
-    !------------------!
+        H(1,1) = H(1,1) + num*reg
  
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
- 
-        H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)
-
       end do
     end do
  
     call wall_time(end_timing)
-
+ 
     timing = end_timing - start_timing
     write(*,*)
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of supermatrix = ',timing,' seconds'
     write(*,*)
-  
-  !-------------------------!
-  ! Diagonalize supermatrix !
-  !-------------------------!
 
-  call wall_time(start_timing)
+    !-------------------------!
+    ! Diagonalize supermatrix !
+    !-------------------------!
 
-  call diagonalize_matrix(nH,H,eGW)
-
-  call wall_time(end_timing)
-
-  timing = end_timing - start_timing
-  write(*,*)
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
-  write(*,*)
+    call wall_time(start_timing)
  
-  !-----------------!
-  ! Compute weights !
-  !-----------------!
+    call diagonalize_matrix(nH,H,eGW)
+ 
+    call wall_time(end_timing)
+ 
+    timing = end_timing - start_timing
+    write(*,*)
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
+    write(*,*)
 
+    !-----------------!
+    ! Compute weights !
+    !-----------------!
+
+    Z(:) = 0d0
     do s=1,nH
-      Z(s) = H(1,s)**2
+      Z(s) = Z(s) + H(1,s)**2
     end do
 
   !--------------!
@@ -263,12 +235,12 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A29,I3,A11)')'| ADC-GW energies for orbital',p,'|'
+    write(*,'(1X,A29,I3,A11)')'| ADC-GW energies for orbital',i,'|'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP (eV)','|','Z','|'
     write(*,*)'-------------------------------------------'
- 
+
     do s=1,nH
 !     if(eGW(s) < eF .and. eGW(s) > eF - window) then
       if(Z(s) > cutoff1) then
@@ -276,52 +248,35 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
         '|',s,'|',eGW(s)*HaToeV,'|',Z(s),'|'
       end if
     end do
- 
+
     write(*,*)'-------------------------------------------'
     write(*,*)
- 
-    if(verbose) then 
+
+    if(verbose) then
 
       do s=1,nH
-      
+
         if(eGW(s) < eF .and. eGW(s) > eF - window) then
-      
+
           write(*,*)'------------------------------------------------------------------------------'
-          write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
-           'Orbital',p,' and #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
+          write(*,'(1X,A7,1X,I3,A6,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') &
+           'Orbital',i,' and #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
           write(*,*)'------------------------------------------------------------------------------'
           write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
-                    ' Conf. (p,ia)  ',' Coefficient ',' Weight ' 
+                    ' Conf. (i,ia)  ',' Coefficient ',' Weight '
           write(*,*)'------------------------------------------------------------------------------'
-         
-          if(p <= nO) & 
+
+          if(i <= nO) &
             write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6,1X,F12.6)') &
-            '      (',p,')               ',H(1,s),H(1,s)**2,-eHF(p)*HaToeV
-          if(p > nO) & 
-            write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6,1X,F12.6)') &
-            '               (',p,')      ',H(1,s),H(1,s)**2,-eHF(p)*HaToeV
-  
-          ija = 0
-          do i=nC+1,nO
-            do ja=1,nS
-              ija = ija + 1
+            '      (',i,')               ',H(1,s),H(1,s)**2,-eHF(i)*HaToeV
+
+          do k=nC+1,nO
+            do ija=1,nS
 
               if(abs(H(1+ija,s)) > cutoff2)                     &
               write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6,1X,F12.6)') &
-              '      (',i,',',ja,')           ',H(1+ija,s),H(1+ija,s)**2,(eHF(i) - Om(ja))*HaToeV
-         
-            end do
-          end do
-         
-          iab = 0
-          do ia=1,nS
-            do b=nO+1,nOrb-nR
-              iab = iab + 1
+              '      (',k,',',ija,')           ',H(1+ija,s),H(1+ija,s)**2,(eHF(i) - Om(ija))*HaToeV
 
-                if(abs(H(1+n2h1p+iab,s)) > cutoff2)                 &
-                  write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6,1X,F12.6)') &
-                  '      (',ia,',',b,')           ',H(1+n2h1p+iab,s),H(1+n2h1p+iab,s)**2,(eHF(b) + Om(ia))*HaToeV
-                
             end do
           end do
 
@@ -331,9 +286,9 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
         end if ! If state s should be print
 
       end do ! Loop on s
- 
+
     end if ! If verbose
 
-  end do ! Loop on the orbital in the e block
+  end do
 
 end subroutine 
