@@ -179,8 +179,8 @@ subroutine R_IP_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
       do mu=1,nS
         ija = ija + 1
 
-        H(p       ,nOrb+ija) = sqrt(2d0)*rho(p,i,mu)
-        H(nOrb+ija,p       ) = sqrt(2d0)*rho(p,i,mu)
+        H(p       ,nO+ija) = sqrt(2d0)*rho(p,i,mu)
+        H(nO+ija,p       ) = sqrt(2d0)*rho(p,i,mu)
 
       end do
     end do
@@ -198,8 +198,8 @@ subroutine R_IP_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
       do mu=1,nS
         iab = iab + 1
 
-        H(p             ,nOrb+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
-        H(nOrb+n2h1p+iab,p             ) = sqrt(2d0)*rho(p,a,mu)
+        H(p           ,nO+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
+        H(nO+n2h1p+iab,p           ) = sqrt(2d0)*rho(p,a,mu)
 
       end do
     end do
@@ -215,7 +215,7 @@ subroutine R_IP_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
     do mu=1,nS
       ija = ija + 1
 
-      H(nOrb+ija,nOrb+ija) = eHF(i) - Om(mu) 
+      H(nO+ija,nO+ija) = eHF(i) - Om(mu) 
 
     end do
   end do
@@ -229,7 +229,7 @@ subroutine R_IP_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,
     do mu=1,nS
       iab = iab + 1
 
-      H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(a) + Om(mu)
+      H(nO+n2h1p+iab,nO+n2h1p+iab) = eHF(a) + Om(mu)
 
     end do
   end do
