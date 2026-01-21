@@ -83,8 +83,8 @@ lines = f.read().splitlines()
 nbAt = int(lines.pop(0))
 lines.pop(0)
 list_pos_atom = []
-for line in lines:
-    tmp = line.split()
+for i in range(nbAt):
+    tmp = lines[i].split()
     atom = tmp[0]
     pos = (float(tmp[1]), float(tmp[2]), float(tmp[3]))
     list_pos_atom.append([atom, pos])
