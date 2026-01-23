@@ -31,7 +31,7 @@ subroutine R_diag_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENu
   integer                       :: a,b,c,d
   integer                       :: mu
   integer                       :: klc,kcd,ija,iab
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -176,7 +176,9 @@ subroutine R_diag_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENu
  
         num = 2d0*rho(i,a,mu)*rho(i,a,mu)
         dem = eHF(i) - eHF(a) - Om(mu)
-        H(1,1) = H(1,1) + num/dem
+        reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+        H(1,1) = H(1,1) + num*reg
  
       end do
     end do

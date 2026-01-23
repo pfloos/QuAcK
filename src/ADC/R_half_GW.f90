@@ -181,7 +181,9 @@ subroutine R_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERH
 
           num = 2d0*rho(p,a,mu)*rho(q,a,mu)
           dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
-          H(p,q) = H(p,q) + num/dem
+          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+          H(p,q) = H(p,q) + num*reg
 
         end do
       end do
