@@ -35,6 +35,7 @@ program QuAcK
   integer                       :: nV(nspin)
   integer                       :: nR(nspin)
   integer                       :: nCVS(nspin)
+  integer                       :: FC(nspin)
   double precision              :: ENuc
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
@@ -198,7 +199,7 @@ program QuAcK
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
                     readFCIDUMP,doMOM,reg_MP,                                                            &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
-                    TDA,spin_conserved,spin_flip,nCVS,                                                   &
+                    TDA,spin_conserved,spin_flip,nCVS,FC,                                                &
                     max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
@@ -382,7 +383,7 @@ program QuAcK
                 dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                 doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
-                readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                           &
+                readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,nCVS,FC,ENuc,ZNuc,rNuc,                                        &
                 S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,mom_occupations,            &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &

@@ -2,7 +2,7 @@ subroutine read_options(working_dir,                                            
                         maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
                         readFCIDUMP,doMOM,reg_MP,                                                            &
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
-                        TDA,spin_conserved,spin_flip,nCVS,                                                   &
+                        TDA,spin_conserved,spin_flip,nCVS,FC,                                                &
                         max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
                         maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
@@ -51,6 +51,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: spin_flip
 
   integer,intent(out)           :: nCVS(nspin)
+  integer,intent(out)           :: FC(nspin)
 
   integer,intent(out)           :: max_iter_OO
   double precision,intent(out)  :: thresh_OO
@@ -194,7 +195,7 @@ subroutine read_options(working_dir,                                            
       ! Number of inactive virtuals (CVS)
     
       read(1,*) 
-      read(1,*) nCVS(1),nCVS(2)
+      read(1,*) nCVS(1),nCVS(2), FC(1),FC(2)
     
       ! Read Orbital optimization options
 

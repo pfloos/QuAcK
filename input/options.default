@@ -6,8 +6,8 @@
       64     0.00001 5
 # spin: TDA singlet triplet
         F   T       T
-# CVS: Alpha Beta
-       0     0
+# RPA: CVS-Alpha CVS-Beta  FC-Alpha FC-Beta
+       0         0                0       0
 # OORPA:  maxIter thresh  dRPA state diagHess
           256     0.00001 T    0     T    
 # GF: maxSCF thresh  DIIS lin eta renorm reg linDM restart_scGF2 verbose_scGF2

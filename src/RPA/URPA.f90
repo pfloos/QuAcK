@@ -1,5 +1,6 @@
 subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,CVS, &  
-                nBas,nC,nO,nV,nR,nS,nCVS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,occupations)
+                nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,&
+                dipole_int_aa,dipole_int_bb,eHF,cHF,S,occupations)
 
 ! Random-phase approximation module
 
@@ -28,6 +29,7 @@ subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
   integer,intent(in)            :: nCVS(nspin)
+  integer,intent(in)            :: FC(nspin)
   integer,intent(in)            :: occupations(maxval(nO),nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EUHF
@@ -70,7 +72,7 @@ subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   if(dophRPA .and. CVS) then
 
     call wall_time(start_RPA)
-    call CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,ENuc,EUHF, &
+    call CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, &
                 ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,occupations)
     call wall_time(end_RPA)
 

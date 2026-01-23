@@ -1,4 +1,4 @@
-subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,virtuals,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations,virtuals,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
 
 ! Compute linear response
 
@@ -14,12 +14,12 @@ subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
   integer,intent(in)            :: nO(nspin)
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
-  integer,intent(in)            :: occupations(maxval(nO),nspin)
+  integer,intent(in)            :: nCVS(nspin),nFC(nspin)
+  integer,intent(in)            :: occupations(maxval(nO-nFC),nspin)
   integer,intent(in)            :: virtuals(nBas-minval(nO),nspin)
   integer,intent(in)            :: nSa
   integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
-  integer,intent(in)            :: nCVS(nspin)
   double precision,intent(in)   :: lambda
   double precision,intent(in)   :: eHF(nBas,nspin)
   double precision,intent(in)   :: ERI_aaaa(nBas,nBas,nBas,nBas) 
@@ -55,11 +55,11 @@ subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
     ! aaaa block
 
     ia = 0
-    do i=1,nO(1)
+    do i=1,nO(1) - nFC(1)
       do a=nCVS(1)+1,nBas - nO(1)
         ia = ia + 1
         jb = 0
-        do j=1,nO(1)
+        do j=1,nO(1) - nFC(1)
           do b=nCVS(1)+1,nBas - nO(1)
             jb = jb + 1
  
@@ -75,14 +75,13 @@ subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
     ! aabb block
 
     ia = 0
-    do i=1,nO(1)
+    do i=1,nO(1) - nFC(1)
       do a=nCVS(1)+1,nBas - nO(1)
         ia = ia + 1
         jb = 0
-        do j=1,nO(2)
+        do j=1,nO(2) - nFC(2)
           do b=nCVS(2)+1,nBas - nO(2)
             jb = jb + 1
- 
             Aph(ia,nSa+jb) = lambda*ERI_aabb(occupations(i,1),virtuals(b,2),virtuals(a,1),occupations(j,2)) 
 
           end do
@@ -93,11 +92,11 @@ subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
     ! bbaa block
 
     ia = 0
-    do i=1,nO(2)
+    do i=1,nO(2) - nFC(2)
       do a=nCVS(2)+1,nBas-nO(2)
         ia = ia + 1
         jb = 0
-        do j=1,nO(1)
+        do j=1,nO(1) - nFC(1)
           do b=nCVS(1)+1,nBas-nO(1)
             jb = jb + 1
  
@@ -111,11 +110,11 @@ subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
     ! bbbb block
 
     ia = 0
-    do i=1,nO(2)
+    do i=1,nO(2) - nFC(2)
       do a=nCVS(2)+1,nBas-nO(2)
         ia = ia + 1
         jb = 0
-        do j=1,nO(2)
+        do j=1,nO(2) - nFC(2)
           do b=nCVS(2)+1,nBas-nO(2)
             jb = jb + 1
  
@@ -139,11 +138,11 @@ subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
     ! abab block
 
     ia = 0
-    do i=1,nO(1)
+    do i=1,nO(1) -nFC(1)
       do a=nCVS(2)+1,nBas-nO(2)
         ia = ia + 1
         jb = 0
-        do j=1,nO(1)
+        do j=1,nO(1)-nFC(1)
           do b=nCVS(2)+1,nBas-nO(2)
             jb = jb + 1
             Aph(ia,jb) = (eHF(virtuals(a,2),2) - eHF(occupations(i,1),1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
@@ -156,11 +155,11 @@ subroutine CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,
     ! baba block
 
     ia = 0
-    do i=1,nO(2)
+    do i=1,nO(2) - nFC(2)
       do a=nCVS(1)+1,nBas-nO(1)
         ia = ia + 1
         jb = 0
-        do j=1,nO(2)
+        do j=1,nO(2) - nFC(2)
           do b=nCVS(1)+1,nBas-nO(1)
             jb = jb + 1
  

@@ -2,7 +2,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
-                  readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                           &
+                  readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,nCVS,FC,ENuc,ZNuc,rNuc,                                        &
                   S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
                   mom_occupations,                                                                                 &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
@@ -38,6 +38,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nCVS(nspin)
+  integer,intent(in)            :: FC(nspin)
   double precision,intent(inout):: ENuc
   integer,intent(in)            :: mom_occupations(maxval(nO),nspin)
 
@@ -324,13 +325,14 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
 !-----------------------------------!
 
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
-  CVS = any(nCVS>0) 
+  CVS = any(nCVS>0) .or. any(FC>0)
 
   if(doRPA) then
 
     call wall_time(start_RPA)
     call URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,CVS,  & 
-              nBas,nC,nO,nV,nR,nS,nCVS,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,mom_occupations)
+              nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,&
+              dipole_int_aa,dipole_int_bb,eHF,cHF,S,mom_occupations)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

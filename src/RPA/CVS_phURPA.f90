@@ -1,4 +1,4 @@
-subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,ENuc,EUHF, & 
+subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, & 
                   ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,c,S,occupations)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
@@ -23,6 +23,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
   integer,intent(in)            :: nCVS(nspin)
+  integer,intent(in)            :: FC(nspin)
   integer,intent(in)            :: occupations(maxval(nO),nspin)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EUHF
@@ -37,17 +38,18 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
 
 ! Local variables
 
-  logical                       :: dRPA
-  integer                       :: ispin
+  logical                       :: dRPA,found
+  integer                       :: ispin,i
   double precision              :: lambda
 
-  integer                       :: nSa,nSb,nSt
+  integer                       :: nSa,nSb,nSt,nFC(nspin)
   double precision,allocatable  :: Aph(:,:)
   double precision,allocatable  :: Bph(:,:)
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: XpY(:,:)
   double precision,allocatable  :: XmY(:,:)
   integer,allocatable           :: virtuals(:,:)
+  integer,allocatable           :: occupations_fc(:,:)
 
 
   double precision              :: rho
@@ -66,9 +68,39 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
   print *, "No exications to the first", nCVS(1), "alpha orbital(s) are considered."
   print *, "No exications to the first", nCVS(2), "beta orbital(s) are considered."
   if(any(nC/=0)) then
-    print *, "Do not use frozen core with CVS !"
+    print *, "Do not use PyDuck frozen core with CVS !"
     stop
   end if
+! Frozen Core
+
+  nFC(1) = MERGE(1,0,FC(1)/=0) 
+  nFC(2) = MERGE(1,0,FC(2)/=0)
+  print *, nFC
+  print *, FC
+  allocate(occupations_fc(maxval(nO-nFC),nspin))
+  ! remove FC from occupations
+  do ispin=1,nspin
+    occupations_fc(1:nO(ispin)-nFC(ispin),ispin) = occupations(1:nO(ispin) - nFC(ispin), ispin) 
+    found = .false.
+    do i=1,nO(ispin)-1
+      if(.not. found) then
+        if(occupations(i,ispin)==FC(ispin)) then
+          found = .true.
+          occupations_fc(i,ispin) = occupations(i+1,ispin) 
+        else
+          occupations_fc(i,ispin) = occupations(i,ispin)
+        endif
+      else
+        occupations_fc(i,ispin) = occupations(i+1,ispin) 
+      endif 
+    enddo
+  enddo
+  do ispin=1,nspin
+    print *, "occupied"
+    print *,occupations(1:nO(ispin),ispin)
+    print *, "Frozen Core",nFC(ispin)
+    print *,occupations_fc(1:nO(ispin)-nFC(ispin),ispin)
+  end do
 
 ! TDA 
 
@@ -95,21 +127,22 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     ispin = 1
 
     ! Memory allocation
-
-    nSa = (nBas - nO(1) - nCVS(1))*nO(1)
-    nSb = (nBas - nO(2) - nCVS(2))*nO(2) 
+    nFC(1) = MERGE(1,0,FC(1)/=0) 
+    nFC(2) = MERGE(1,0,FC(2)/=0) 
+    nSa = (nBas - nO(1) - nCVS(1))*(nO(1) - nFC(1))
+    nSb = (nBas - nO(2) - nCVS(2))*(nO(2) - nFC(2))
     nSt = nSa + nSb
 
     allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
-    call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS, occupations, virtuals,&
+    call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc, virtuals,&
                             lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS, occupations, virtuals,&
+    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc, virtuals,&
                              lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     call phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
-    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, &
+    call CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, &
                                dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
@@ -124,20 +157,20 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     
     ! Memory allocation
     
-    nSa = (nBas - nO(2) - nCVS(2))*nO(1)
-    nSb = (nBas - nO(1) - nCVS(1))*nO(2) 
+    nSa = (nBas - nO(2) - nCVS(2))*(nO(1) - nFC(1))
+    nSb = (nBas - nO(1) - nCVS(1))*(nO(2) - nFC(2))
     nSt = nSa + nSb
 
     allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
-    call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,virtuals,&
+    call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,&
                      lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,occupations,virtuals,&
+    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,&
                                   lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     call phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
-    call phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+    call CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
