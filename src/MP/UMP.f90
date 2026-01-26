@@ -36,7 +36,7 @@ subroutine UMP(dotest,doMP2,doMP3,regularize,MOM,nCVS,occupations,nBas,nC,nO,nV,
 ! Output variables
 
 !------------------------------------------------------------------------
-! Compute MP3 energy
+! Compute MP2 energy
 !------------------------------------------------------------------------                               
 
   if(doMP2) then    

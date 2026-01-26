@@ -326,7 +326,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
 
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
   CVS = any(nCVS>0) .or. any(FC>0)
-
+  
   if(doRPA) then
 
     call wall_time(start_RPA)

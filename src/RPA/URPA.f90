@@ -46,8 +46,9 @@ subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
 
   double precision              :: start_RPA    ,end_RPA      ,t_RPA
 
-  if(.not. dophRPA .and. CVS) then
+  if(.not. dophRPA .and. .not. dophRPAx .and. CVS) then
     print *, "CVS is only implemented for phRPA sry... MOM and RPA is only available for this case."
+    print *, "blub"
     stop
   end if
 
@@ -86,7 +87,7 @@ subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
 ! Compute RPAx (RPA with exchange) excitations
 !------------------------------------------------------------------------
 
-  if(dophRPAx) then
+  if(dophRPAx .and. .not. CVS) then
 
     call wall_time(start_RPA)
     call phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,ENuc,EUHF, &
@@ -99,6 +100,18 @@ subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
 
   end if
 
+  if(dophRPAx .and. CVS) then
+
+    call wall_time(start_RPA)
+    call CVS_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, &
+                ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,occupations)
+    call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
 !------------------------------------------------------------------------
 ! Compute crRPA excitations
 !------------------------------------------------------------------------
