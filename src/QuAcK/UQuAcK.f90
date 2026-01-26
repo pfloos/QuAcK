@@ -274,7 +274,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,doMOM,dostab,dosearch,doMP2,doMP3,doC
   if(doMP) then
 
     call wall_time(start_MP)
-    call UMP(dotest,doMP2,doMP3,reg_MP,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eHF)
+    call UMP(dotest,doMP2,doMP3,reg_MP,doMOM,nCVS,mom_occupations,nBas,nC,nO,nV,nR,ERI_aaaa,ERI_aabb,ERI_bbbb,ENuc,EUHF,eHF)
     call wall_time(end_MP)
 
     t_MP = end_MP - start_MP

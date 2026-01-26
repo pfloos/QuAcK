@@ -71,6 +71,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     print *, "Do not use PyDuck frozen core with CVS !"
     stop
   end if
+
 ! Frozen Core
 
   nFC(1) = MERGE(1,0,FC(1)/=0) 
