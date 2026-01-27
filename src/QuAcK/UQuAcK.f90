@@ -161,7 +161,9 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
     allocate(complex_ERI_aaaa(0,0,0,0))
     allocate(complex_ERI_aabb(0,0,0,0))
     allocate(complex_ERI_bbbb(0,0,0,0))
-    
+    allocate(complex_cHF(0,0,0))
+    allocate(complex_dipole_int_aa(0,0,0))
+    allocate(complex_dipole_int_bb(0,0,0)) 
   end if
   
   allocate(cHF(nBas,nBas,nspin),eHF(nBas,nspin))
@@ -201,19 +203,18 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
     write(*,*)
 
-  end if
+    if(doMOM) then
 
-  if(doMOM) then
+      call wall_time(start_HF)
+      call MOM_UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+               nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
+      call wall_time(end_HF)
 
-    call wall_time(start_HF)
-    call MOM_UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
-    call wall_time(end_HF)
+      t_HF = end_HF - start_HF
+      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-UHF = ',t_HF,' seconds'
+      write(*,*)
 
-    t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-UHF = ',t_HF,' seconds'
-    write(*,*)
-
+    end if
   end if
 
   if(docUHF) then
@@ -224,10 +225,24 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
-    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for cUHF = ',t_HF,' seconds'
     write(*,*)
 
+    if(doMOM) then
+
+      call wall_time(start_HF)
+      call MOM_cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+               nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,mom_occupations)
+      call wall_time(end_HF)
+
+      t_HF = end_HF - start_HF
+      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-cUHF = ',t_HF,' seconds'
+      write(*,*)
+
+    end if
+
   end if
+  
 
 
 !------------------!

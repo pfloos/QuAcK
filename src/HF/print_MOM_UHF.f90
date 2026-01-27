@@ -135,7 +135,7 @@ allocate(unoccupied(nBas - minval(nO),nspin))
   call vecout(nBas - nO(2),eHF(unoccupied(1:nBas-nO(2),2),2))
   write(*,*)
 
-  print *, "Orbital occupations for MOMUHF:"
+  print *, "Orbital occupations for MOM-UHF:"
   print *, "Alpha:"
   print *, occupations(1:nO(1),1)
   print *, "Beta:"
