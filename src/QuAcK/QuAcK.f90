@@ -6,6 +6,7 @@ program QuAcK
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
   logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF
   logical                       :: doMOM
+  logical                       :: writeMOs
   logical                       :: dostab,dosearch,doaordm,readFCIDUMP
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -197,7 +198,7 @@ program QuAcK
 
   call read_options(working_dir,                                                                         &
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
-                    readFCIDUMP,doMOM,reg_MP,                                                            &
+                    readFCIDUMP,doMOM,writeMOs,reg_MP,                                                   &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
                     TDA,spin_conserved,spin_flip,nCVS,FC,                                                &
                     max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
@@ -361,7 +362,7 @@ program QuAcK
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                                           &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
-                  mom_occupations,                                                                                          &
+                  mom_occupations,writeMOs,                                                                                 &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                       &
                   max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                          &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,           &
@@ -385,7 +386,7 @@ program QuAcK
                 doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                     &
                 doCAP,                                                                                                        &
                 readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,nCVS,FC,ENuc,ZNuc,rNuc,                                                     &
-                S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,mom_occupations,                     &
+                S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,mom_occupations,writeMOs,            &
                 guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                           &
                 maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,               &
                 TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                        &

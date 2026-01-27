@@ -57,6 +57,12 @@ subroutine mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
     write(*,*) 'P_ao_bin matrix read for the guess...'
     c(:,:)=0d0
+  
+  elseif(guess_type == 6) then
+
+    write(*,*) 'MO coefficients are read from MOs dir...'
+    c(:,:)=0d0
+
 
   else
 

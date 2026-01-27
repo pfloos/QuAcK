@@ -1,4 +1,4 @@
-subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,ERI,CAP,X,EUHF,eHF,c,P,F)
 
 ! Perform unrestricted Hartree-Fock calculation
@@ -15,6 +15,7 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
   integer,intent(in)            :: guess_type
   double precision,intent(in)   :: mix 
   double precision,intent(in)   :: level_shift
+  logical,intent(in)            :: writeMOs
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
 
@@ -58,6 +59,7 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
   complex*16,allocatable        :: F_diis(:,:,:)
   complex*16,external           :: complex_trace_matrix
   double precision,external     :: trace_matrix
+  double precision,allocatable  :: tmp(:,:)
 
   integer                       :: ispin
 
@@ -91,10 +93,25 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 ! Define core Hamiltonian with CAP part
   Hc(:,:) = cmplx(T+V,CAP,kind=8)
 
-! Guess coefficients and demsity matrices
-
+! Guess coefficients and density matrix
+  if(guess_type /=6) then
+    do ispin=1,nspin
+      call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c(:,:,ispin))
+    end do
+   else
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:,1) = cmplx(tmp, 0d0,kind=8)
+    call read_matin(nBas,nBas,tmp,"imag_MOs_alpha.dat")
+    c(:,:,1) = c(:,:,1) + cmplx(0d0, tmp, kind=8)
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:,2) = cmplx(tmp, 0d0,kind=8)
+    call read_matin(nBas,nBas,tmp,"imag_MOs_alpha.dat")
+    c(:,:,2) = c(:,:,2) + cmplx(0d0, tmp, kind=8)
+    deallocate(tmp)
+  end if
+  
   do ispin=1,nspin
-    call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c(:,:,ispin))
     P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
   end do
 
@@ -264,6 +281,14 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 ! Compute final UHF energy
 
   call print_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,EK,EW,EUHF)
+
+
+  if(writeMOs) then
+    call write_matout(nBas,nBas,real(c(:,:,1)),'real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,real(c(:,:,2)),'real_MOs_beta.dat')
+    call write_matout(nBas,nBas,aimag(c(:,:,1)),'imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,aimag(c(:,:,2)),'imag_MOs_beta.dat')
+  endif
 
 ! Print test values
 

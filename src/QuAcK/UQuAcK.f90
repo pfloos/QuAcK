@@ -5,7 +5,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
                   doCAP,                                                                                                  &
                   readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,nCVS,FC,ENuc,ZNuc,rNuc,                                               &
                   S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,                            &
-                  mom_occupations,                                                                                        &
+                  mom_occupations,writeMOs,                                                                               &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                     &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,         &
                   TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
@@ -19,7 +19,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
   logical,intent(in)            :: dotest
   logical,intent(in)            :: readFCIDUMP
 
-  logical,intent(in)            :: doUHF,docUHF,doMOM,doCAP
+  logical,intent(in)            :: doUHF,docUHF,doMOM,doCAP,writeMOs
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2,doMP3
@@ -191,11 +191,10 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
 !---------------------!
 ! Hartree-Fock module !
 !---------------------!
-
-  if(doUHF) then
-
+  if(doUHF .and. .not. doMOM) then
+    
     call wall_time(start_HF)
-    call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
@@ -203,43 +202,66 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
     write(*,*)
 
-    if(doMOM) then
+  end if
 
+  if(doUHF .and. doMOM) then
+    
+    if(guess_type /= 6) then
       call wall_time(start_HF)
-      call MOM_UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-               nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
+      call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+               nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
       call wall_time(end_HF)
 
       t_HF = end_HF - start_HF
-      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-UHF = ',t_HF,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
       write(*,*)
-
     end if
-  end if
-
-  if(docUHF) then
 
     call wall_time(start_HF)
-    call cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call MOM_UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-UHF = ',t_HF,' seconds'
+    write(*,*)
+
+  end if
+  
+  if(docUHF .and. .not. doMOM) then
+   
+    call wall_time(start_HF)
+    call cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for cUHF = ',t_HF,' seconds'
     write(*,*)
+  
+  end if
 
-    if(doMOM) then
-
+  if(docUHF .and. doMOM) then
+   
+    if(guess_type /= 6) then
       call wall_time(start_HF)
-      call MOM_cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
-               nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,mom_occupations)
+      call cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+               nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
       call wall_time(end_HF)
 
       t_HF = end_HF - start_HF
-      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-cUHF = ',t_HF,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for cUHF = ',t_HF,' seconds'
       write(*,*)
-
     end if
+
+    call wall_time(start_HF)
+    call MOM_cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,mom_occupations)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for MOM-cUHF = ',t_HF,' seconds'
+    write(*,*)
 
   end if
   

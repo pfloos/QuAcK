@@ -1,4 +1,4 @@
-subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,ERI,CAP,X,EUHF,eHF,c,P,F,occupationsGuess)
 
 ! Perform unrestricted Hartree-Fock calculation
@@ -15,6 +15,7 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNu
   integer,intent(in)            :: guess_type
   double precision,intent(in)   :: mix 
   double precision,intent(in)   :: level_shift
+  logical,intent(in)            :: writeMOs
   double precision,intent(in)   :: thresh
   integer,intent(in)            :: nBas
 
@@ -60,6 +61,7 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNu
   complex*16,allocatable        :: err_diis(:,:,:)
   complex*16,allocatable        :: F_diis(:,:,:)
   complex*16,external           :: complex_trace_matrix
+  double precision,allocatable  :: tmp(:,:)
   double precision,external     :: trace_matrix
 
   integer                       :: ispin
@@ -92,6 +94,22 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNu
            Hc(nBas,nBas))
   
   allocate(cGuess(nBas,nBas,nspin),occupations(maxval(nO),nspin))
+
+! Guess coefficients and density matrix
+  if(guess_type ==6) then
+    ! Read MO Coefficients from file
+    print *, "Reading MO Coefficients from MOs dir..."
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:,1) = cmplx(tmp, 0d0,kind=8)
+    call read_matin(nBas,nBas,tmp,"imag_MOs_alpha.dat")
+    c(:,:,1) = c(:,:,1) + cmplx(0d0, tmp, kind=8)
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:,2) = cmplx(tmp, 0d0,kind=8)
+    call read_matin(nBas,nBas,tmp,"imag_MOs_alpha.dat")
+    c(:,:,2) = c(:,:,2) + cmplx(0d0, tmp, kind=8)
+    deallocate(tmp)
+  end if
 
 ! Guess coefficients and density matrix
   cGuess = c 
@@ -274,6 +292,13 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNu
 ! Compute final UHF energy
 
   call print_MOM_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,EK,EW,EUHF,occupations)
+ 
+  if(writeMOs) then
+    call write_matout(nBas,nBas,real(c(:,:,1)),'real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,real(c(:,:,2)),'real_MOs_beta.dat')
+    call write_matout(nBas,nBas,aimag(c(:,:,1)),'imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,aimag(c(:,:,2)),'imag_MOs_beta.dat')
+  endif
 
 ! Print test values
 

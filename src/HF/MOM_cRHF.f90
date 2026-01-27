@@ -1,5 +1,5 @@
-subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,ENuc, & 
-                nBas,nO,S,T,V,ERI,CAP,X,ERHF,eHF,c,P,F)
+subroutine MOM_cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,ENuc, & 
+                nBas,nO,S,T,V,ERI,CAP,X,ERHF,eHF,c,P,F,occupationsGuess)
 
 ! Perform complex restricted Hartree-Fock calculation
 
@@ -18,6 +18,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nO
+  integer,intent(in)            :: occupationsGuess(nO)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
@@ -31,6 +32,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: n_diis
+  integer,allocatable           :: occupations(:)
   
   complex*16                    :: ET
   complex*16                    :: EV
@@ -46,6 +48,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
   complex*16,allocatable        :: J(:,:)
   complex*16,allocatable        :: K(:,:)
   complex*16,allocatable        :: cp(:,:)
+  complex*16,allocatable        :: cGuess(:,:)
   complex*16,allocatable        :: Fp(:,:)
   complex*16,allocatable        :: err(:,:)
   complex*16,allocatable        :: err_diis(:,:)
@@ -84,23 +87,32 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
  allocate(err(nBas,nBas))
  allocate(cp(nBas,nBas))
  allocate(Fp(nBas,nBas))
+ allocate(cGuess(nBas,nBas),occupations(nO))
 
 ! Define core Hamiltonian with CAP part
   Hc(:,:) = cmplx(T+V,CAP,kind=8)
  
 ! Guess coefficients and density matrix
-  if(guess_type /=6) then
-    call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
-  else
+  if(guess_type ==6) then
     allocate(tmp(nBas,nBas))
     call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
-    c = cmplx(tmp, 0d0,kind=8)
+    c(:,:) = cmplx(tmp, 0d0,kind=8)
     call read_matin(nBas,nBas,tmp,"imag_MOs_alpha.dat")
-    c = c + cmplx(0d0, tmp, kind=8)
+    c(:,:) = c(:,:) + cmplx(0d0, tmp, kind=8)
     deallocate(tmp)
   end if
 
-  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+! Guess coefficients and density matrix
+  cGuess = c 
+  occupations = occupationsGuess
+  
+  print *, "Ground state orbital occupations for MOM-guess:"
+  print *, "Alpha:"
+  print *, occupations(1:nO)
+  print *, "Beta:"
+  print *, occupations(1:nO)
+ 
+  P(:,:) = 2d0*matmul(c(:,occupations(1:nO)),transpose(c(:,occupations(1:nO))))
 
   ! Initialization
   n_diis          = 0
@@ -177,8 +189,9 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
     call complex_diagonalize_matrix(nBas,cp,eHF)
     call complex_orthogonalize_matrix(nBas,cp)
     c = matmul(X,cp)
-    ! Density matrix
-    P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+
+    ! Density matrix with MOM
+    call complex_MOM_density_matrix(nBas, nBas, nO, S, c, cGuess, occupations, occupationsGuess, P)
 
     ! Dump results
 
@@ -205,7 +218,8 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
   end if
 
   call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EW,EJ,EK,ERHF)
-  
+
+! Write MOs
   if(writeMOs) then
         call write_matout(nBas,nBas,real(c),'real_MOs_alpha.dat')
         call write_matout(nBas,nBas,aimag(c),'imag_MOs_alpha.dat')

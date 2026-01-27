@@ -9,7 +9,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                                           &
                   S,T,V,Hc,CAP_AO,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,             &
-                  mom_occupations,                                                                                          &
+                  mom_occupations,writeMOs,                                                                                 &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,singlet,triplet,TDA,                                &
                   maxIter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                           &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,           & 
@@ -33,7 +33,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   logical,intent(in)            :: readFCIDUMP
 
   logical,intent(in)            :: doRHF,doROHF,docRHF,doeRHF
-  logical,intent(in)            :: doMOM
+  logical,intent(in)            :: doMOM,writeMOs
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doaordm
@@ -237,7 +237,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for reading 2e-integrals =',t_int,' seconds'
   write(*,*)
 
-  if(docRHF .and. (doMOM .or. doRHF .or. doROHF)) then
+  if(docRHF .and. (doRHF .or. doROHF)) then
     print *, "Complex Restricted-Hartree-Fock is not compatible with any other method than G0W0, evGW and qsGW !"
     stop
   end if
@@ -245,10 +245,10 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 ! Hartree-Fock module !
 !---------------------!
 
-  if(doRHF) then
+   if(doRHF .and. .not. doMOM) then
 
     call wall_time(start_HF)
-    call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
@@ -258,10 +258,23 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
   end if
   
-  if(doMOM .and. doRHF) then
+  if(doRHF .and. doMOM) then
+
+    if(guess_type /= 6) then
+    
+      call wall_time(start_HF)
+      call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+               nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+      call wall_time(end_HF)
+
+      t_HF = end_HF - start_HF
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
+      write(*,*)
+
+    end if
 
     call wall_time(start_HF)
-    call MOM_RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call MOM_RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations)
     call wall_time(end_HF)
 
@@ -271,10 +284,10 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
   end if
 
-  if(doROHF) then
+  if(doROHF .and. .not. doMOM) then
 
     call wall_time(start_HF)
-    call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
               nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
@@ -284,10 +297,18 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
   end if
   
-  if(doMOM .and. doROHF) then
-
+  if(doROHF .and. doMOM) then
+    if(guess_type /= 6) then
+   
+      call wall_time(start_HF)
+      call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+                nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+      call wall_time(end_HF)
+    
+    end if 
+    
     call wall_time(start_HF)
-    call MOM_ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call MOM_ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
               nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations)
     call wall_time(end_HF)
 
@@ -297,9 +318,10 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
   end if
   
-  if(docRHF) then
+  if(docRHF .and. .not. doMOM) then
+  
     call wall_time(start_HF)
-    call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,ENuc, &
+    call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,ENuc, &
              nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
     call wall_time(end_HF)
 
@@ -309,8 +331,27 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
   end if
   
-  if(doMOM .and. (.not. doRHF .and. .not. doROHF)) then
-    print *, "MOM is only available for RHF, ROHF and UHF."
+  if(docRHF .and. doMOM) then
+    if(guess_type /= 6) then 
+      call wall_time(start_HF)
+      call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,ENuc, &
+               nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
+      call wall_time(end_HF)
+
+      t_HF = end_HF - start_HF
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for cRHF = ',t_HF,' seconds'
+      write(*,*)
+    endif
+    call wall_time(start_HF)
+    call MOM_cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,ENuc, &
+             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,mom_occupations)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for cRHF = ',t_HF,' seconds'
+    write(*,*)
+
+
   end if
 
 !------------------------------!
