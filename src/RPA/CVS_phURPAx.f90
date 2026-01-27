@@ -1,4 +1,4 @@
-subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, & 
+subroutine CVS_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, & 
                   ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,c,S,occupations)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
@@ -97,7 +97,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     enddo
   enddo
   do ispin=1,nspin
-    print *, "Not Frozen orbitals:"
+    print *, "Not Frozen Orbitals"
     print *,occupations_fc(1:nO(ispin)-nFC(ispin),ispin)
   end do
 
@@ -110,7 +110,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
 
 ! Initialization
 
-  dRPA = .true.
+  dRPA = .false.
   EcRPA(:) = 0d0
   lambda = 1d0
   allocate(virtuals(nBas - minval(nO),nspin))
@@ -174,7 +174,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     deallocate(Aph,Bph,Om,XpY,XmY)
 
   end if
-
+  
   if(exchange_kernel) then
 
     EcRPA(1) = 0.5d0*EcRPA(1)
@@ -182,12 +182,24 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
 
   end if
 
+  if(exchange_kernel) then
+
+    EcRPA(1) = 0.5d0*EcRPA(1)
+    EcRPA(2) = 0.5d0*EcRPA(2)
+
+  else
+
+    EcRPA(2) = 0d0
+
+  end if
+
+
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phURPA correlation energy (spin-conserved) = ',EcRPA(1),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phURPA correlation energy (spin-flip)      = ',EcRPA(2),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phURPA correlation energy                  = ',sum(EcRPA),' au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@phURPA total energy                        = ',ENuc + EUHF + sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phURPAx correlation energy (spin-conserved) = ',EcRPA(1),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phURPAx correlation energy (spin-flip)      = ',EcRPA(2),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phURPAx correlation energy                  = ',sum(EcRPA),' au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@phURPAx total energy                        = ',ENuc + EUHF + sum(EcRPA),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

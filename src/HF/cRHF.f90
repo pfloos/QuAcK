@@ -106,7 +106,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A36,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(RHF)','|','RE(EJ(RHF))','|','Re(EK(RHF))','|','Conv','|'
+            '|','#','|','E(RHF)','|','Re(EJ(RHF))','|','Re(EK(RHF))','|','Conv','|'
   write(*,*)'-------------------------------------------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -206,6 +206,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 
   if(dotest) then
  
+    print *, "Test for cRHF not implemented"
 !   call dump_test_value('R','RHF energy',ERHF)
 !   call dump_test_value('R','RHF HOMO energy',eHF(nO))
 !   call dump_test_value('R','RHF LUMO energy',eHF(nO+1))

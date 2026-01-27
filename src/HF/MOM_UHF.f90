@@ -202,11 +202,7 @@ subroutine MOM_UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 !   Level-shifting
 
     if(level_shift > 0d0 .and. Conv > thresh) then
-
-      do ispin=1,nspin
-        call level_shifting(level_shift,nBas,nBas,nO(ispin),S,c(:,:,ispin),F(:,:,ispin))
-      end do
-
+      print *, "No level shift implemented for this methods !"
     end if
 
 !  Transform Fock matrix in orthogonal basis

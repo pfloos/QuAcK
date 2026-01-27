@@ -76,7 +76,7 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 1d6
+  double precision,parameter    :: flow = 1d5
 
   logical                       :: do_hierarchy_GW = .false.
   logical                       :: do_1h1p,do_1h,do_diag
@@ -91,6 +91,9 @@ subroutine R_ADC(dotest,                                               &
             do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
 
   do_EE   = .false.
+
+  write(*,'(A40,E15.10)') 'Flow parameter for SRG regularization = ',flow
+  write(*,*) 
 
 !=========================================!
 ! Charged excitation branch of ADC module !
@@ -220,7 +223,7 @@ subroutine R_ADC(dotest,                                               &
     do_diag = .true.
 
     do_full_freq = .false.
-    do_half_half = .true.
+    do_half_half = .false.
     do_pure_stat = .true.
 
     if(do_hierarchy_GW) then 

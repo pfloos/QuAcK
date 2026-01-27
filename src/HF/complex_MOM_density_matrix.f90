@@ -1,4 +1,4 @@
-subroutine MOM_density_matrix(nBas, nOrb, nO, S, c, cGuess, occupations, occupationsGuess, P)
+subroutine complex_MOM_density_matrix(nBas, nOrb, nO, S, c, cGuess, occupations, occupationsGuess, P)
 
 ! Calculate Overlap projected to occupied space of guess for one spin component.
 
@@ -8,12 +8,12 @@ subroutine MOM_density_matrix(nBas, nOrb, nO, S, c, cGuess, occupations, occupat
 ! Input variables
   integer, intent(in)             :: nBas, nOrb, nO
   double precision,intent(in)     :: S(nBas,nBas)
-  double precision, intent(in)    :: c(nBas, nOrb), cGuess(nBas,nOrb)
+  complex*16, intent(in)          :: c(nBas, nOrb), cGuess(nBas,nOrb)
   integer,intent(in)              :: occupationsGuess(nO)
 
 ! Output variables
   integer, intent(inout)          :: occupations(nO)
-  double precision, intent(out)   :: P(nBas,nBas)
+  complex*16, intent(out)         :: P(nBas,nBas)
 
 ! Local variables
   integer                         :: i
@@ -21,7 +21,7 @@ subroutine MOM_density_matrix(nBas, nOrb, nO, S, c, cGuess, occupations, occupat
 
   allocate(projO(nOrb))
   
-  call projected_overlap(nBas, nOrb,nO, S, c, cGuess, occupationsGuess, projO)
+  call complex_projected_overlap(nBas, nOrb,nO, S, c, cGuess, occupationsGuess, projO)
   ! Select orbitals with maximum overlap
   call MOM_idx(nO,nOrb,projO,occupations(1:nO))
   ! Compute density with selected orbitals
