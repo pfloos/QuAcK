@@ -76,7 +76,7 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 1d5
+  double precision,parameter    :: flow = 1d6
 
   logical                       :: do_hierarchy_GW = .true.
   logical                       :: do_1h1p,do_1h,do_diag
@@ -219,8 +219,8 @@ subroutine R_ADC(dotest,                                               &
   !----------------------------!
 
     do_1h1p = .true.
-    do_1h   = .true.
-    do_diag = .true.
+    do_1h   = .false.
+    do_diag = .false.
 
     do_full_freq = .false.
     do_half_half = .false.
