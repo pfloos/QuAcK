@@ -1,3 +1,4 @@
+! MRM NOTE: If the call to RHF is modified, please also incorporate the changes to the call of RHF in the BQuAcK branch
 subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F)
 
