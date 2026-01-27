@@ -76,9 +76,9 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 1d5
+  double precision,parameter    :: flow = 1d6
 
-  logical                       :: do_hierarchy_GW = .false.
+  logical                       :: do_hierarchy_GW = .true.
   logical                       :: do_1h1p,do_1h,do_diag
   logical                       :: do_full_freq,do_half_half, do_pure_stat
 
@@ -219,8 +219,8 @@ subroutine R_ADC(dotest,                                               &
   !----------------------------!
 
     do_1h1p = .true.
-    do_1h   = .true.
-    do_diag = .true.
+    do_1h   = .false.
+    do_diag = .false.
 
     do_full_freq = .false.
     do_half_half = .false.
@@ -267,7 +267,7 @@ subroutine R_ADC(dotest,                                               &
         if(diag_approx) then
           call R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       else
