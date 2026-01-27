@@ -1,5 +1,5 @@
-subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F,occupations)
+subroutine MOM_UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F,occupationsGuess)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -8,7 +8,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
 
 ! Input variables
 
-  logical,intent(in)            :: dotest
+  logical,intent(in)            :: dotest,writeMOs
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -24,7 +24,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: occupations(maxval(nO),nspin)
+  integer,intent(in)            :: occupationsGuess(maxval(nO),nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -50,8 +50,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision              :: dipole(ncart)
   
   double precision,allocatable  :: cGuess(:,:,:)
-  double precision,allocatable  :: O(:,:,:)
-  double precision,allocatable  :: projO(:,:)
+  integer,allocatable           :: occupations(:,:)
 
   double precision,allocatable  :: cp(:,:,:)
   double precision,allocatable  :: J(:,:,:)
@@ -60,6 +59,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   double precision,allocatable  :: err(:,:,:)
   double precision,allocatable  :: err_diis(:,:,:)
   double precision,allocatable  :: F_diis(:,:,:)
+  double precision,allocatable  :: tmp(:,:)
   double precision,external     :: trace_matrix
 
   integer                       :: ispin,i
@@ -75,9 +75,9 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
 ! Hello world
 
   write(*,*)
-  write(*,*)'*******************************'
-  write(*,*)'* Unrestricted HF Calculation *'
-  write(*,*)'*******************************'
+  write(*,*)'******************************************************'
+  write(*,*)'* Maximum Overlap Method Unrestricted HF Calculation *'
+  write(*,*)'******************************************************'
   write(*,*)
 
 ! Useful stuff
@@ -89,23 +89,33 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
   allocate(J(nBas,nBas,nspin),K(nBas,nBas,nspin),Fp(nBas,nBas,nspin), &
            err(nBas,nBas,nspin),cp(nBas,nBas,nspin),                  &
            err_diis(nBasSq,max_diis,nspin),F_diis(nBasSq,max_diis,nspin))
-  allocate(cGuess(nBas,nBas,nspin),O(nBas,nBas,nspin),projO(nBas,nspin))
+  allocate(cGuess(nBas,nBas,nspin),occupations(maxval(nO),nspin))
 
 ! Guess coefficients and density matrices
 
-  if(occupations(nO(1),1)==0) then
-    print *, "Number of alpha electrons has to be >= Number of beta electrons !"
-    stop
+  if(guess_type ==6) then
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:,1) = tmp
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:,2) = tmp
+    deallocate(tmp)
   end if
+
+  cGuess = c 
+  occupations = occupationsGuess
+  
   print *, "Ground state orbital occupations for MOM-guess:"
   print *, "Alpha:"
   print *, occupations(1:nO(1),1)
   print *, "Beta:"
   print *, occupations(1:nO(2),2)
-  
-  do ispin=1,nspin  
-    call MOM_guess(nO(ispin), nBas, nBas, occupations(:,ispin),c(:,:,ispin),cGuess(:,:,ispin),eHF(:,ispin))
+   
+  do ispin = 1,nspin
+    P(:,:,ispin) = matmul(c(:,occupations(1:nO(ispin),ispin),ispin),&
+                transpose(c(:,occupations(1:nO(ispin),ispin),ispin)))
   end do
+
 
 ! Initialization
 
@@ -202,11 +212,7 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
 !   Level-shifting
 
     if(level_shift > 0d0 .and. Conv > thresh) then
-
-      do ispin=1,nspin
-        call level_shifting(level_shift,nBas,nBas,nO(ispin),S,c(:,:,ispin),F(:,:,ispin))
-      end do
-
+      print *, "No level shift implemented for this methods !"
     end if
 
 !  Transform Fock matrix in orthogonal basis
@@ -228,24 +234,13 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
       c(:,:,ispin) = matmul(X,cp(:,:,ispin))
     end do
 
-! Projected Overlap
-    
-    do ispin=1,nspin
-      O(:,:,ispin) = matmul(matmul(transpose(cGuess(:,:,ispin)),S),c(:,:,ispin)) 
-      projO(:,ispin) = 0d0
-      do i = 1,nO(ispin)
-        projO(:,ispin) = projO(:,ispin) + O(i,:,ispin)**2
-      end do
-      ! Select orbitals with maximum overlap
-      call sort_MOM(nBas,nBas,projO(:,ispin),c(:,:,ispin),eHF(:,ispin))
+!   Compute mom occupations and the resulting density matrix
+    do ispin = 1,nspin 
+      call MOM_density_matrix(nBas, nBas, nO(ispin), S, c(:,:,ispin), cGuess(:,:,ispin), &
+                              occupations(:,ispin), occupationsGuess(:,ispin), P(:,:,ispin))
     end do
 
-!   Compute density matrix 
 
-    do ispin=1,nspin
-      P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
-    end do
- 
 !   Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
@@ -274,8 +269,16 @@ subroutine MOMUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,
 ! Compute final UHF energy
 
   call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,EK,EUHF,dipole)
+  call print_MOM_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,EK,EUHF,dipole,occupations)
 
+! Write MOs
+
+  if(writeMOs) then
+    call write_matout(nBas,nBas,c(:,:,1),'real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:,2),'real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:,1),'imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:,2),'imag_MOs_beta.dat')
+  endif
 
 ! Print test values
 

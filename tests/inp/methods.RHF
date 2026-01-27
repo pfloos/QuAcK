@@ -3,7 +3,7 @@
 # MP2 MP3
   T   T
 # CCD pCCD DCD CCSD CCSD(T)
-  T   T   T   T   F
+  T   F   T   T   F
 # drCCD rCCD crCCD lCCD
   T   T   T   T
 # CIS CIS(D) CID CISD FCI
@@ -12,17 +12,19 @@
   T   T   T   T   F
 # OORPA
   F
-# G0F2 evGF2 qsGF2 ufGF2 G0F3 evGF3 scGF2
-  T   T   F   F   F   F   F
-# G0W0 evGW qsGW ufG0W0 ufGW scGW
+# G0F2 evGF2 qsGF2 G0F3 evGF3 scGF2
   T   T   F   F   F   F
+# G0W0 evGW qsGW scGW
+  T   T   F   F
 # G0T0pp evGTpp qsGTpp ufG0T0pp
   T   F   F   F
 # G0T0eh evGTeh qsGTeh
   F   F   F
 # evParquet qsParquet
   F   F
-# IPEA-ADC2 IP-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2 ADC-GW ADC-2SOSEX ADC3-G3W2 ADC4-G3W2
-  F   F   F   F   F   F   F   F   F   F
+# IPEA-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2
+  F   F   F   F   F
+# ADC-GW ADC-2SOSEX ADC3-G3W2 ADC3x-G3W2 ADC4-G3W2
+  F   F   F   F   F
 # Rtest Utest Gtest
   T   F   F

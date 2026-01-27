@@ -1,4 +1,4 @@
-subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, & 
+subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,ENuc, & 
                 nBas,nO,S,T,V,ERI,CAP,X,ERHF,eHF,c,P,F)
 
 ! Perform complex restricted Hartree-Fock calculation
@@ -8,7 +8,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 
 ! Input variables
 
-  logical,intent(in)            :: dotest
+  logical,intent(in)            :: dotest,writeMOs
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -51,8 +51,8 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   complex*16,allocatable        :: err_diis(:,:)
   complex*16,allocatable        :: F_diis(:,:)
   complex*16,allocatable        :: Hc(:,:)
+  double precision,allocatable  :: tmp(:,:)
 
-  logical                       :: writeMOs = .false.
 
 ! Output variables
 
@@ -87,11 +87,20 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
 
 ! Define core Hamiltonian with CAP part
   Hc(:,:) = cmplx(T+V,CAP,kind=8)
-
+ 
 ! Guess coefficients and density matrix
-  call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
-  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+  if(guess_type /=6) then
+    call complex_mo_guess(nBas,nBas,guess_type,S,Hc,X,c)
+  else
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c = cmplx(tmp, 0d0,kind=8)
+    call read_matin(nBas,nBas,tmp,"imag_MOs_alpha.dat")
+    c = c + cmplx(0d0, tmp, kind=8)
+    deallocate(tmp)
+  end if
 
+  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
 
   ! Initialization
   n_diis          = 0
@@ -106,7 +115,7 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A36,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(RHF)','|','RE(EJ(RHF))','|','Re(EK(RHF))','|','Conv','|'
+            '|','#','|','E(RHF)','|','Re(EJ(RHF))','|','Re(EK(RHF))','|','Conv','|'
   write(*,*)'-------------------------------------------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
@@ -196,16 +205,19 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,ENuc, &
   end if
 
   call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EW,EJ,EK,ERHF)
-
+  
   if(writeMOs) then
-        call write_matout(nBas,nBas,real(c),'real_MOs.dat')
-        call write_matout(nBas,nBas,aimag(c),'imag_MOs.dat')
+        call write_matout(nBas,nBas,real(c),'real_MOs_alpha.dat')
+        call write_matout(nBas,nBas,aimag(c),'imag_MOs_alpha.dat')
+        call write_matout(nBas,nBas,real(c),'real_MOs_beta.dat')
+        call write_matout(nBas,nBas,aimag(c),'imag_MOs_beta.dat')
   endif
 
   ! Testing zone
 
   if(dotest) then
  
+    print *, "Test for cRHF not implemented"
 !   call dump_test_value('R','RHF energy',ERHF)
 !   call dump_test_value('R','RHF HOMO energy',eHF(nO))
 !   call dump_test_value('R','RHF LUMO energy',eHF(nO+1))

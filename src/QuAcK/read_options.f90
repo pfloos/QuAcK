@@ -1,8 +1,8 @@
 subroutine read_options(working_dir,                                                                         &
                         maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
-                        readFCIDUMP,reg_MP,                                                                  &
+                        readFCIDUMP,doMOM,writeMOs,reg_MP,                                                   &
                         maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
-                        TDA,spin_conserved,spin_flip,                                                        &
+                        TDA,spin_conserved,spin_flip,nCVS,FC,                                                &
                         max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
                         maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
@@ -19,6 +19,7 @@ subroutine read_options(working_dir,                                            
 ! Read desired methods 
 
   implicit none
+  include 'parameters.h'
 
 ! Input variables
 
@@ -36,6 +37,8 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: dosearch
   logical,intent(out)           :: doaordm
   logical,intent(out)           :: readFCIDUMP
+  logical,intent(out)           :: doMOM
+  logical,intent(out)           :: writeMOs
   logical,intent(out)           :: error_P
 
   logical,intent(out)           :: reg_MP
@@ -47,6 +50,9 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: TDA
   logical,intent(out)           :: spin_conserved
   logical,intent(out)           :: spin_flip
+
+  integer,intent(out)           :: nCVS(nspin)
+  integer,intent(out)           :: FC(nspin)
 
   integer,intent(out)           :: max_iter_OO
   double precision,intent(out)  :: thresh_OO
@@ -146,14 +152,18 @@ subroutine read_options(working_dir,                                            
       dosearch     = .false.
       doaordm      = .false.
       readFCIDUMP  = .false.
+      doMOM        = .false.
+      writeMOs     = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,ans1,ans2,ans3,ans4
+      read(1,*) maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,ans1,ans2,ans3,ans4,ans5,ans6
     
       if(ans1 == 'T') dostab   = .true.
       if(ans2 == 'T') dosearch = .true.
       if(ans3 == 'T') doaordm  = .true.
       if(ans4 == 'T') readFCIDUMP  = .true.
+      if(ans5 == 'T') doMOM    = .true.
+      if(ans6 == 'T') writeMOs = .true.
     
       ! Read MPn options
     
@@ -184,6 +194,11 @@ subroutine read_options(working_dir,                                            
       if(ans1 == 'T') TDA            = .true.
       if(ans2 == 'T') spin_conserved = .true.
       if(ans3 == 'T') spin_flip      = .true.
+    
+      ! Number of inactive virtuals (CVS)
+    
+      read(1,*) 
+      read(1,*) nCVS(1),nCVS(2), FC(1),FC(2)
     
       ! Read Orbital optimization options
 

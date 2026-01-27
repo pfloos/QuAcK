@@ -73,9 +73,8 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
   logical                       :: add_K_2h1p
   logical                       :: add_K_2p1h
 
-  logical                       :: add_C1_2h1p_2h1p
-  logical                       :: add_C1_2p1h_2p1h
-  logical                       :: add_C1_2h1p_2p1h
+  logical                       :: add_C1_2h1p
+  logical                       :: add_C1_2p1h
 
 ! Output variables
 
@@ -107,19 +106,18 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
 ! ADC(3)-G3W2
 
-  add_C1_2h1p_2h1p = .true.
-  add_C1_2p1h_2p1h = .true.
-  add_C1_2h1p_2p1h = .true.
+  add_C1_2h1p = .true.
+  add_C1_2p1h = .true.
 
 ! ADC-SOSEX
 
   add_U2_2h1p = .true.
   add_U2_2p1h = .true.
 
+! ADC-GW
+
   add_K_2h1p  = .true.
   add_K_2p1h  = .true.
-
-! ADC-GW
 
   add_U1_2h1p = .true.
   add_U1_2p1h = .true.
@@ -173,21 +171,17 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
     H(:,:) = 0d0
  
-    !--------------------------------------------------------------!
-    !     Compute ADC(3x)-G3W2 matrix up to 2h1p/2p1h              !
-    !--------------------------------------------------------------!
-    !                                                              !
-    !     | F      U_2h1p          U_2p1h          U_3h2p U_3p2h | ! 
-    !     |                                                      | ! 
-    ! H = | U_2h1p (K+C)_2h1p-2h1p C_2p1h-2h1p     0      0      | ! 
-    !     |                                                      | ! 
-    !     | U_2p1h C_2h1p-2p1h     (K+C)_2p1h-2p1h 0      0      | ! 
-    !     |                                                      | ! 
-    !     | U_3h2p 0               0               C_3h2p 0      | !    
-    !     |                                                      | ! 
-    !     | U_3p2h 0               0               0      C_3p2h | !
-    !                                                              !
-    !--------------------------------------------------------------!
+    !--------------------------------------!
+    !  Compute ADC(3x)-G3W2 matrix         !
+    !--------------------------------------!
+    !                                      !
+    !     | F      U_2h1p     U_2p1h     | ! 
+    !     |                              | ! 
+    ! H = | U_2h1p (K+C)_2h1p 0          | ! 
+    !     |                              | ! 
+    !     | U_2p1h 0          (K+C)_2p1h | ! 
+    !                                      !
+    !--------------------------------------!
 
     call wall_time(start_timing)
 
@@ -297,6 +291,16 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
                 H(1    ,1+ija) = H(1    ,1+ija) - 0.5d0*num*reg1*reg2
                 H(1+ija,1    ) = H(1+ija,1    ) - 0.5d0*num*reg1*reg2
 
+                num = 2d0*sqrt(2d0)*rho(k,i,nu)*rho(c,k,mu)*rho(c,p,nu)
+                dem1 = eHF(i) - eHF(c) - Om(nu) - Om(mu)
+                dem2 = eHF(c) - eHF(k) + Om(mu)
+
+                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+
+                H(1    ,1+ija) = H(1    ,1+ija) + num*reg1*reg2
+                H(1+ija,1    ) = H(1+ija,1    ) + num*reg1*reg2
+
               end do
             end do
           end do
@@ -314,6 +318,24 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
                 H(1    ,1+ija) = H(1    ,1+ija) + 0.5d0*num*reg1*reg2
                 H(1+ija,1    ) = H(1+ija,1    ) + 0.5d0*num*reg1*reg2
+
+              end do
+            end do
+          end do
+
+          do a=nO+1,nOrb-nR
+            do b=nO+1,nOrb-nR
+              do nu=1,nS
+
+                num = 2d0*sqrt(2d0)*rho(a,i,nu)*rho(b,a,mu)*rho(b,p,nu)
+                dem1 = eHF(i) - eHF(b) - Om(nu) - Om(mu)
+                dem2 = eHF(i) - eHF(a) - Om(nu)
+
+                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+
+                H(1    ,1+ija) = H(1    ,1+ija) + num*reg1*reg2
+                H(1+ija,1    ) = H(1+ija,1    ) + num*reg1*reg2
 
               end do
             end do
@@ -423,6 +445,16 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
                 H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) - 0.5d0*num*reg1*reg2
                 H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) - 0.5d0*num*reg1*reg2
 
+                num = 2d0*sqrt(2d0)*rho(a,c,nu)*rho(c,k,mu)*rho(p,k,nu)
+                dem1 = eHF(a) - eHF(k) + Om(nu) + Om(mu)
+                dem2 = eHF(k) - eHF(c) - Om(mu)
+                
+                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + num*reg1*reg2
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,p          ) + num*reg1*reg2
+
               end do
             end do
           end do
@@ -440,6 +472,24 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
                 H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + 0.5d0*num*reg1*reg2
                 H(1+n2h1p+iab,1    )       = H(1+n2h1p+iab,1          ) + 0.5d0*num*reg1*reg2
+
+              end do
+            end do
+          end do
+
+          do i=nC+1,nO
+            do j=nC+1,nO
+              do nu=1,nS
+
+                num = 2d0*sqrt(2d0)*rho(a,j,nu)*rho(j,i,mu)*rho(p,i,nu)
+                dem1 = eHF(a) - eHF(i) + Om(nu) + Om(mu)
+                dem2 = eHF(a) - eHF(j) + Om(nu)
+
+                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+
+                H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + num*reg1*reg2
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) + num*reg1*reg2
 
               end do
             end do
@@ -473,7 +523,7 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
     ! First-order terms
 
-    if(add_C1_2h1p_2h1p) then
+    if(add_C1_2h1p) then
 
       ija = 0
       do i=nC+1,nO
@@ -532,7 +582,7 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
     ! First-order terms
 
-    if(add_C1_2p1h_2p1h) then
+    if(add_C1_2p1h) then
 
       iab = 0
       do a=nO+1,nOrb-nR
@@ -563,58 +613,6 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
             end do
           end do
   
-        end do
-      end do
-
-    end if
-
-    !-------------------!
-    ! Block C_2h1p-2p1h !
-    !-------------------!
-
-    if(add_C1_2h1p_2p1h) then
-
-      ! First-order terms
-
-      ija = 0
-      do i=nC+1,nO
-        do mu=1,nS
-          ija = ija + 1
-     
-          kcd = 0
-          do a=nO+1,nOrb-nR
-            do nu=1,nS
-              kcd = kcd + 1
-     
-        
-              do k=nC+1,nO
-     
-                num = 2d0*rho(k,i,mu)*rho(a,k,nu)
-                dem = eHF(a) - eHF(k) + Om(nu)
-                reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-               
-                H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*reg
-               
-                H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*reg
-             
-     
-              end do
-             
-              do c=nO+1,nOrb-nR
-     
-                num = 2d0*rho(c,i,mu)*rho(a,c,nu)
-                dem = eHF(i) - eHF(c) - Om(mu)
-                reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-              
-                H(1+ija      ,1+n2h1p+kcd) = H(1+ija      ,1+n2h1p+kcd) + num*reg
-              
-                H(1+n2h1p+kcd,1+ija      ) = H(1+n2h1p+kcd,1+ija      ) + num*reg
-             
-              end do
-     
-            end do
-          end do
-     
         end do
       end do
 
@@ -655,7 +653,7 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A34,I3,A6)')'| ADC(3x)-G3W2 energies for orbital',p,'  |'
+    write(*,'(1X,A35,I3,A5)')'| ADC(3x)-G3W2 energies for orbital',p,'    |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP (eV)','|','Z','|'

@@ -1,4 +1,4 @@
-subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F)
 
 ! Perform unrestricted Hartree-Fock calculation
@@ -8,7 +8,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Input variables
 
-  logical,intent(in)            :: dotest
+  logical,intent(in)            :: dotest,writeMOs
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -55,6 +55,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,allocatable  :: err(:,:,:)
   double precision,allocatable  :: err_diis(:,:,:)
   double precision,allocatable  :: F_diis(:,:,:)
+  double precision,allocatable  :: tmp(:,:)
   double precision,external     :: trace_matrix
 
   integer                       :: ispin
@@ -91,6 +92,14 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
     call mo_guess(nBas,nBas,guess_type,S,Hc,X,c(:,:,ispin))
     P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
   end do
+  if(guess_type ==6) then
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:,1) = tmp
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:,2) = tmp
+    deallocate(tmp)
+  end if
 
 ! Initialization
 
@@ -253,6 +262,14 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,EK,EUHF,dipole)
 
+! Write MOs
+
+  if(writeMOs) then
+    call write_matout(nBas,nBas,c(:,:,1),'real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:,2),'real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:,1),'imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:,2),'imag_MOs_beta.dat')
+  endif
 
 ! Print test values
 

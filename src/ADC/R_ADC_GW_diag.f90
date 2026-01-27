@@ -263,10 +263,10 @@ subroutine R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A34,I3,A6)')'| ADC-GW energies (eV) for orbital',p,'     |'
+    write(*,'(1X,A29,I3,A11)')'| ADC-GW energies for orbital',p,'|'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-              '|','#','|','e_QP','|','Z','|'
+              '|','#','|','e_QP (eV)','|','Z','|'
     write(*,*)'-------------------------------------------'
  
     do s=1,nH

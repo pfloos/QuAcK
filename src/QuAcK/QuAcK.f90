@@ -4,8 +4,9 @@ program QuAcK
   include 'parameters.h'
 
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
-  logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF
-  logical                       :: doMOMRHF,doMOMUHF,doMOMROHF
+  logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF
+  logical                       :: doMOM
+  logical                       :: writeMOs
   logical                       :: dostab,dosearch,doaordm,readFCIDUMP
   logical                       :: doMP2,doMP3
   logical                       :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -34,6 +35,8 @@ program QuAcK
   integer                       :: nO(nspin)
   integer                       :: nV(nspin)
   integer                       :: nR(nspin)
+  integer                       :: nCVS(nspin)
+  integer                       :: FC(nspin)
   double precision              :: ENuc
 
   double precision,allocatable  :: ZNuc(:),rNuc(:,:)
@@ -161,33 +164,32 @@ program QuAcK
 ! Method selection !
 !------------------!
 
-  call read_methods(working_dir,                                    &
-                    doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,doeRHF,  &
-                    doMOMRHF,doMOMUHF,doMOMROHF,                    &
-                    doMP2,doMP3,                                    &
-                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,              &
-                    dodrCCD,dorCCD,docrCCD,dolCCD,                  &
-                    doCIS,doCIS_D,doCID,doCISD,doFCI,               & 
-                    dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,        &
-                    doOO,                                           &
-                    doG0F2,doevGF2,doqsGF2,                         & 
-                    doG0F3,doevGF3,                                 &
-                    doG0W0,doevGW,doqsGW,                           &
-                    doscGW,doscGF2,                                 &
-                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,          &
-                    doG0T0eh,doevGTeh,doqsGTeh,                     &
-                    doevParquet,doqsParquet,                        &
-                    do_IPEA_ADC2,do_IPEA_ADC3,                      & 
-                    do_SOSEX,do_2SOSEX,do_G3W2,                     & 
-                    do_ADC_GW,do_ADC_2SOSEX,                        &
-                    do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,        &
+  call read_methods(working_dir,                                                &
+                    doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF,       &
+                    doMP2,doMP3,                                                &
+                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                          &
+                    dodrCCD,dorCCD,docrCCD,dolCCD,                              &
+                    doCIS,doCIS_D,doCID,doCISD,doFCI,                           & 
+                    dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,                    &
+                    doOO,                                                       &
+                    doG0F2,doevGF2,doqsGF2,                                     & 
+                    doG0F3,doevGF3,                                             &
+                    doG0W0,doevGW,doqsGW,                                       &
+                    doscGW,doscGF2,                                             &
+                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                      &
+                    doG0T0eh,doevGTeh,doqsGTeh,                                 &
+                    doevParquet,doqsParquet,                                    &
+                    do_IPEA_ADC2,do_IPEA_ADC3,                                  & 
+                    do_SOSEX,do_2SOSEX,do_G3W2,                                 & 
+                    do_ADC_GW,do_ADC_2SOSEX,                                    &
+                    do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                    &
                     doRtest,doUtest,doGtest)
   
 ! Determine complex function calls  
 
-  doCAP = docRHF
-  docG0W0 = doG0W0 .and. docRHF
-  docG0F2 = doG0F2 .and. docRHF
+  doCAP   = docRHF .or. docUHF
+  docG0W0 = doG0W0 .and. doCAP
+  docG0F2 = doG0F2 .and. doCAP
 
 !--------------------------!
 ! Read options for methods !
@@ -196,9 +198,9 @@ program QuAcK
 
   call read_options(working_dir,                                                                         &
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
-                    readFCIDUMP,reg_MP,                                                                  &
+                    readFCIDUMP,doMOM,writeMOs,reg_MP,                                                   &
                     maxSCF_CC,thresh_CC,max_diis_CC,                                                     &
-                    TDA,spin_conserved,spin_flip,                                                        &
+                    TDA,spin_conserved,spin_flip,nCVS,FC,                                                &
                     max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
                     maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
@@ -235,6 +237,7 @@ program QuAcK
 ! nR   = number of Rydberg orbitals  !
 ! nBas = number of basis functions   !
 ! nOrb = number of orbitals          !
+! nCSV = number of frozen virtuals   !
 !------------------------------------!
 
   call read_molecule(working_dir,nNuc,nO,nC,nR)
@@ -267,12 +270,10 @@ program QuAcK
     allocate(CAP(0,0))
   end if
 
-! Read occupations for MOM
+! Read occupations for MOM or initialize as 1,...,nO
 
-if(doMOMRHF .or. doMOMROHF .or. doMOMUHF) then
   allocate(mom_occupations(maxval(nO),nspin)) 
-  call read_mom_occupations(working_dir,nO,mom_occupations)
-end if
+  call read_mom_occupations(working_dir,nO,doMOM,mom_occupations)
 
 ! Read integrals
 
@@ -312,10 +313,10 @@ end if
 !---------------------!
 
   doRQuAcK = .false.
-  if(doRHF .or. doROHF .or. docRHF .or. doMOMRHF .or. doMOMROHF) doRQuAcK = .true.
+  if(doRHF .or. doROHF .or. docRHF ) doRQuAcK = .true.
 
   doUQuAcK = .false.
-  if(doUHF .or. doMOMUHF) doUQuAcK = .true.
+  if(doUHF .or. docUHF) doUQuAcK = .true.
 
   doGQuAcK = .false.
   if(doGHF) doGQuAcK = .true.
@@ -349,8 +350,7 @@ end if
                       TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                  &
                       dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
     else
-      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,                                                   &
-                  doMOMRHF,doMOMROHF,                                                                                       &
+      call RQuAcK(working_dir,use_gpu,doRtest,doRHF,doROHF,docRHF,doeRHF,doMOM,                                             &
                   dostab,dosearch,doaordm,                                                                                  &
                   doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                            &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     &
@@ -360,9 +360,9 @@ end if
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                                     &
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
-                  nNuc,nBas,nOrb,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                                &
+                  nNuc,nBas,nOrb,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                                           &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
-                  mom_occupations,                                                                                          &
+                  mom_occupations,writeMOs,                                                                                 &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                       &
                   max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                          &
                   maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,           &
@@ -380,15 +380,16 @@ end if
 !---------------------------!
 
   if(doUQuAcK) &
-    call UQuAcK(working_dir,doUtest,doUHF,doMOMUHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,&
-                dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA, &
-                doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                      &
-                doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,        & 
-                readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,                                                &
-                S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,mom_occupations,            &
-                guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,              &
-                maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,  &
-                TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,           &
+          call UQuAcK(working_dir,doUtest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,   &
+                dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,              &
+                doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doG0W0,doevGW,doqsGW,                                                   &
+                doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                     &
+                doCAP,                                                                                                        &
+                readFCIDUMP,nNuc,nBas,nC,nO,nV,nR,nCVS,FC,ENuc,ZNuc,rNuc,                                                     &
+                S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,mom_occupations,writeMOs,            &
+                guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                           &
+                maxSCF_GF,max_diis_GF,renorm_GF,thresh_GF,lin_GF,reg_GF,eta_GF,maxSCF_GW,max_diis_GW,thresh_GW,               &
+                TDA_W,lin_GW,reg_GW,eta_GW,maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,                        &
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS)
 
 !--------------------------!

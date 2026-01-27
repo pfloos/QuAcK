@@ -1,4 +1,4 @@
-subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine MOM_ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot,occupationsGuess)
 
 ! Perform restricted open-shell Hartree-Fock calculation
@@ -8,7 +8,7 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
 ! Input variables
 
-  logical,intent(in)            :: dotest
+  logical,intent(in)            :: dotest,writeMOs
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -56,14 +56,13 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
+  double precision,allocatable  :: tmp(:,:)
   double precision,external     :: trace_matrix
 
   integer                       :: ispin
 
   integer,allocatable           :: occupations(:,:)
   double precision,allocatable  :: cGuess(:,:)
-  double precision,allocatable  :: O(:,:)
-  double precision,allocatable  :: projO(:)
   integer                       :: i
 
 ! Output variables
@@ -77,9 +76,9 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 ! Hello world
 
   write(*,*)
-  write(*,*)'****************************************'
-  write(*,*)'* Restricted Open-Shell HF Calculation *'
-  write(*,*)'****************************************'
+  write(*,*)'***************************************************************'
+  write(*,*)'* Maximum Overlap Method Restricted Open-Shell HF Calculation *'
+  write(*,*)'***************************************************************'
   write(*,*)
 
 
@@ -101,17 +100,22 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
-  allocate(cGuess(nBas,nOrb),O(nOrb,nOrb),projO(nOrb),occupations(maxval(nO),nspin)) 
+  allocate(cGuess(nBas,nOrb), occupations(maxval(nO),nspin)) 
 
 ! Guess coefficients and density matrices
 
+! Guess coefficients and density matrix
+  if(guess_type ==6) then
+    ! Read MO Coefficients from file
+    print *, "Reading MO Coefficients from MOs dir..."
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:) = tmp
+    deallocate(tmp)
+  end if
   cGuess = c
   occupations = occupationsGuess
   
-  if(occupations(nO(1),1)==0) then
-    print *, "Number of alpha electrons has to be >= Number of beta electrons !"
-    stop
-  end if
   print *, "Ground state orbital occupations for MOM-guess:"
   print *, "Alpha:"
   print *, occupationsGuess(1:nO(1),1)
@@ -119,8 +123,8 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   print *, occupationsGuess(1:nO(2),2)
   
   do ispin = 1,nspin
-    P(:,:,ispin) = matmul(cGuess(:,occupationsGuess(1:nO(ispin),ispin)),&
-                transpose(c(:,occupationsGuess(1:nO(ispin),ispin))))
+    P(:,:,ispin) = matmul(c(:,occupations(1:nO(ispin),ispin)),&
+                transpose(c(:,occupations(1:nO(ispin),ispin))))
   end do
 
   Ptot(:,:) = P(:,:,1) + P(:,:,2)
@@ -132,7 +136,6 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
   rcond         = 0d0
-  occupations(:,:) = occupationsGuess(:,:)
 
   nSCF = 0
   Conv = 1d0
@@ -215,15 +218,15 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
     end if
 
-!!   Level-shifting
-!
-!    if(level_shift > 0d0 .and. Conv > thresh) then
-!
-!      do ispin=1,nspin
-!        call level_shifting(level_shift,nBas,nOrb,maxval(nO),S,c,Ftot)
-!      end do
-!
-!    end if
+!   Level-shifting
+
+    if(level_shift > 0d0 .and. Conv > thresh) then
+
+      do ispin=1,nspin
+        call level_shifting(level_shift,nBas,nOrb,maxval(nO),S,c,Ftot)
+      end do
+
+    end if
 
 !  Transform Fock matrix in orthogonal basis
 
@@ -238,21 +241,10 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 
     c(:,:) = matmul(X(:,:),cp(:,:))
 
-!   Projected overlap
+!   Compute mom occupations and the resulting density matrix
     do ispin = 1,nspin 
-      O = matmul(matmul(transpose(cGuess),S),c)
-      projO(:) = 0d0
-      do i=1,nO(ispin)
-        projO(:) = projO(:) + O(occupationsGuess(i,ispin),:)**2 
-      end do
-
-      ! Select orbitals with maximum overlap
-      call MOM_idx(nO(ispin),nOrb,projO,occupations(1:nO(ispin),ispin))
-    end do
-    
-    do ispin = 1,nspin
-      P(:,:,ispin) = matmul(c(:,occupations(1:nO(ispin),ispin)),&
-                  transpose(c(:,occupations(1:nO(ispin),ispin))))
+      call MOM_density_matrix(nBas, nOrb, nO(ispin), S, c(:,:), cGuess(:,:), &
+                              occupations(:,ispin), occupationsGuess(:,ispin), P(:,:,ispin))
     end do
     Ptot(:,:) = P(:,:,1) + P(:,:,2) 
 
@@ -286,12 +278,16 @@ subroutine MOMROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc
 ! Compute final UHF energy
 
   call dipole_moment(nBas,Ptot,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_ROHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EROHF,dipole)
-  print *, "Orbital occupations for MOMROHF"
-  print *, "Alpha:"
-  print *, occupations(1:nO(1),1)
-  print *, "Beta:"
-  print *, occupations(1:nO(2),2)
+  call print_MOM_ROHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EROHF,dipole,occupations)
+  
+! Write MOs
+
+  if(writeMOs) then
+    call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
+  endif
 
 ! Print test values
 

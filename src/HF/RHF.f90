@@ -1,4 +1,4 @@
-subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F)
 
 ! Perform restricted Hartree-Fock calculation
@@ -8,7 +8,7 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
 
 ! Input variables
 
-  logical,intent(in)            :: dotest
+  logical,intent(in)            :: dotest,writeMOs
   logical,intent(in)            :: doaordm
 
   integer,intent(in)            :: maxSCF
@@ -59,6 +59,7 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
   double precision,allocatable  :: J(:,:)
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: cp(:,:)
+  double precision,allocatable  :: tmp(:,:)
   double precision,allocatable  :: Fp(:,:)
 
 ! Output variables
@@ -110,6 +111,14 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
     close(314)
    endif
   endif
+  if(guess_type == 6) then
+    ! Read MO Coefficients from file
+    print *, "Reading MO Coefficients from MOs dir..."
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:) = tmp
+    deallocate(tmp)
+  end if
 
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
 !            c(1,1), nBas, c(1,1), nBas,     &
@@ -244,6 +253,15 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,nNuc
 ! Print the 1-RDM and 2-RDM in AO basis
   if(doaordm) then
    call print_RHF_AO_rdms(nBas,ENuc,S,T,V,P,ERI)
+  endif
+
+! Write MOs
+
+  if(writeMOs) then
+    call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
   endif
 
 ! Testing zone

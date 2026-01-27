@@ -142,6 +142,9 @@ class Quack_Job:
                     command, stdout=fobj, stderr=subprocess.PIPE, text=True)
             if result.stderr:
                 print("Error output:", result.stderr)
+                print("QuAcK output of failed test:")
+                with open(file_out, 'r') as fobj:
+                    print(fobj.read())
                 sys.exit(1)
 
             os.chdir('tests')

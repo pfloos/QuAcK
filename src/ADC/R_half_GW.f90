@@ -1,6 +1,6 @@
-subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson version of ADC-GW for IPs
+! Half-and-half version of GW in the 1h+1p space
 
   implicit none
   include 'parameters.h'
@@ -31,13 +31,13 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   integer                       :: a,b,c,d
   integer                       :: mu
   integer                       :: klc,kcd,ija,iab
-  double precision              :: num,dem
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
   integer                       :: ispin
   double precision              :: EcRPA
-  integer                       :: n2h1p,nH
+  integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGW(:)
@@ -67,14 +67,15 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************'
-  write(*,*)'* Restricted IP-ADC-GW Calculation *'
-  write(*,*)'************************************'
+  write(*,*)'*************************************************'
+  write(*,*)'* Restricted 1h+1p-half-and-half-GW Calculation *'
+  write(*,*)'*************************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
+  n2p1h = nV*nV*nO
   nH = nOrb + n2h1p
 
 ! Memory allocation
@@ -140,15 +141,17 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   H(:,:) = 0d0
 
-  !------------------------------!
-  ! Compute IP-ADC-GW matrix     !
-  !------------------------------!
-  !                              !
-  !     | F      U_2h1p        | !
-  ! H = |                      | ! 
-  !     | U_2h1p (K+C)_2h1p    | !
-  !                              !
-  !------------------------------!
+  !--------------------------------------!
+  !     Compute ADC-GW matrix            !
+  !--------------------------------------!
+  !                                      !
+  !     | F      U_2h1p     U_2p1h     | ! 
+  !     |                              | ! 
+  ! H = | U_2h1p (K+C)_2h1p 0          | ! 
+  !     |                              | ! 
+  !     | U_2p1h 0          (K+C)_2p1h | ! 
+  !                                      !
+  !--------------------------------------!
 
   call wall_time(start_timing)
 
@@ -178,7 +181,9 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
           num = 2d0*rho(p,a,mu)*rho(q,a,mu)
           dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
-          H(p,q) = H(p,q) + num/dem
+          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+          H(p,q) = H(p,q) + num*reg
 
         end do
       end do
@@ -214,7 +219,7 @@ subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
     do mu=1,nS
       ija = ija + 1
 
-      H(nOrb+ija,nOrb+ija) = eHF(i) - Om(mu) 
+      H(nOrb+ija,nOrb+ija) = eHF(i) - Om(mu)
 
     end do
   end do

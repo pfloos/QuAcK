@@ -76,7 +76,11 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 500d0
+  double precision,parameter    :: flow = 1d6
+
+  logical                       :: do_hierarchy_GW = .true.
+  logical                       :: do_1h1p,do_1h,do_diag
+  logical                       :: do_full_freq,do_half_half, do_pure_stat
 
 ! Output variables
   
@@ -87,6 +91,9 @@ subroutine R_ADC(dotest,                                               &
             do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
 
   do_EE   = .false.
+
+  write(*,'(A40,E15.10)') 'Flow parameter for SRG regularization = ',flow
+  write(*,*) 
 
 !=========================================!
 ! Charged excitation branch of ADC module !
@@ -211,6 +218,47 @@ subroutine R_ADC(dotest,                                               &
   ! Perform ADC-GW calculation !
   !----------------------------!
 
+    do_1h1p = .true.
+    do_1h   = .false.
+    do_diag = .false.
+
+    do_full_freq = .false.
+    do_half_half = .false.
+    do_pure_stat = .true.
+
+    if(do_hierarchy_GW) then 
+      
+
+      call wall_time(start_ADC)
+      if(do_1h1p) then
+          if(do_full_freq) call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          if(do_half_half) call R_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          if(do_pure_stat) call R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
+
+      if(do_1h) then
+          if(do_full_freq) call R_IP_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          if(do_half_half) call R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          if(do_pure_stat) call R_IP_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
+
+      if(do_diag) then
+          if(do_full_freq) call R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          if(do_half_half) call R_diag_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          if(do_pure_stat) call R_diag_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+      end if
+      call wall_time(end_ADC)
+    
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-GW = ',t_ADC,' seconds'
+      write(*,*)
+ 
+    end if
+  
+  !----------------------------!
+  ! Perform ADC-GW calculation !
+  !----------------------------!
+
     if(do_ADC_GW) then 
       
       call wall_time(start_ADC)
@@ -219,15 +267,15 @@ subroutine R_ADC(dotest,                                               &
         if(diag_approx) then
           call R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       else
 
         if(diag_approx) then
-          print*, 'Diagonal version of IP-ADC-GW not yet implemented'
+!         call R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          call R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         call R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       end if
@@ -313,7 +361,7 @@ subroutine R_ADC(dotest,                                               &
       if(do_dyson) then
 
         if(diag_approx) then
-           call R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
           call R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if

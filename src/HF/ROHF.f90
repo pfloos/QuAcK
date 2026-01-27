@@ -1,4 +1,4 @@
-subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
                 nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot)
 
 ! Perform restricted open-shell Hartree-Fock calculation
@@ -8,7 +8,7 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
 ! Input variables
 
-  logical,intent(in)            :: dotest
+  logical,intent(in)            :: dotest,writeMOs
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -55,6 +55,7 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
+  double precision,allocatable  :: tmp(:,:)
   double precision,external     :: trace_matrix
 
   integer                       :: ispin
@@ -96,6 +97,14 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 ! Guess coefficients and density matrices
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
+  if(guess_type ==6) then
+    ! Read MO Coefficients from file
+    print *, "Reading MO Coefficients from MOs dir..."
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:) = tmp
+    deallocate(tmp)
+  end if
 
   do ispin = 1,nspin
     !P(:,:,ispin) = matmul(c(:,1:nO(ispin)), transpose(c(:,1:nO(ispin))))
@@ -253,6 +262,15 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZN
 
   call dipole_moment(nBas,Ptot,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_ROHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,EROHF,dipole)
+
+! Write MOs
+
+  if(writeMOs) then
+    call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
+  endif
 
 ! Print test values
 

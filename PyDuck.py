@@ -83,8 +83,8 @@ lines = f.read().splitlines()
 nbAt = int(lines.pop(0))
 lines.pop(0)
 list_pos_atom = []
-for line in lines:
-    tmp = line.split()
+for i in range(nbAt):
+    tmp = lines[i].split()
     atom = tmp[0]
     pos = (float(tmp[1]), float(tmp[2]), float(tmp[3]))
     list_pos_atom.append([atom, pos])
@@ -346,9 +346,11 @@ gc.collect()
 subprocess.call([QuAcK_dir + '/bin/QuAcK', working_dir])
 
 if dump_molden:
-    real_mo_coeff = np.loadtxt('real_MOs.dat')
-    imag_mo_coeff = np.loadtxt('imag_MOs.dat')
-    subprocess.call(['rm', 'real_MOs.dat'])
-    subprocess.call(['rm', 'imag_MOs.dat'])
-    molden.from_mo(mol, "real_MOs.molden", real_mo_coeff)
-    molden.from_mo(mol, "imag_MOs.molden", imag_mo_coeff)
+    real_mo_coeff = np.loadtxt('real_MOs_alpha.dat')
+    imag_mo_coeff = np.loadtxt('imag_MOs_alpha.dat')
+    molden.from_mo(mol, "real_MOs_alpha.molden", real_mo_coeff)
+    molden.from_mo(mol, "imag_MOs_alpha.molden", imag_mo_coeff)
+    real_mo_coeff = np.loadtxt('real_MOs_beta.dat')
+    imag_mo_coeff = np.loadtxt('imag_MOs_beta.dat')
+    molden.from_mo(mol, "real_MOs_beta.molden", real_mo_coeff)
+    molden.from_mo(mol, "imag_MOs_beta.molden", imag_mo_coeff)
