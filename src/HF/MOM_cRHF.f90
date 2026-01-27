@@ -192,7 +192,7 @@ subroutine MOM_cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMO
 
     ! Density matrix with MOM
     call complex_MOM_density_matrix(nBas, nBas, nO, S, c, cGuess, occupations, occupationsGuess, P)
-
+    P = 2*P
     ! Dump results
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,A1,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
