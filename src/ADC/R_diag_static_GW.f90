@@ -68,7 +68,7 @@ subroutine R_diag_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 
   write(*,*)
   write(*,*)'************************************************'
-  write(*,*)'* Restricted diag-half-and-half-GW Calculation *'
+  write(*,*)'* Restricted diag-static-GW Calculation *'
   write(*,*)'************************************************'
   write(*,*)
 
