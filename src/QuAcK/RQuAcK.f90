@@ -571,11 +571,24 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
   CVS = any(nCVS>0)
 
-  if(doRPA) then
+  if(doRPA .and. doRHF) then
 
     call wall_time(start_RPA)
     call RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS, &
               nOrb,nC,nO,nV,nR,nS,nCVS(1),ENuc,ERHF,ERI_MO,dipole_int_MO,eHF,mom_occupations(:,1))
+    call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RPA = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
+  
+  if(doRPA .and. docRHF) then
+
+    call wall_time(start_RPA)
+    call complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS, &
+              nOrb,nC,nO,nV,nR,nS,nCVS(1),ENuc,complex_ERHF,complex_ERI_MO,complex_dipole_int_MO,complex_eHF,mom_occupations(:,1))
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

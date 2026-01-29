@@ -443,7 +443,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
   doRPA = dophRPA .or. dophRPAx .or. docrRPA .or. doppRPA
   CVS = any(nCVS>0) .or. any(FC>0)
   
-  if(doRPA) then
+  if(doRPA .and. doUHF) then
 
     call wall_time(start_RPA)
     call URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,CVS,  & 
@@ -457,6 +457,19 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
 
   end if
 
+  if(doRPA .and. docUHF) then
+
+    call wall_time(start_RPA)
+    call complex_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,CVS,  & 
+              nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,complex_EUHF,complex_ERI_aaaa,complex_ERI_aabb,complex_ERI_bbbb,&
+              complex_dipole_int_aa,complex_dipole_int_bb,complex_eHF,complex_cHF,S,mom_occupations)
+    call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
 !-------------------------!
 ! Green's function module !
 !-------------------------!

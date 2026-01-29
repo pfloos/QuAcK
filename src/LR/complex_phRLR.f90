@@ -17,7 +17,6 @@ subroutine complex_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
   complex*16,external           :: complex_trace_matrix
   complex*16                    :: t1, t2
   complex*16,allocatable        :: RPA_matrix(:,:)
-  complex*16,allocatable        :: Z(:,:)
   complex*16,allocatable        :: OmOmminus(:)
 
 ! Output variables
