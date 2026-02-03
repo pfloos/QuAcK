@@ -21,7 +21,7 @@ subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
   logical,intent(in)            :: exchange_kernel
   logical,intent(in)            :: spin_conserved
   logical,intent(in)            :: spin_flip
-  logical,intent(inout)            :: CVS
+  logical,intent(in)            :: CVS
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
   integer,intent(in)            :: nO(nspin)
@@ -45,8 +45,6 @@ subroutine URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_ker
 ! Local variables
 
   double precision              :: start_RPA    ,end_RPA      ,t_RPA
-  
-  CVS = .true.
   
   if(.not. dophRPA .and. .not. dophRPAx .and. CVS) then
     print *, "CVS is only implemented for phRPA sry... MOM and RPA is only available for this case."
