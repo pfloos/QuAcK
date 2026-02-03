@@ -90,7 +90,6 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs
 
   do ispin=1,nspin
     call mo_guess(nBas,nBas,guess_type,S,Hc,X,c(:,:,ispin))
-    P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
   end do
   if(guess_type ==6) then
     allocate(tmp(nBas,nBas))
@@ -100,6 +99,9 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs
     c(:,:,2) = tmp
     deallocate(tmp)
   end if
+  do ispin=1,nspin
+    P(:,:,ispin) = matmul(c(:,1:nO(ispin),ispin),transpose(c(:,1:nO(ispin),ispin)))
+  end do
 
 ! Initialization
 

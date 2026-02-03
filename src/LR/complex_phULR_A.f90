@@ -62,7 +62,7 @@ subroutine complex_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occu
         do j=1,nO(1) - nFC(1)
           do b=nCVS(1)+1,nBas - nO(1)
             jb = jb + 1
- 
+            
             Aph(ia,jb) = (eHF(virtuals(a,1),1) - eHF(occupations(i,1),1))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
                        + lambda*ERI_aaaa(occupations(i,1),virtuals(b,1),virtuals(a,1),occupations(j,1)) &
                        - (1d0 - delta_dRPA)*lambda*ERI_aaaa(occupations(i,1),virtuals(b,1),occupations(j,1),virtuals(a,1))

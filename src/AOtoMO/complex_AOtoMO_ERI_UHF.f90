@@ -30,25 +30,25 @@ subroutine complex_AOtoMO_ERI_UHF(bra,ket,nBas,c,ERI_AO,ERI_MO)
   
   ! Four-index transform via semi-direct O(N^5) algorithm
   
-  call zgemm( 'T', 'N', nBas**3, nBas, nBas, (1.d0,0.d0) &
-            , complex_ERI_AO(1,1,1,1), nBas, c(1,1,bra), nBas&
+  call zgemm( 'T', 'N', nBas*nBas*nBas, nBas, nBas, (1.d0,0.d0) &
+            , complex_ERI_AO(1,1,1,1), nBas, c(1,1,bra), size(c,1)&
             , (0.d0,0.d0), a2(1,1,1,1), nBas*nBas*nBas)
   deallocate(complex_ERI_AO)
   allocate(a1(nBas,nBas,nBas,nBas))
   call zgemm( 'T', 'N', nBas*nBas*nBas, nBas, nBas, (1.d0,0.d0) &
-            , a2(1,1,1,1), nBas, c(1,1,ket), nBas            &
+            , a2(1,1,1,1), nBas, c(1,1,ket), size(c,1)            &
             , (0.d0,0.d0), a1(1,1,1,1), nBas*nBas*nBas)
   
   deallocate(a2)
   allocate(a2(nBas,nBas,nBas,nBas))
   
-  call zgemm( 'T', 'N', nBas**3, nBas, nBas, (1.d0,0.d0) &
-            , a1(1,1,1,1), nBas, c(1,1,bra), nBas            &
+  call zgemm( 'T', 'N', nBas*nBas*nBas, nBas, nBas, (1.d0,0.d0) &
+            , a1(1,1,1,1), nBas, c(1,1,bra), size(c,1)           &
             , (0.d0,0.d0), a2(1,1,1,1), nBas*nBas*nBas)
   
   deallocate(a1)
   
-  call zgemm( 'T', 'N', nBas**3, nBas, nBas, (1.d0,0.d0) &
+  call zgemm( 'T', 'N', nBas*nBas*nBas, nBas, nBas, (1.d0,0.d0) &
             , a2(1,1,1,1), nBas, c(1,1,ket), nBas            &
             , (0.d0,0.d0), ERI_MO(1,1,1,1), nBas*nBas*nBas)
   

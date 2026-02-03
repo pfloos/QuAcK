@@ -98,7 +98,6 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 ! Guess coefficients and density matrix
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
-  P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
   if(guess_type == 5) then
    inquire(file='P_ao_bin', exist=file_exists)
    if(file_exists) then
@@ -120,6 +119,7 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
     c(:,:) = tmp
     deallocate(tmp)
   end if
+  P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
 
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
 !            c(1,1), nBas, c(1,1), nBas,     &

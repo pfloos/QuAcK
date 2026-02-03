@@ -142,7 +142,7 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
 
     call complex_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc, virtuals,&
                             lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc, virtuals,&
+    if(.not.TDA) call complex_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc, virtuals,&
                              lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     call complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
@@ -168,14 +168,14 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
 
     allocate(Aph(nSt,nSt),Bph(nSt,nSt),Om(nSt),XpY(nSt,nSt),XmY(nSt,nSt))
 
-    call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,&
+    call complex_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,&
                      lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,&
+    if(.not.TDA) call complex_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,&
                                   lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-    call phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
-    call CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+    call complex_phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    call complex_print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
+    call complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
