@@ -11,7 +11,7 @@ subroutine print_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF)
   integer,intent(in)                 :: nO(nspin)
   complex*16,intent(in)              :: eHF(nBas,nspin)
   complex*16,intent(in)              :: c(nBas,nBas,nspin)
-  complex*16,intent(in)              :: ENuc
+  double precision,intent(in)        :: ENuc
   complex*16,intent(in)              :: ET(nspin)
   complex*16,intent(in)              :: EV(nspin)
   complex*16,intent(in)              :: EJ(nsp)
@@ -55,7 +55,7 @@ subroutine print_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF)
   write(*,'(A40,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Exchange      b energy = ',real(Ex(2)),'+',aimag(Ex(2)),'i',' au'
   write(*,'(A79)')              '---------------------------------------------------------------------------------'
   write(*,'(A40,1X,F16.10,1X,A1,F16.10,A1,A3)') ' Electronic   energy = ',real(EUHF),'+',aimag(EUHF),'i',' au'
-  write(*,'(A40,1X,F16.10,18X,A3)') ' Nuclear   repulsion = ',ENuc,' au'
+  write(*,'(A40,1X,F16.10,19X,A3)') ' Nuclear   repulsion = ',ENuc,' au'
   write(*,'(A40,1X,F16.10,1X,A1,F16.10,A1,A3)') ' cUHF         energy = ',real(EUHF + ENuc),'+',aimag(EUHF+ENuc),'i',' au'
   write(*,'(A79)')              '---------------------------------------------------------------------------------'
   write(*,*)
