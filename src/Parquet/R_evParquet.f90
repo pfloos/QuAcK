@@ -295,11 +295,11 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       else
 
-        call R_eh_singlet_Gamma_A(nOrb,nC,nO,nR,nS,                        &
+        call R_eh_singlet_Gamma_A(nOrb,nC,nO,nR,nS,                           &
              old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
              eh_sing_Gam_A)
        
-        if(.not.TDAeh) call R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS,                        &
+        if(.not.TDAeh) call R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS,                           &
                             old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, & 
                             eh_sing_Gam_B)
 
@@ -307,7 +307,6 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
      
       Aph(:,:) = Aph(:,:) + eh_sing_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_sing_Gam_B(:,:)  
-      
 
       call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_sing_Om,sing_XpY,sing_XmY)
 
@@ -397,7 +396,6 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
                 + size(hh_sing_Om) + size(X2s) + size(Y2s) &
                 + size(pp_sing_Gam_B) + size(pp_sing_Gam_C) + size(pp_sing_Gam_D)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
-
 
       ispin = 1
       Bpp(:,:) = 0d0
