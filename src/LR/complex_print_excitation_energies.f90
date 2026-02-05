@@ -14,7 +14,7 @@ subroutine complex_print_excitation_energies(method,manifold,nS,Om)
 
 ! Local variables
 
-  integer,parameter                  :: maxS = 50
+  integer,parameter                  :: maxS = 300
   integer                            :: m
 
   write(*,*)
