@@ -1,5 +1,5 @@
 subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
-                    nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
+                       nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
 
 ! Parquet approximation with eigenvalue self-consistency based on spatial orbitals
 
@@ -105,6 +105,13 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   double precision,allocatable  :: Phi(:)
 
   integer                       :: p,q,r,s,pqrs
+
+  logical                       :: do_1eh_BSE = .true.
+  logical                       :: do_3eh_BSE = .false.
+  logical                       :: do_1pp_BSE = .false.
+  logical                       :: do_3pp_BSE = .false.
+
+  logical                       :: eh_dRPA = .true.
   
 ! Output variables
 ! None
@@ -278,8 +285,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       call wall_time(start_t)
 
-                     call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
-      if(.not.TDAeh) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                     call phRLR_A(ispin,eh_dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
+      if(.not.TDAeh) call phRLR_B(ispin,eh_dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
       if(n_it_1b == 1 .and. n_it_2b == 1) then
 
@@ -336,8 +343,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       call wall_time(start_t)
 
-                     call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
-      if(.not.TDAeh) call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                     call phRLR_A(ispin,eh_dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
+      if(.not.TDAeh) call phRLR_B(ispin,eh_dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
       if(n_it_1b == 1 .and. n_it_2b == 1) then
 
@@ -608,7 +615,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing singlet eh reducible kernel...'
 
       call wall_time(start_t)
-      call R_eh_singlet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,0d0,eh_sing_Phi)
+      if(do_1eh_BSE) &
+        call R_eh_singlet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_sing_Om,eh_sing_rho,0d0,eh_sing_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh reducible kernel =',t,' seconds'
@@ -618,7 +626,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing triplet eh reducible kernel...'
 
       call wall_time(start_t)
-      call R_eh_triplet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,0d0,eh_trip_Phi)
+      if(do_3eh_BSE) &
+        call R_eh_triplet_Phi(eta_2b,nOrb,nC,nR,nS,old_eh_trip_Om,eh_trip_rho,0d0,eh_trip_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh reducible kernel =',t,' seconds'
@@ -628,7 +637,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing singlet pp reducible kernel...'
 
       call wall_time(start_t)
-      call R_pp_singlet_Phi(eta_2b,nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,0d0,pp_sing_Phi)
+      if(do_1pp_BSE) &
+        call R_pp_singlet_Phi(eta_2b,nOrb,nC,nR,nOOs,nVVs,old_ee_sing_Om,ee_sing_rho,old_hh_sing_Om,hh_sing_rho,0d0,pp_sing_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp reducible kernel =',t,' seconds'
@@ -638,7 +648,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing triplet pp reducible kernel...'
       
       call wall_time(start_t)
-      call R_pp_triplet_Phi(eta_2b,nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,0d0,pp_trip_Phi)
+      if(do_3pp_BSE) &
+        call R_pp_triplet_Phi(eta_2b,nOrb,nC,nR,nOOt,nVVt,old_ee_trip_Om,ee_trip_rho,old_hh_trip_Om,hh_trip_rho,0d0,pp_trip_Phi)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp reducible kernel =',t,' seconds'
@@ -785,11 +796,11 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     write(*,*)
 
     call wall_time(start_t)
-    call R_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI,  &
-                               eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
-                               ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
-                               hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
-                               EcGM,SigC,Z)
+    call R_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI, &
+                                    eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,   &
+                                    ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,   &
+                                    hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,   &
+                                    EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
     write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
@@ -869,11 +880,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   
   ! Plot self-energy, renormalization factor, and spectral function
 
-  if(plot_self) call R_Parquet_plot_self_energy(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI, &
-                              eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,   &
-                              ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,   &
-                              hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,   &
-                              eHF,eQP)
+  if(plot_self) & 
+    call R_Parquet_plot_self_energy(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI,           &
+                                    eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
+                                    ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
+                                    hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                                    eHF,eQP)
 
   if (plot_phi) then
   
