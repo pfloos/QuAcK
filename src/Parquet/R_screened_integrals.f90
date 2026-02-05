@@ -16,7 +16,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   integer                       :: ia,jb,p,q,j,b
   double precision,allocatable  :: X(:,:),Y(:,:)
   double precision,allocatable  :: Gamma_eh_bj(:,:,:),Gamma_eh_jb(:,:,:)
-  double precision              :: Kx = 0d0
+  double precision              :: Kx = 1d0
 
 ! Output variables
   double precision,intent(out)  :: rho(nOrb,nOrb,nS)

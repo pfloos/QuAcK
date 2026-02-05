@@ -107,11 +107,11 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   integer                       :: p,q,r,s,pqrs
 
   logical                       :: do_1eh_BSE = .true.
-  logical                       :: do_3eh_BSE = .false.
-  logical                       :: do_1pp_BSE = .false.
-  logical                       :: do_3pp_BSE = .false.
+  logical                       :: do_3eh_BSE = .true.
+  logical                       :: do_1pp_BSE = .true.
+  logical                       :: do_3pp_BSE = .true.
 
-  logical                       :: eh_dRPA = .true.
+  logical                       :: eh_dRPA = .false.
   
 ! Output variables
 ! None

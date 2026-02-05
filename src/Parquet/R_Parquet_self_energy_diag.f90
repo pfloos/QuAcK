@@ -54,9 +54,9 @@ subroutine R_Parquet_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVV
   logical                       :: do_2d_channel  = .true.
   logical                       :: do_2x_channel  = .true.
   logical                       :: do_1eh_channel = .true.
-  logical                       :: do_3eh_channel = .false.
-  logical                       :: do_1pp_channel = .false.
-  logical                       :: do_3pp_channel = .false.
+  logical                       :: do_3eh_channel = .true.
+  logical                       :: do_1pp_channel = .true.
+  logical                       :: do_3pp_channel = .true.
   double precision              :: Kx = 1d0
 
 ! Output variables
