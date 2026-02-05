@@ -1,6 +1,6 @@
 subroutine complex_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,CVS, &  
                 nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF,ERI_aaaa,ERI_aabb,ERI_bbbb,&
-                dipole_int_aa,dipole_int_bb,eHF,cHF,S,occupations)
+                dipole_int_aa,dipole_int_bb,CAP_MO,eHF,cHF,S,occupations)
 
 ! Random-phase approximation module
 
@@ -35,6 +35,7 @@ subroutine complex_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
   complex*16,intent(in)         :: EUHF
   complex*16,intent(in)         :: eHF(nBas,nspin)
   complex*16,intent(in)         :: cHF(nBas,nBas,nspin)
+  complex*16,intent(in)         :: CAP_MO(nBas,nBas,nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   complex*16 ,intent(in)        :: ERI_aaaa(nBas,nBas,nBas,nBas)
   complex*16 ,intent(in)        :: ERI_aabb(nBas,nBas,nBas,nBas)
@@ -54,7 +55,7 @@ subroutine complex_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
 
     call wall_time(start_RPA)
     call complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, &
-                ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,occupations)
+                ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,CAP_MO,eHF,cHF,S,occupations)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

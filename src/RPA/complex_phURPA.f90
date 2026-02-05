@@ -1,5 +1,5 @@
 subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, & 
-                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,c,S,occupations)
+                  ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,CAP_MO,eHF,c,S,occupations)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
 
@@ -35,6 +35,7 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
   complex*16,intent(in)         :: ERI_bbbb(nBas,nBas,nBas,nBas)
   complex*16,intent(in)         :: dipole_int_aa(nBas,nBas,ncart)
   complex*16,intent(in)         :: dipole_int_bb(nBas,nBas,ncart)
+  complex*16,intent(in)         :: CAP_MO(nBas,nBas,nspin)
 
 ! Local variables
 

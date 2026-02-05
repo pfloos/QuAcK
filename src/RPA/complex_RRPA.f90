@@ -1,5 +1,5 @@
 subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS,&
-                nBas,nC,nO,nV,nR,nS,nCVS,ENuc,ERHF,ERI,dipole_int,eHF,occupations)
+                nBas,nC,nO,nV,nR,nS,nCVS,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF,occupations)
 
 ! Random-phase approximation module
 
@@ -36,6 +36,7 @@ subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doAC
   complex*16,intent(in)         :: eHF(nBas)
   complex*16,intent(in)         :: ERI(nBas,nBas,nBas,nBas)
   complex*16,intent(in)         :: dipole_int(nBas,nBas,ncart)
+  complex*16,intent(in)         :: CAP_MO(nBas,nBas)
 
 ! Local variables
 
@@ -52,7 +53,7 @@ subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doAC
   if(dophRPA) then
 
     call wall_time(start_RPA)
-    call complex_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+    call complex_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

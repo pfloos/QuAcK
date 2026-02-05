@@ -462,7 +462,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
     call wall_time(start_RPA)
     call complex_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,CVS,  & 
               nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,complex_EUHF,complex_ERI_aaaa,complex_ERI_aabb,complex_ERI_bbbb,&
-              complex_dipole_int_aa,complex_dipole_int_bb,complex_eHF,complex_cHF,S,mom_occupations)
+              complex_dipole_int_aa,complex_dipole_int_bb,complex_CAP_MO,complex_eHF,complex_cHF,S,mom_occupations)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

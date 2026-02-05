@@ -588,7 +588,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
     call wall_time(start_RPA)
     call complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS, &
-              nOrb,nC,nO,nV,nR,nS,nCVS(1),ENuc,complex_ERHF,complex_ERI_MO,complex_dipole_int_MO,complex_eHF,mom_occupations(:,1))
+              nOrb,nC,nO,nV,nR,nS,nCVS(1),ENuc,complex_ERHF,complex_ERI_MO,complex_dipole_int_MO,complex_CAP_MO,complex_eHF,mom_occupations(:,1))
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
