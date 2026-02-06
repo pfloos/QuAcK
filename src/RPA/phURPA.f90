@@ -87,8 +87,6 @@ subroutine phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nB
 
     call phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
     if(.not.TDA) call phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
-    call matout(nSt,nSt,Aph)
-    call matout(nSt,nSt,Bph)
 
     call phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
