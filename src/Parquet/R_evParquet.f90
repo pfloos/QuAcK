@@ -107,11 +107,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   integer                       :: p,q,r,s,pqrs
 
   logical                       :: do_1eh_BSE = .true.
-  logical                       :: do_3eh_BSE = .true.
-  logical                       :: do_1pp_BSE = .true.
-  logical                       :: do_3pp_BSE = .true.
+  logical                       :: do_3eh_BSE = .false.
+  logical                       :: do_1pp_BSE = .false.
+  logical                       :: do_3pp_BSE = .false.
 
-  logical                       :: eh_dRPA = .false.
+  logical                       :: dRPA_1eh = .true.
+  logical                       :: dRPA_3eh = .false.
   
 ! Output variables
 ! None
@@ -285,8 +286,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       call wall_time(start_t)
 
-                     call phRLR_A(ispin,eh_dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
-      if(.not.TDAeh) call phRLR_B(ispin,eh_dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                     call phRLR_A(ispin,dRPA_1eh,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
+      if(.not.TDAeh) call phRLR_B(ispin,dRPA_1eh,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
       if(n_it_1b == 1 .and. n_it_2b == 1) then
 
@@ -342,8 +343,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       call wall_time(start_t)
 
-                     call phRLR_A(ispin,eh_dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
-      if(.not.TDAeh) call phRLR_B(ispin,eh_dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                     call phRLR_A(ispin,dRPA_3eh,nOrb,nC,nO,nV,nR,nS,1d0,eOld,ERI,Aph)
+      if(.not.TDAeh) call phRLR_B(ispin,dRPA_3eh,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
       if(n_it_1b == 1 .and. n_it_2b == 1) then
 
@@ -366,6 +367,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Bph(:,:) = Bph(:,:) + eh_trip_Gam_B(:,:)
 
       call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_trip_Om,trip_XpY,trip_XmY)
+
+      ! Shift by 1d-12 to avoid hardcore zeros
+      eh_trip_Om(:) = eh_trip_Om(:) + 1d-12
 
       call wall_time(end_t)
       t = end_t - start_t
@@ -540,8 +544,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing singlet eh screened integrals...'
 
       call wall_time(start_t)
-      call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
-                                          sing_XpY,sing_XmY,eh_sing_rho)
+      if(do_1eh_BSE) &
+        call R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
+                                            sing_XpY,sing_XmY,eh_sing_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh integrals =',t,' seconds'
@@ -555,8 +560,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing triplet eh screened integrals...'
 
       call wall_time(start_t)
-      call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
-                                          trip_XpY,trip_XmY,eh_trip_rho)
+      if(do_3eh_BSE) &
+        call R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi, &
+                                            trip_XpY,trip_XmY,eh_trip_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh integrals =',t,' seconds'
@@ -570,8 +576,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing singlet pp screened integrals...'
 
       call wall_time(start_t)
-      call R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOOs,nVVs,ERI,old_eh_sing_Phi,old_eh_trip_Phi, &
-                                          X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
+      if(do_1pp_BSE) &
+        call R_pp_singlet_screened_integral(nOrb,nC,nO,nR,nOOs,nVVs,ERI,old_eh_sing_Phi,old_eh_trip_Phi, &
+                                            X1s,Y1s,ee_sing_rho,X2s,Y2s,hh_sing_rho)
       call wall_time(end_t)
       t = end_t - start_t
       ! Done with eigenvectors and kernel
@@ -585,8 +592,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing triplet pp screened integrals...'
 
       call wall_time(start_t)
-      call R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOOt,nVVt,ERI,old_eh_sing_Phi,old_eh_trip_Phi, &
-                                          X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
+      if(do_3pp_BSE) &
+        call R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOOt,nVVt,ERI,old_eh_sing_Phi,old_eh_trip_Phi, &
+                                            X1t,Y1t,ee_trip_rho,X2t,Y2t,hh_trip_rho)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp integrals =',t,' seconds'
