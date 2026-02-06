@@ -1,6 +1,5 @@
 subroutine R_eh_singlet_Phi(eta,nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,omega,eh_sing_Phi)
 
-
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
 
@@ -27,16 +26,16 @@ subroutine R_eh_singlet_Phi(eta,nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,omega,eh_si
   eh_sing_Phi(:,:,:,:) = 0d0
   
 ! Minimum and maximum frequency values
-  nGrid = 100
-  wmin = - 10d0
-  wmax = + 10d0
-  dw = (wmax - wmin)/dble(nGrid)
+! nGrid = 100
+! wmin = - 10d0
+! wmax = + 10d0
+! dw = (wmax - wmin)/dble(nGrid)
   
-  allocate(w(nGrid))
+! allocate(w(nGrid))
   
-  do g=1,nGrid
-    w(g) = wmin + dble(g)*dw
-  end do
+! do g=1,nGrid
+!   w(g) = wmin + dble(g)*dw
+! end do
 
   !$OMP PARALLEL DEFAULT(NONE) &
   !$OMP PRIVATE(p, q, r, s, n, g, dem) &
@@ -47,23 +46,23 @@ subroutine R_eh_singlet_Phi(eta,nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,omega,eh_si
         do q = nC+1, nOrb-nR
            do p = nC+1, nOrb-nR
 
-              do g=1,nGrid
+!             do g=1,nGrid
                  do n=1,nS
                     
-                    ! dem = omega - eh_sing_Om(n)
-                    dem = w(g) - eh_sing_Om(n)
+                    dem = omega - eh_sing_Om(n)
+!                   dem = w(g) - eh_sing_Om(n)
                     eh_sing_Phi(p,q,r,s) = eh_sing_Phi(p,q,r,s) + (eh_sing_rho(p,r,n)*eh_sing_rho(s,q,n) / dem) &
                          * (1d0 - exp(- 2d0 * eta * dem * dem))
                     
-                    ! dem = omega + eh_sing_Om(n)
-                    dem = w(g) + eh_sing_Om(n)
+                    dem = omega + eh_sing_Om(n)
+!                   dem = w(g) + eh_sing_Om(n)
                     eh_sing_Phi(p,q,r,s) = eh_sing_Phi(p,q,r,s) - (eh_sing_rho(r,p,n)*eh_sing_rho(q,s,n) / dem) &
                          * (1d0 - exp(- 2d0 * eta * dem * dem))
                     
                  end do
-              end do
+!             end do
               
-              eh_sing_Phi(p,q,r,s) = eh_sing_Phi(p,q,r,s) / nGrid
+!             eh_sing_Phi(p,q,r,s) = eh_sing_Phi(p,q,r,s) / nGrid
               
            enddo
         enddo
@@ -72,6 +71,6 @@ subroutine R_eh_singlet_Phi(eta,nOrb,nC,nR,nS,eh_sing_Om,eh_sing_rho,omega,eh_si
   !$OMP END DO
   !$OMP END PARALLEL
 
-  deallocate(w)
+! deallocate(w)
 
 end subroutine 

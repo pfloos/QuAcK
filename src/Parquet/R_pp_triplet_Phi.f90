@@ -30,16 +30,16 @@ subroutine R_pp_triplet_Phi(eta,nOrb,nC,nR,nOO,nVV,ee_trip_Om,ee_trip_rho,hh_tri
   pp_trip_Phi(:,:,:,:) = 0d0
   
 ! Minimum and maximum frequency values
-  nGrid = 100
-  wmin = - 2d0
-  wmax = + 2d0
-  dw = (wmax - wmin)/dble(nGrid)
+! nGrid = 100
+! wmin = - 2d0
+! wmax = + 2d0
+! dw = (wmax - wmin)/dble(nGrid)
   
-  allocate(w(nGrid))
+! allocate(w(nGrid))
   
-  do g=1,nGrid
-    w(g) = wmin + dble(g)*dw
-  end do
+! do g=1,nGrid
+!   w(g) = wmin + dble(g)*dw
+! end do
 
   allocate(tmp_ee(nOrb,nOrb,nVV),tmp_hh(nOrb,nOrb,nOO))
   
@@ -54,21 +54,21 @@ subroutine R_pp_triplet_Phi(eta,nOrb,nC,nR,nOO,nVV,ee_trip_Om,ee_trip_rho,hh_tri
      do p = nC+1, nOrb-nR
 
         do n=1,nVV
-           do g=1,nGrid
-              ! dem = omega - ee_trip_Om(n)
-              dem = w(g) - ee_trip_Om(n)
+!          do g=1,nGrid
+              dem = omega - ee_trip_Om(n)
+!             dem = w(g) - ee_trip_Om(n)
               tmp_ee(p,q,n) = + (ee_trip_rho(p,q,n)/dem) * (1d0 - exp(- 2d0 * eta * dem * dem))
-           end do
-           tmp_ee(p,q,n) = tmp_ee(p,q,n) / nGrid
+!          end do
+!          tmp_ee(p,q,n) = tmp_ee(p,q,n) / nGrid
         end do
            
         do n=1,nOO
-           do g=1,nGrid
-              ! dem = omega - hh_trip_Om(n)
-              dem = w(g) - hh_trip_Om(n)
+!          do g=1,nGrid
+              dem = omega - hh_trip_Om(n)
+!             dem = w(g) - hh_trip_Om(n)
               tmp_hh(p,q,n) = - (hh_trip_rho(p,q,n)/dem) * (1d0 - exp(- 2d0 * eta * dem * dem))
-           end do
-           tmp_hh(p,q,n) = tmp_hh(p,q,n) / nGrid
+!          end do
+!          tmp_hh(p,q,n) = tmp_hh(p,q,n) / nGrid
         end do
         
      enddo
@@ -80,7 +80,7 @@ subroutine R_pp_triplet_Phi(eta,nOrb,nC,nR,nOO,nVV,ee_trip_Om,ee_trip_rho,hh_tri
 
   call dgemm('N','T', nOrb*nOrb,  nOrb*nOrb, nOO, 1d0, tmp_hh(1,1,1),  nOrb*nOrb, hh_trip_rho(1,1,1),  nOrb*nOrb, 1d0, pp_trip_Phi(1,1,1,1),  nOrb*nOrb)
   
-  deallocate(tmp_ee,tmp_hh,w)
+  deallocate(tmp_ee,tmp_hh)
 
   ! This is the old code that uses openmp loops instead of dgemm to do the contraction
   
