@@ -1,5 +1,4 @@
-subroutine R_eh_triplet_Gamma_A(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,eh_trip_Gam_A)
-
+subroutine R_eh_triplet_Gamma_B(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,eh_trip_Gam_B)
 
 ! Compute irreducible vertex in the triplet pp channel
   implicit none
@@ -16,10 +15,10 @@ subroutine R_eh_triplet_Gamma_A(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing
   integer                       :: ia,jb
 
 ! Output variables
-  double precision, intent(out) :: eh_trip_Gam_A(nS,nS)
+  double precision, intent(out) :: eh_trip_Gam_B(nS,nS)
 
 ! Initialization
-  eh_trip_Gam_A(:,:) = 0d0
+  eh_trip_Gam_B(:,:) = 0d0
 
   ia = 0
   do i=nC+1,nO
@@ -31,8 +30,8 @@ subroutine R_eh_triplet_Gamma_A(nOrb,nC,nO,nR,nS,eh_sing_Phi,eh_trip_Phi,pp_sing
            do b=nO+1,norb-nR
               jb = jb + 1
               
-              eh_trip_Gam_A(ia,jb) = - 0.5d0*eh_sing_Phi(a,j,b,i) + 0.5d0*eh_trip_Phi(a,j,b,i) &
-                                     - 0.5d0*pp_sing_Phi(a,j,i,b) + 0.5d0*pp_trip_Phi(a,j,i,b)
+              eh_trip_Gam_B(ia,jb) = - 0.5d0*eh_sing_Phi(a,b,j,i) + 0.5d0*eh_trip_Phi(a,b,j,i) &
+                                     - 0.5d0*pp_sing_Phi(a,b,i,j) + 0.5d0*pp_trip_Phi(a,b,i,j)
               
            enddo
         enddo
