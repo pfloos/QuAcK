@@ -34,7 +34,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   Gamma_eh_jb(:,:,:) = 0d0
 
   !$OMP PARALLEL &
-  !$OMP SHARED(nC,nOrb,nR,nO,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,Gamma_eh_jb,Gamma_eh_bj) &
+  !$OMP SHARED(nC,nOrb,nR,nO,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,Gamma_eh_jb,Gamma_eh_bj,Kx) &
   !$OMP PRIVATE(q,p,jb) &
   !$OMP DEFAULT(NONE)
   !$OMP DO COLLAPSE(2)
