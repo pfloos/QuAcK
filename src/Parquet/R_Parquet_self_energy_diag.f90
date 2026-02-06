@@ -155,7 +155,7 @@ subroutine R_Parquet_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVV
   call wall_time(start_t)
   !$OMP PARALLEL DEFAULT(NONE)    &
   !$OMP PRIVATE(p,i,a,j,b,n,num,dem1,dem2,reg1,reg2) &
-  !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_sing_rho,eh_sing_Om,SigC,Z)
+  !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_sing_rho,eh_sing_Om,SigC,Z,Kx)
   !$OMP DO
   do p=nC+1,nOrb-nR
      
