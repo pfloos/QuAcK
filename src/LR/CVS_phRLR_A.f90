@@ -1,4 +1,4 @@
-subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,occupations,virtuals,lambda,e,ERI,Aph)
+subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,lambda,e,ERI,Aph)
 
 ! Compute resonant block of the ph channel
 
@@ -16,8 +16,9 @@ subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,occupations,virtuals,
   integer,intent(in)           :: nR
   integer,intent(in)           :: nS
   integer,intent(in)           :: nCVS
-  integer,intent(in)           :: occupations(nO)
-  integer,intent(in)           :: virtuals(nO)
+  integer,intent(in)           :: nFC
+  integer,intent(in)           :: occupations(nO-nFC)
+  integer,intent(in)           :: virtuals(nBas - nO )
   double precision,intent(in)  :: lambda
   double precision,intent(in)  :: e(nBas)
   double precision,intent(in)  :: ERI(nBas,nBas,nBas,nBas) 
@@ -46,11 +47,11 @@ subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,occupations,virtuals,
   if(ispin == 1) then 
 
     ia = 0
-    do i=1,nO
+    do i=1,nO-nFC
       do a=1+nCVS,nBas-nO
         ia = ia + 1
         jb = 0
-        do j=1,nO
+        do j=1,nO-nFC
           do b=nCVS+1,nBas-nO
             jb = jb + 1
             Aph(ia,jb) = (e(virtuals(a)) - e(occupations(i)))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &
@@ -71,11 +72,11 @@ subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,occupations,virtuals,
   if(ispin == 2) then 
 
     ia = 0
-    do i=1,nO
+    do i=1,nO - nFC
       do a=nCVS+1,nBas-nO
         ia = ia + 1
         jb = 0
-        do j=1,nO
+        do j=1,nO -nFC
           do b=nCVS+1,nBas-nO
             jb = jb + 1
             Aph(ia,jb) = (e(virtuals(a)) - e(occupations(i)))*Kronecker_delta(i,j)*Kronecker_delta(a,b) &

@@ -29,58 +29,59 @@ subroutine CVS_phLR_transition_vectors(spin_allowed,nOrb,nC,nO,nV,nR,nS,dipole_i
   double precision,allocatable  :: Y(:)
   double precision,allocatable  :: os(:)
 
-! Memory allocation
-
-  maxS = min(nS,maxS)
-  allocate(X(nS),Y(nS),os(maxS))
-
-! Compute oscillator strengths
-
-  os(:) = 0d0
-  if(spin_allowed) call phLR_oscillator_strength(nOrb,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
-
-! Print details about excitations
-
-  do ia=1,maxS
-
-    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
-
-    ! <S**2> values
-
-    if(spin_allowed) then 
-      S2 = 0d0
-    else
-      S2 = 2d0
-    end if
-
-    print*,'-------------------------------------------------------------'
-    write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
-            ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2
-    print*,'-------------------------------------------------------------'
-
-    jb = 0
-    do j=nC+1,nO
-      do b=nO+1,nOrb-nR
-        jb = jb + 1
-        if(abs(X(jb)) > thres_vec) write(*,'(I3,A4,I3,A3,F10.6)') j,' -> ',b,' = ',X(jb)/sqrt(2d0)
-      end do
-    end do
- 
-    jb = 0
-    do j=nC+1,nO
-      do b=nO+1,nOrb-nR
-        jb = jb + 1
-        if(abs(Y(jb)) > thres_vec) write(*,'(I3,A4,I3,A3,F10.6)') j,' <- ',b,' = ',Y(jb)/sqrt(2d0)
-      end do
-    end do
-   write(*,*)
-
-  end do
-
-! Thomas-Reiche-Kuhn sum rule
-
-  write(*,'(A30,F10.6)') 'Thomas-Reiche-Kuhn sum rule = ',sum(os(:))
-  write(*,*)
+  print *, "Transistion vectors for this method not implemented yet, sry..."
+!! Memory allocation
+!
+!  maxS = min(nS,maxS)
+!  allocate(X(nS),Y(nS),os(maxS))
+!
+!! Compute oscillator strengths
+!
+!  os(:) = 0d0
+!  if(spin_allowed) call phLR_oscillator_strength(nOrb,nC,nO,nV,nR,nS,maxS,dipole_int,Om,XpY,XmY,os)
+!
+!! Print details about excitations
+!
+!  do ia=1,maxS
+!
+!    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
+!    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+!
+!    ! <S**2> values
+!
+!    if(spin_allowed) then 
+!      S2 = 0d0
+!    else
+!      S2 = 2d0
+!    end if
+!
+!    print*,'-------------------------------------------------------------'
+!    write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') &
+!            ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2
+!    print*,'-------------------------------------------------------------'
+!
+!    jb = 0
+!    do j=nC+1,nO
+!      do b=nO+1,nOrb-nR
+!        jb = jb + 1
+!        if(abs(X(jb)) > thres_vec) write(*,'(I3,A4,I3,A3,F10.6)') j,' -> ',b,' = ',X(jb)/sqrt(2d0)
+!      end do
+!    end do
+! 
+!    jb = 0
+!    do j=nC+1,nO
+!      do b=nO+1,nOrb-nR
+!        jb = jb + 1
+!        if(abs(Y(jb)) > thres_vec) write(*,'(I3,A4,I3,A3,F10.6)') j,' <- ',b,' = ',Y(jb)/sqrt(2d0)
+!      end do
+!    end do
+!   write(*,*)
+!
+!  end do
+!
+!! Thomas-Reiche-Kuhn sum rule
+!
+!  write(*,'(A30,F10.6)') 'Thomas-Reiche-Kuhn sum rule = ',sum(os(:))
+!  write(*,*)
 
 end subroutine 

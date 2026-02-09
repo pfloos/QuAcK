@@ -360,7 +360,7 @@ program QuAcK
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                                     &
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
-                  nNuc,nBas,nOrb,nC,nO,nV,nR,nCVS,ENuc,ZNuc,rNuc,                                                           &
+                  nNuc,nBas,nOrb,nC,nO,nV,nR,nCVS,FC,ENuc,ZNuc,rNuc,                                                        &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
                   mom_occupations,writeMOs,                                                                                 &
                   guess_type,mix,reg_MP,maxSCF_CC,max_diis_CC,thresh_CC,spin_conserved,spin_flip,TDA,                       &

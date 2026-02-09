@@ -1,5 +1,5 @@
 subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS,&
-                nBas,nC,nO,nV,nR,nS,nCVS,ENuc,ERHF,ERI,dipole_int,eHF,occupations)
+                nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,ERHF,ERI,dipole_int,eHF,occupations)
 
 ! Random-phase approximation module
 
@@ -30,6 +30,7 @@ subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   integer,intent(in)            :: nCVS
+  integer,intent(in)            :: FC
   integer,intent(in)            :: occupations(nO)
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
@@ -56,7 +57,7 @@ subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
       call phRRPA_GPU(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
     else
       if(CVS) then
-        call CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,occupations,ENuc,ERHF,ERI,dipole_int,eHF)
+        call CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,eHF)
       else
         call phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
       end if
