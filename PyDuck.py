@@ -257,6 +257,11 @@ if use_cap:
             "Provided cap basis does not match to the pyscf basis.")
     pc = pyopencap.CAP(cap_system, cap_dict, norb)
     cap_ao = pc.get_ao_cap(ordering="pyscf")
+else:
+    eta_opt = 0.0
+    f = open(working_dir+'/input/eta_opt.dat', 'w')
+    f.write(" {} ".format(str(eta_opt)))
+    f.close()
 
 
 def write_matrix_to_file(matrix, size, file, cutoff=1e-15):
