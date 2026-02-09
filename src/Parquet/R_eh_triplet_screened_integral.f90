@@ -1,4 +1,4 @@
-subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,XpY,XmY,rho)
+subroutine R_eh_triplet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,XpY,XmY,rho)
 
 ! Compute excitation densities
   implicit none
@@ -16,13 +16,12 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   integer                       :: ia,jb,p,q,j,b
   double precision,allocatable  :: X(:,:),Y(:,:)
   double precision,allocatable  :: Gamma_eh_bj(:,:,:),Gamma_eh_jb(:,:,:)
-  double precision              :: Kx = 1d0
-
+  
 ! Output variables
   double precision,intent(out)  :: rho(nOrb,nOrb,nS)
-
-  rho(:,:,:) = 0d0
   
+  rho(:,:,:) = 0d0
+
   allocate(X(nS,nS),Y(nS,nS))
 
   X(:,:) = 0.5d0*(XpY(:,:) + XmY(:,:))
@@ -34,7 +33,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   Gamma_eh_jb(:,:,:) = 0d0
 
   !$OMP PARALLEL &
-  !$OMP SHARED(nC,nOrb,nR,nO,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,Gamma_eh_jb,Gamma_eh_bj,Kx) &
+  !$OMP SHARED(nC,nOrb,nR,nO,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,Gamma_eh_jb,Gamma_eh_bj) &
   !$OMP PRIVATE(q,p,jb) &
   !$OMP DEFAULT(NONE)
   !$OMP DO COLLAPSE(2)
@@ -48,13 +47,13 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
 
                  
                  Gamma_eh_bj(p,q,jb) = Gamma_eh_bj(p,q,jb)                              &
-                             + ( 2d0*ERI(p,b,q,j) - Kx*ERI(p,b,j,q)                     & 
-                             - 0.5d0*eh_sing_Phi(p,b,j,q) - 1.5d0*eh_trip_Phi(p,b,j,q)  &
-                             + 0.5d0*pp_sing_Phi(p,b,q,j) + 1.5d0*pp_trip_Phi(p,b,q,j) )
+                             + ( - ERI(p,b,j,q)                                         & 
+                             - 0.5d0*eh_sing_Phi(p,b,j,q) + 0.5d0*eh_trip_Phi(p,b,j,q)  &
+                             - 0.5d0*pp_sing_Phi(p,b,q,j) + 0.5d0*pp_trip_Phi(p,b,q,j) )
                  Gamma_eh_jb(p,q,jb) = Gamma_eh_jb(p,q,jb)                              &
-                             + ( 2d0*ERI(p,j,q,b) - Kx*ERI(p,j,b,q)                     & 
-                             - 0.5d0*eh_sing_Phi(p,j,b,q) - 1.5d0*eh_trip_Phi(p,j,b,q)  &
-                             + 0.5d0*pp_sing_Phi(p,j,q,b) + 1.5d0*pp_trip_Phi(p,j,q,b) )
+                             + ( - ERI(p,j,b,q)                                         & 
+                             - 0.5d0*eh_sing_Phi(p,j,b,q) + 0.5d0*eh_trip_Phi(p,j,b,q)  &
+                             - 0.5d0*pp_sing_Phi(p,j,q,b) + 0.5d0*pp_trip_Phi(p,j,q,b) )
                  
            end do
         end do
@@ -69,7 +68,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   call dgemm('N','T', nOrb*nOrb, nS, nS, 1d0, Gamma_eh_bj(1,1,1), nOrb * nOrb, X(1,1), nS, 0d0, rho(1,1,1), nOrb*nOrb)
 
   call dgemm('N','T', nOrb*nOrb, nS, nS, 1d0, Gamma_eh_jb(1,1,1), nOrb * nOrb, Y(1,1), nS, 1d0, rho(1,1,1), nOrb*nOrb)
-
+  
 ! This is the old code that uses openmp loops instead of dgemm to do the contraction
   
   ! !$OMP PARALLEL &
@@ -91,18 +90,19 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   !                Y = 0.5d0*(XpY(ia,jb) - XmY(ia,jb))
                  
   !                rho(p,q,ia) = rho(p,q,ia)                                                   &
-  !                            + ( 2d0*ERI(p,b,q,j) - ERI(p,b,j,q)                             & 
-  !                            - 0.5d0*eh_sing_Phi(p,b,j,q) - 1.5d0*eh_trip_Phi(p,b,j,q)       &
-  !                            + 0.5d0*pp_sing_Phi(p,b,q,j) + 1.5d0*pp_trip_Phi(p,b,q,j) ) * X &
-  !                            + ( 2d0*ERI(p,j,q,b) - ERI(p,j,b,q)                             & 
-  !                            - 0.5d0*eh_sing_Phi(p,j,b,q) - 1.5d0*eh_trip_Phi(p,j,b,q)       &
-  !                            + 0.5d0*pp_sing_Phi(p,j,q,b) + 1.5d0*pp_trip_Phi(p,j,q,b) ) * Y
+  !                            + ( - ERI(p,b,j,q)                                              & 
+  !                            - 0.5d0*eh_sing_Phi(p,b,j,q) + 0.5d0*eh_trip_Phi(p,b,j,q)       &
+  !                            - 0.5d0*pp_sing_Phi(p,b,q,j) + 0.5d0*pp_trip_Phi(p,b,q,j) ) * X &
+  !                            + ( - ERI(p,j,b,q)                                              & 
+  !                            - 0.5d0*eh_sing_Phi(p,j,b,q) + 0.5d0*eh_trip_Phi(p,j,b,q)       &
+  !                            - 0.5d0*pp_sing_Phi(p,j,q,b) + 0.5d0*pp_trip_Phi(p,j,q,b) ) * Y
+                 
                  
   !             end do
-
   !          end do
+           
   !       end do
-
+        
   !    end do
   ! end do
   ! !$OMP END DO

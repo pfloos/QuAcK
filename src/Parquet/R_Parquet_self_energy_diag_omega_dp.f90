@@ -1,4 +1,4 @@
-subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI, &
+subroutine R_Parquet_self_energy_diag_omega_dp(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI, &
                                             eh_sing_rho,eh_sing_Om,eh_trip_rho,eh_trip_Om,       &
                                             ee_sing_rho,ee_sing_Om,ee_trip_rho,ee_trip_Om,       &
                                             hh_sing_rho,hh_sing_Om,hh_trip_rho,hh_trip_Om,       &
@@ -102,28 +102,17 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
         do n=1,nS
            !3h2p
            do j=nC+1,nO
-
               num  = (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
-                   eh_sing_rho(i,a,n) * eh_sing_rho(p,j,n)
-                 
-              dem1 = eQP(a) - eQP(i) - eh_sing_Om(n)
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w - eQP(j) + eh_sing_Om(n)
-              reg2 = 1d0 - exp(- 2d0 * eta * dem2 * dem2)
-                 
+              eh_sing_rho(i,a,n) * eh_sing_rho(p,j,n)
+
+              dem1 = w - eQP(j) + eh_sing_Om(n)
+              dem2 = w - eQP(j) + eQP(a) - eQP(i)
+              reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+              reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
+
               SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
-                 
-              num  = - (0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i))* &
-                   eh_sing_rho(i,a,n) * eh_sing_rho(p,j,n)
-                 
-              dem1 = eQP(a) - eQP(i) - eh_sing_Om(n) 
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w - eQP(i) - eQP(j) + eQP(a)
-              reg2 = 1d0 - exp(- 2d0 * eta * dem2 * dem2)
-                 
-              SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
+              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2) &
+                          - num * (reg1/dem1/dem1) * (reg2/dem2) 
                                
               num  = (0.5d0*ERI(p,i,a,j) - ERI(p,i,j,a)) * &
               eh_sing_rho(a,i,n) * eh_sing_rho(p,j,n)
@@ -150,28 +139,17 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
            end do ! j
            !3p2h
            do b=nO+1,nOrb-nR
+              num  = -(0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a)) * &
+              eh_sing_rho(i,a,n) * eh_sing_rho(b,p,n)
 
-              num  = (0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a)) * &
-                   eh_sing_rho(i,a,n) * eh_sing_rho(b,p,n)
-                 
-              dem1 = eQP(a) - eQP(i) - eh_sing_Om(n)
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w - eQP(b) - eh_sing_Om(n)
-              reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-                 
-              SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
-                 
-              num  = - (0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a)) * &
-                   eh_sing_rho(i,a,n) * eh_sing_rho(b,p,n)
-              
-              dem1 = eQP(a) - eQP(i) - eh_sing_Om(n) 
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w + eQP(i) - eQP(a) - eQP(b)
+              dem1 = w - eQP(b) - eh_sing_Om(n) 
+              dem2 = w - eQP(b) - eQP(a) + eQP(i)
+              reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
               reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
               SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
+              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2) &
+                          - num * (reg1/dem1/dem1) * (reg2/dem2)
               
               num  = (0.5d0*ERI(p,a,i,b) - ERI(p,a,b,i)) * &
               eh_sing_rho(a,i,n) * eh_sing_rho(b,p,n)
@@ -220,30 +198,19 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
          do n=1,nS
             !3h2p
             do j=nC+1,nO
-               
-               num  = 1.5d0*ERI(p,a,i,j) * &
-                    eh_trip_rho(i,a,n) * eh_trip_rho(p,j,n)
-               
-               dem1 = eQP(a) - eQP(i) - eh_trip_Om(n)
-               reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-               dem2 = w - eQP(j) + eh_trip_Om(n)
+               num  = (1.5d0*ERI(p,a,i,j) - 0d0*ERI(p,a,j,i))* &
+               eh_trip_rho(i,a,n) * eh_trip_rho(p,j,n)
+
+               dem1 = w - eQP(j) + eh_trip_Om(n)
+               dem2 = w - eQP(j) + eQP(a) - eQP(i)
+               reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-                     
+
                SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-               Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
-                     
-               num  = - 1.5d0*ERI(p,a,i,j) * &
-                    eh_trip_rho(i,a,n) * eh_trip_rho(p,j,n)
-               
-               dem1 = eQP(a) - eQP(i) - eh_trip_Om(n) 
-               reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-               dem2 = w - eQP(i) - eQP(j) + eQP(a)
-               reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-                     
-               SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-               Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
+               Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2) &
+                           - num * (reg1/dem1/dem1) * (reg2/dem2) 
                               
-               num  = 1.5d0*ERI(p,i,a,j) * &
+               num  = (1.5d0*ERI(p,i,a,j) - 0d0*ERI(p,i,j,a)) * &
                eh_trip_rho(a,i,n) * eh_trip_rho(p,j,n)
              
                dem1 = eQP(a) - eQP(i) + eh_trip_Om(n) 
@@ -254,7 +221,7 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
                SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
                Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
              
-               num  = 1.5d0*ERI(p,a,i,j) * &
+               num  = (1.5d0*ERI(p,a,i,j) - 0d0*ERI(p,a,j,i))* &
                eh_trip_rho(a,i,n) * eh_trip_rho(j,p,n)
 
                dem1 = eQP(a) - eQP(i) + eh_trip_Om(n) 
@@ -268,30 +235,19 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
             end do ! j
             !3p2h
             do b=nO+1,nOrb-nR
+               num  = -(1.5d0*ERI(p,i,a,b) - 0d0*ERI(p,i,b,a)) * &
+               eh_trip_rho(i,a,n) * eh_trip_rho(b,p,n)
 
-               num  = 1.5d0*ERI(p,i,a,b) * &
-                    eh_trip_rho(i,a,n) * eh_trip_rho(b,p,n)
-                     
-               dem1 = eQP(a) - eQP(i) - eh_trip_Om(n)
-               reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-               dem2 = w - eQP(b) - eh_trip_Om(n)
+               dem1 = w - eQP(b) - eh_trip_Om(n) 
+               dem2 = w - eQP(b) - eQP(a) + eQP(i)
+               reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
                reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-               
+
                SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-               Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
-               
-               num  = - 1.5d0*ERI(p,i,a,b) * &
-                    eh_trip_rho(i,a,n) * eh_trip_rho(b,p,n)
-               
-               dem1 = eQP(a) - eQP(i) - eh_trip_Om(n) 
-               reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-               dem2 = w + eQP(i) - eQP(a) - eQP(b)
-               reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-                  
-               SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-               Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
+               Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2) &
+                           - num * (reg1/dem1/dem1) * (reg2/dem2)
            
-               num  = 1.5d0*ERI(p,a,i,b) * &
+               num  = (1.5d0*ERI(p,a,i,b) - 0d0*ERI(p,a,b,i)) * &
                eh_trip_rho(a,i,n) * eh_trip_rho(b,p,n)
 
                dem1 = eQP(a) - eQP(i) + eh_trip_Om(n) 
@@ -302,7 +258,7 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
                SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
                Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
              
-               num  = 1.5d0*ERI(p,i,a,b) * &
+               num  = (1.5d0*ERI(p,i,a,b) - 0d0*ERI(p,i,b,a)) * &
                eh_trip_rho(a,i,n) * eh_trip_rho(p,b,n)
 
                dem1 = eQP(a) - eQP(i) + eh_trip_Om(n) 
@@ -362,29 +318,19 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
         end do ! n
         do n=1,nOOs
            ! 3h2p
-           do a=nO+1,nOrb-nR
+           do c=nO+1,nOrb-nR
 
-              num  = 0.5d0*ERI(p,a,i,j) * hh_sing_rho(i,j,n) * hh_sing_rho(p,a,n)
-                 
-              dem1 = eQP(i) + eQP(j) - hh_sing_Om(n)
-              reg1 = 1d0 - exp(- 2d0*eta * dem1 * dem1)
-              dem2 = w + eQP(a) - hh_sing_Om(n)
+              num  = - 0.5d0*ERI(p,c,i,j) * hh_sing_rho(i,j,n) * hh_sing_rho(p,c,n)
+              dem1 = w + eQP(c) - hh_sing_Om(n)
+              dem2 = w + eQP(c) - eQP(i) - eQP(j)
+              reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
               reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-                    
+
               SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
+              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2) &
+                                - num * (reg1/dem1/dem1) * (reg2/dem2)
               
-              num  = - 0.5d0*ERI(p,a,i,j) * hh_sing_rho(i,j,n) * hh_sing_rho(p,a,n)
-              
-              dem1 = eQP(i) + eQP(j) - hh_sing_Om(n)
-              reg1 = 1d0 - exp(- 2d0*eta * dem1 * dem1)
-              dem2 = w + eQP(a) - eQP(i) - eQP(j)
-              reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-              
-              SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
-              
-           end do ! a
+           end do ! c
         end do ! n
      end do ! j
   end do ! i
@@ -427,27 +373,17 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
         end do ! n
         do n=1,nVVs
            ! 3p2h
-           do i=nC+1,nO
+           do k=nC+1,nO
 
-              num  = 0.5d0*ERI(p,i,a,b) * ee_sing_rho(a,b,n) * ee_sing_rho(p,i,n)
+              num  = 0.5d0*ERI(p,k,a,b) * ee_sing_rho(a,b,n) * ee_sing_rho(p,k,n)
+              dem1 = w + eQP(k) - eQP(a) - eQP(b)
+              dem2 = w + eQP(k) - ee_sing_Om(n)
+              reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
+              reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
-              dem1 = eQP(a) + eQP(b) - ee_sing_Om(n)
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w + eQP(i) - eQP(a) - eQP(b)
-              reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-              
               SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
-              
-              num  = - 0.5d0*ERI(p,i,a,b) * ee_sing_rho(a,b,n) * ee_sing_rho(p,i,n)
-              
-              dem1 = eQP(a) + eQP(b) - ee_sing_Om(n)
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w + eQP(i) - ee_sing_Om(n)
-              reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-                    
-              SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
+              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2) &
+                          - num * (reg1/dem1/dem1) * (reg2/dem2)
               
            end do ! c
         end do ! n
@@ -495,29 +431,19 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
         end do ! n
         do n=1,nOOt
            ! 3h2p
-           do a=nO+1,nOrb-nR
+           do c=nO+1,nOrb-nR
 
-              num  = 1.5d0 * ERI(p,a,i,j) * hh_trip_rho(i,j,n) * hh_trip_rho(p,a,n)
-                 
-              dem1 = eQP(i) + eQP(j) - hh_trip_Om(n)
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w + eQP(a) - hh_trip_Om(n)
+              num  = - 1.5d0 * ERI(p,c,i,j) * hh_trip_rho(i,j,n) * hh_trip_rho(p,c,n)
+              dem1 = w + eQP(c) - hh_trip_Om(n)
+              dem2 = w + eQP(c) - eQP(i) - eQP(j)
+              reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
               reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-              
+
               SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
-                 
-              num  = - 1.5d0 * ERI(p,a,i,j) * hh_trip_rho(i,j,n) * hh_trip_rho(p,a,n)
-                 
-              dem1 = eQP(i) + eQP(j) - hh_trip_Om(n)
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w + eQP(a) - eQP(i) - eQP(j)
-              reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-                 
-              SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
+              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2) &
+                          - num * (reg1/dem1/dem1) * (reg2/dem2)
               
-           end do ! a
+           end do ! c
         end do ! n
      end do ! j
   end do ! i
@@ -560,29 +486,19 @@ subroutine R_Parquet_self_energy_diag_omega(p,w,eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVV
         end do ! n
         do n=1,nVVt
            ! 3p2h
-           do i=nC+1,nO
+           do k=nC+1,nO
 
-              num  = 1.5d0 * ERI(p,i,a,b) * ee_trip_rho(a,b,n) * ee_trip_rho(p,i,n)
-
-              dem1 = eQP(a) + eQP(b) - ee_trip_Om(n)
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w + eQP(i) - eQP(a) - eQP(b)
+              num  = 1.5d0 * ERI(p,k,a,b) * ee_trip_rho(a,b,n) * ee_trip_rho(p,k,n)
+              dem1 = w + eQP(k) - eQP(a) - eQP(b)
+              dem2 = w + eQP(k) - ee_trip_Om(n)
+              reg1 = (1d0 - exp(- 2d0 * eta * dem1 * dem1))
               reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
 
               SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
-                 
-              num  = - 1.5d0 * ERI(p,i,a,b) * ee_trip_rho(a,b,n) * ee_trip_rho(p,i,n)
-
-              dem1 = eQP(a) + eQP(b) - ee_trip_Om(n)
-              reg1 = 1d0 - exp(- 2d0 * eta * dem1 * dem1)
-              dem2 = w + eQP(i) - ee_trip_Om(n)
-              reg2 = (1d0 - exp(- 2d0 * eta * dem2 * dem2))
-                 
-              SigC = SigC + num * (reg1/dem1) * (reg2/dem2)
-              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2)
+              Z    = Z    - num * (reg1/dem1) * (reg2/dem2/dem2) &
+                          - num * (reg1/dem1/dem1) * (reg2/dem2)
               
-           end do ! i
+           end do ! c
         end do ! n
      end do ! b
   end do ! a
