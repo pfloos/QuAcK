@@ -78,13 +78,10 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
 
   nFC(1) = MERGE(1,0,FC(1)/=0) 
   nFC(2) = MERGE(1,0,FC(2)/=0)
+  print *,nFC(1)
+  print *,nFC(2)
   allocate(occupations_fc(maxval(nO-nFC),nspin))
   if(any(nFC /= 0)) then 
-    print *, "Frozen Core is applied." 
-    do ispin=1,nspin
-      print *, "Not Frozen orbitals:"
-      print *,occupations_fc(1:nO(ispin)-nFC(ispin),ispin)
-    end do
     ! remove FC from occupations
     do ispin=1,nspin
       occupations_fc(1:nO(ispin)-nFC(ispin),ispin) = occupations(1:nO(ispin) - nFC(ispin), ispin) 
@@ -101,6 +98,9 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
           occupations_fc(i,ispin) = occupations(i+1,ispin) 
         endif 
       enddo
+      print *, "Frozen Core is applied." 
+      print *, "Not Frozen orbitals:"
+      print *,occupations_fc(1:nO(ispin)-nFC(ispin),ispin)
     enddo
   else
     do ispin=1,nspin

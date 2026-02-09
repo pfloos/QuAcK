@@ -1,5 +1,5 @@
 subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exchange_kernel,singlet,triplet,CVS,&
-                nBas,nC,nO,nV,nR,nS,nCVS,nFC,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF,occupations)
+                nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF,occupations)
 
 ! Random-phase approximation module
 
@@ -30,7 +30,7 @@ subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doAC
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   integer,intent(in)            :: nCVS
-  integer,intent(in)            :: nFC
+  integer,intent(in)            :: FC
   integer,intent(in)            :: occupations(nO)
   double precision,intent(in)   :: ENuc
   complex*16,intent(in)         :: ERHF
@@ -43,18 +43,26 @@ subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doAC
 
   double precision              :: start_RPA    ,end_RPA      ,t_RPA
 
-  if(CVS) then
-    print *, "No CVS implemented"
-  endif
 
 !------------------------------------------------------------------------
 ! Compute (direct) RPA excitations
 !------------------------------------------------------------------------
 
-  if(dophRPA) then
+  if(dophRPA .and. .not. CVS) then
 
     call wall_time(start_RPA)
     call complex_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
+    call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RPA = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
+  if(dophRPA .and. CVS) then
+
+    call wall_time(start_RPA)
+    call complex_CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

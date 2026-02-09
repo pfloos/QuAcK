@@ -69,7 +69,7 @@ subroutine complex_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
 !------------------------------------------------------------------------
 
   if(dophRPAx .and. CVS) then
-    print *, 'No phRPAx yet for CAP'
+    print *, 'No phRPAx yet for CAP/complex'
    ! call wall_time(start_RPA)
    ! call CVS_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, &
    !             ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,occupations)

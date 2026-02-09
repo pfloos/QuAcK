@@ -58,6 +58,7 @@ subroutine complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
     XpY(:,:) = transpose(RPA_matrix(1:nSt,1:nSt) + RPA_matrix(nSt+1:2*nSt,1:nSt)) 
     XmY(:,:) = transpose(RPA_matrix(1:nSt,1:nSt) - RPA_matrix(nSt+1:2*nSt,1:nSt))
+    call complex_vecout(2*nSt,OmOmminus)
     deallocate(RPA_matrix,OmOmminus) 
 
   end if

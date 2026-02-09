@@ -6,7 +6,7 @@ subroutine write_matout(m,n,A,fpath)
 
   integer,intent(in)            :: m,n
   double precision,intent(in)   :: A(m,n)
-  character(len=256),intent(in) :: fpath
+  character(len=*),intent(in) :: fpath
   integer                       :: i,j
   integer                       :: unit,ios
 
