@@ -13,7 +13,7 @@ subroutine read_CAP_integrals(working_dir,nBas,W)
 ! Local variables
 
   logical                       :: debug
-  integer                       :: mu,nu
+  integer                       :: mu,nu,ios
   double precision              :: wxyz
   character(len=256)            :: file_path
 
@@ -21,15 +21,19 @@ subroutine read_CAP_integrals(working_dir,nBas,W)
 
   double precision,intent(out)  :: W(nBas,nBas)
 
+  W(:,:) = 0d0
+
 ! Open file with integrals
 
   debug = .false.
   file_path = trim(working_dir) // '/int/CAP.dat'
-  open(unit=31,file=file_path)
+  open(unit=31, file=file_path, status='old', iostat=ios)
+  if (ios /= 0) then
+    return  ! Silently return zero matrix if open fails
+  endif
 
 ! Read CAP integrals
 
-  W(:,:) = 0d0
   do 
     read(31,*,end=31) mu,nu,wxyz
     W(mu,nu) = wxyz
