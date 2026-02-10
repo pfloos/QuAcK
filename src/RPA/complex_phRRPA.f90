@@ -80,10 +80,11 @@ subroutine complex_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBa
     call complex_phRLR(TDA,nS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call complex_print_excitation_energies('phRPA@RHF','singlet',nS,Om)
     !call complex_phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
-    
-    call complex_exp_val_1body_rpa(nO,nV,nBas,nS,XpY,XmY,CAP_MO(:,:),EcW(ispin))
-    print *, "Correlation contribution of -i*eta*W"
-    print *, real(EcW(ispin)), "+ i*",aimag(EcW(ispin))
+  
+  !  This does not work yet
+  !  call complex_exp_val_1body_rpa(nO,nV,nBas,nS,XpY,XmY,CAP_MO(:,:),EcW(ispin))
+  !  print *, "Correlation contribution of -i*eta*W"
+  !  print *, real(EcW(ispin)), "+ i*",aimag(EcW(ispin))
 
   end if
 
@@ -100,9 +101,10 @@ subroutine complex_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBa
     call complex_print_excitation_energies('phRPA@RHF','triplet',nS,Om)
     !call complex_phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nS,dipole_int,Om,XpY,XmY)
 
-    call complex_exp_val_1body_rpa(nO,nV,nBas,nS,XpY,XmY,CAP_MO(:,:),EcW(ispin))
-    print *, "Correlation contribution of -i*eta*W"
-    print *, real(EcW(ispin)), "+ i*",aimag(EcW(ispin))
+    ! This does not work yet
+  !  call complex_exp_val_1body_rpa(nO,nV,nBas,nS,XpY,XmY,CAP_MO(:,:),EcW(ispin))
+  !  print *, "Correlation contribution of -i*eta*W"
+  !  print *, real(EcW(ispin)), "+ i*",aimag(EcW(ispin))
 
   end if
 
