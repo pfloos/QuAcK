@@ -62,8 +62,6 @@ subroutine R_Parquet_self_energy_diag(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVV
   double precision              :: KxOVV = 1d0
   double precision              :: KxVOV = 1d0
 
-  
-
 ! Output variables
   double precision,intent(out)  :: EcGM
   double precision,intent(out)  :: SigC(nOrb)
