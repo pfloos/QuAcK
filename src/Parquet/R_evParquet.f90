@@ -802,11 +802,17 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     write(*,*)
 
     call wall_time(start_t)
-    call R_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI, &
-                                    eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,   &
-                                    ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,   &
-                                    hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,   &
-                                    EcGM,SigC,Z)
+!   call R_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI, &
+!                                   eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,   &
+!                                   ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,   &
+!                                   hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,   &
+!                                   EcGM,SigC,Z)
+
+    call R_Parquet_self_energy_diag_psd(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI, &
+                                        eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,   &
+                                        ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,   &
+                                        hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,   &
+                                        EcGM,SigC,Z)
     call wall_time(end_t)
     t = end_t - start_t
     write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
