@@ -38,7 +38,7 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   nhalf = n/2
   counter = 0
   do i=1,nhalf
-    if(sqrt(sum(abs(evecs(1:nhalf,i))**2)) - sqrt(sum(abs(evecs(nhalf+1:n,i))**2))<0d0) then
+    if(sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2)<0d0) then
     
       j = nhalf + i
       ! swap eigenvalues
