@@ -147,8 +147,8 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
 
     call complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call complex_print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
-    call complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, &
-                               dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+    call complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
+                nCVS,nFC,occupations,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
@@ -175,7 +175,8 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
 
     call complex_phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call complex_print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
-    call complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+    call complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
+                nCVS,nFC,occupations,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
