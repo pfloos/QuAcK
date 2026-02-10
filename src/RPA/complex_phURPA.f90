@@ -78,8 +78,7 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
 
   nFC(1) = MERGE(1,0,FC(1)/=0) 
   nFC(2) = MERGE(1,0,FC(2)/=0)
-  print *,nFC(1)
-  print *,nFC(2)
+  
   allocate(occupations_fc(maxval(nO-nFC),nspin))
   if(any(nFC /= 0)) then 
     ! remove FC from occupations
