@@ -7,32 +7,44 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   complex*16                    :: temp_val
   complex*16                    :: temp_vec(n)
   double precision              :: etanorm
-  double precision              :: threshold = 1d-8
+  double precision              :: threshold = 1d-6
 
   ! -------------------------------
   ! Step 1: initial bubble sort
-  ! Positives ascending, negatives by abs descending
+  ! Sort in descending order by real part, if two real parts are the same than first the one with lower imag part
   ! -------------------------------
   do i = 1, n-1
-     do j = i+1, n
+   do j = i+1, n
 
-        if ((real(evals(i)) >= 0 .and. real(evals(j)) >= 0 .and. real(evals(i)) > real(evals(j))) .or. &
-            (real(evals(i)) <= 0 .and. real(evals(j)) <= 0 .and. real(evals(i)) > real(evals(j))) .or. &
-            (real(evals(i)) <= 0 .and. real(evals(j)) >= 0)) then
-           
-           ! swap eigenvalues
-           temp_val = evals(i)
-           evals(i) = evals(j)
-           evals(j) = temp_val
-           
-           ! swap corresponding eigenvectors
-           temp_vec = evecs(:, i)
-           evecs(:, i) = evecs(:, j)
-           evecs(:, j) = temp_vec
-        end if
+      if (abs(real(evals(i)) - real(evals(j))) > threshold) then
+         ! Primary sort: real part ascending
+         if (real(evals(i)) < real(evals(j))) then
+            ! swap
+            temp_val = evals(i)
+            evals(i) = evals(j)
+            evals(j) = temp_val
 
-     end do
-  end do
+            temp_vec = evecs(:, i)
+            evecs(:, i) = evecs(:, j)
+            evecs(:, j) = temp_vec
+         end if
+      else
+         ! Secondary sort: imaginary part descending
+         if (aimag(evals(i)) > aimag(evals(j))) then
+            ! swap
+            temp_val = evals(i)
+            evals(i) = evals(j)
+            evals(j) = temp_val
+
+            temp_vec = evecs(:, i)
+            evecs(:, i) = evecs(:, j)
+            evecs(:, j) = temp_vec
+         end if
+      end if
+
+   end do
+end do
+
   ! -------------------------------
   ! Step 2: classify first half
   !  - eta-norm > 0  -> excitation
@@ -41,15 +53,14 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   ! -------------------------------
   nhalf = n/2
   counter = 0
-!  print *,"OmOmminus"
-!  call complex_vecout(n,evals)
+  print *,"OmOmminus"
+  call complex_vecout(n,evals)
 
   do i = 1, nhalf
 
      etanorm = sum(abs(evecs(1:nhalf,i))**2) - &
                sum(abs(evecs(nhalf+1:n,i))**2)
-     print *, 'Omega:',i, etanorm
-
+     print *, i, etanorm
      ! tolerance for zero real part
      if (abs(real(evals(i))) < threshold) then
 
@@ -75,7 +86,7 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
            print *, 'Mode with vanishing eta-norm has been found !'
            print *, 'Omega:',i, evals(i)
 
-        else if (etanorm < 0d0) then
+        else if (etanorm < threshold) then
 
            j = nhalf + i
 
@@ -131,8 +142,8 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
         end if
      end do
   end do
-!  print *,"OmOmminus"
-!  call complex_vecout(n,evals)
+  print *,"OmOmminus"
+  call complex_vecout(n,evals)
 !  print *,'eta norm of omomminus'
 !  do i=1,n
 !    print *,i,sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2)
