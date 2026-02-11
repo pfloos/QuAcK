@@ -7,6 +7,7 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   complex*16                    :: temp_val
   complex*16                    :: temp_vec(n)
   double precision              :: etanorm
+  double precision              :: threshold = 1d-8
 
   ! -------------------------------
   ! Step 1: initial bubble sort
@@ -40,14 +41,17 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   ! -------------------------------
   nhalf = n/2
   counter = 0
+  print *,"OmOmminus"
+  call complex_vecout(n,evals)
 
   do i = 1, nhalf
 
      etanorm = sum(abs(evecs(1:nhalf,i))**2) - &
                sum(abs(evecs(nhalf+1:n,i))**2)
+     print *, 'Omega:',i, etanorm
 
      ! tolerance for zero real part
-     if (abs(real(evals(i))) < 1d-12) then
+     if (abs(real(evals(i))) < threshold) then
 
         ! purely imaginary pair
         if (aimag(evals(i)) > 0d0) then
@@ -67,7 +71,7 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
      else
 
         ! normal case: classify by eta-norm
-        if (abs(etanorm) < 1d-12) then
+        if (abs(etanorm) < threshold) then
            print *, 'Mode with vanishing eta-norm has been found !'
            print *, 'Omega:',i, evals(i)
 
@@ -127,6 +131,8 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
         end if
      end do
   end do
+  print *,"OmOmminus"
+  call complex_vecout(n,evals)
 !  print *,'eta norm of omomminus'
 !  do i=1,n
 !    print *,i,sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2)
