@@ -36,8 +36,8 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
   double precision,allocatable  :: int3(:,:,:)
   double precision,allocatable  :: int4(:,:,:,:)
   
-  logical                       :: do_2d_channel  = .false.
-  logical                       :: do_2x_channel  = .false.
+  logical                       :: do_2d_channel  = .true.
+  logical                       :: do_2x_channel  = .true.
   logical                       :: do_1eh_channel = .true.
   logical                       :: do_3eh_channel = .false.
   logical                       :: do_1pp_channel = .false.
@@ -397,8 +397,8 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
  
-            num1  = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(b,p,i,a)
-            num2  = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(b,p,i,a)
+            num1 = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(b,p,i,a)
+            num2 = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(b,p,i,a)
             dem = eQP(p) + eQP(i) - eQP(a) - eQP(b)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                
