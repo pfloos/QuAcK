@@ -30,7 +30,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
 ! Local variables
   integer                       :: i,j,k,a,b,c
   integer                       :: p,n
-  double precision              :: num,dem,reg
+  double precision              :: num1,num2,num,dem,reg
   double precision              :: start_t,end_t,t
 
   double precision,allocatable  :: int3(:,:,:)
@@ -63,7 +63,9 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
   if(do_2d_channel) then
  
     do p=nC+1,nOrb-nR
+
       ! 2h1p sum
+
       do i=nC+1,nO
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
@@ -78,7 +80,9 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
           end do ! a
         end do ! j
       end do ! i
+
       ! 2p1h sum
+
       do i=nC+1,nO
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
@@ -101,7 +105,9 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
   if(do_2x_channel) then
  
     do p=nC+1,nOrb-nR
+
       ! 2h1p sum
+
       do i=nC+1,nO
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
@@ -116,7 +122,9 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
           end do ! a
         end do ! j
       end do ! i
+
       ! 2p1h sum
+
       do i=nC+1,nO
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
@@ -196,12 +204,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
       do j=nC+1,nO
         do n=1,nS
  
-          num = eh_sing_rho(p,j,n) + int3(p,j,n)
+          num1 = eh_sing_rho(p,j,n) + int3(p,j,n)
+          num2 = eh_sing_rho(p,j,n) + int3(p,j,n)
           dem = eQP(p) - eQP(j) + eh_sing_Om(n)
           reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
              
-          SigC(p) = SigC(p) + num * num * reg
-          Z(p) = Z(p) - num * num * reg / dem
+          SigC(p) = SigC(p) + num1 * num2 * reg
+          Z(p) = Z(p) - num1 * num2 * reg / dem
  
         end do
       end do
@@ -260,12 +269,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
  
-            num = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i) + int4(p,i,j,a)
+            num1 = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i) + int4(p,i,j,a)
+            num2 = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i) + int4(p,i,j,a)
             dem = eQP(p) - eQP(i) - eQP(j) + eQP(a)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                
-            SigC(p) = SigC(p) + num * num * reg
-            Z(p) = Z(p) - num * num * reg / dem
+            SigC(p) = SigC(p) + num1 * num2 * reg
+            Z(p) = Z(p) - num1 * num2 * reg / dem
  
           end do
         end do
@@ -323,12 +333,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
       do b=nO+1,nOrb-nR
         do n=1,nS
  
-          num = eh_sing_rho(b,p,n) + int3(p,b,n)
+          num1 = eh_sing_rho(b,p,n) + int3(p,b,n)
+          num2 = eh_sing_rho(b,p,n) + int3(p,b,n)
           dem = eQP(p) - eQP(b) - eh_sing_Om(n)
           reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-          SigC(p) = SigC(p) + num * num * reg
-          Z(p) = Z(p) - num * num * reg / dem
+          SigC(p) = SigC(p) + num1 * num2 * reg
+          Z(p) = Z(p) - num1 * num2 * reg / dem
  
         end do
       end do
@@ -386,12 +397,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
  
-            num  = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(p,i,a,b)
+            num1  = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(p,i,a,b)
+            num2  = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(p,i,a,b)
             dem = eQP(p) + eQP(i) - eQP(a) - eQP(b)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                
-            SigC(p) = SigC(p) + num * num * reg
-            Z(p) = Z(p) - num * num * reg / dem
+            SigC(p) = SigC(p) + num1 * num2 * reg
+            Z(p) = Z(p) - num1 * num2 * reg / dem
  
           end do
         end do
