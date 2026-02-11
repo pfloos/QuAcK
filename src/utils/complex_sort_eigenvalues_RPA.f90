@@ -70,7 +70,7 @@ end do
      ! normal case: classify by eta-norm
      if (etanorm < -threshold) then
 
-        j = nhalf + i
+        j = n + 1 - i
 
         temp_val = evals(i)
         evals(i) = evals(j)
