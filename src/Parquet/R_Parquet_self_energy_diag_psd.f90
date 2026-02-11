@@ -197,7 +197,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP END PARALLEL 
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,j,n,num,dem,reg) & 
+    !$OMP PRIVATE(p,j,n,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,eh_sing_rho,eh_sing_Om,int3,SigC,Z)  
     !$OMP DO
     do p=nC+1,nOrb-nR
@@ -261,7 +261,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP END PARALLEL 
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,i,j,a,num,dem,reg) & 
+    !$OMP PRIVATE(p,i,j,a,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,ERI,int4,SigC,Z)  
     !$OMP DO
     do p=nC+1,nOrb-nR
@@ -326,7 +326,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP END PARALLEL 
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,b,n,num,dem,reg) & 
+    !$OMP PRIVATE(p,b,n,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,eh_sing_rho,eh_sing_Om,int3,SigC,Z)  
     !$OMP DO
     do p=nC+1,nOrb-nR
@@ -389,7 +389,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP END PARALLEL 
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,i,a,b,num,dem,reg) & 
+    !$OMP PRIVATE(p,i,a,b,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,ERI,int4,SigC,Z)  
     !$OMP DO
     do p=nC+1,nOrb-nR
