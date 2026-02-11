@@ -48,10 +48,10 @@ subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doAC
 ! Compute (direct) RPA excitations
 !------------------------------------------------------------------------
 
-  if(dophRPA .and. .not. CVS) then
+  if(dophRPA) then
 
     call wall_time(start_RPA)
-    call complex_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
+    call complex_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA
@@ -59,10 +59,11 @@ subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doAC
     write(*,*)
 
   end if
-  if(dophRPA .and. CVS) then
+  
+  if(dophRPAx) then
 
     call wall_time(start_RPA)
-    call complex_CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
+    call complex_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

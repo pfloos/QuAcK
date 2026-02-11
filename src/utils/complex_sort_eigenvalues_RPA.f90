@@ -6,6 +6,7 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   integer                       :: i, j, k, nhalf, counter
   complex*16                    :: temp_val
   complex*16                    :: temp_vec(n)
+  double precision              :: etanorm
 
   ! -------------------------------
   ! Step 1: initial bubble sort
@@ -13,9 +14,10 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   ! -------------------------------
   do i = 1, n-1
      do j = i+1, n
-        if ((real(evals(i)) > 0 .and. real(evals(j)) > 0 .and. real(evals(i)) > real(evals(j))) .or. &
-            (real(evals(i)) < 0 .and. real(evals(j)) < 0 .and. abs(real(evals(i))) > abs(real(evals(j)))) .or. &
-            (real(evals(i)) < 0 .and. real(evals(j)) > 0)) then
+
+        if ((real(evals(i)) >= 0 .and. real(evals(j)) >= 0 .and. real(evals(i)) > real(evals(j))) .or. &
+            (real(evals(i)) <= 0 .and. real(evals(j)) <= 0 .and. real(evals(i)) > real(evals(j))) .or. &
+            (real(evals(i)) <= 0 .and. real(evals(j)) >= 0)) then
            
            ! swap eigenvalues
            temp_val = evals(i)
@@ -27,28 +29,68 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
            evecs(:, i) = evecs(:, j)
            evecs(:, j) = temp_vec
         end if
+
      end do
   end do
-
   ! -------------------------------
-  ! Step 2: swap negative excitations if X dominates Y
+  ! Step 2: classify first half
+  !  - eta-norm > 0  -> excitation
+  !  - eta-norm < 0  -> swap
+  !  - if Re(omega) = 0 -> use imaginary part (this criteria has to be checked)
   ! -------------------------------
   nhalf = n/2
   counter = 0
-  do i=1,nhalf
-    if(sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2) < 0d0) then
-      j = nhalf + i
-      ! swap eigenvalues
-      temp_val = evals(i)
-      evals(i) = evals(j)
-      evals(j) = temp_val
-      ! swap corresponding eigenvectors
-      temp_vec = evecs(:, i)
-      evecs(:, i) = evecs(:, j)
-      evecs(:, j) = temp_vec
-      counter = counter + 1
-    end if
+
+  do i = 1, nhalf
+
+     etanorm = sum(abs(evecs(1:nhalf,i))**2) - &
+               sum(abs(evecs(nhalf+1:n,i))**2)
+
+     ! tolerance for zero real part
+     if (abs(real(evals(i))) < 1d-12) then
+
+        ! purely imaginary pair
+        if (aimag(evals(i)) > 0d0) then
+           ! positive imaginary part -> move to second half
+           j = nhalf + i
+
+           temp_val = evals(i)
+           evals(i) = evals(j)
+           evals(j) = temp_val
+
+           temp_vec = evecs(:, i)
+           evecs(:, i) = evecs(:, j)
+           evecs(:, j) = temp_vec
+
+        end if
+
+     else
+
+        ! normal case: classify by eta-norm
+        if (abs(etanorm) < 1d-12) then
+           print *, 'Mode with vanishing eta-norm has been found !'
+           print *, 'Omega:',i, evals(i)
+
+        else if (etanorm < 0d0) then
+
+           j = nhalf + i
+
+           temp_val = evals(i)
+           evals(i) = evals(j)
+           evals(j) = temp_val
+
+           temp_vec = evecs(:, i)
+           evecs(:, i) = evecs(:, j)
+           evecs(:, j) = temp_vec
+
+           counter = counter + 1
+
+        end if
+
+     end if
+
   end do
+
   if(counter /= 0) then
     print *, "Attention:", counter, "excitations with negative excitation energies have been found!" 
   end if
@@ -56,7 +98,7 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   ! -------------------------------
   ! Step 3: separate positives and negatives
   ! -------------------------------
-  ! Assuming after step 2, first nhalf are excitations (positive) and last nhalf are de-excitations (negative)
+  ! Assuming after step 2, first nhalf are excitations (positive eta norm) and last nhalf are de-excitations (negative eta norm)
   
   ! Sort positive excitations ascending
   do i = 1, nhalf-1
@@ -85,5 +127,10 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
         end if
      end do
   end do
+!  print *,'eta norm of omomminus'
+!  do i=1,n
+!    print *,i,sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2)
+!    call complex_vecout(n,evecs(:,i))
+!  end do
 
 end subroutine

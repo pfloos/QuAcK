@@ -1,4 +1,4 @@
-subroutine complex_CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
+subroutine complex_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,CAP_MO,eHF)
 
 ! Perform a direct random phase approximation calculation
 
@@ -57,36 +57,42 @@ subroutine complex_CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet
   write(*,*)
 
 ! CVS
-
-  print *, "No exications to the first", nCVS, "orbital(s) are considered."
-  if(nC/=0) then
-    print *, "Do not use PyDuck frozen core with CVS !"
-    stop
+  if(nCVS/=0) then
+  print *, "CVS is applied."
+    print *, "No exications to the first", nCVS, " spatial orbital(s) are considered."
+    if(nC/=0) then
+      print *, "Do not use PyDuck frozen core with CVS !"
+      stop
+    end if
   end if
 
 ! Frozen Core
 
   nFC = MERGE(1,0,FC/=0) 
   allocate(occupations_fc(nO-nFC))
-  ! remove FC from occupations
-  do ispin=1,nspin
-    occupations_fc(1:nO-nFC) = occupations(1:nO - nFC) 
-    found = .false.
-    do i=1,nO-1
-      if(.not. found) then
-        if(occupations(i)==FC) then
-          found = .true.
-          occupations_fc(i) = occupations(i+1) 
+  if(nFC/=0) then
+    ! remove FC from occupations
+    do ispin=1,nspin
+      occupations_fc(1:nO-nFC) = occupations(1:nO - nFC) 
+      found = .false.
+      do i=1,nO-1
+        if(.not. found) then
+          if(occupations(i)==FC) then
+            found = .true.
+            occupations_fc(i) = occupations(i+1) 
+          else
+            occupations_fc(i) = occupations(i)
+          endif
         else
-          occupations_fc(i) = occupations(i)
-        endif
-      else
-        occupations_fc(i) = occupations(i+1) 
-      endif 
+          occupations_fc(i) = occupations(i+1) 
+        endif 
+      enddo
     enddo
-  enddo
-  print *, "Not Frozen orbitals:"
-  print *,occupations_fc(1:nO-nFC)
+    print *, "Not Frozen orbitals:"
+    print *,occupations_fc(1:nO-nFC)
+  else
+    occupations_fc(1:nO) = occupations(1:nO)
+  end if
 
 ! TDA 
 
@@ -97,7 +103,7 @@ subroutine complex_CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet
 
 ! Initialization
 
-  dRPA = .true.
+  dRPA = .false.
   EcRPA(:) = 0d0
   lambda = 1d0
   nSCVS = (nV - nCVS)*(nO-nFC)
@@ -117,7 +123,9 @@ subroutine complex_CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet
     if(.not.TDA) call complex_CVS_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,ERI,Bph)
 
     call complex_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call complex_print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+    call complex_print_excitation_energies('phRPAx@RHF','singlet',nS,Om)
+    call complex_phLR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,&
+                nCVS,nFC,occupations_fc,virtuals,Om,XpY,XmY)
 
   end if
 
@@ -131,7 +139,9 @@ subroutine complex_CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet
     if(.not.TDA) call complex_CVS_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,ERI,Bph)
 
     call complex_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call complex_print_excitation_energies('phRPA@RHF','triplet',nSCVS,Om)
+    call complex_print_excitation_energies('phRPAx@RHF','triplet',nSCVS,Om)
+    call complex_phLR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,&
+                nCVS,nFC,occupations_fc,virtuals,Om,XpY,XmY)
 
   end if
 
@@ -144,10 +154,10 @@ subroutine complex_CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet
   
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phRRPA correlation energy (spin-conserved) = ',real(EcRPA(1)),'+ i*',aimag(EcRPA(1)),' au'
-  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phRRPA correlation energy (spin-flip)      = ',real(EcRPA(2)),'+ i*',aimag(EcRPA(2)),' au'
-  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phRRPA correlation energy                  = ',real(sum(EcRPA)),'+ i*',aimag(sum(EcRPA)),' au'
-  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phRRPA total energy                        = ',real(ENuc + ERHF + sum(EcRPA)),'+ i*'&
+  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phRRPAx correlation energy (spin-conserved) = ',real(EcRPA(1)),'+ i*',aimag(EcRPA(1)),' au'
+  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phRRPAx correlation energy (spin-flip)      = ',real(EcRPA(2)),'+ i*',aimag(EcRPA(2)),' au'
+  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phRRPAx correlation energy                  = ',real(sum(EcRPA)),'+ i*',aimag(sum(EcRPA)),' au'
+  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phRRPAx total energy                        = ',real(ENuc + ERHF + sum(EcRPA)),'+ i*'&
                                                                                             ,aimag(ENuc + ERHF + sum(EcRPA)),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
