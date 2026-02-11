@@ -179,13 +179,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
                    dem = eQP(a) - eQP(i) - eh_sing_Om(n)
                    reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                    
-                   int3(p,j,n) = int3(p,j,n) + num*reg
+                   int3(p,j,n) = int3(p,j,n) + num * reg
                    
                    num = (0.5d0*ERI(p,i,a,j) - ERI(p,i,j,a)) * eh_sing_rho(a,i,n)
                    dem = eQP(a) - eQP(i) + eh_sing_Om(n) 
                    reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                    
-                   int3(p,j,n) = int3(p,j,n) + num*reg
+                   int3(p,j,n) = int3(p,j,n) + num * reg
                    
                 end do
              end do
@@ -238,17 +238,19 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
  
             do n=1,nS
 
-              num  = eh_sing_rho(a,i,n) * eh_sing_rho(j,p,n)
+              num1 = eh_sing_rho(a,i,n) + eh_sing_rho(j,p,n)
+              num2 = eh_sing_rho(a,i,n) + eh_sing_rho(j,p,n)
               dem = eQP(a) - eQP(i) + eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int4(p,j,i,a) = int4(p,j,i,a) + num*reg
+              int4(p,j,i,a) = int4(p,j,i,a) + num1 * num2 * reg
  
-              num = - eh_sing_rho(i,a,n) * eh_sing_rho(p,j,n)
+              num1 = eh_sing_rho(i,a,n) + eh_sing_rho(p,j,n)
+              num2 = eh_sing_rho(i,a,n) + eh_sing_rho(p,j,n)
               dem = eQP(a) - eQP(i) - eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int4(p,j,i,a) = int4(p,j,i,a) + num*reg
+              int4(p,j,i,a) = int4(p,j,i,a) - num1 * num2 * reg
  
            end do
            
@@ -269,8 +271,8 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
  
-            num1 = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i) + int4(p,j,i,a)
-            num2 = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i) + int4(p,j,i,a)
+            num1 = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i)
+            num2 = int4(p,j,i,a)
             dem = eQP(p) - eQP(i) - eQP(j) + eQP(a)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                
@@ -308,13 +310,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
               dem = eQP(a) - eQP(i) - eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int3(b,p,n) = int3(b,p,n) + num*reg
+              int3(b,p,n) = int3(b,p,n) + num * reg
  
               num  = (0.5d0*ERI(p,a,i,b) - ERI(p,a,b,i)) * eh_sing_rho(a,i,n) 
               dem = eQP(a) - eQP(i) + eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int3(b,p,n) = int3(b,p,n) + num*reg
+              int3(b,p,n) = int3(b,p,n) + num * reg
  
             end do
           end do
@@ -367,17 +369,19 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
  
             do n=1,nS
  
-              num = eh_sing_rho(a,i,n) * eh_sing_rho(p,b,n)
+              num1 = eh_sing_rho(a,i,n) + eh_sing_rho(p,b,n)
+              num2 = eh_sing_rho(a,i,n) + eh_sing_rho(p,b,n)
               dem = eQP(a) - eQP(i) + eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int4(b,p,i,a) = int4(b,p,i,a) + num*reg
+              int4(b,p,i,a) = int4(b,p,i,a) + num1 * num2 * reg
 
-              num = - eh_sing_rho(i,a,n) * eh_sing_rho(b,p,n)
+              num1 = eh_sing_rho(i,a,n) + eh_sing_rho(b,p,n)
+              num2 = eh_sing_rho(i,a,n) + eh_sing_rho(b,p,n)
               dem = eQP(a) - eQP(i) - eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int4(b,p,i,a) = int4(b,p,i,a) + num*reg
+              int4(b,p,i,a) = int4(b,p,i,a) - num1 * num2 * reg
  
             end do
  
@@ -397,8 +401,8 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
  
-            num1 = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(b,p,i,a)
-            num2 = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(b,p,i,a)
+            num1 = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a)
+            num2 = int4(b,p,i,a)
             dem = eQP(p) + eQP(i) - eQP(a) - eQP(b)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                
