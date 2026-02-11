@@ -7,7 +7,7 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
   complex*16                    :: temp_val
   complex*16                    :: temp_vec(n)
   double precision              :: etanorm
-  double precision              :: threshold = 1d-6
+  double precision              :: threshold = 1d-8
 
   ! -------------------------------
   ! Step 1: initial bubble sort
@@ -60,47 +60,27 @@ end do
 
      etanorm = sum(abs(evecs(1:nhalf,i))**2) - &
                sum(abs(evecs(nhalf+1:n,i))**2)
-     print *, i, etanorm
-     ! tolerance for zero real part
-     if (abs(real(evals(i))) < threshold) then
 
-        ! purely imaginary pair
-        if (aimag(evals(i)) > 0d0) then
-           ! positive imaginary part -> move to second half
-           j = nhalf + i
+     if(abs(etanorm) < threshold) then
+       print *, 'Mode with vanishing eta-norm has been found !'
+       print *, 'Omega:', evals(i)
+       print *, 'eta-norm', etanorm
+     end if
 
-           temp_val = evals(i)
-           evals(i) = evals(j)
-           evals(j) = temp_val
+     ! normal case: classify by eta-norm
+     if (etanorm < -threshold) then
 
-           temp_vec = evecs(:, i)
-           evecs(:, i) = evecs(:, j)
-           evecs(:, j) = temp_vec
+        j = nhalf + i
 
-        end if
+        temp_val = evals(i)
+        evals(i) = evals(j)
+        evals(j) = temp_val
 
-     else
+        temp_vec = evecs(:, i)
+        evecs(:, i) = evecs(:, j)
+        evecs(:, j) = temp_vec
 
-        ! normal case: classify by eta-norm
-        if (abs(etanorm) < threshold) then
-           print *, 'Mode with vanishing eta-norm has been found !'
-           print *, 'Omega:',i, evals(i)
-
-        else if (etanorm < threshold) then
-
-           j = nhalf + i
-
-           temp_val = evals(i)
-           evals(i) = evals(j)
-           evals(j) = temp_val
-
-           temp_vec = evecs(:, i)
-           evecs(:, i) = evecs(:, j)
-           evecs(:, j) = temp_vec
-
-           counter = counter + 1
-
-        end if
+        counter = counter + 1
 
      end if
 
@@ -144,10 +124,10 @@ end do
   end do
   print *,"OmOmminus"
   call complex_vecout(n,evals)
-!  print *,'eta norm of omomminus'
-!  do i=1,n
-!    print *,i,sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2)
-!    call complex_vecout(n,evecs(:,i))
-!  end do
+  print *,'eta norm of omomminus'
+  do i=1,n
+    print *,i,sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2)
+    call complex_vecout(n,evecs(:,i))
+  end do
 
 end subroutine
