@@ -28,6 +28,11 @@ subroutine complex_mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
     write(*,*) 'Core guess...'
     call complex_core_guess(nBas, nOrb, Hc, X, c)
+  
+  elseif(guess_type == 2) then
+
+    write(*,*) 'Huckel guess...'
+    call complex_huckel_guess(nBas, nOrb,S,Hc, X, c)
   else
     print*,'Wrong guess option'
     stop
