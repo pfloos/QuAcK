@@ -30,7 +30,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
 ! Local variables
   integer                       :: i,j,k,a,b,c
   integer                       :: p,n
-  double precision              :: num,dem,reg
+  double precision              :: num1,num2,num,dem,reg
   double precision              :: start_t,end_t,t
 
   double precision,allocatable  :: int3(:,:,:)
@@ -63,12 +63,14 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
   if(do_2d_channel) then
  
     do p=nC+1,nOrb-nR
+
       ! 2h1p sum
+
       do i=nC+1,nO
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
  
-            num = ERI(p,a,j,i) * 2d0*ERI(j,i,p,a)
+            num = 2d0 * ERI(p,a,j,i) * ERI(j,i,p,a)
             dem = eQP(p) + eQP(a) - eQP(i) - eQP(j)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
             
@@ -78,12 +80,14 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
           end do ! a
         end do ! j
       end do ! i
+
       ! 2p1h sum
+
       do i=nC+1,nO
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
  
-            num  = ERI(p,i,b,a) * 2d0*ERI(b,a,p,i)
+            num = 2d0 * ERI(p,i,b,a) * ERI(b,a,p,i)
             dem = eQP(p) + eQP(i) - eQP(a) - eQP(b)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
             
@@ -101,7 +105,9 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
   if(do_2x_channel) then
  
     do p=nC+1,nOrb-nR
+
       ! 2h1p sum
+
       do i=nC+1,nO
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
@@ -116,7 +122,9 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
           end do ! a
         end do ! j
       end do ! i
+
       ! 2p1h sum
+
       do i=nC+1,nO
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
@@ -161,7 +169,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_sing_rho,eh_sing_Om,int3)  
     !$OMP DO
     do n=1,nS
-       do j=nC+1,nO
+       do j=nC+1,nOrb-nR
           do p=nC+1,nOrb-nR
              
              do i=nC+1,nO
@@ -171,13 +179,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
                    dem = eQP(a) - eQP(i) - eh_sing_Om(n)
                    reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                    
-                   int3(p,j,n) = int3(p,j,n) + num*reg
+                   int3(p,j,n) = int3(p,j,n) + num * reg
                    
                    num = (0.5d0*ERI(p,i,a,j) - ERI(p,i,j,a)) * eh_sing_rho(a,i,n)
                    dem = eQP(a) - eQP(i) + eh_sing_Om(n) 
                    reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                    
-                   int3(p,j,n) = int3(p,j,n) + num*reg
+                   int3(p,j,n) = int3(p,j,n) + num * reg
                    
                 end do
              end do
@@ -189,19 +197,20 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP END PARALLEL 
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,j,n,num,dem,reg) & 
+    !$OMP PRIVATE(p,j,n,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,eh_sing_rho,eh_sing_Om,int3,SigC,Z)  
     !$OMP DO
     do p=nC+1,nOrb-nR
       do j=nC+1,nO
         do n=1,nS
  
-          num = eh_sing_rho(p,j,n) + int3(p,j,n)
+          num1 = eh_sing_rho(p,j,n) + int3(j,p,n)
+          num2 = eh_sing_rho(j,p,n) + int3(p,j,n)
           dem = eQP(p) - eQP(j) + eh_sing_Om(n)
           reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
              
-          SigC(p) = SigC(p) + num * num * reg
-          Z(p) = Z(p) - num * num * reg / dem
+          SigC(p) = SigC(p) + num1 * num2 * reg
+          Z(p) = Z(p) - num1 * num2 * reg / dem
  
         end do
       end do
@@ -219,27 +228,29 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     int4(:,:,:,:) = 0d0
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,i,a,j,n,num,dem,reg) & 
+    !$OMP PRIVATE(p,i,a,j,n,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,eh_sing_rho,eh_sing_Om,int4)  
     !$OMP DO
     do a=nO+1,nOrb-nR
-      do j=nC+1,nO
+      do j=nC+1,nOrb-nR
         do i=nC+1,nO
           do p=nC+1,nOrb-nR
  
             do n=1,nS
- 
-              num = - eh_sing_rho(i,a,n) * eh_sing_rho(p,j,n)
-              dem = eQP(a) - eQP(i) - eh_sing_Om(n)
-              reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
- 
-              int4(p,i,j,a) = int4(p,i,j,a) + num*reg
- 
-              num  = eh_sing_rho(a,i,n) * eh_sing_rho(j,p,n)
+
+              num1 = eh_sing_rho(a,i,n)
+              num2 = eh_sing_rho(j,p,n)
               dem = eQP(a) - eQP(i) + eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int4(p,i,j,a) = int4(p,i,j,a) + num*reg
+              int4(p,j,i,a) = int4(p,j,i,a) + num1 * num2 * reg
+ 
+              num1 = eh_sing_rho(i,a,n)
+              num2 = eh_sing_rho(p,j,n)
+              dem = eQP(a) - eQP(i) - eh_sing_Om(n)
+              reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
+ 
+              int4(p,j,i,a) = int4(p,j,i,a) - num1 * num2 * reg
  
            end do
            
@@ -252,7 +263,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP END PARALLEL 
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,i,j,a,num,dem,reg) & 
+    !$OMP PRIVATE(p,i,j,a,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,ERI,int4,SigC,Z)  
     !$OMP DO
     do p=nC+1,nOrb-nR
@@ -260,12 +271,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
         do j=nC+1,nO
           do a=nO+1,nOrb-nR
  
-            num = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i) + int4(p,i,j,a)
+            num1 = 0.5d0*ERI(p,a,i,j) - ERI(p,a,j,i) + int4(j,p,i,a)
+            num2 = 0.5d0*ERI(j,a,i,p) - ERI(j,a,p,i) + int4(p,j,i,a)
             dem = eQP(p) - eQP(i) - eQP(j) + eQP(a)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                
-            SigC(p) = SigC(p) + num * num * reg
-            Z(p) = Z(p) - num * num * reg / dem
+            SigC(p) = SigC(p) + num1 * num2 * reg
+            Z(p) = Z(p) - num1 * num2 * reg / dem
  
           end do
         end do
@@ -288,7 +300,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,ERI,eQP,eh_sing_rho,eh_sing_Om,int3)  
     !$OMP DO
     do n=1,nS
-      do b=nO+1,nOrb-nR
+      do b=nC+1,nOrb-nR
         do p=nC+1,nOrb-nR
  
           do i=nC+1,nO
@@ -298,13 +310,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
               dem = eQP(a) - eQP(i) - eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int3(p,b,n) = int3(p,b,n) + num*reg
+              int3(b,p,n) = int3(b,p,n) + num * reg
  
               num  = (0.5d0*ERI(p,a,i,b) - ERI(p,a,b,i)) * eh_sing_rho(a,i,n) 
               dem = eQP(a) - eQP(i) + eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int3(p,b,n) = int3(p,b,n) + num*reg
+              int3(b,p,n) = int3(b,p,n) + num * reg
  
             end do
           end do
@@ -316,19 +328,20 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP END PARALLEL 
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,b,n,num,dem,reg) & 
+    !$OMP PRIVATE(p,b,n,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,eh_sing_rho,eh_sing_Om,int3,SigC,Z)  
     !$OMP DO
     do p=nC+1,nOrb-nR
       do b=nO+1,nOrb-nR
         do n=1,nS
  
-          num = eh_sing_rho(b,p,n) + int3(p,b,n)
+          num1 = eh_sing_rho(b,p,n) + int3(p,b,n)
+          num2 = eh_sing_rho(p,b,n) + int3(b,p,n)
           dem = eQP(p) - eQP(b) - eh_sing_Om(n)
           reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-          SigC(p) = SigC(p) + num * num * reg
-          Z(p) = Z(p) - num * num * reg / dem
+          SigC(p) = SigC(p) + num1 * num2 * reg
+          Z(p) = Z(p) - num1 * num2 * reg / dem
  
         end do
       end do
@@ -346,27 +359,29 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     int4(:,:,:,:) = 0d0
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,i,a,j,n,num,dem,reg) & 
+    !$OMP PRIVATE(p,i,a,j,n,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,eh_sing_rho,eh_sing_Om,int4)  
     !$OMP DO
-    do b=nO+1,nOrb-nR
+    do b=nC+1,nOrb-nR
       do a=nO+1,nOrb-nR
         do i=nC+1,nO
           do p=nC+1,nOrb-nR
  
             do n=1,nS
  
-              num = - eh_sing_rho(i,a,n) * eh_sing_rho(b,p,n)
-              dem = eQP(a) - eQP(i) - eh_sing_Om(n)
-              reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
- 
-              int4(p,i,a,b) = int4(p,i,a,b) + num*reg
- 
-              num = eh_sing_rho(a,i,n) * eh_sing_rho(p,b,n)
+              num1 = eh_sing_rho(a,i,n)
+              num2 = eh_sing_rho(p,b,n)
               dem = eQP(a) - eQP(i) + eh_sing_Om(n)
               reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
  
-              int4(p,i,a,b) = int4(p,i,a,b) + num*reg
+              int4(b,p,i,a) = int4(b,p,i,a) + num1 * num2 * reg
+
+              num1 = eh_sing_rho(i,a,n) 
+              num2 = eh_sing_rho(b,p,n)
+              dem = eQP(a) - eQP(i) - eh_sing_Om(n)
+              reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
+ 
+              int4(b,p,i,a) = int4(b,p,i,a) - num1 * num2 * reg
  
             end do
  
@@ -378,7 +393,7 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
     !$OMP END PARALLEL 
  
     !$OMP PARALLEL DEFAULT(NONE)    &                                       
-    !$OMP PRIVATE(p,i,a,b,num,dem,reg) & 
+    !$OMP PRIVATE(p,i,a,b,num,dem,reg,num1,num2) & 
     !$OMP SHARED(nC,nO,nOrb,nR,nS,eta,eQP,ERI,int4,SigC,Z)  
     !$OMP DO
     do p=nC+1,nOrb-nR
@@ -386,12 +401,13 @@ subroutine R_Parquet_self_energy_diag_psd(eta,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
  
-            num  = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(p,i,a,b)
+            num1 = 0.5d0*ERI(p,i,a,b) - ERI(p,i,b,a) + int4(p,b,i,a)
+            num2 = 0.5d0*ERI(b,i,a,p) - ERI(b,i,p,a) + int4(b,p,i,a)
             dem = eQP(p) + eQP(i) - eQP(a) - eQP(b)
             reg = (1d0 - exp(- 2d0 * eta * dem * dem))/dem
                
-            SigC(p) = SigC(p) + num * num * reg
-            Z(p) = Z(p) - num * num * reg / dem
+            SigC(p) = SigC(p) + num1 * num2 * reg
+            Z(p) = Z(p) - num1 * num2 * reg / dem
  
           end do
         end do
