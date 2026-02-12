@@ -109,17 +109,28 @@ end do
      end do
   end do
 
-  ! Sort negative de-excitations descending
+  ! Sort negative de-excitations descending (real value), and descding in imaginary value
   do i = nhalf+1, n-1
      do j = i+1, n
-        if (real(evals(i)) < real(evals(j))) then
-          temp_val = evals(i)
-          evals(i) = evals(j)
-          evals(j) = temp_val
-          temp_vec = evecs(:, i)
-          evecs(:, i) = evecs(:, j)
-          evecs(:, j) = temp_vec
-        end if
+       if (abs(real(evals(i)) - real(evals(j))) > threshold) then
+         if (real(evals(i)) < real(evals(j))) then
+           temp_val = evals(i)
+           evals(i) = evals(j)
+           evals(j) = temp_val
+           temp_vec = evecs(:, i)
+           evecs(:, i) = evecs(:, j)
+           evecs(:, j) = temp_vec
+         end if
+       else
+         if(aimag(evals(i))< aimag(evals(j))) then
+           temp_val = evals(i)
+           evals(i) = evals(j)
+           evals(j) = temp_val
+           temp_vec = evecs(:, i)
+           evecs(:, i) = evecs(:, j)
+           evecs(:, j) = temp_vec
+         end if
+       end if
      end do
   end do
   print *,"OmOmminus"
