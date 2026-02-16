@@ -50,7 +50,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
-  double precision              :: Ehfl,EcGM
+  double precision              :: Ehfl,EcGM,Ehcore,Ehartree,Ex
   double precision              :: eta,diff_Pao
   double precision              :: nElectrons
   double precision              :: err_EcGM
@@ -459,16 +459,22 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
     ! Build F
     iter_fock=iter_fock+1
     F_ao=Hc
+    Ehcore=0d0
     Ehfl=0d0
+    Ehartree=0d0
+    Ex=0d0
     do ibas=1,nBas
      do jbas=1,nBas
       Ehfl=Ehfl+P_ao(ibas,jbas)*Hc(ibas,jbas)
+      Ehcore=Ehcore+P_ao(ibas,jbas)*Hc(ibas,jbas)
       do kbas=1,nBas
        do lbas=1,nBas
         F_ao(ibas,jbas)=F_ao(ibas,jbas)+P_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
                        -0.5d0*P_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
         Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
             -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+        Ehartree=Ehartree+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
+        Ex=Ex-0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
        enddo
       enddo
      enddo
@@ -542,6 +548,9 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
   write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+  write(*,'(a,f15.8)')        ' Ehcore      ',Ehcore
+  write(*,'(a,f15.8)')        ' Hartree     ',Ehartree
+  write(*,'(a,f15.8)')        ' Exchange    ',Ex
   write(*,'(a,f15.8)')        ' Ehfl        ',Ehfl
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
@@ -609,6 +618,9 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  write(*,'(a,f15.8)')        ' Change of P ',diff_Pao
  write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
  write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+ write(*,'(a,f15.8)')        ' Ehcore      ',Ehcore
+ write(*,'(a,f15.8)')        ' Hartree     ',Ehartree
+ write(*,'(a,f15.8)')        ' Exchange    ',Ex
  write(*,'(a,f15.8)')        ' Ehfl        ',Ehfl
  write(*,'(a,f15.8)')        ' EcGM        ',EcGM
  write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM
@@ -663,14 +675,17 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
     trace_1_rdm=trace_1_rdm+P_ao_old(ibas,jbas)*S(ibas,jbas)
    enddo
   enddo
-  Ehfl=0d0
+  Ehfl=0d0;Ehartree=0d0;Ex=0d0;Ehcore=0d0;
   do ibas=1,nBas
    do jbas=1,nBas
     Ehfl=Ehfl+P_ao_old(ibas,jbas)*Hc(ibas,jbas)
+    Ehcore=Ehcore+P_ao_old(ibas,jbas)*Hc(ibas,jbas)
     do kbas=1,nBas
      do lbas=1,nBas
       Ehfl=Ehfl+0.5d0*P_ao_old(kbas,lbas)*P_ao_old(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
           -0.25d0*P_ao_old(kbas,lbas)*P_ao_old(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+      Ehartree=Ehartree+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
+      Ex=Ex-0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
      enddo
     enddo
    enddo
@@ -680,6 +695,9 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   Occ=-Occ
   cNO=matmul(cHF,U_mo)
   write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+  write(*,'(a,f15.8)')        ' Ehcore      ',Ehcore
+  write(*,'(a,f15.8)')        ' Ehartree    ',Ehartree
+  write(*,'(a,f15.8)')        ' Ex          ',Ex
   write(*,'(a,f15.8)')        ' Ehfl        ',Ehfl
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfl+EcGM

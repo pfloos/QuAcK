@@ -256,7 +256,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
  cHFB_gorkov=0d0
  cHFB_gorkov(1:nBas           ,1:nOrb           ) = cHFB(1:nBas,1:nOrb)
  cHFB_gorkov(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = cHFB(1:nBas,1:nOrb)
-! eQP_old(:)=eQP_state(:)
  H_ao_hfb=0d0
  H_ao_hfb(1:nBas,1:nBas)=Hc(1:nBas,1:nBas)
  Ehfbl=0d0
@@ -588,10 +587,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
     H_ao_hfb=0d0
     H_ao_hfb(1:nBas,1:nBas)=Hc(1:nBas,1:nBas)
     Ehfbl=0d0
+    Ecore=0d0; Eh=0d0; Ex=0d0; Epair=0d0;
     do ibas=1,nBas
      do jbas=1,nBas
       obas=nBas+1+(jbas-1)
       Ehfbl=Ehfbl+2d0*R_ao(ibas,jbas)*Hc(ibas,jbas)
+      Ecore=Ecore+2d0*R_ao(ibas,jbas)*Hc(ibas,jbas)
       do kbas=1,nBas
        do lbas=1,nBas
         qbas=nBas+1+(lbas-1)
@@ -601,6 +602,9 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
         Ehfbl=Ehfbl+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
              -R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)           &
              +sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
+        Eh=Eh+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
+        Ex=Ex-R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas) 
+        Epair=Epair+sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
        enddo
       enddo
      enddo
@@ -676,6 +680,10 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
   write(*,'(a,f15.8)')        ' Change of R ',diff_Rao
   write(*,'(a,f15.8)')        ' Chem. Pot.  ',chem_pot
   write(*,'(a,f15.8)')        ' Enuc        ',ENuc
+  write(*,'(a,f15.8)')        ' Ehcore      ',Ecore
+  write(*,'(a,f15.8)')        ' Hartree     ',Eh
+  write(*,'(a,f15.8)')        ' Exchange    ',Ex
+  write(*,'(a,f15.8)')        ' Epairing    ',Epair
   write(*,'(a,f15.8)')        ' Ehfbl       ',Ehfbl
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfbl+EcGM
@@ -746,6 +754,10 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
  write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
  write(*,'(a,f15.8)')        ' N anomalus   ',N_anom
  write(*,'(a,f15.8)')        ' Enuc         ',ENuc
+ write(*,'(a,f15.8)')        ' Ehcore       ',Ecore
+ write(*,'(a,f15.8)')        ' Hartree      ',Eh
+ write(*,'(a,f15.8)')        ' Exchange     ',Ex
+ write(*,'(a,f15.8)')        ' Epairing     ',Epair
  write(*,'(a,f15.8)')        ' Ehfbl        ',Ehfbl
  write(*,'(a,f15.8)')        ' EcGM         ',EcGM
  write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
@@ -822,7 +834,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
            R_ao_old(1:nBas,nBas+1:nBas_twice)))
   write(*,'(a,f15.8)')        ' N anomalus    ',N_anom
   write(*,'(a,f15.8)')        ' Enuc          ',ENuc
-  write(*,'(a,f15.8)')        ' Hcore         ',Ecore
+  write(*,'(a,f15.8)')        ' Ehcore        ',Ecore
   write(*,'(a,f15.8)')        ' Hartree       ',Eh
   write(*,'(a,f15.8)')        ' Exchange      ',Ex
   write(*,'(a,f15.8)')        ' Epairing      ',Epair
