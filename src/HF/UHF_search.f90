@@ -1,4 +1,4 @@
-subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,write_MOs,nNuc,ZNuc,rNuc,ENuc, &
                       nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,           &
                       dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,e,c,P,F)
 
@@ -13,6 +13,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
   double precision,intent(in)   :: thresh
   double precision,intent(inout):: mix
   double precision,intent(in)   :: level_shift
+  logical,intent(in)            :: write_MOs
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
@@ -105,7 +106,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 !---------------------!
 
     call wall_time(start_HF)
-    call UHF(.false.,maxSCF,thresh,max_diis,guess,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call UHF(.false.,maxSCF,thresh,max_diis,guess,mix,level_shift,write_MOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,e,c,P,F)
     call wall_time(end_HF)
 
