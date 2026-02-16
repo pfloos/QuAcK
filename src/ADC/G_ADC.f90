@@ -95,39 +95,63 @@ subroutine G_ADC(dotest,                                               &
   ! Perform IP/EA-ADC(2) calculation !
   !----------------------------------!
 
-    if(do_IPEA_ADC2) then 
+   if(do_IPEA_ADC2) then 
       
       call wall_time(start_ADC)
+      if(do_dyson) then
 
-      if(diag_approx) then
-         call G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+         if(diag_approx) then
+            call G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+         else
+            call G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+         end if
+
       else
-         call G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+
+         if(diag_approx) then
+            print*, 'Diagonal version of non-Dyson IP-ADC(2) not yet implemented in GHF branch'
+         else
+            print*, 'Full version of non-Dyson IP-ADC(2) not yet implemented in GHF branch'
+         end if
       end if
-      
       call wall_time(end_ADC)
-    
+      
       t_ADC = end_ADC - start_ADC
       write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(2) = ',t_ADC,' seconds'
       write(*,*)
- 
-    end if
+      
+   end if
 
   !----------------------------------!
   ! Perform IP/EA-ADC(3) calculation !
   !----------------------------------!
 
-    if(do_IPEA_ADC3) then
+   if(do_IPEA_ADC3) then 
+      
+      call wall_time(start_ADC)
+      if(do_dyson) then
 
-      ! call wall_time(start_ADC)
-      ! call G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
-      ! call wall_time(end_ADC)
+         if(diag_approx) then
+            print*, 'Diagonal version of non-Dyson IP-ADC(3) not yet implemented in GHF branch'
+         else
+            call G_IPEA_ADC3(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+         end if
 
-      ! t_ADC = end_ADC - start_ADC
-      ! write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(3) = ',t_ADC,' seconds'
-      ! write(*,*)
+      else
 
-    end if
+         if(diag_approx) then
+            print*, 'Diagonal version of non-Dyson IP-ADC(3) not yet implemented in GHF branch'
+         else
+            print*, 'Full version of non-Dyson IP-ADC(3) not yet implemented in GHF branch'
+         end if
+      end if
+      call wall_time(end_ADC)
+      
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(2) = ',t_ADC,' seconds'
+      write(*,*)
+      
+   end if
 
   !----------------------------!
   ! Perform SOSEX calculation !

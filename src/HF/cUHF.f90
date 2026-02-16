@@ -245,7 +245,7 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMO
 
 !   Mix guess for UHF solution in singlet states
 
-    if(nSCF == 1 .and. mix > 0d0) print *, "No mix guess available"
+    if(nSCF == 1 .and. mix > 0d0) call complex_mix_guess(nBas,nO,mix,c)
 
 !   Compute density matrix 
 

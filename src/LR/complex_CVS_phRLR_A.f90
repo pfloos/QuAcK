@@ -1,4 +1,4 @@
-subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,lambda,e,ERI,Aph)
+subroutine complex_CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,lambda,e,ERI,Aph)
 
 ! Compute resonant block of the ph channel
 
@@ -18,10 +18,10 @@ subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtu
   integer,intent(in)           :: nCVS
   integer,intent(in)           :: nFC
   integer,intent(in)           :: occupations(nO-nFC)
-  integer,intent(in)           :: virtuals(nBas - nO )
+  integer,intent(in)           :: virtuals(nV)
   double precision,intent(in)  :: lambda
-  double precision,intent(in)  :: e(nBas)
-  double precision,intent(in)  :: ERI(nBas,nBas,nBas,nBas) 
+  complex*16,intent(in)        :: e(nBas)
+  complex*16,intent(in)        :: ERI(nBas,nBas,nBas,nBas) 
   
 ! Local variables
 
@@ -31,11 +31,11 @@ subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtu
   integer                      :: i,j,a,b,ia,jb
   integer                      :: nn,jb0
   logical                      :: i_eq_j
-  double precision             :: ct1,ct2
+  complex*16                   :: ct1,ct2
 
 ! Output variables
 
-  double precision,intent(out) :: Aph(nS,nS)
+  complex*16,intent(out)       :: Aph(nS,nS)
 
 ! Direct RPA
 
@@ -43,7 +43,6 @@ subroutine CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtu
   if(dRPA) delta_dRPA = 1d0
 
 ! Build A matrix for single manifold
-
   if(ispin == 1) then 
 
     ia = 0

@@ -1,5 +1,5 @@
 subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
-                nCVS,occupations,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+                nCVS,nFC,occupations,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
 ! Print transition vectors for linear response calculation
 
@@ -19,7 +19,8 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
   integer,intent(in)            :: nSb
   integer,intent(in)            :: nSt
   integer,intent(in)            :: nCVS(nspin)
-  integer,intent(in)            :: occupations(maxval(nO),nspin)
+  integer,intent(in)            :: nFC(nspin)
+  integer,intent(in)            :: occupations(maxval(nO-nFC),nspin)
   integer,intent(in)            :: virtuals(nBas - minval(nO),nspin)
   complex*16                    :: dipole_int_aa(nBas,nBas,ncart)
   complex*16                    :: dipole_int_bb(nBas,nBas,ncart)
@@ -32,7 +33,7 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
 ! Local variables
 
   integer                       :: ia,jb,j,b
-  integer                       :: maxS = 10
+  integer                       :: maxS = 30
   double precision,parameter    :: thres_vec = 0.1d0
   complex*16,allocatable        :: X(:)
   complex*16,allocatable        :: Y(:)
@@ -40,10 +41,10 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
   complex*16,allocatable        :: S2(:)
 
 ! Memory allocation
-print *, "Transistion vectors not yet implemented for CVS !"
-!  maxS = min(nSt,maxS)
-!  allocate(X(nSt),Y(nSt),os(maxS),S2(maxS))
-!
+  maxS = min(nSt,maxS)
+  allocate(X(nSt),Y(nSt),os(maxS),S2(maxS))
+
+! Not implemented for complex yet
 !! Compute oscillator strengths
 !
 !  os(:) = 0d0
@@ -53,121 +54,134 @@ print *, "Transistion vectors not yet implemented for CVS !"
 !! Compute <S**2>
 !
 !  call S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,Om,XpY,XmY,S2)
-!
-!! Print details about spin-conserved excitations
-!
-!  if(ispin == 1) then
-!
-!    do ia=1,maxS
-!
-!      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-!      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
-!
+
+! Print details about spin-conserved excitations
+
+  if(ispin == 1) then
+
+    do ia=1,maxS
+
+      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
+      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+
+      print*,'-------------------------------------------------------------'
+      write(*,'(A15,I3,A2,F15.6,A5,F15.6,A3)') & 
+              ' Excitation n. ',ia,': ',real(Om(ia)*HaToeV),' + i ',aimag(Om(ia)*HaToeV),' eV'
+      print*,'-------------------------------------------------------------'
+
+      ! Spin-up transitions
+
+      jb = 0
+      do j=1,nO(1) - nFC(1)
+        do b=nCVS(1)+1,nBas-nO(1)
+          jb = jb + 1
+          if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,1),'A -> ',&
+            virtuals(b,1),'A = ',real(X(jb)),' + i ', aimag(X(jb))
+        end do
+      end do
+   
+      jb = 0
+      do j=1,nO(1) - nFC(1)
+        do b=nCVS(1)+1,nBas-nO(1)
+          jb = jb + 1
+          if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,1),'A <- ',&
+               virtuals(b,1),'A = ',real(Y(jb)),' + i ', aimag(Y(jb))
+        end do
+      end do
+
+      ! Spin-down transitions
+
+      jb = 0
+      do j=1,nO(2) - nFC(2)
+        do b=nCVS(2)+1,nBas-nO(2)
+          jb = jb + 1
+          if(abs(X(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,2),'B -> ',&
+              virtuals(b,2),'B = ',real(X(nSa+jb)),'+ i ',aimag(X(nSa + jb))
+        end do
+      end do
+   
+      jb = 0
+      do j=1,nO(2)-nFC(2)
+        do b=nCVS(2)+1,nBas-nO(2)
+          jb = jb + 1
+          if(abs(Y(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,2),'B <- ',&
+             virtuals(b,2),'B = ',real(Y(nSa+jb)),' + i ',aimag(Y(nSa + jb))
+        end do
+      end do
+     write(*,*)
+
+    end do
+
+  end if
+
+! Print details about spin-flip excitations
+
+  if(ispin == 2) then
+
+    do ia=1,maxS
+
+      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
+      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+
+
 !      print*,'-------------------------------------------------------------'
 !      write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
 !              ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
 !      print*,'-------------------------------------------------------------'
-!
-!      ! Spin-up transitions
-!
-!      jb = 0
-!      do j=nC(1)+1,nO(1)
-!        do b=nO(1)+1,nBas-nR(1)
-!          jb = jb + 1
-!          if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'A = ',X(jb)
-!        end do
-!      end do
-!   
-!      jb = 0
-!      do j=nC(1)+1,nO(1)
-!        do b=nO(1)+1,nBas-nR(1)
-!          jb = jb + 1
-!          if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'A = ',Y(jb)
-!        end do
-!      end do
-!
-!      ! Spin-down transitions
-!
-!      jb = 0
-!      do j=nC(2)+1,nO(2)
-!        do b=nO(2)+1,nBas-nR(2)
-!          jb = jb + 1
-!          if(abs(X(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B -> ',b,'B = ',X(nSa+jb)
-!        end do
-!      end do
-!   
-!      jb = 0
-!      do j=nC(2)+1,nO(2)
-!        do b=nO(2)+1,nBas-nR(2)
-!          jb = jb + 1
-!          if(abs(Y(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'B <- ',b,'B = ',Y(nSa+jb)
-!        end do
-!      end do
-!     write(*,*)
-!
-!    end do
-!
-!  end if
-!
-!! Print details about spin-flip excitations
-!
-!  if(ispin == 2) then
-!
-!    do ia=1,maxS
-!
-!      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-!      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
-!
-!
-!      print*,'-------------------------------------------------------------'
-!      write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
-!              ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
-!      print*,'-------------------------------------------------------------'
-!
-!      ! Spin-up transitions
-!
-!      jb = 0
-!      do j=nC(1)+1,nO(1)
-!        do b=nO(2)+1,nBas-nR(2)
-!          jb = jb + 1
-!          if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'B = ',X(jb)
-!        end do
-!      end do
-!   
-!      jb = 0
-!      do j=nC(1)+1,nO(1)
-!        do b=nO(2)+1,nBas-nR(2)
-!          jb = jb + 1
-!          if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'B = ',Y(jb)
-!        end do
-!      end do
-!
-!      ! Spin-down transitions
-!
-!      jb = 0
-!      do j=nC(2)+1,nO(2)
-!        do b=nO(1)+1,nBas-nR(1)
-!          jb = jb + 1
-!          if(abs(X(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A -> ',b,'B = ',X(nSa+jb)
-!        end do
-!      end do
-!   
-!      jb = 0
-!      do j=nC(2)+1,nO(2)
-!        do b=nO(1)+1,nBas-nR(1)
-!          jb = jb + 1
-!          if(abs(Y(nSa+jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F10.6)') j,'A <- ',b,'B = ',Y(nSa+jb)
-!        end do
-!      end do
-!     write(*,*)
-!
-!    end do
-!
-!  end if
-!
-!! Thomas-Reiche-Kuhn sum rule
+ 
+      print*,'-------------------------------------------------------------'
+      write(*,'(A15,I3,A2,F15.6,A5,F15.6,A3)') & 
+              ' Excitation n. ',ia,': ',real(Om(ia)*HaToeV),' + i ',aimag(Om(ia)*HaToeV),' eV'
+      print*,'-------------------------------------------------------------'
+
+      ! Spin-up transitions
+
+      jb = 0
+      do j=1,nO(1) - nFC(1)
+        do b=nCVS(2)+1,nBas-nO(2)
+          jb = jb + 1
+          if(abs(X(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,1),'A -> ',virtuals(b,2),&
+          'B = ',real(X(jb)),' + i ', aimag(X(jb))
+        end do
+      end do
+   
+      jb = 0
+      do j=1,nO(1) - nFC(1)
+        do b=nCVS(2)+1,nBas-nO(2)
+          jb = jb + 1
+          if(abs(Y(jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,1),'A <- ',virtuals(b,2),&
+          'B = ',real(Y(jb)),' + i ', aimag(Y(jb))
+        end do
+      end do
+
+      ! Spin-down transitions
+
+      jb = 0
+      do j=1,nO(2) - nFC(2)
+        do b=nCVS(1)+1,nBas-nO(1)
+          jb = jb + 1
+          if(abs(X(nSa + jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,2),'A -> ',virtuals(b,1),&
+          'B = ',real(Y(jb)),' + i ', aimag(Y(jb))
+        end do
+      end do
+   
+      jb = 0
+      do j=1,nO(2)-nFC(2)
+        do b=nCVS(1)+1,nBas-nO(1)
+          jb = jb + 1
+          if(abs(Y(nSa + jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,2),'A <- ',virtuals(b,1),&
+          'B = ',real(Y(nSa+jb)),' + i ', aimag(Y(nSa+jb))
+        end do
+      end do
+     write(*,*)
+
+    end do
+
+  end if
+
+! Thomas-Reiche-Kuhn sum rule
 !
 !  write(*,'(A30,F10.6)') 'Thomas-Reiche-Kuhn sum rule = ',sum(os(:))
 !  write(*,*)
-!
+
 end subroutine 

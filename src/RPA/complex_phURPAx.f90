@@ -1,4 +1,4 @@
-subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, & 
+subroutine complex_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, & 
                   ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,CAP_MO,eHF,c,S,occupations)
 
 ! Perform random phase approximation calculation with exchange (aka TDHF) in the unrestricted formalism
@@ -116,7 +116,7 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
 
 ! Initialization
 
-  dRPA = .true.
+  dRPA = .false.
   EcRPA(:) = 0d0
   lambda = 1d0
   allocate(virtuals(nBas - minval(nO),nspin))
@@ -146,7 +146,7 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
                              lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     call complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call complex_print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
+    call complex_print_excitation_energies('phRPAx@UHF','spin-conserved',nSt,Om)
     call complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
                 nCVS,nFC,occupations_fc,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
@@ -174,7 +174,7 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
                                   lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
     call complex_phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call complex_print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
+    call complex_print_excitation_energies('phRPAx@UHF','spin-flip',nSt,Om)
     call complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
                 nCVS,nFC,occupations_fc,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
@@ -189,12 +189,23 @@ subroutine complex_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin
 
   end if
 
+  if(exchange_kernel) then
+
+    EcRPA(1) = 0.5d0*EcRPA(1)
+    EcRPA(2) = 0.5d0*EcRPA(2)
+
+  else
+
+    EcRPA(2) = 0d0
+
+  end if
+
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phURPA correlation energy (spin-conserved) = ',real(EcRPA(1)),'+ i*',aimag(EcRPA(1)),' au'
-  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phURPA correlation energy (spin-flip)      = ',real(EcRPA(2)),'+ i*',aimag(EcRPA(2)),' au'
-  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phURPA correlation energy                  = ',real(sum(EcRPA)),'+ i*',aimag(sum(EcRPA)),' au'
-  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phURPA total energy                        = ',real(ENuc + EUHF + sum(EcRPA)),'+ i*',aimag(ENuc + EUHF + sum(EcRPA)),' au'
+  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phURPAx correlation energy (spin-conserved) = ',real(EcRPA(1)),'+ i*',aimag(EcRPA(1)),' au'
+  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phURPAx correlation energy (spin-flip)      = ',real(EcRPA(2)),'+ i*',aimag(EcRPA(2)),' au'
+  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phURPAx correlation energy                  = ',real(sum(EcRPA)),'+ i*',aimag(sum(EcRPA)),' au'
+  write(*,'(2X,A50,F20.10,A3,F20.10,A3)') 'Tr@phURPAx total energy                        = ',real(ENuc + EUHF + sum(EcRPA)),'+ i*',aimag(ENuc + EUHF + sum(EcRPA)),' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

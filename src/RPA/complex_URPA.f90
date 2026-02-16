@@ -68,16 +68,16 @@ subroutine complex_URPA(dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
 ! Compute RPAx (RPA with exchange) excitations
 !------------------------------------------------------------------------
 
-  if(dophRPAx .and. CVS) then
-    print *, 'No phRPAx yet for CAP'
-   ! call wall_time(start_RPA)
-   ! call CVS_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, &
-   !             ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,eHF,cHF,S,occupations)
-   ! call wall_time(end_RPA)
+  if(dophRPAx) then
 
-   ! t_RPA = end_RPA - start_RPA
-   ! write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPA,' seconds'
-   ! write(*,*)
+    call wall_time(start_RPA)
+    call complex_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF, &
+                ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,CAP_MO,eHF,cHF,S,occupations)
+    call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPAx = ',t_RPA,' seconds'
+    write(*,*)
 
   end if
 

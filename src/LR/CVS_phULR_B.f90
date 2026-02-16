@@ -141,7 +141,7 @@ subroutine CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupati
         ia = ia + 1
         jb = 0
         do j=1,nO(2) - nFC(2)
-          do b=1,nBas-nO(1)
+          do b=nCVS(1) + 1,nBas-nO(1)
             jb = jb + 1
  
             Bph(ia,nSa+jb) = - (1d0 - delta_dRPA)*lambda*ERI_aabb(occupations(i,1),occupations(j,2),virtuals(b,1),virtuals(a,2))
