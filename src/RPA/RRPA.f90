@@ -77,7 +77,11 @@ subroutine RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doACFDT,exch
   if(dophRPAx) then
 
     call wall_time(start_RPA)
-    call phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+    if(CVS) then
+      call CVS_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,eHF)
+    else
+      call phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+    end if
     call wall_time(end_RPA)
 
     t_RPA = end_RPA - start_RPA

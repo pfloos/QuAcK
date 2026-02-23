@@ -137,7 +137,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc, virtuals,&
                              lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-    call phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    call CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
     call CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt, &
                                dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
@@ -165,7 +165,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,&
                                   lambda,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-    call phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
+    call CVS_phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
     call CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 

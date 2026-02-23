@@ -1,4 +1,4 @@
-subroutine CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine CVS_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC,nO,nV,nR,nS,nCVS,FC,occupations,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform a direct random phase approximation calculation
 
@@ -97,7 +97,7 @@ subroutine CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
 
 ! Initialization
 
-  dRPA = .true.
+  dRPA = .false.
   EcRPA(:) = 0d0
   lambda = 1d0
 
@@ -120,7 +120,7 @@ subroutine CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
     if(.not.TDA) call CVS_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,ERI,Bph)
 
     call CVS_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation_energies('phRPA@RHF','singlet',nSCVS,Om)
+    call print_excitation_energies('phRPAx@RHF','singlet',nSCVS,Om)
     call CVS_phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nSCVS,dipole_int,Om,XpY,XmY)
 
   end if
@@ -135,7 +135,7 @@ subroutine CVS_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
     if(.not.TDA) call CVS_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,ERI,Bph)
 
     call CVS_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
-    call print_excitation_energies('phRPA@RHF','triplet',nSCVS,Om)
+    call print_excitation_energies('phRPAx@RHF','triplet',nSCVS,Om)
     call CVS_phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nSCVS,dipole_int,Om,XpY,XmY)
 
   end if
