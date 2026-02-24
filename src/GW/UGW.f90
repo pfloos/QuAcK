@@ -1,7 +1,7 @@
 subroutine UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,                                 &
               exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, &
-              linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EUHF,S,X,T,V,Hc,                 & 
-              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF)
+              linearize,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,nCVS,FC,CVS,EUHF,S,X,T,V,Hc,                 & 
+              ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF,occupations)
 
 ! GW module
 
@@ -15,6 +15,7 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
   logical,intent(in)            :: doG0W0
   logical,intent(in)            :: doevGW
   logical,intent(in)            :: doqsGW
+  logical,intent(in)            :: CVS
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -46,6 +47,9 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
   integer,intent(in)            :: nV(nspin)
   integer,intent(in)            :: nR(nspin)
   integer,intent(in)            :: nS(nspin)
+  integer,intent(in)            :: nCVS(nspin)
+  integer,intent(in)            :: FC(nspin)
+  integer,intent(in)            :: occupations(maxval(nO),nspin)
 
   double precision,intent(in)   :: EUHF
   double precision,intent(in)   :: eHF(nBas,nspin)
@@ -72,12 +76,26 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
 ! Perform G0W0 calculatiom
 !------------------------------------------------------------------------
 
-  if(doG0W0) then
+  if(doG0W0 .and. .not. CVS) then
     
     call wall_time(start_GW)
     call UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
                linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,            & 
                dipole_int_aa,dipole_int_bb,cHF,eHF)
+    call wall_time(end_GW)
+  
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for G0W0 = ',t_GW,' seconds'
+    write(*,*)
+
+  end if
+  
+  if(doG0W0 .and. CVS) then
+    
+    call wall_time(start_GW)
+    call CVS_UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
+               linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,            & 
+               dipole_int_aa,dipole_int_bb,cHF,eHF,occupations)
     call wall_time(end_GW)
   
     t_GW = end_GW - start_GW
