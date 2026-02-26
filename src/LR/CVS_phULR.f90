@@ -55,8 +55,6 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
       call print_warning('We dont find a Om and -Om structure as solution of the RPA. There might be a problem somewhere.')
       write(*,*) "Maximal difference :", maxval(abs(OmOmminus(1:nSt)+OmOmminus(nSt+1:2*nSt)))
     end if
-    if(minval(real(OmOmminus(1:nSt))) < 0d0) &
-      call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
     if(maxval(abs(aimag(OmOmminus(:))))>1d-8)&
       call print_warning('You may have instabilities in linear response: complex excitation eigenvalue !')
     if(maxval(aimag(RPA_matrix(1:2*nSt,1:nSt)))>1d-8) then
