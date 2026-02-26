@@ -58,7 +58,7 @@ subroutine CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupation
 
   ! Virtual part of the correlation self-energy
 
-  do p=nC(1)+1,nBas-nR(1)
+  do p=1,nBas
     do a=1+nCVS(1),nBas - nO(1)
       do m=1,nSt
         eps = e(p,1) - e(virtuals(a,1),1) - Om(m)
