@@ -53,7 +53,7 @@ subroutine CVS_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
       call print_warning('We dont find a Om and -Om structure as solution of the RPA. There might be a problem somewhere.')
       write(*,*) "Maximal difference :", maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS)))
     end if
-    if(minval(real(OmOmminus(:))) < 0d0) &
+    if(minval(real(OmOmminus(1:nS))) < 0d0) &
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
     if(maxval(abs(aimag(OmOmminus(:))))>1d-8)&
       call print_warning('You may have instabilities in linear response: complex excitation eigenvalue !')
