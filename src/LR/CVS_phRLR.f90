@@ -46,9 +46,10 @@ subroutine CVS_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     call complex_diagonalize_matrix_without_sort(2*nS,RPA_matrix,OmOmminus)
     call complex_sort_eigenvalues_RPA(2*nS,OmOmminus,RPA_matrix)
     call complex_normalize_RPA(nS,RPA_matrix)
+    call rotate_vectors_to_real_axis(2*nS,nS,RPA_matrix(1:2*nS,1:nS))
 
     Om(:) = real(OmOmminus(1:nS))
-    if(maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS))) > 1e-12) then
+    if(maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS))) > 1e-8) then
       call print_warning('We dont find a Om and -Om structure as solution of the RPA. There might be a problem somewhere.')
       write(*,*) "Maximal difference :", maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS)))
     end if
@@ -56,6 +57,11 @@ subroutine CVS_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
     if(maxval(abs(aimag(OmOmminus(:))))>1d-8)&
       call print_warning('You may have instabilities in linear response: complex excitation eigenvalue !')
+    if(maxval(abs(aimag(RPA_matrix(1:2*nS,1:nS))))>1d-8) then
+      print *, "Max imag value X+Y:",maxval(aimag(RPA_matrix(1:nS,1:nS) + RPA_matrix(nS+1:2*nS,1:nS)))
+      print *, "Max imag value X-Y:",maxval(aimag(RPA_matrix(1:nS,1:nS) - RPA_matrix(nS+1:2*nS,1:nS)))
+    end if
+
     XpY(:,:) = transpose(real(RPA_matrix(1:nS,1:nS) + RPA_matrix(nS+1:2*nS,1:nS))) 
     XmY(:,:) = transpose(real(RPA_matrix(1:nS,1:nS) - RPA_matrix(nS+1:2*nS,1:nS)))
     
