@@ -22,7 +22,7 @@ subroutine CVS_phLR_transition_vectors(spin_allowed,nOrb,nC,nO,nV,nR,nS,dipole_i
 ! Local variables
 
   integer                       :: ia,jb,j,b
-  integer                       :: maxS = 10
+  integer                       :: maxS = 30
   double precision              :: S2
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)

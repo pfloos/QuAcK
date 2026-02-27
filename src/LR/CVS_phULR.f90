@@ -17,8 +17,11 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 ! Local variables
 
   double precision,external     :: trace_matrix
-  complex*16,allocatable        :: RPA_matrix(:,:)
-  complex*16,allocatable        :: OmOmminus(:)
+  double precision,allocatable  :: RPA_matrix(:,:)
+  complex*16,allocatable        :: complex_RPA_matrix(:,:)
+  double precision,allocatable  :: vectors(:,:)
+  double precision,allocatable  :: OmOmminus(:)
+  integer                       :: i
 
 ! Output variables
 
@@ -38,34 +41,63 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   else
 
-    allocate(RPA_matrix(2*nSt,2*nSt),OmOmminus(2*nSt))
+    allocate(RPA_matrix(2*nSt,2*nSt),vectors(2*nSt,2*nSt),OmOmminus(2*nSt))
     
-    RPA_matrix(1:nSt,1:nSt)             = cmplx( Aph(:,:),0d0,kind=8)
-    RPA_matrix(1:nSt,nSt+1:2*nSt)       = cmplx( Bph(:,:),0d0,kind=8)
-    RPA_matrix(nSt+1:2*nSt,1:nSt)       = cmplx(-Bph(:,:),0d0,kind=8)
-    RPA_matrix(nSt+1:2*nSt,nSt+1:2*nSt) = cmplx(-Aph(:,:),0d0,kind=8)
+    RPA_matrix(1:nSt,1:nSt)             =  Aph(:,:)
+    RPA_matrix(1:nSt,nSt+1:2*nSt)       =  Bph(:,:)
+    RPA_matrix(nSt+1:2*nSt,1:nSt)       = -Bph(:,:)
+    RPA_matrix(nSt+1:2*nSt,nSt+1:2*nSt) = -Aph(:,:)
     
-    call complex_diagonalize_matrix_without_sort(2*nSt,RPA_matrix,OmOmminus)
-    call complex_sort_eigenvalues_RPA(2*nSt,OmOmminus,RPA_matrix)
-    call complex_normalize_RPA(nSt,RPA_matrix)
-    call rotate_vectors_to_real_axis(2*nSt,nSt,RPA_matrix(1:2*nSt,1:nSt))
-
-    Om(:) = real(OmOmminus(1:nSt))
+    call diagonalize_general_matrix(2*nSt,RPA_matrix,OmOmminus,vectors)
+    
+    RPA_matrix(:,:) = vectors(:,:)
+    
+    deallocate(vectors)
+    
+    call sort_eigenvalues_RPA(2*nSt,OmOmminus,RPA_matrix)
+    
+    allocate(complex_RPA_matrix(2*nSt,2*nSt))
+    
+    complex_RPA_matrix = cmplx(0.0d0, 0.0d0, kind=8)
+    complex_RPA_matrix(1:nSt, 1:nSt) = cmplx(RPA_matrix(:,:), 0.0d0, kind=8)
+    complex_RPA_matrix = cmplx(RPA_matrix(:,:),RPA_matrix(:,:)*0d0,kind=8) 
+    
+    deallocate(RPA_matrix)
+    
+    call complex_normalize_RPA(nSt,complex_RPA_matrix)
+    
     if(maxval(abs(OmOmminus(1:nSt)+OmOmminus(nSt+1:2*nSt))) > 1e-8) then
       call print_warning('We dont find a Om and -Om structure as solution of the RPA. There might be a problem somewhere.')
       write(*,*) "Maximal difference :", maxval(abs(OmOmminus(1:nSt)+OmOmminus(nSt+1:2*nSt)))
     end if
-    if(maxval(abs(aimag(OmOmminus(:))))>1d-8)&
-      call print_warning('You may have instabilities in linear response: complex excitation eigenvalue !')
-    if(maxval(aimag(RPA_matrix(1:2*nSt,1:nSt)))>1d-8) then
-      call print_warning('You may have instabilities in linear response: complex transition vectors !')
-      print *, "Max imag value X+Y:",maxval(aimag(transpose(RPA_matrix(1:nSt,1:nSt) + RPA_matrix(nSt+1:2*nSt,1:nSt))))
-      print *, "Max imag value X-Y:",maxval(aimag(transpose(RPA_matrix(1:nSt,1:nSt) - RPA_matrix(nSt+1:2*nSt,1:nSt))))
-    end if
-    XpY(:,:) = transpose(real(RPA_matrix(1:nSt,1:nSt) + RPA_matrix(nSt+1:2*nSt,1:nSt))) 
-    XmY(:,:) = transpose(real(RPA_matrix(1:nSt,1:nSt) - RPA_matrix(nSt+1:2*nSt,1:nSt))) 
-    deallocate(RPA_matrix,OmOmminus) 
 
+    Om(:) = OmOmminus(1:nSt)
+    
+    deallocate(OmOmminus)
+    
+    ! Set transition vectors of zero modes to 0
+    do i=1,nSt
+      if(abs(Om(i))<1d-8) then
+         complex_RPA_matrix(:,i) = (0d0,0d0)
+         complex_RPA_matrix(:,i+nSt) = (0d0,0d0)
+      end if
+    end do
+
+
+    if(maxval(aimag(complex_RPA_matrix(1:2*nSt,1:nSt)))>1d-8) then
+      call print_warning('You may have instabilities in linear response: complex transition vectors !')
+      print *, "Max imag value X+Y:",maxval(aimag(transpose(complex_RPA_matrix(1:nSt,1:nSt) + complex_RPA_matrix(nSt+1:2*nSt,1:nSt)))),&
+               "at"                 ,maxloc(aimag(transpose(complex_RPA_matrix(1:nSt,1:nSt) + complex_RPA_matrix(nSt+1:2*nSt,1:nSt))))
+ 
+      print *, "Max imag value X-Y:",maxval(aimag(transpose(complex_RPA_matrix(1:nSt,1:nSt) - complex_RPA_matrix(nSt+1:2*nSt,1:nSt)))),&
+               "at"                 ,maxloc(aimag(transpose(complex_RPA_matrix(1:nSt,1:nSt) - complex_RPA_matrix(nSt+1:2*nSt,1:nSt))))
+    end if
+
+    XpY(:,:) = transpose(real(complex_RPA_matrix(1:nSt,1:nSt) + complex_RPA_matrix(nSt+1:2*nSt,1:nSt))) 
+    XmY(:,:) = transpose(real(complex_RPA_matrix(1:nSt,1:nSt) - complex_RPA_matrix(nSt+1:2*nSt,1:nSt))) 
+    
+    deallocate(complex_RPA_matrix) 
+  
   end if
 
 ! Compute the RPA correlation energy

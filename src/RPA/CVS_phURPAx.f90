@@ -76,8 +76,6 @@ subroutine CVS_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fl
 
   nFC(1) = MERGE(1,0,FC(1)/=0) 
   nFC(2) = MERGE(1,0,FC(2)/=0)
-  print *, nFC
-  print *, FC
   allocate(occupations_fc(maxval(nO-nFC),nspin))
   ! remove FC from occupations
   do ispin=1,nspin

@@ -32,7 +32,7 @@ subroutine CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
 ! Local variables
 
   integer                       :: ia,jb,j,b
-  integer                       :: maxS = 10
+  integer                       :: maxS = 30
   double precision,parameter    :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
