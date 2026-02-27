@@ -121,7 +121,7 @@ subroutine CVS_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,n
 
     call CVS_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPAx@RHF','singlet',nSCVS,Om)
-    call CVS_phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nSCVS,dipole_int,Om,XpY,XmY)
+    call CVS_phLR_transition_vectors(.true.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,dipole_int,Om,XpY,XmY)
 
   end if
 
@@ -136,7 +136,7 @@ subroutine CVS_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,n
 
     call CVS_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPAx@RHF','triplet',nSCVS,Om)
-    call CVS_phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nSCVS,dipole_int,Om,XpY,XmY)
+    call CVS_phLR_transition_vectors(.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,dipole_int,Om,XpY,XmY)
 
   end if
 

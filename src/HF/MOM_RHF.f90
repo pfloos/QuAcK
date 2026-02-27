@@ -243,6 +243,7 @@ subroutine MOM_RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,
 
   end if
 
+  call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_MOM_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole,occupations)
 
 ! Print the 1-RDM and 2-RDM in AO basis

@@ -140,7 +140,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     call CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@UHF','spin-conserved',nSt,Om)
     call CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nCVS,nFC, &
-                               occupations,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+                               occupations_fc,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
@@ -168,7 +168,7 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     call CVS_phULR(TDA,nSa,nSa,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call print_excitation_energies('phRPA@UHF','spin-flip',nSt,Om)
     call CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nCVS,nFC, &
-                               occupations,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
+                               occupations_fc,virtuals,dipole_int_aa,dipole_int_bb,c,S,Om,XpY,XmY)
 
     deallocate(Aph,Bph,Om,XpY,XmY)
 
