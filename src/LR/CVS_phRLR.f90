@@ -59,8 +59,7 @@ subroutine CVS_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     allocate(complex_RPA_matrix(2*nS,2*nS))
     
     complex_RPA_matrix = cmplx(0.0d0, 0.0d0, kind=8)
-    complex_RPA_matrix(1:nS, 1:nS) = cmplx(RPA_matrix(:,:), 0.0d0, kind=8)
-    complex_RPA_matrix = cmplx(RPA_matrix(:,:),RPA_matrix(:,:)*0d0,kind=8) 
+    complex_RPA_matrix = cmplx(RPA_matrix(:,:),0d0,kind=8) 
     
     deallocate(RPA_matrix)
     
