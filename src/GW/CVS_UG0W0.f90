@@ -214,7 +214,7 @@ subroutine CVS_UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE
       if(is==1) write(*,*)'    Spin-up   orbitals    '
       if(is==2) write(*,*)'    Spin-down orbitals    '
 
-      call UGW_QP_graph(doSRG,eta,flow,nBas,nC(is),nO(is),nV(is),nR(is),nSt,eHF(:,is), & 
+      call CVS_UGW_QP_graph(doSRG,eta,flow,nBas,nC(is),nO(is),nV(is),nR(is),nSt,nCVS(is),nFC(is),occupations_fc(:,is),virtuals(:,is),eHF(:,is), & 
                         Om,rho(:,:,:,is),eGWlin(:,is),eHF(:,is),eGW(:,is),Z(:,is))
     end do
  
