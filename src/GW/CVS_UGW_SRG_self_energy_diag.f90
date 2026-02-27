@@ -74,7 +74,8 @@ subroutine CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occup
       do a=nCVS(ispin)+1,nBas-nO(ispin)
         do m=1,nSt
           Diam = e(virtuals(a,ispin),ispin) - e(occupations(i,ispin),ispin) + Om(m)
-          EcGM = EcGM - rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)&
+          EcGM(ispin) = EcGM(ispin)& 
+                      - rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)&
                       * rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)&
                       * (1d0-exp(-2d0*s*Diam*Diam))/Diam 
         end do
