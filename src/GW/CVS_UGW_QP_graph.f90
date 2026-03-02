@@ -34,7 +34,7 @@ subroutine CVS_UGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupati
   integer,parameter             :: maxIt = 64
   double precision,parameter    :: thresh = 1d-6
   double precision,external     :: CVS_UGW_Re_SigC,CVS_UGW_Re_dSigC
-  double precision,external     :: CVS_UGW_SRG_Re_SigC,CVS_UGW_SRG_Re_dSigC
+  double precision,external     :: CVS_SRG_UGW_Re_SigC,CVS_SRG_UGW_Re_dSigC
   double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
@@ -49,8 +49,7 @@ subroutine CVS_UGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupati
   write(*,*)'-----------------------------------------------------'
   write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GWlin (eV)','e_GW (eV)','Z'
   write(*,*)'-----------------------------------------------------'
-
-  do p=nC+1,nBas-nR
+  do p=1,nBas
 
     w = eGWlin(p)
     nIt = 0
@@ -62,8 +61,8 @@ subroutine CVS_UGW_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupati
 
       if(doSRG) then
 
-        SigC  = CVS_UGW_SRG_Re_SigC(p,w,flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,eOld,Om,rho)
-        dSigC = CVS_UGW_SRG_Re_dSigC(p,w,flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,eOld,Om,rho)
+        SigC  = CVS_SRG_UGW_Re_SigC(p,w,flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,eOld,Om,rho)
+        dSigC = CVS_SRG_UGW_Re_dSigC(p,w,flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,eOld,Om,rho)
 
       else 
 

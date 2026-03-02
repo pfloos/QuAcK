@@ -1,4 +1,4 @@
-double precision function CVS_UGW_SRG_Re_dSigC(p,w,s,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,e,Om,rho)
+double precision function CVS_SRG_UGW_Re_dSigC(p,w,s,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations,virtuals,e,Om,rho)
 
 ! Compute the derivative of the correlation part of the self-energy
 
@@ -30,24 +30,24 @@ double precision function CVS_UGW_SRG_Re_dSigC(p,w,s,nBas,nC,nO,nV,nR,nS,nCVS,nF
 
 ! Initialize 
 
-  CVS_UGW_SRG_Re_dSigC = 0d0
+  CVS_SRG_UGW_Re_dSigC = 0d0
 
 ! Occupied part of the correlation self-energy
 
   do i=1,nO-nFC
     do m=1,nS
       Dpim = w - e(occupations(i)) + Om(m)
-      CVS_UGW_SRG_Re_dSigC = CVS_UGW_SRG_Re_dSigC &
+      CVS_SRG_UGW_Re_dSigC = CVS_SRG_UGW_Re_dSigC &
                        - rho(p,occupations(i),m)**2*(1d0-exp(-2d0*s*Dpim*Dpim))/Dpim**2
     end do
   end do
 
 ! Virtual part of the correlation self-energy
 
-  do a=nCVS+1,nBas-nFC
+  do a=nCVS+1,nBas-nO
     do m=1,nS
       Dpam = w - e(virtuals(a)) - Om(m)
-      CVS_UGW_SRG_Re_dSigC = CVS_UGW_SRG_Re_dSigC & 
+      CVS_SRG_UGW_Re_dSigC = CVS_SRG_UGW_Re_dSigC & 
                        - rho(p,virtuals(a),m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam**2
     end do
   end do

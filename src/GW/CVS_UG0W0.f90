@@ -183,9 +183,9 @@ subroutine CVS_UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE
 !------------------------------------------------!
 
   if(doSRG) then
-    call UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,EcGM,SigC,Z)
+    call CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupations_fc,virtuals,eHF,Om,rho,EcGM,SigC,Z)
   else
-    call UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,eHF,Om,rho,EcGM,SigC,Z)
+    call CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupations_fc,virtuals,eHF,Om,rho,EcGM,SigC,Z)
   end if
 
 !-----------------------------------!

@@ -108,12 +108,26 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
 ! Perform evGW calculation
 !------------------------------------------------------------------------
 
-  if(doevGW) then
+  if(doevGW .and. .not. CVS) then
 
     call wall_time(start_GW)
     call evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA, & 
               spin_conserved,spin_flip,linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EUHF,S,  & 
               ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF)
+    call wall_time(end_GW)
+
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for evGW = ',t_GW,' seconds'
+    write(*,*)
+
+  end if
+  
+  if(doevGW .and. CVS) then
+
+    call wall_time(start_GW)
+    call CVS_evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA, & 
+              spin_conserved,spin_flip,linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF,S,  & 
+              ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,occupations)
     call wall_time(end_GW)
 
     t_GW = end_GW - start_GW
