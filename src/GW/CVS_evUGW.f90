@@ -156,8 +156,8 @@ subroutine CVS_evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
 ! Memory allocation
 
-  nSa = nS(1)
-  nSb = nS(2)
+  nSa = (nBas - nO(1) - nCVS(1))*(nO(1) - nFC(1))
+  nSb = (nBas - nO(2) - nCVS(2))*(nO(2) - nFC(2))
   nSt = nSa + nSb
 
   allocate(eGW(nBas,nspin),eOld(nBas,nspin),Z(nBas,nspin),SigC(nBas,nspin), &
