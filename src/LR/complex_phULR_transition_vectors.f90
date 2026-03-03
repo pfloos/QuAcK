@@ -33,7 +33,7 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
 ! Local variables
 
   integer                       :: ia,jb,j,b
-  integer                       :: maxS = 30
+  integer                       :: maxS = 10
   double precision,parameter    :: thres_vec = 0.1d0
   complex*16,allocatable        :: X(:)
   complex*16,allocatable        :: Y(:)

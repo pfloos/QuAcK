@@ -56,7 +56,6 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
 
 ! Input variables
 
-  integer :: i,j,k
   integer,intent(in)            :: N
   double precision,intent(inout):: A(N,N)
   double precision,intent(out)  :: VR(N,N)
@@ -80,6 +79,9 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
   allocate(work(lwork))
 
   call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
+ 
+  if(any(abs(WI)>1d-8))&
+    print*, 'Found eigenvalue with imaginary part > 1e-8 (dgeev)!!'
 
   deallocate(work,WI,VL)
 

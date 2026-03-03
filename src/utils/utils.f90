@@ -333,6 +333,64 @@ function complex_trace_matrix(n,A) result(Tr)
   end do
 
 end function 
+
+subroutine complex_ADAt(N,A,D,B)
+
+! Perform B = A.D.At where A is a NxN matrix and D is a diagonal matrix given 
+! as a vector of length N, t is transposed here
+
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: N
+  complex*16,intent(in)         :: A(N,N),D(N)
+
+! Local viaruabkes
+
+  integer                       :: i,j,k
+
+! Output variables
+
+  complex*16,intent(out)        :: B(N,N)
+
+  complex*16, allocatable       :: tmp(:,:)
+
+  allocate(tmp(N,N))
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(i, j) SHARED(N, A, D, tmp)
+  !$OMP DO
+  do i = 1, N
+    do j = 1, N
+      tmp(i,j) = D(i) * A(j,i)
+    enddo
+  enddo
+  !$OMP END DO
+  !$OMP END PARALLEL
+  call zgemm("N", "N", N, N, N, cmplx(1.d0,0d0,kind=8), A(1,1), N, tmp(1,1), N, cmplx(0d0,0d0,kind=8), B(1,1), N)
+  deallocate(tmp)
+
+end subroutine 
+
+subroutine complex_DA(N,D,A)
+
+! Perform A <- D.A where A is a NxN matrix and D is a diagonal matrix given 
+! as a vector of length N
+
+  implicit none
+
+  integer,intent(in)            :: N
+  integer                       :: i,j,k
+  complex*16,intent(in)         :: D(N)
+  complex*16,intent(inout)      :: A(N,N)
+
+  do i=1,N
+    do j=1,N
+      A(i,j) = D(i)*A(i,j)
+    end do
+  end do
+
+end subroutine
+
 !------------------------------------------------------------------------
 subroutine compute_error(nData,Mean,Var,Error)
 

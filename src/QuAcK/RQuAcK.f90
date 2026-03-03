@@ -496,7 +496,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   if(dosearch) then
 
     call wall_time(start_stab)
-    call RHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF_search(maxSCF_HF,doaordm,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
                     nBas,nOrb,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X, & 
                     ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_stab)

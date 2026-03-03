@@ -185,19 +185,12 @@ subroutine complex_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spi
   if(exchange_kernel) then
 
     EcRPA(1) = 0.5d0*EcRPA(1)
-    EcRPA(2) = 1.5d0*EcRPA(2)
-
-  end if
-
-  if(exchange_kernel) then
-
-    EcRPA(1) = 0.5d0*EcRPA(1)
     EcRPA(2) = 0.5d0*EcRPA(2)
 
   else
-
-    EcRPA(2) = 0d0
-
+    
+    EcRPA(2) = 0.0d0
+  
   end if
 
   write(*,*)

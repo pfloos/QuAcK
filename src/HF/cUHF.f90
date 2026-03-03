@@ -104,9 +104,9 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMO
     c(:,:,1) = cmplx(tmp, 0d0,kind=8)
     call read_matin(nBas,nBas,tmp,"imag_MOs_alpha.dat")
     c(:,:,1) = c(:,:,1) + cmplx(0d0, tmp, kind=8)
-    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    call read_matin(nBas,nBas,tmp,"real_MOs_beta.dat")
     c(:,:,2) = cmplx(tmp, 0d0,kind=8)
-    call read_matin(nBas,nBas,tmp,"imag_MOs_alpha.dat")
+    call read_matin(nBas,nBas,tmp,"imag_MOs_beta.dat")
     c(:,:,2) = c(:,:,2) + cmplx(0d0, tmp, kind=8)
     deallocate(tmp)
   end if

@@ -95,7 +95,7 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs
     allocate(tmp(nBas,nBas))
     call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
     c(:,:,1) = tmp
-    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    call read_matin(nBas,nBas,tmp,"real_MOs_beta.dat")
     c(:,:,2) = tmp
     deallocate(tmp)
   end if
