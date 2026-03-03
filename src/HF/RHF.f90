@@ -212,6 +212,10 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 !              0.d0, P(1,1), nBas)
 
     ! Dump results
+!    write(*,*) 'P^ao iter ',nSCF
+!    do iorb=1,nBas
+!     write(*,'(*(f10.5))') 0.5d0*P(iorb,1:nOrb)
+!    enddo
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
       '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
