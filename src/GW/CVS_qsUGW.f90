@@ -407,23 +407,24 @@ subroutine CVS_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
   deallocate(cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
 
 ! BSE not yet implemented
-!! Perform BSE calculation
-!
-!  if(dophBSE) then
-!
-!    call CVS_UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
-!                   S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,c,eGW,eGW,EcBSE)
-!
-!    write(*,*)
-!    write(*,*)'-------------------------------------------------------------------------------'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF correlation energy (spin-conserved) = ',EcBSE(1),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF correlation energy (spin-flip)      = ',EcBSE(2),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF correlation energy                  = ',sum(EcBSE),' au'
-!    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF total       energy                  = ',ENuc + EqsGW + sum(EcBSE),' au'
-!    write(*,*)'-------------------------------------------------------------------------------'
-!    write(*,*)
-!
-!!   Compute the BSE correlation energy via the adiabatic connection 
+! Perform BSE calculation
+
+  if(dophBSE) then
+
+    call CVS_UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
+                   nCVS,nFC,occupations_fc,virtuals,                                                         &
+                   S,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eGW,eGW,EcBSE)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF correlation energy (spin-conserved) = ',EcBSE(1),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF correlation energy (spin-flip)      = ',EcBSE(2),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF correlation energy                  = ',sum(EcBSE),' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF total       energy                  = ',ENuc + EqsGW + sum(EcBSE),' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+!   Compute the BSE correlation energy via the adiabatic connection 
 !
 !    if(doACFDT) then
 !
@@ -440,9 +441,9 @@ subroutine CVS_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 !      write(*,*)
 !
 !    end if
-!
-!  end if
-!
+
+  end if
+
 !! Testing zone
   
   if(dotest) then

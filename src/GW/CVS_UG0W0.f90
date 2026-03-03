@@ -236,21 +236,23 @@ subroutine CVS_UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE
   deallocate(Om,XpY,XmY,rho)
 
 ! Perform BSE calculation
-!
-!  if(dophBSE) then
-!
-!    call UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS,S, &
-!                   ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eGW,EcBSE)
-!
-!    write(*,*)
-!    write(*,*)'-------------------------------------------------------------------------------'
-!    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy (spin-conserved) = ',EcBSE(1),' au'
-!    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy (spin-flip)      = ',EcBSE(2),' au'
-!    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy                  = ',sum(EcBSE),' au'
-!    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF total       energy                  = ',ENuc + EUHF + sum(EcBSE),' au'
-!    write(*,*)'-------------------------------------------------------------------------------'
-!    write(*,*)
-!
+
+  if(dophBSE) then
+
+    call CVS_UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip,eta,nBas,nC,nO,nV,nR,nS, &
+                   nCVS,nFC,occupations_fc,virtuals,S,                                                       &
+                   ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,eGW,EcBSE)
+
+    write(*,*)
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy (spin-conserved) = ',EcBSE(1),' au'
+    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy (spin-flip)      = ',EcBSE(2),' au'
+    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF correlation energy                  = ',sum(EcBSE),' au'
+    write(*,'(2X,A60,F20.10,A3)') 'Tr@BSE@G0W0@UHF total       energy                  = ',ENuc + EUHF + sum(EcBSE),' au'
+    write(*,*)'-------------------------------------------------------------------------------'
+    write(*,*)
+
+! Adiabatic connection not implemented yet
 !!   Compute the BSE correlation energy via the adiabatic connection 
 !
 !    if(doACFDT) then
@@ -269,7 +271,7 @@ subroutine CVS_UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE
 !
 !    end if
 !
-!  end if
+  end if
 !
 !! Testing zone
 !
