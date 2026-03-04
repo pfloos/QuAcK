@@ -64,7 +64,7 @@ subroutine CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
       Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
 
       print*,'-------------------------------------------------------------'
-      write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
+      write(*,'(A15,I3,A2,F12.6,A3,A6,F6.4,A11,F6.4)') & 
               ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia)!,'  <S**2> = ',S2(ia)
       print*,'-------------------------------------------------------------'
 
@@ -120,7 +120,7 @@ subroutine CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
 
 
       print*,'-------------------------------------------------------------'
-      write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
+      write(*,'(A15,I3,A2,F12.6,A3,A6,F6.4,A11,F6.4)') & 
               ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia)!,'  <S**2> = ',S2(ia)
       print*,'-------------------------------------------------------------'
 
