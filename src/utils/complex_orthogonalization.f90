@@ -20,6 +20,28 @@ subroutine complex_orthogonalize_matrix(N, vectors)
   vectors = matmul(vectors,transpose(Linv))
   deallocate(L,Linv,tmp)
 end subroutine
+subroutine complex_complex_orthogonalize_matrix(N, vectors)
+  
+  ! Input variables
+  implicit none
+  integer, intent(in) :: N
+  complex*16, intent(inout) :: vectors(N, N)
+
+  ! Local variables
+  integer :: i, j
+  complex*16,allocatable :: L(:,:),Linv(:,:),tmp(:,:)
+  complex*16 :: proj
+  complex*16 :: norm
+
+  ! Copy the input matrix to a temporary matrix
+  allocate(L(N,N),Linv(N,N),tmp(N,N))
+  tmp = transpose(conjg(vectors))
+  L = matmul(tmp ,vectors)
+  call complex_complex_cholesky_decomp(N,L)
+  call complex_inverse_matrix(N,L,Linv)
+  vectors = matmul(vectors,transpose(conjg(Linv)))
+  deallocate(L,Linv,tmp)
+end subroutine
 subroutine complex_orthonormalize(N,vectors,A)
  
   ! Orthonormalize vectors matrix, such that vectors^T A vectors = Identity
@@ -136,6 +158,39 @@ subroutine complex_cholesky_decomp(n,A)
             s = A(i, j)
             do k = 1, j - 1
                 s = s - A(i, k) * A(j, k)
+            end do
+
+            if (i > j) then
+                if(abs(A(j,j))<1e-8) then
+                  call print_warning('Diagonalelement in Cholesky Element is smaller than 1e-8.')
+                end if
+                A(i, j) = s / A(j, j)  ! Compute lower triangular elements
+            else
+                A(i, i) = sqrt(s)
+            end if
+        end do
+    end do
+
+    ! Zero out upper triangular part
+    do i = 1, n
+        do j = i + 1, n
+            A(i, j) = cmplx(0.0d0, 0.0d0, kind=8)
+        end do
+    end do
+end subroutine
+subroutine complex_complex_cholesky_decomp(n,A)
+    implicit none
+    integer, intent(in) :: n               ! Matrix size
+    complex*16, intent(inout) :: A(n, n)   ! Output: Lower triangular Cholesky factor L
+    integer :: i, j, k
+    complex*16 :: s
+
+    ! Perform Cholesky decomposition
+    do i = 1, n
+        do j = 1, i
+            s = A(i, j)
+            do k = 1, j - 1
+                s = s - A(i, k) * conjg(A(j, k))
             end do
 
             if (i > j) then
