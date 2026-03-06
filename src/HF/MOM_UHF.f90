@@ -24,7 +24,7 @@ subroutine MOM_UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nO(nspin)
-  integer,intent(in)            :: occupationsGuess(maxval(nO),nspin)
+  integer,intent(inout)         :: occupationsGuess(maxval(nO),nspin)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: T(nBas,nBas)
   double precision,intent(in)   :: V(nBas,nBas)
@@ -268,6 +268,7 @@ subroutine MOM_UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
 
 ! Compute final UHF energy
 
+  occupationsGuess = occupations
   call dipole_moment(nBas,P(:,:,1)+P(:,:,2),nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_MOM_UHF(nBas,nO,S,eHF,c,P,ENuc,ET,EV,EJ,EK,EUHF,dipole,occupations)
 

@@ -142,14 +142,15 @@ subroutine CVS_UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin
                                   dipole_int_aa,dipole_int_bb,                                                   &
                                   cW,S,OmBSE,XpY_BSE,XmY_BSE)
 
-   ! !-------------------------------------------------
-   ! ! Compute the dynamical screening at the BSE level
-   ! !-------------------------------------------------
+    !-------------------------------------------------
+    ! Compute the dynamical screening at the BSE level
+    !-------------------------------------------------
 
-   ! if(dBSE) &
-   !   call UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,nS_sc,    &
-   !                                       eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
-   !                                       OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
+    if(dBSE) &
+      call CVS_UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_aa,nS_bb,nS_sc,nS_sc,    &
+                                               nCVS,nFC,occupations,virtuals,                                &
+                                          eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,     &
+                                          OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
     deallocate(Aph,Bph,KA,KB)
     deallocate(OmBSE,XpY_BSE,XmY_BSE)
@@ -191,14 +192,15 @@ subroutine CVS_UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin
                                       dipole_int_aa,dipole_int_bb,                                              &
                                       cW,S,OmBSE,XpY_BSE,XmY_BSE)
 
-   ! !-------------------------------------------------
-   ! ! Compute the dynamical screening at the BSE level
-   ! !-------------------------------------------------
+    !-------------------------------------------------
+    ! Compute the dynamical screening at the BSE level
+    !-------------------------------------------------
 
-   ! if(dBSE) &
-   !   call UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,nS_sc,    &
-   !                                       eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb, &
-   !                                       OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
+    if(dBSE) &
+      call CVS_UGW_phBSE_dynamic_perturbation(ispin,dTDA,eta,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,nS_sc,    &
+                                               nCVS,nFC,occupations,virtuals,                                &
+                                          eW,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,     &
+                                          OmRPA,rho_RPA,OmBSE,XpY_BSE,XmY_BSE)
 
     deallocate(Aph,Bph,KA,KB)
     deallocate(OmBSE,XpY_BSE,XmY_BSE)

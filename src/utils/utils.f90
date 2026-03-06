@@ -337,7 +337,7 @@ end function
 subroutine complex_ADAt(N,A,D,B)
 
 ! Perform B = A.D.At where A is a NxN matrix and D is a diagonal matrix given 
-! as a vector of length N, t is transposed here
+! as a vector of length N, t is transposed+conjg here
 
   implicit none
 
@@ -361,7 +361,7 @@ subroutine complex_ADAt(N,A,D,B)
   !$OMP DO
   do i = 1, N
     do j = 1, N
-      tmp(i,j) = D(i) * A(j,i)
+      tmp(i,j) = D(i) * conjg(A(j,i))
     enddo
   enddo
   !$OMP END DO

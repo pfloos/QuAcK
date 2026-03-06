@@ -21,7 +21,7 @@ subroutine MOM_RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nO
   integer,intent(in)            :: nNuc
-  integer,intent(in)            :: occupationsGuess(nO,nspin)
+  integer,intent(inout)         :: occupationsGuess(nO,nspin)
   double precision,intent(in)   :: ZNuc(nNuc)
   double precision,intent(in)   :: rNuc(nNuc,ncart)
   double precision,intent(in)   :: ENuc
@@ -242,7 +242,9 @@ subroutine MOM_RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,
     write(*,*) ' Warning! Convergence failed at Hartree-Fock level.'
 
   end if
-
+  
+  occupationsGuess(:,1) = occupations
+  occupationsGuess(:,2) = occupations
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
   call print_MOM_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole,occupations)
 
