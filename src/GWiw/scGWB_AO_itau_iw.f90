@@ -1,5 +1,5 @@
-subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_scGWB,verbose_scGWB,chem_pot_scG,no_h_hfb, &
-                            ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
+subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,restart_scGWB,verbose_scGWB,chem_pot_scG, &
+                            no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
 
 ! Restricted scGWB
 
@@ -21,6 +21,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
   integer,intent(in)            :: maxDIIS
 
   double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: thresh_in
   double precision,intent(in)   :: sigma
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: P_in(nBas,nBas)
@@ -164,7 +165,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
  eta=0d0
  thrs_N=1d-10
  thrs_Ngrad=1d-6
- thrs_Rao=1d-6
+ thrs_Rao=thresh_in
  nElectrons=0d0
  do ibas=1,nBas
   do jbas=1,nBas

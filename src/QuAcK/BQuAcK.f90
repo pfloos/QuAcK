@@ -1,4 +1,4 @@
-subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
+subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
                   nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,         &
                   level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,                 &
                   chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
@@ -20,8 +20,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
   logical,intent(in)             :: doRHFB
   logical,intent(in)             :: doBRPA
   logical,intent(in)             :: dophRPA
-  logical,intent(in)             :: doG0W0
-  logical,intent(in)             :: doqsGW
   logical,intent(in)             :: dolinGW
   logical,intent(in)             :: doscGW
   logical,intent(in)             :: restart_scGW
@@ -148,8 +146,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
     
-    ! Compute G0W0 AND/OR EcRPA and EcGM energies for RHF and qsGW
-    if(dophRPA .or. doG0W0) then
+    ! Compute EcRPA and EcGM energies and lin-G for RHF
+    if(dophRPA) then
 
      call wall_time(start_Ecorr)
      allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
@@ -165,12 +163,10 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
       enddo
      enddo
      deallocate(ERI_MO)
-     if(dophRPA) then
-      call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
-                            EcRPA,EcGM)
-     endif
+     call EcRPA_EcGM_w_RHF(nOrb,nO,1,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,EeleSD+ENuc, &
+                           EcRPA,EcGM)
      ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr
-     if(dolinGW .and. dophRPA) then
+     if(dolinGW) then
       allocate(pMATcorr(nBas,nBas))
       call linDyson_GW_RHF(nBas,nOrb,nO,MOCoef,eHF,nfreqs,wweight,wcoord,ERI_AO,vMAT, &
                           Enuc,EcGM,T,V,S,pMAT,pMATcorr)
@@ -201,8 +197,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
 
   end if
 
-  ! Compute G0W0 AND/OR EcRPA and EcGM energies for qsGWB or HFB
-  if(dophRPA .or. doG0W0) then
+  ! Compute EcRPA and EcGM energies and lin-G for RHFB
+  if(dophRPA) then
 
    call wall_time(start_Ecorr)
    allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
@@ -218,12 +214,10 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
     enddo
    enddo
    deallocate(ERI_MO)
-   if(dophRPA) then
-    call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
-                           U_QP,Eelec+ENuc,EcRPA,EcGM)
-   endif
+   call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+                          U_QP,Eelec+ENuc,EcRPA,EcGM)
    ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr and Panomcorr
-   if(dolinGW .and. dophRPA) then
+   if(dolinGW) then
     allocate(pMATcorr(nBas,nBas),panomMATcorr(nBas,nBas))
     call linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
                           Enuc,EcGM,sigma,T,V,S,X,pMAT,panomMAT,pMATcorr,panomMATcorr)
@@ -252,8 +246,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW
     enddo
    enddo
    no_fock=.false.
-   call scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,max_diis_GW,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
-                         ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
+   call scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG, &
+                         no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
    deallocate(vMAT)
   endif
 
