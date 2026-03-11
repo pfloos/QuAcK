@@ -148,7 +148,7 @@ subroutine G_ADC(dotest,                                               &
       call wall_time(end_ADC)
       
       t_ADC = end_ADC - start_ADC
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(2) = ',t_ADC,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(3) = ',t_ADC,' seconds'
       write(*,*)
       
    end if
