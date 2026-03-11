@@ -95,9 +95,19 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
-! Guess coefficients and density matrix
+! Guess coefficients and/or density matrix
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
+  if(guess_type == 6) then
+    ! Read MO Coefficients from file
+    print *, "Reading MO Coefficients from MOs dir..."
+    allocate(tmp(nBas,nBas))
+    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    c(:,:) = tmp
+    deallocate(tmp)
+  end if
+  P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
+  ! If guess_type is read density and files P_ao_bin and/or P_ao_form exists
   if(guess_type == 5) then
    inquire(file='P_ao_bin', exist=file_exists)
    if(file_exists) then
@@ -110,16 +120,24 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
     enddo
     close(314)
    endif
+   inquire(file='P_ao_form', exist=file_exists)
+   if(file_exists) then
+    write(*,*) 'Reading P_ao_form matrix...'
+    open(unit=314, form='formatted', file='P_ao_form', status='old')
+    ibas=1;jbas=0;
+    do
+     read(314,*) Val
+     jbas=jbas+1
+     if(jbas>nBas) then
+      ibas=ibas+1
+      jbas=1
+     endif
+     P(ibas,jbas)=Val 
+     if(ibas==jbas .and. ibas==nBas) exit
+    enddo
+    close(314)
+   endif
   endif
-  if(guess_type == 6) then
-    ! Read MO Coefficients from file
-    print *, "Reading MO Coefficients from MOs dir..."
-    allocate(tmp(nBas,nBas))
-    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
-    c(:,:) = tmp
-    deallocate(tmp)
-  end if
-  P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
 
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
 !            c(1,1), nBas, c(1,1), nBas,     &
@@ -212,10 +230,13 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 !              0.d0, P(1,1), nBas)
 
     ! Dump results
-!    write(*,*) 'P^ao iter ',nSCF
-!    do iorb=1,nBas
-!     write(*,'(*(f10.5))') 0.5d0*P(iorb,1:nOrb)
-!    enddo
+    inquire(file='Print_Pao', exist=file_exists)
+    if(file_exists) then
+     write(*,*) 'P^ao iter ',nSCF
+     do iorb=1,nBas
+      write(*,'(*(f10.5))') 0.5d0*P(iorb,1:nOrb)
+     enddo
+    endif
 
     write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
       '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
