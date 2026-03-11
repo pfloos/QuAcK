@@ -752,7 +752,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,maxDIIS,dolinGW,restart_
  write(*,'(A50)') '---------------------------------------'
  write(*,*)
  write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB  ',trace_1_rdm,' after ',iter,' global iterations '
- write(*,'(a,f15.8)')        ' Change of P  ',diff_Rao
+ write(*,'(a,f15.8)')        ' Change of R  ',diff_Rao
  write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
  write(*,'(a,f15.8)')        ' N anomalus   ',N_anom
  write(*,'(a,f15.8)')        ' Enuc         ',ENuc
