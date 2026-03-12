@@ -80,7 +80,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
   double precision,allocatable   :: Fock(:,:)
   double precision,allocatable   :: Delta(:,:)
   double precision,allocatable   :: vMAT(:,:)
-  double precision               :: EeleSD,Eelec,EcRPA,EcGM
+  double precision               :: EeleSD,Eelec,EcRPA,EcGM,EcMP2
   double precision,allocatable   :: dipole_int_MO(:,:,:)
   double precision,allocatable   :: ERI_AO(:,:,:,:)
   double precision,allocatable   :: ERI_MO(:,:,:,:)
@@ -198,8 +198,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
 
   end if
 
-  ! Compute EcRPA and EcGM energies and lin-G for RHFB
-  if(dophRPA) then
+  ! Compute EcRPA, EcGM, and EcMP2 energies and lin-G for RHFB
+  if(dophRPA .or. doMP2) then
 
    call wall_time(start_Ecorr)
    allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
@@ -215,6 +215,10 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
     enddo
    enddo
    deallocate(ERI_MO)
+   if(doMP2) then
+    call EcMP2_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT,&
+                      U_QP,Eelec+ENuc,EcMP2)
+   endif
    call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
                           U_QP,Eelec+ENuc,EcRPA,EcGM)
    ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr and Panomcorr
