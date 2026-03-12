@@ -93,11 +93,11 @@ subroutine MOM_UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
 
 ! Guess coefficients and density matrices
 
-  if(guess_type ==6) then
+  if(guess_type == 6) then
     allocate(tmp(nBas,nBas))
     call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
     c(:,:,1) = tmp
-    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
+    call read_matin(nBas,nBas,tmp,"real_MOs_beta.dat")
     c(:,:,2) = tmp
     deallocate(tmp)
   end if

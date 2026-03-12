@@ -39,6 +39,7 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
     XpY(:,:) = transpose(XpY(:,:))
     XmY(:,:) = XpY(:,:)
 
+
   else
 
     allocate(RPA_matrix(2*nSt,2*nSt),vectors(2*nSt,2*nSt),OmOmminus(2*nSt))
@@ -58,7 +59,6 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
     
     allocate(complex_RPA_matrix(2*nSt,2*nSt))
     
-    complex_RPA_matrix = cmplx(0.0d0, 0.0d0, kind=8)
     complex_RPA_matrix = cmplx(RPA_matrix(:,:),0d0,kind=8) 
     
     deallocate(RPA_matrix)

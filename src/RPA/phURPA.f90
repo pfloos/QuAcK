@@ -124,8 +124,12 @@ subroutine phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nB
   if(exchange_kernel) then
 
     EcRPA(1) = 0.5d0*EcRPA(1)
-    EcRPA(2) = 1.5d0*EcRPA(2)
+    EcRPA(2) = 0.5d0*EcRPA(2)
 
+  else
+    
+    EcRPA(2) = 0.0d0
+  
   end if
 
   write(*,*)
@@ -152,9 +156,13 @@ subroutine phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_flip,nB
     if(exchange_kernel) then
    
       EcRPA(1) = 0.5d0*EcRPA(1)
-      EcRPA(2) = 1.5d0*EcRPA(2)
+      EcRPA(2) = 0.5d0*EcRPA(2)
 
-    end if
+    else
+
+      EcRPA(2) = 0.0d0
+
+    endif
 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
