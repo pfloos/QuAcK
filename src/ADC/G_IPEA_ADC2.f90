@@ -1,4 +1,4 @@
-subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
+subroutine G_IPEA_ADC2_single_state(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
 ! Dyson version of IP/EA-ADC(2)
 
@@ -10,7 +10,7 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
   logical,intent(in)            :: dotest
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nBas2
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -18,8 +18,8 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
-  double precision,intent(in)   :: ERI(nBas2,nBas2,nBas2,nBas2)
-  double precision,intent(in)   :: eHF(nBas2)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
@@ -101,7 +101,7 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
     ija = 0
     do i=nC+1,nO
       do j=nC+1,nO
-        do a=nO+1,nBas2-nR
+        do a=nO+1,nOrb-nR
           ija = ija + 1
              
           H(1    ,1+ija) = (ERI(p,a,i,j) - ERI(p,a,j,i))/sqrt(2d0)
@@ -117,8 +117,8 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
  
     iab = 0
     do i=nC+1,nO
-      do a=nO+1,nBas2-nR
-        do b=nO+1,nBas2-nR
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1   
  
           H(1          ,1+n2h1p+iab) = (ERI(p,i,a,b) - ERI(p,i,b,a))/sqrt(2d0)
@@ -135,7 +135,7 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
     ija = 0
     do i=nC+1,nO
       do j=nC+1,nO
-        do a=nO+1,nBas2-nR
+        do a=nO+1,nOrb-nR
           ija = ija + 1
                
           H(1+ija,1+ija) = eHF(i) + eHF(j) - eHF(a)
@@ -151,8 +151,8 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
       
     iab = 0
     do i=nC+1,nO
-      do a=nO+1,nBas2-nR
-        do b=nO+1,nBas2-nR
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1
                
           H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + eHF(b) - eHF(i)
@@ -237,7 +237,7 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
           ija = 0
           do i=nC+1,nO
             do j=nC+1,nO
-              do a=nO+1,nBas2-nR
+              do a=nO+1,nOrb-nR
                 ija = ija + 1
   
                 if(abs(H(1+ija,s)) > cutoff2)               &
@@ -251,8 +251,8 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
            
           iab = 0
           do i=nC+1,nO
-            do a=nO+1,nBas2-nR
-              do b=nO+1,nBas2-nR
+            do a=nO+1,nOrb-nR
+              do b=nO+1,nOrb-nR
                 iab = iab + 1
  
                 if(abs(H(1+n2h1p+iab,s)) > cutoff2)           &
@@ -277,7 +277,7 @@ subroutine G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,E
   
 end subroutine G_IPEA_ADC2_single_state
 
-subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
+subroutine G_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
 ! Dyson version of IP/EA-ADC(2)
 
@@ -289,7 +289,7 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   logical,intent(in)            :: dotest
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nBas2
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -297,8 +297,8 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
-  double precision,intent(in)   :: ERI(nBas2,nBas2,nBas2,nBas2)
-  double precision,intent(in)   :: eHF(nBas2)
+  double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
@@ -337,7 +337,7 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
   n2h1p = nO*nO*nV
   n2p1h = nV*nV*nO
-  nH = nBas2 + n2h1p + n2p1h
+  nH = nOrb + n2h1p + n2p1h
 
 ! Memory allocation
 
@@ -346,8 +346,6 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   eF = 0.5d0*(eHF(nO) + eHF(nO+1))
 
   H(:,:) = 0d0
-
-  call vecout(nO,eHF)
 
   !--------------------------------------!
   ! Compute IP/EA-ADC(2) supermatrix     !
@@ -367,23 +365,23 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   ! Block F !
   !---------!
 
-  do p=1,nBas2
-     H(p,p) = eHF(p)
+  do p=1,nOrb
+    H(p,p) = eHF(p)
   end do   
 
   !--------------!
   ! Block U_2h1p !
   !--------------!
 
-  do p=1,nBas2
+  do p=1,nOrb
     ija = 0
     do i=nC+1,nO
       do j=nC+1,nO
-        do a=nO+1,nBas2-nR
+        do a=nO+1,nOrb-nR
           ija = ija + 1
              
-          H(p    ,nBas2+ija) = (ERI(p,a,i,j) - ERI(p,a,j,i))/sqrt(2d0)
-          H(nBas2+ija,p    ) = (ERI(p,a,i,j) - ERI(p,a,j,i))/sqrt(2d0)
+          H(p    ,nOrb+ija) = (ERI(p,a,i,j) - ERI(p,a,j,i))/sqrt(2d0)
+          H(nOrb+ija,p    ) = (ERI(p,a,i,j) - ERI(p,a,j,i))/sqrt(2d0)
              
         end do
       end do
@@ -394,15 +392,15 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   ! Block U_2p1h !
   !--------------!     
 
-  do p=1,nBas2
+  do p=1,nOrb
     iab = 0
     do i=nC+1,nO
-      do a=nO+1,nBas2-nR
-        do b=nO+1,nBas2-nR
+      do a=nO+1,nOrb-nR
+        do b=nO+1,nOrb-nR
           iab = iab + 1   
  
-          H(p          ,nBas2+n2h1p+iab) = (ERI(p,i,a,b) - ERI(p,i,b,a))/sqrt(2d0)
-          H(nBas2+n2h1p+iab,p          ) = (ERI(p,i,a,b) - ERI(p,i,b,a))/sqrt(2d0)
+          H(p          ,nOrb+n2h1p+iab) = (ERI(p,i,a,b) - ERI(p,i,b,a))/sqrt(2d0)
+          H(nOrb+n2h1p+iab,p          ) = (ERI(p,i,a,b) - ERI(p,i,b,a))/sqrt(2d0)
                
           end do
         end do
@@ -417,10 +415,10 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    ija = 0
    do i=nC+1,nO
      do j=nC+1,nO
-       do a=nO+1,nBas2-nR
+       do a=nO+1,nOrb-nR
          ija = ija + 1
             
-         H(nBas2+ija,nBas2+ija) = eHF(i) + eHF(j) - eHF(a)
+         H(nOrb+ija,nOrb+ija) = eHF(i) + eHF(j) - eHF(a)
 
        end do
      end do
@@ -432,11 +430,11 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
      
    iab = 0
    do i=nC+1,nO
-     do a=nO+1,nBas2-nR
-       do b=nO+1,nBas2-nR
+     do a=nO+1,nOrb-nR
+       do b=nO+1,nOrb-nR
          iab = iab + 1
               
-         H(nBas2+n2h1p+iab,nBas2+n2h1p+iab) = eHF(a) + eHF(b) - eHF(i)
+         H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(a) + eHF(b) - eHF(i)
        
        end do
      end do
@@ -464,14 +462,13 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
    write(*,*)
 
-
    !-----------------!
    ! Compute weights !
    !-----------------!
    
    Z(:) = 0d0
    do s=1,nH
-      do p=nC+1,nBas2-nR
+      do p=nC+1,nOrb-nR
          Z(s) = Z(s) + H(p,s)**2
       end do
    end do
@@ -517,7 +514,7 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
             write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
             '      (',p,')               ',H(p,s),H(p,s)**2
           end do
-          do p=nO+1,nBas2-nR
+          do p=nO+1,nOrb-nR
             if(abs(H(p,s)) > cutoff2)                 &
           write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
           '               (',p,')      ',H(p,s),H(p,s)**2
@@ -526,12 +523,12 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
           ija = 0
           do i=nC+1,nO
             do j=nC+1,nO
-              do a=nO+1,nBas2-nR
+              do a=nO+1,nOrb-nR
                 ija = ija + 1
  
-                if(abs(H(nBas2+ija,s)) > cutoff2)               &
+                if(abs(H(nOrb+ija,s)) > cutoff2)               &
                 write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6)') &
-                '  (',i,',',j,') -> (',a,')      ',H(nBas2+ija,s),H(nBas2+ija,s)**2
+                '  (',i,',',j,') -> (',a,')      ',H(nOrb+ija,s),H(nOrb+ija,s)**2
          
               end do
             end do
@@ -539,13 +536,13 @@ subroutine G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
          
           iab = 0
           do i=nC+1,nO
-            do a=nO+1,nBas2-nR
-              do b=nO+1,nBas2-nR
+            do a=nO+1,nOrb-nR
+              do b=nO+1,nOrb-nR
                 iab = iab + 1
 
-                if(abs(H(nBas2+n2h1p+iab,s)) > cutoff2)           &
+                if(abs(H(nOrb+n2h1p+iab,s)) > cutoff2)           &
                   write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6)') &
-                  '      (',i,') -> (',a,',',b,')  ',H(nBas2+n2h1p+iab,s),H(nBas2+n2h1p+iab,s)**2
+                  '      (',i,') -> (',a,',',b,')  ',H(nOrb+n2h1p+iab,s),H(nOrb+n2h1p+iab,s)**2
                 
               end do
             end do

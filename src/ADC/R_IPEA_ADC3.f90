@@ -1,4 +1,4 @@
-subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
+subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
 ! Dyson version of ADC(3)
 
@@ -49,9 +49,9 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'****************************************'
-  write(*,*)'* Generalized IP/EA-ADC(3) Calculation *'
-  write(*,*)'****************************************'
+  write(*,*)'***************************************'
+  write(*,*)'* Restricted IP/EA-ADC(3) Calculation *'
+  write(*,*)'***************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -371,4 +371,4 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
        
     end if ! If verbose
   
-end subroutine G_IPEA_ADC3
+end subroutine
