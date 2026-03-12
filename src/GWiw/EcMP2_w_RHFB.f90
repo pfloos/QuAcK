@@ -67,7 +67,7 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
     call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
-   ! Tr [ ( Xo v )^2 ] and define eps
+   ! Tr [ ( Xo v )^2 ]
    Tmp_mo_w(:,:)=matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
    Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Tmp_mo_w(:,:))
    do iorb=1,nOrb2
