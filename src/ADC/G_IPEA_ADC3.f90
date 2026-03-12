@@ -37,10 +37,10 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   double precision,allocatable  :: Z(:)
 
   logical                       :: verbose = .false.
-  double precision,parameter    :: cutoff1 = 0.05d0
-  double precision,parameter    :: cutoff2 = 0.05d0
+  double precision,parameter    :: cutoff1 = 0.1d0
+  double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
-  double precision,parameter    :: window = 0.5d0
+  double precision,parameter    :: window = 1.5d0
 
   double precision              :: start_timing,end_timing,timing
 
@@ -117,7 +117,7 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
               do k=nC+1,nO
                  do c=nO+1,nOrb-nR
                     H(p    ,nOrb+ija) = H(p    ,nOrb+ija) - (ERI(c,j,p,k) - ERI(c,j,k,p))*(ERI(i,k,c,a) - ERI(i,k,a,c))/(eHF(i) + eHF(k) - eHF(c) - eHF(a))
-                    H(p    ,nOrb+ija) = H(p    ,nOrb+ija) + (ERI(c,i,p,k) - ERI(c,i,k,p))*(ERI(j,k,a,c) - ERI(j,k,a,c))/(eHF(j) + eHF(k) - eHF(c) - eHF(a))
+                    H(p    ,nOrb+ija) = H(p    ,nOrb+ija) + (ERI(c,i,p,k) - ERI(c,i,k,p))*(ERI(j,k,c,a) - ERI(j,k,a,c))/(eHF(j) + eHF(k) - eHF(c) - eHF(a))
                  end do
               end do
               
@@ -302,15 +302,15 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    !--------------!
    
    write(*,*)'-------------------------------------------'
-   write(*,'(1X,A38,I3,A2)')'| IPEA-ADC(3) energies (eV) |'
+   write(*,'(1X,A43)')'| IPEA-ADC(3) energies for all orbitals   |'
    write(*,*)'-------------------------------------------'
    write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-        '|','#','|','e_QP','|','Z','|'
+        '|','#','|','e_QP (eV)','|','Z','|'
    write(*,*)'-------------------------------------------'
    
    do s=1,nH
-      if(eGF(s) < eF .and. eGF(s) > eF - window) then
-      ! if(Z(s) > cutoff1) then
+!     if(eGF(s) < eF .and. eGF(s) > eF - window) then
+      if(Z(s) > cutoff1) then
         write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
         '|',s,'|',eGF(s)*HaToeV,'|',Z(s),'|'
       end if
