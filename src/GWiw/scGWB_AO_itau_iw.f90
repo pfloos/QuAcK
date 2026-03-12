@@ -1,4 +1,4 @@
-subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,restart_scGWB,verbose_scGWB,chem_pot_scG, &
+subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA,restart_scGWB,verbose_scGWB,chem_pot_scG, &
                             no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,U_QP,vMAT,ERI_AO)
 
 ! Restricted scGWB
@@ -8,6 +8,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
 ! Input variables
  
+  logical,intent(in)            :: dophRPA
   logical,intent(in)            :: dolinGW
   logical,intent(in)            :: no_h_hfb
   logical,intent(in)            :: restart_scGWB
@@ -67,17 +68,19 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
   double precision              :: sum_error_st2sw
-  double precision              :: EcGM,Ehfbl,Ecore,Eh,Ex,Epair
-  double precision              :: trace1,trace2
+  double precision              :: EcGM,EcRPA,Ehfbl,Ecore,Eh,Ex,Epair
+  double precision              :: trace1,trace2,trace3
   double precision              :: trace_1_rdm
   double precision,external     :: trace_matrix
   double precision              :: start_scGWBitauiw,end_scGWBitauiw,t_scGWBitauiw
   double precision,allocatable  :: Occ(:)
+  double precision,allocatable  :: Eigval_Xov(:)
   double precision,allocatable  :: cHFBinv(:,:)
   double precision,allocatable  :: cNO(:,:)
   double precision,allocatable  :: U_mo(:,:)
   double precision,allocatable  :: Mat1(:,:)
   double precision,allocatable  :: Mat2(:,:)
+  double precision,allocatable  :: Chi0v(:,:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
   double precision,allocatable  :: Wp_ao_itau(:,:,:)
   double precision,allocatable  :: R_ao(:,:)
@@ -201,7 +204,11 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  allocate(G_ao_itau(ntimes_twice,nBas_twice,nBas_twice))
  allocate(G_ao_itau_old(ntimes_twice,nBas_twice,nBas_twice))
  allocate(Chi0_ao_itau(nBasSq,nBasSq))
- allocate(Chi0_ao_iw(nfreqs,nBasSq,nBasSq),Wp_ao_iw(nBasSq,nBasSq))
+ allocate(Chi0_ao_iw(nfreqs,nBasSq,nBasSq),Wp_ao_iw(nBasSq,nBasSq),Chi0v(1,1),Eigval_Xov(1))
+ if(dophRPA) then
+  deallocate(Chi0v,Eigval_Xov)
+  allocate(Chi0v(nBasSq,nBasSq),Eigval_Xov(nBasSq))
+ endif
  allocate(Wp_ao_itau(ntimes,nBasSq,nBasSq))
  allocate(Sigma_c_w_ao(nfreqs,nBas_twice,nBas_twice))
  allocate(Sigma_c_plus(nBas_twice,nBas_twice))
@@ -416,12 +423,19 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
   ! Build Wp(i w) and compute Ec Galitskii-Migdal 
   !  and Wp(i w) -> Wp(i tau)
-  EcGM=0d0
+  EcGM=0d0;EcRPA=0d0;
   Wp_ao_itau=0d0
   do ifreq=1,nfreqs
-   trace1=0d0; trace2=0d0;
+   trace1=0d0; trace2=0d0; trace3=0d0;
    ! Xo(i w) -> Wp_ao_iw(i w)
    Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
+   if(dophRPA) then
+    Chi0v(:,:)=-Wp_ao_iw(:,:)
+    call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
+    do ibas=1,nBasSq
+     trace3=trace3+Log(abs(1d0-Eigval_Xov(ibas)))
+    enddo
+   endif
    do ibas=1,nBasSq
     trace1=trace1+Wp_ao_iw(ibas,ibas)
     Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
@@ -432,6 +446,9 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    do ibas=1,nBasSq
     trace2=trace2+Wp_ao_iw(ibas,ibas)
    enddo
+   if(dophRPA) then
+    EcRPA=EcRPA+wweight(ifreq)*(trace3-trace1)/(2d0*pi) ! iw contribution to EcGM
+   endif
    EcGM=EcGM-wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcGM
    Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:))     ! Now Wp_ao_iw is on the iw grid
    ! Wp(i w) -> Wp(i tau) [ this transformation misses that Fourier[ Wp(i tau) ] is imaginary because of the factor i / 2pi ]
@@ -765,6 +782,10 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,'(a,f15.8)')        ' EcGM         ',EcGM
  write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
  write(*,'(a,f15.8)')        ' scGWB Energy ',Ehfbl+EcGM+ENuc
+ if(dophRPA) then
+  write(*,'(a,f15.8)')        ' EcRPA        ',EcRPA
+  write(*,'(a,f15.8)')        ' ERPA  Energy ',Ehfbl+EcRPA+ENuc
+ endif
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
@@ -882,7 +903,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  deallocate(G_ao_itau)
  deallocate(G_ao_itau_old)
  deallocate(Chi0_ao_itau)
- deallocate(Chi0_ao_iw,Wp_ao_iw,Wp_ao_itau)
+ deallocate(Chi0_ao_iw,Wp_ao_iw,Wp_ao_itau,Chi0v,Eigval_Xov)
  deallocate(Sigma_c_w_ao)
  deallocate(Sigma_c_plus)
  deallocate(Sigma_c_minus)
