@@ -886,6 +886,111 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   endif
  endif
 
+ ! TODO
+ ! Build Go = (iw - H)^-1
+ ! - Get Ro from Go. 
+ ! - Compute E_HRB[Ro] and EcRPA[Go]
+ ! - E_RPA = E_HRB[Ro] + EcRPA[Go]    (a.k.a. the Klein functional)
+ if(dophRPA .and. .false.) then
+  write(*,*)
+  write(*,*) ' ------------------------------'
+  write(*,*) ' Computing the Klein functional'
+  write(*,*) ' ------------------------------'
+  ! Compute Go and Ro
+  Sigma_c_w_ao=czero
+  call get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
+                      Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
+  ! Compute E_HFB[Ro]
+  Ecore=0d0; Eh=0d0; Ex=0d0; Epair=0d0;
+  do ibas=1,nBas
+   do jbas=1,nBas
+    obas=nBas+1+(jbas-1)
+    Ecore=Ecore+2d0*R_ao(ibas,jbas)*Hc(ibas,jbas)
+    do kbas=1,nBas
+     do lbas=1,nBas
+      qbas=nBas+1+(lbas-1)
+      Eh=Eh+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
+      Ex=Ex-R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+      Epair=Epair+sigma*R_ao(ibas,obas)*R_ao(kbas,qbas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) 
+     enddo
+    enddo
+   enddo
+  enddo
+  Ehfbl=Ecore+Eh+Ex+Epair
+  N_anom = trace_matrix(nBas,matmul(transpose(R_ao(1:nBas,nBas+1:nBas_twice)), &
+           R_ao(1:nBas,nBas+1:nBas_twice)))
+  ! Compute Go(i w) -> Go(i tau) 
+  G_ao_itau=czero
+  do itau=1,ntimes
+   Mat_gorkov_tmp(:,:)=czero
+   Mat_gorkov_tmp2(:,:)=czero
+   do ifreq=1,nfreqs
+    Mat_gorkov_tmp(:,:) = Mat_gorkov_tmp(:,:)   + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                                - im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:))
+    Mat_gorkov_tmp2(:,:) = Mat_gorkov_tmp2(:,:) + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                                + im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:))
+   enddo
+   ! Build G(i tau) = DeltaG(i tau) + Go(i tau)
+   G_ao_itau(2*itau-1,:,:)=Mat_gorkov_tmp(:,:) +G_ao_itau_hfb(2*itau-1,:,:)
+   G_ao_itau(2*itau  ,:,:)=Mat_gorkov_tmp2(:,:)+G_ao_itau_hfb(2*itau  ,:,:)
+  enddo
+  ! Use Go(i tau) -> Xo(i w)
+  Chi0_ao_iw(:,:,:)=czero
+  do itau=1,ntimes
+   ! Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + G_hh(i tau) G_ee(-i tau) ]
+   do ibas=1,nBas
+    do jbas=1,nBas
+     mbas=nBas+1+(jbas-1)
+     do kbas=1,nBas
+      obas=nBas+1+(kbas-1)
+      do lbas=1,nBas
+                                   ! r1   r2'                    r2   r1'
+       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas) &
+               + G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)  ! This is the right sign when G_hh and G_ee are built with  - Mat2
+       if(abs(product)<1e-12) product=czero
+       Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
+      enddo
+     enddo
+    enddo
+   enddo
+   Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
+   ! Xo(i tau) -> Xo(i w)            [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
+   do ifreq=1,nfreqs
+    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau(:,:)
+   enddo
+  enddo
+  Chi0_ao_iw(:,:,:) = Real(Chi0_ao_iw(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
+  ! Compute Ec RPA
+  EcRPA=0d0;
+  do ifreq=1,nfreqs
+   trace1=0d0; trace2=0d0;
+   Chi0v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
+   do ibas=1,nBasSq
+    trace1=trace1+Chi0v(ibas,ibas)
+   enddo
+   call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
+   do ibas=1,nBasSq
+    trace2=trace2+Log(abs(1d0-Eigval_Xov(ibas)))
+   enddo
+   EcRPA=EcRPA+wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcRPA
+  enddo
+
+  write(*,*)
+  write(*,'(a,f15.8)')        ' Trace Go      ',2d0*trace_1_rdm
+  write(*,'(a,f15.8)')        ' N anomalus    ',N_anom
+  write(*,'(a,f15.8)')        ' Enuc          ',ENuc
+  write(*,'(a,f15.8)')        ' Ehcore        ',Ecore
+  write(*,'(a,f15.8)')        ' Hartree       ',Eh
+  write(*,'(a,f15.8)')        ' Exchange      ',Ex
+  write(*,'(a,f15.8)')        ' Epairing      ',Epair
+  write(*,'(a,f15.8)')        ' Ehfbl         ',Ehfbl
+  write(*,'(a,f15.8)')        ' EcRPA         ',EcRPA
+  write(*,'(a,f15.8)')        ' Eelec         ',Ehfbl+EcRPA
+  write(*,'(a,f15.8)')        ' Klein Energy  ',Ehfbl+EcRPA+ENuc
+  write(*,*)
+
+ endif
+
  ! Deallocate arrays
  deallocate(Occ)
  deallocate(cHFBinv)
