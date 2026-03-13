@@ -886,7 +886,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   endif
  endif
 
- ! TODO
+ ! TODO MRM: This I am not sure it is correct.
  ! Build Go = (iw - H)^-1
  ! - Get Ro from Go. 
  ! - Compute E_HRB[Ro] and EcRPA[Go]
