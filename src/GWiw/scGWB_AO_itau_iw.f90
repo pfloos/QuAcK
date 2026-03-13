@@ -456,7 +456,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
     trace2=trace2+Wp_ao_iw(ibas,ibas)
    enddo
    if(doMP2) then
-    EcMP2=EcMP2+wweight(ifreq)*trace4/(8d0*pi) ! iw contribution to EcMP2
+    EcMP2=EcMP2+wweight(ifreq)*trace4/(4d0*pi) ! iw contribution to direct EcMP2
    endif
    if(dophRPA) then
     EcRPA=EcRPA+wweight(ifreq)*(trace3-trace1)/(2d0*pi) ! iw contribution to EcRPA
@@ -795,8 +795,8 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
  write(*,'(a,f15.8)')        ' scGWB Energy ',Ehfbl+EcGM+ENuc
  if(doMP2) then
-  write(*,'(a,f15.8)')        ' EcMP2        ',EcMP2
-  write(*,'(a,f15.8)')        ' EMP2  Energy ',Ehfbl+EcMP2+ENuc
+  write(*,'(a,f15.8)')        ' EcdMP2       ',EcMP2
+  write(*,'(a,f15.8)')        ' EdMP2  Energy',Ehfbl+EcMP2+ENuc
  endif
  if(dophRPA) then
   write(*,'(a,f15.8)')        ' EcRPA        ',EcRPA

@@ -75,7 +75,7 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
    enddo
 
    ! Compute EcMP2
-   EcMP2=EcMP2-wweight(ifreq)*trace1/(8d0*pi)
+   EcMP2=EcMP2-wweight(ifreq)*trace1/(4d0*pi)
 
   enddo
 
@@ -88,8 +88,8 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
    write(*,*) '*********************************************'
    write(*,*)
    write(*,*)'-------------------------------------------------------------------------------'
-   write(*,'(2X,A60,F15.6,A3)') '           MP2 correlation energy = ',EcMP2,' au'
-   write(*,'(2X,A60,F15.6,A3)') '           MP2 total energy       = ',EHFB_tot+EcMP2,' au'
+   write(*,'(2X,A60,F15.6,A3)') '    direct MP2 correlation energy = ',EcMP2,' au'
+   write(*,'(2X,A60,F15.6,A3)') '    direct MP2 total energy       = ',EHFB_tot+EcMP2,' au'
    write(*,*)'-------------------------------------------------------------------------------'
    write(*,*)
   endif
