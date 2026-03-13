@@ -893,9 +893,9 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  ! - E_RPA = E_HRB[Ro] + EcRPA[Go]    (a.k.a. the Klein functional)
  if(dophRPA .and. .false.) then
   write(*,*)
-  write(*,*) ' ------------------------------'
-  write(*,*) ' Computing the Klein functional'
-  write(*,*) ' ------------------------------'
+  write(*,*) ' -----------------------------------------------------------'
+  write(*,*) ' Computing RPA functional building Go = [iw - mu + H_HFB]^-1'
+  write(*,*) ' -----------------------------------------------------------'
   ! Compute Go and Ro
   Sigma_c_w_ao=czero
   call get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
@@ -986,7 +986,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   write(*,'(a,f15.8)')        ' Ehfbl         ',Ehfbl
   write(*,'(a,f15.8)')        ' EcRPA         ',EcRPA
   write(*,'(a,f15.8)')        ' Eelec         ',Ehfbl+EcRPA
-  write(*,'(a,f15.8)')        ' Klein Energy  ',Ehfbl+EcRPA+ENuc
+  write(*,'(a,f15.8)')        ' RPA Energy    ',Ehfbl+EcRPA+ENuc
   write(*,*)
 
  endif
