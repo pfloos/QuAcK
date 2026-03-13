@@ -1,7 +1,7 @@
 subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
                         U_QP,EHFB_tot,EcMP2)
 
-! Restricted Sigma_c(E)
+! Restricted direct EcMP2 
 
   implicit none
   include 'parameters.h'
@@ -74,7 +74,7 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
     trace1=trace1+Tmp_mo_w(iorb,iorb)
    enddo
 
-   ! Compute EcMP2
+   ! Compute direct EcMP2
    EcMP2=EcMP2-wweight(ifreq)*trace1/(4d0*pi)
 
   enddo

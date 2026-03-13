@@ -1,4 +1,4 @@
-subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA,doMP2,restart_scGWB,verbose_scGWB,     &
+subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA,restart_scGWB,verbose_scGWB,           &
                            chem_pot_scG,no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight, &
                            U_QP,vMAT,ERI_AO)
 
@@ -10,7 +10,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 ! Input variables
  
   logical,intent(in)            :: dophRPA
-  logical,intent(in)            :: doMP2
   logical,intent(in)            :: dolinGW
   logical,intent(in)            :: no_h_hfb
   logical,intent(in)            :: restart_scGWB
@@ -70,8 +69,8 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
   double precision              :: sum_error_st2sw
-  double precision              :: EcGM,EcRPA,EcMP2,Ehfbl,Ecore,Eh,Ex,Epair
-  double precision              :: trace1,trace2,trace3,trace4
+  double precision              :: EcGM,EcRPA,Ehfbl,Ecore,Eh,Ex,Epair
+  double precision              :: trace1,trace2,trace3
   double precision              :: trace_1_rdm
   double precision,external     :: trace_matrix
   double precision              :: start_scGWBitauiw,end_scGWBitauiw,t_scGWBitauiw
@@ -207,7 +206,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  allocate(G_ao_itau_old(ntimes_twice,nBas_twice,nBas_twice))
  allocate(Chi0_ao_itau(nBasSq,nBasSq))
  allocate(Chi0_ao_iw(nfreqs,nBasSq,nBasSq),Wp_ao_iw(nBasSq,nBasSq),Chi0v(1,1),Eigval_Xov(1))
- if(dophRPA .or. doMP2) then
+ if(dophRPA) then
   deallocate(Chi0v,Eigval_Xov)
   allocate(Chi0v(nBasSq,nBasSq),Eigval_Xov(nBasSq))
  endif
@@ -425,19 +424,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
   ! Build Wp(i w) and compute Ec Galitskii-Migdal 
   !  and Wp(i w) -> Wp(i tau)
-  EcGM=0d0;EcRPA=0d0;EcMP2=0d0;
+  EcGM=0d0;EcRPA=0d0;
   Wp_ao_itau=0d0
   do ifreq=1,nfreqs
-   trace1=0d0; trace2=0d0; trace3=0d0; trace4=0d0;
+   trace1=0d0; trace2=0d0; trace3=0d0;
    ! Xo(i w) -> Wp_ao_iw(i w)
    Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
-   if(doMP2) then
-    Chi0v(:,:)=-Wp_ao_iw(:,:)
-    Chi0v(:,:)=matmul(Chi0v(:,:),Chi0v(:,:)) ! (Xov)^2
-    do ibas=1,nBasSq
-     trace4=trace4-Chi0v(ibas,ibas)
-    enddo
-   endif
    if(dophRPA) then
     Chi0v(:,:)=-Wp_ao_iw(:,:)
     call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
@@ -455,9 +447,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    do ibas=1,nBasSq
     trace2=trace2+Wp_ao_iw(ibas,ibas)
    enddo
-   if(doMP2) then
-    EcMP2=EcMP2+wweight(ifreq)*trace4/(4d0*pi) ! iw contribution to direct EcMP2
-   endif
    if(dophRPA) then
     EcRPA=EcRPA+wweight(ifreq)*(trace3-trace1)/(2d0*pi) ! iw contribution to EcRPA
    endif
@@ -720,6 +709,10 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfbl+EcGM
   write(*,'(a,f15.8)')        ' Etot        ',Ehfbl+EcGM+ENuc
+  if(dophRPA) then
+   write(*,'(a,f15.8)')       ' EcRPA       ',EcRPA
+   write(*,'(a,f15.8)')       ' ERPA        ',Ehfbl+EcRPA+ENuc
+  endif
   write(*,*)
 
   if(diff_Rao<=thrs_Rao) exit
@@ -794,10 +787,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,'(a,f15.8)')        ' EcGM         ',EcGM
  write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
  write(*,'(a,f15.8)')        ' scGWB Energy ',Ehfbl+EcGM+ENuc
- if(doMP2) then
-  write(*,'(a,f15.8)')        ' EcdMP2       ',EcMP2
-  write(*,'(a,f15.8)')        ' EdMP2  Energy',Ehfbl+EcMP2+ENuc
- endif
  if(dophRPA) then
   write(*,'(a,f15.8)')        ' EcRPA        ',EcRPA
   write(*,'(a,f15.8)')        ' ERPA  Energy ',Ehfbl+EcRPA+ENuc

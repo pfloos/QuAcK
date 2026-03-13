@@ -198,7 +198,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
 
   end if
 
-  ! Compute EcRPA, EcGM, and EcMP2 energies and lin-G for RHFB
+  ! Compute EcRPA, EcGM, and direct-EcMP2 energies and lin-G for RHFB
   if(dophRPA .or. doMP2) then
 
    call wall_time(start_Ecorr)
@@ -215,6 +215,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
     enddo
    enddo
    deallocate(ERI_MO)
+   ! Direct MP2 term (the exchange term is not coded)
    if(doMP2) then
     call EcMP2_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT,&
                       U_QP,Eelec+ENuc,EcMP2)
@@ -251,7 +252,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
     enddo
    enddo
    no_fock=.false.
-   call scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,dophRPA,doMP2,restart_scGW,verbose_scGW, &
+   call scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,dophRPA,restart_scGW,verbose_scGW,       &
                          chem_pot_scG,no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight, &
                          U_QP,vMAT,ERI_AO)
    deallocate(vMAT)
