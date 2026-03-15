@@ -430,13 +430,13 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    trace1=0d0; trace2=0d0; trace3=0d0;
    ! Xo(i w) -> Wp_ao_iw(i w)
    Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
-   if(dophRPA) then
-    Chi0v(:,:)=-Wp_ao_iw(:,:)
-    call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
-    do ibas=1,nBasSq
-     trace3=trace3+Log(abs(1d0-Eigval_Xov(ibas)))
-    enddo
-   endif
+!   if(dophRPA) then
+!    Chi0v(:,:)=-Wp_ao_iw(:,:)
+!    call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
+!    do ibas=1,nBasSq
+!     trace3=trace3+Log(abs(1d0-Eigval_Xov(ibas)))
+!    enddo
+!   endif
    do ibas=1,nBasSq
     trace1=trace1+Wp_ao_iw(ibas,ibas)
     Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
@@ -447,9 +447,9 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    do ibas=1,nBasSq
     trace2=trace2+Wp_ao_iw(ibas,ibas)
    enddo
-   if(dophRPA) then
-    EcRPA=EcRPA+wweight(ifreq)*(trace3-trace1)/(2d0*pi) ! iw contribution to EcRPA
-   endif
+!   if(dophRPA) then
+!    EcRPA=EcRPA+wweight(ifreq)*(trace3-trace1)/(2d0*pi) ! iw contribution to EcRPA
+!   endif
    EcGM=EcGM-wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcGM
    Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:))     ! Now Wp_ao_iw is on the iw grid
    ! Wp(i w) -> Wp(i tau) [ this transformation misses that Fourier[ Wp(i tau) ] is imaginary because of the factor i / 2pi ]
@@ -709,10 +709,10 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfbl+EcGM
   write(*,'(a,f15.8)')        ' Etot        ',Ehfbl+EcGM+ENuc
-  if(dophRPA) then
-   write(*,'(a,f15.8)')       ' EcRPA       ',EcRPA
-   write(*,'(a,f15.8)')       ' ERPA        ',Ehfbl+EcRPA+ENuc
-  endif
+!  if(dophRPA) then
+!   write(*,'(a,f15.8)')       ' EcRPA       ',EcRPA
+!   write(*,'(a,f15.8)')       ' ERPA        ',Ehfbl+EcRPA+ENuc
+!  endif
   write(*,*)
 
   if(diff_Rao<=thrs_Rao) exit
@@ -787,10 +787,10 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,'(a,f15.8)')        ' EcGM         ',EcGM
  write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
  write(*,'(a,f15.8)')        ' scGWB Energy ',Ehfbl+EcGM+ENuc
- if(dophRPA) then
-  write(*,'(a,f15.8)')        ' EcRPA        ',EcRPA
-  write(*,'(a,f15.8)')        ' ERPA  Energy ',Ehfbl+EcRPA+ENuc
- endif
+! if(dophRPA) then
+!  write(*,'(a,f15.8)')        ' EcRPA        ',EcRPA
+!  write(*,'(a,f15.8)')        ' ERPA  Energy ',Ehfbl+EcRPA+ENuc
+! endif
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
@@ -983,6 +983,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
   write(*,*)
   write(*,'(a,f15.8)')        ' Trace Go      ',2d0*trace_1_rdm
+  write(*,'(a,f15.8)')        ' Chem. Pot.    ',chem_pot
   write(*,'(a,f15.8)')        ' N anomalus    ',N_anom
   write(*,'(a,f15.8)')        ' Enuc          ',ENuc
   write(*,'(a,f15.8)')        ' Ehcore        ',Ecore
