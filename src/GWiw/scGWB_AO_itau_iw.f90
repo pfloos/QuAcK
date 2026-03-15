@@ -886,12 +886,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   endif
  endif
 
- ! TODO MRM: This I am not sure it is correct.
+ ! MRM: TODO confirm it makes sense
  ! Build Go = (iw - H)^-1
  ! - Get Ro from Go. 
  ! - Compute E_HRB[Ro] and EcRPA[Go]
- ! - E_RPA = E_HRB[Ro] + EcRPA[Go]    (a.k.a. the Klein functional)
- if(dophRPA .and. .false.) then
+ ! - Evaluate E_RPA = E_HRB[Ro] + EcRPA[Go]    (a.k.a. the RPA functional)
+ if(dophRPA) then
   write(*,*)
   write(*,*) ' -----------------------------------------------------------'
   write(*,*) ' Computing RPA functional building Go = [iw - mu + H_HFB]^-1'
@@ -900,6 +900,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   Sigma_c_w_ao=czero
   call get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
                       Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
+  if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
+   call fix_chem_pot_scGWB_bisec(iter_hfb,nBas,nBas_twice,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,   &
+                                 wcoord,wweight,Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm,chem_pot_saved, &
+                                 verbose_scGWB)
+  if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. .not.chem_pot_scG) &
+   R_ao=nElectrons*R_ao/trace_1_rdm
   ! Compute E_HFB[Ro]
   Ecore=0d0; Eh=0d0; Ex=0d0; Epair=0d0;
   do ibas=1,nBas
