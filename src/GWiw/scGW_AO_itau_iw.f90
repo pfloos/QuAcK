@@ -1,5 +1,5 @@
-subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
-                           ENuc,Hc,S,X,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
+subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA,restart_scGW,verbose_scGW,chem_pot_scG, &
+                           no_fock,ENuc,Hc,S,X,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
 
 ! Restricted scGW
 
@@ -9,6 +9,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart
 ! Input variables
  
   logical,intent(in)            :: dolinGW
+  logical,intent(in)            :: dophRPA
   logical,intent(in)            :: no_fock
   logical,intent(in)            :: restart_scGW
   logical,intent(in)            :: verbose_scGW
@@ -51,11 +52,11 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
-  double precision              :: Ehfl,EcGM,Ehcore,Ehartree,Ex
+  double precision              :: Ehfl,EcGM,EcRPA,Ehcore,Ehartree,Ex
   double precision              :: eta,diff_Pao
   double precision              :: nElectrons
   double precision              :: err_EcGM
-  double precision              :: trace_1_rdm
+  double precision              :: trace_1_rdm,trace1,trace2
   double precision              :: thrs_N,thrs_Ngrad,thrs_Pao
   double precision              :: chem_pot,chem_pot_saved,chem_pot_align
   double precision              :: error_sigma
@@ -70,6 +71,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart
   double precision,allocatable  :: cosw2t_weight(:,:)
   double precision,allocatable  :: sinw2t_weight(:,:)
   double precision,allocatable  :: Occ(:)
+  double precision,allocatable  :: Eigval_Xov(:)
   double precision,allocatable  :: Wp_ao_iw(:,:)
   double precision,allocatable  :: cHFinv(:,:)
   double precision,allocatable  :: cNO(:,:)
@@ -79,6 +81,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart
   double precision,allocatable  :: P_ao_hf(:,:)
   double precision,allocatable  :: P_ao_old(:,:)
   double precision,allocatable  :: P_ao_iter(:,:)
+  double precision,allocatable  :: Chi0v(:,:)
   double precision,allocatable  :: Wp_ao_itau(:,:,:)
   double precision,allocatable  :: err_currentP(:)
   double precision,allocatable  :: err_diisP(:,:)
@@ -175,6 +178,11 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart
  allocate(Sigma_c_c(nBas,nBas),Sigma_c_s(nBas,nBas)) 
  allocate(Sigma_c_plus(nBas,nBas),Sigma_c_minus(nBas,nBas)) 
  allocate(Chi0_ao_itau(nBasSq,nBasSq),Wp_ao_iw(nBasSq,nBasSq))
+ allocate(Chi0v(1,1),Eigval_Xov(1))
+ if(dophRPA) then
+  deallocate(Chi0v,Eigval_Xov)
+  allocate(Chi0v(nBasSq,nBasSq),Eigval_Xov(nBasSq))
+ endif
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(sint2w_weight(nfreqs,ntimes))
  allocate(cost2w_weight(nfreqs,ntimes))
@@ -688,8 +696,8 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart
      do lbas=1,nBas
       Ehfl=Ehfl+0.5d0*P_ao_old(kbas,lbas)*P_ao_old(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
           -0.25d0*P_ao_old(kbas,lbas)*P_ao_old(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
-      Ehartree=Ehartree+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
-      Ex=Ex-0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+      Ehartree=Ehartree+0.5d0*P_ao_old(kbas,lbas)*P_ao_old(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
+      Ex=Ex-0.25d0*P_ao_old(kbas,lbas)*P_ao_old(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
      enddo
     enddo
    enddo
@@ -721,6 +729,110 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart
   endif
  endif
 
+ ! MRM: TODO confirm it makes sense
+ ! Build Go = (iw - H)^-1
+ ! - Get Po from Go. 
+ ! - Compute E_HF[Po] and EcRPA[Go]
+ ! - Evaluate E_RPA = E_HF[Po] + EcRPA[Go]    (a.k.a. the RPA functional)
+ if(dophRPA) then
+  write(*,*)
+  write(*,*) ' -------------------------------------------------------'
+  write(*,*) ' Computing RPA functional building Go = [iw - mu + F]^-1'
+  write(*,*) ' -------------------------------------------------------'
+  ! Compute Go and Po
+  Sigma_c_w_ao=czero
+  call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+                     Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm) 
+  if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
+   call fix_chem_pot_scGX_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
+                                Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGW)
+  if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. .not.chem_pot_scG) &
+   P_ao=nElectrons*P_ao/trace_1_rdm
+  ! Compute E_HF[Po]
+  Ehfl=0d0;Ehartree=0d0;Ex=0d0;Ehcore=0d0;
+  do ibas=1,nBas
+   do jbas=1,nBas
+    Ehfl=Ehfl+P_ao(ibas,jbas)*Hc(ibas,jbas)
+    Ehcore=Ehcore+P_ao(ibas,jbas)*Hc(ibas,jbas)
+    do kbas=1,nBas
+     do lbas=1,nBas
+      Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+          -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+      Ehartree=Ehartree+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
+      Ex=Ex-0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+     enddo
+    enddo
+   enddo
+  enddo
+  ! Compute Go(i w) -> Go(i tau) 
+  G_ao_itau=czero
+  do itau=1,ntimes
+   G_plus_itau(:,:)=czero
+   G_minus_itau(:,:)=czero
+   do ifreq=1,nfreqs
+    G_plus_itau(:,:) = G_plus_itau(:,:)   + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                          - im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:))
+    G_minus_itau(:,:) = G_minus_itau(:,:) + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                          + im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:))
+   enddo
+   ! Build G(i tau) = DeltaG(i tau) + Go(i tau)
+   G_ao_itau(2*itau-1,:,:)=G_plus_itau(:,:) +G_ao_itau_hf(2*itau-1,:,:)
+   G_ao_itau(2*itau  ,:,:)=G_minus_itau(:,:)+G_ao_itau_hf(2*itau  ,:,:)
+  enddo
+  ! Use Go(i tau) -> Xo(i w)
+  Chi0_ao_iw(:,:,:)=czero
+  do itau=1,ntimes
+   ! Xo(i tau) = -2i G(i tau) G(-i tau)
+   do ibas=1,nBas
+    do jbas=1,nBas
+     do kbas=1,nBas         
+      do lbas=1,nBas                       
+                                   ! r1   r2'                    r2   r1'
+       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas)
+       if(abs(product)<1e-12) product=czero
+       Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
+      enddo
+     enddo
+    enddo
+   enddo
+   Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
+   ! Xo(i tau) -> Xo(i w) [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
+   do ifreq=1,nfreqs
+    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau(:,:)
+   enddo
+  enddo
+  ! Complete the Xo(i tau) -> Xo(i w)
+  Chi0_ao_iw(:,:,:) = Real(Chi0_ao_iw(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
+  ! Compute Ec RPA
+  EcRPA=0d0;
+  do ifreq=1,nfreqs
+   trace1=0d0; trace2=0d0;
+   Chi0v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
+   do ibas=1,nBasSq
+    trace1=trace1+Chi0v(ibas,ibas)
+   enddo
+   call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
+   do ibas=1,nBasSq
+    trace2=trace2+Log(abs(1d0-Eigval_Xov(ibas)))
+   enddo
+   EcRPA=EcRPA+wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcRPA
+  enddo
+
+  write(*,*)
+  write(*,'(a,f15.8)')        ' Trace Go      ',2d0*trace_1_rdm
+  write(*,'(a,f15.8)')        ' Chem. Pot.    ',chem_pot
+  write(*,'(a,f15.8)')        ' Enuc          ',ENuc
+  write(*,'(a,f15.8)')        ' Ehcore        ',Ehcore
+  write(*,'(a,f15.8)')        ' Hartree       ',Ehartree
+  write(*,'(a,f15.8)')        ' Exchange      ',Ex
+  write(*,'(a,f15.8)')        ' Ehfbl         ',Ehfl
+  write(*,'(a,f15.8)')        ' EcRPA         ',EcRPA
+  write(*,'(a,f15.8)')        ' Eelec         ',Ehfl+EcRPA
+  write(*,'(a,f15.8)')        ' RPA Energy    ',Ehfl+EcRPA+ENuc
+  write(*,*)
+
+ endif
+
  call wall_time(end_scGWitauiw)
  
  t_scGWitauiw = end_scGWitauiw - start_scGWitauiw
@@ -731,6 +843,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart
  eHF(:) = eHF(:)+chem_pot_saved
  deallocate(Wp_ao_itau)
  deallocate(Chi0_ao_iw,Wp_ao_iw)
+ deallocate(Chi0v,Eigval_Xov)
  deallocate(tcoord,tweight) 
  deallocate(sint2w_weight)
  deallocate(cost2w_weight)

@@ -889,8 +889,8 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  ! MRM: TODO confirm it makes sense
  ! Build Go = (iw - H)^-1
  ! - Get Ro from Go. 
- ! - Compute E_HRB[Ro] and EcRPA[Go]
- ! - Evaluate E_RPA = E_HRB[Ro] + EcRPA[Go]    (a.k.a. the RPA functional)
+ ! - Compute E_HFB[Ro] and EcRPA[Go]
+ ! - Evaluate E_RPA = E_HFB[Ro] + EcRPA[Go]    (a.k.a. the RPA functional)
  if(dophRPA) then
   write(*,*)
   write(*,*) ' -----------------------------------------------------------'
