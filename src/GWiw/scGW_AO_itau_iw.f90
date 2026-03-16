@@ -1,4 +1,4 @@
-subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
+subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,restart_scGW,verbose_scGW,chem_pot_scG,no_fock, &
                            ENuc,Hc,S,X,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
 
 ! Restricted scGW
@@ -21,6 +21,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
   integer,intent(in)            :: maxDIIS
 
   double precision,intent(in)   :: ENuc
+  double precision,intent(in)   :: thresh_in
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: P_in(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
@@ -132,7 +133,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGW,restart_scGW,verb
  eta=0d0
  thrs_N=1d-10
  thrs_Ngrad=1d-6
- thrs_Pao=1d-6
+ thrs_Pao=thresh_in
  nElectrons=2d0*nO
  nBasSq=nBas*nBas
  chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))

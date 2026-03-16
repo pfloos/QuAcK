@@ -101,7 +101,7 @@ subroutine G_ADC(dotest,                                               &
       if(do_dyson) then
 
          if(diag_approx) then
-            call G_IPEA_ADC2_single_state(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+            call G_IPEA_ADC2_diag(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
          else
             call G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
          end if

@@ -40,7 +40,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Local variables
 
-  logical                       :: print_W = .true.
+  logical                       :: print_W = .false.
   logical                       :: dRPA
   double precision              :: flow
   double precision              :: EcRPA
@@ -80,6 +80,7 @@ subroutine GG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
 ! Initialization
 
+! dRPA = .false.
   dRPA = .true.
 
 ! TDA for W

@@ -35,6 +35,7 @@ subroutine GGW_excitation_density(nBas,nC,nO,nR,nS,ERI,XpY,rho)
            do b=nO+1,nBas-nR
               jb = jb + 1
               do ia=1,nS
+!                rho(p,q,ia) = rho(p,q,ia) + (ERI(p,j,q,b) - ERI(p,j,b,q))*XpY(ia,jb)
                  rho(p,q,ia) = rho(p,q,ia) + ERI(p,j,q,b)*XpY(ia,jb)
               end do
            end do

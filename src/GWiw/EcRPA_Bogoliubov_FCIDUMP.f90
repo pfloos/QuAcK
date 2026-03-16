@@ -16,7 +16,7 @@ subroutine EcRPA_Bogoliubov_FCIDUMP(nO,nOrb,nOrb_twice,sigma,ERI_MO,vMAT,Fock,De
 
   logical                        :: file_exists
   integer                        :: iorb,jorb,korb,lorb
-  double precision               :: Ecore,ENuc,EJ,EK,EL,Eelec,EHFB,thrs_N,trace_1rdm,Val,EcRPA,EcGM  
+  double precision               :: Ecore,ENuc,EJ,EK,EL,Eelec,EHFB,thrs_N,trace_1rdm,Val,EcRPA,EcGM,EcMP2 
   double precision,external      :: trace_matrix
   double precision,allocatable   :: J(:,:)
   double precision,allocatable   :: K(:,:)
@@ -179,6 +179,8 @@ subroutine EcRPA_Bogoliubov_FCIDUMP(nO,nOrb,nOrb_twice,sigma,ERI_MO,vMAT,Fock,De
    Eelec = 0d0
    call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
                           U_QP,EHFB,EcRPA,EcGM)
+   call EcMP2_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT,&
+                     U_QP,EHFB,EcMP2)
    deallocate(J,K,Hc)
    deallocate(H_HFB,R)
 
