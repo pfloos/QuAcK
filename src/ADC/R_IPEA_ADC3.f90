@@ -143,7 +143,7 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
         
         ! Symmetrize
 
-        H(nOrb+ija,p) = H(p,nOrb+ija)
+        H(ija,p) = H(p,ija)
               
       end do
     end do
@@ -431,7 +431,7 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
     end do
   end do
  
-  ija = nOrb+nI_2h1p
+  ija = nOrb + nI_2h1p
   do i=nC+1,nO
     do j=i+1,nO
       do a=nO+1,nOrb-nR
@@ -443,7 +443,7 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
     end do
   end do
  
-  ija = nOrb+nI_2h1p+nII_2h1p
+  ija = nOrb + nI_2h1p + nII_2h1p
   do i=nC+1,nO
     do j=i+1,nO
       do a=nO+1,nOrb-nR
@@ -540,8 +540,8 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
                          + 1.5d0*kronecker_delta(i,l)*ERI(c,j,k,a) &
                          - kronecker_delta(i,l)*ERI(c,j,a,k) &
                          + kronecker_delta(i,k)*ERI(c,j,a,l) &
-                         + 1.5d0*kronecker_delta(j,k)*ERI(c,i,l,a) & 
-                         - 1.5d0*kronecker_delta(j,l)*ERI(c,i,k,a) 
+                         - 1.5d0*kronecker_delta(j,l)*ERI(c,i,k,a) &
+                         + 1.5d0*kronecker_delta(j,k)*ERI(c,i,l,a)  
 
             end do
           end do
@@ -571,7 +571,7 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
               H(ija,klc) = H(ija,klc) &
                          - kronecker_delta(a,c)*ERI(i,j,k,l) &
                          + kronecker_delta(i,k)*ERI(c,j,a,l) &
-                         + kronecker_delta(j,l)*ERI(c,i,a,l) &
+                         + kronecker_delta(j,l)*ERI(c,i,a,k) &
                          - 0.5d0*kronecker_delta(i,k)*ERI(c,j,l,a) &
                          - 0.5d0*kronecker_delta(j,l)*ERI(c,i,k,a) &
                          - kronecker_delta(a,c)*ERI(i,j,l,k) &
@@ -818,8 +818,8 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
             kcd = kcd + 1
       
             H(iab,kcd) = H(iab,kcd) &
-                       + sqrt(1.5d0)*kronecker_delta(a,c)*ERI(k,b,d,i) &
-                       - sqrt(1.5d0)*kronecker_delta(a,d)*ERI(k,b,c,i) 
+                       + sqrt(1.5d0)*kronecker_delta(a,c)*ERI(k,a,d,i) &
+                       - sqrt(1.5d0)*kronecker_delta(a,d)*ERI(k,a,c,i) 
 
           end do
         end do
