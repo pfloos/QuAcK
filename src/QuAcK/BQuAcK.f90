@@ -198,6 +198,18 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
 
   end if
 
+  ! Compute EcMP2 for RHFB
+  if(doMP2) then
+   call wall_time(start_Ecorr)
+   call BMP2(nBas,nOrb,MOCoef,Hc,S,ERI_AO,chem_pot,sigma,U_QP,Eelec+ENuc,EcMP2)
+   call wall_time(end_Ecorr)
+
+   t_Ecorr = end_Ecorr - start_Ecorr
+   write(*,*)
+   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for EMP2 = ',t_Ecorr,' seconds'
+   write(*,*)
+  endif
+
   ! Compute EcRPA, EcGM, and direct-EcMP2 energies and lin-G for RHFB
   if(dophRPA .or. doMP2) then
 
