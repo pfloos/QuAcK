@@ -53,24 +53,9 @@ subroutine sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
   X2(:,:) = 0d0
   Y2(:,:) = 0d0
   
-! Compute metric 
-
-  M(:,:) = 0d0
-  
-  do ab=1,nVV
-    M(ab,ab) = 1d0
-  end do
-
-  do ij=1,nOO
-    M(nVV+ij,nVV+ij) = -1d0
-  end do
-
-
+  ! Compute eta-norm
   M  = matmul(matmul(transpose(Z),M),Z)
   
-  do pq=1,nPP
-    print*,M(pq,pq),Om(pq)
-  enddo
 ! Start sorting eigenvectors
 
   ab = 0
