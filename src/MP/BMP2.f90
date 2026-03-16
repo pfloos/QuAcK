@@ -30,6 +30,7 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   double precision,allocatable  :: U_QP_sw(:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   double precision,allocatable  :: ERI_MO_sw(:,:,:,:)
+  double precision,allocatable  :: Ua(:,:),Va(:,:),U(:,:),V(:,:)
 
 ! Output variables
 
