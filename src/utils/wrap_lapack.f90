@@ -80,8 +80,9 @@ subroutine diagonalize_general_matrix(N,A,WR,VR)
 
   call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
  
-  if(any(abs(WI)>1d-8))&
+  if(any(abs(WI)>1d-8)) then
     print*, 'Found eigenvalue with imaginary part > 1e-8 (dgeev)!!'
+  end if
 
   deallocate(work,WI,VL)
 

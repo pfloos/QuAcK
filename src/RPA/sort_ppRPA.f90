@@ -52,19 +52,10 @@ subroutine sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
   Om2(:)  = 0d0
   X2(:,:) = 0d0
   Y2(:,:) = 0d0
-
-! Compute metric 
-
-  M(:,:) = 0d0
   
-  do ab=1,nVV
-    M(ab,ab) = 1d0
-  end do
-
-  do ij=1,nOO
-    M(nVV+ij,nVV+ij) = -1d0
-  end do
-
+  ! Compute eta-norm
+  M  = matmul(matmul(transpose(Z),M),Z)
+  
 ! Start sorting eigenvectors
 
   ab = 0
@@ -72,7 +63,7 @@ subroutine sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 
   do pq=1,nPP
 
-    if(Om(pq) > 0d0) then 
+    if(M(pq,pq) > 0d0) then 
 
       ab = ab + 1
       if(ab <= nVV) then
@@ -125,6 +116,18 @@ subroutine sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
  
   allocate(S1(nVV,nVV),S2(nOO,nOO),O1(nVV,nVV),O2(nOO,nOO))
   allocate(tmp1(nPP,nVV),tmp2(nPP,nOO))
+
+  ! Compute metric 
+
+  M(:,:) = 0d0
+  
+  do ab=1,nVV
+    M(ab,ab) = 1d0
+  end do
+
+  do ij=1,nOO
+    M(nVV+ij,nVV+ij) = -1d0
+  end do
 
   if(nVV > 0) call dgemm ('N','N',nPP,nVV,nPP,1d0, M,nPP,Z1,nPP,0d0,tmp1,nPP)
   if(nVV > 0) call dgemm ('T','N',nVV,nVV,nPP,1d0,Z1,nPP,tmp1,nPP,0d0,S1,nVV)
