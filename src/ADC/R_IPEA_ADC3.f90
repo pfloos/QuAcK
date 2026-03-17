@@ -236,16 +236,16 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
             do c=nO+1,nOrb-nR
 
               H(p,ija) = H(p,ija) & 
-                       - sqrt(0.5d0)*(ERI(i,k,c,a) + ERI(i,k,a,c))*(ERI(c,j,p,k) + ERI(c,j,k,p))/(eHF(i) + eHF(k) - eHF(a) - eHF(c))
-
-              H(p,ija) = H(p,ija) & 
-                       + 3d0*sqrt(0.5d0)*ERI(i,k,a,c)*ERI(c,j,k,p)/(eHF(i) + eHF(k) - eHF(a) - eHF(c))
-
-              H(p,ija) = H(p,ija) & 
                        - sqrt(0.5d0)*(ERI(j,k,c,a) + ERI(j,k,a,c))*(ERI(c,i,p,k) + ERI(c,i,k,p))/(eHF(j) + eHF(k) - eHF(a) - eHF(c))
 
               H(p,ija) = H(p,ija) & 
                        + 3d0*sqrt(0.5d0)*ERI(j,k,a,c)*ERI(c,i,k,p)/(eHF(j) + eHF(k) - eHF(a) - eHF(c))
+
+              H(p,ija) = H(p,ija) & 
+                       - sqrt(0.5d0)*(ERI(i,k,c,a) + ERI(i,k,a,c))*(ERI(c,j,p,k) + ERI(c,j,k,p))/(eHF(i) + eHF(k) - eHF(a) - eHF(c))
+
+              H(p,ija) = H(p,ija) & 
+                       + 3d0*sqrt(0.5d0)*ERI(i,k,a,c)*ERI(c,j,k,p)/(eHF(i) + eHF(k) - eHF(a) - eHF(c))
 
             end do
           end do
