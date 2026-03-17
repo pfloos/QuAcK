@@ -1,6 +1,6 @@
-subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA,restart_scGWB,verbose_scGWB,           &
-                           chem_pot_scG,no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight, &
-                           U_QP,vMAT,ERI_AO)
+subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA,restart_scGWB,verbose_scGWB,     &
+                           chem_pot_scG,no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,sign_XoB,nfreqs, &
+                           wcoord,wweight,U_QP,vMAT,ERI_AO)
 
 ! Restricted scGWB
 
@@ -22,6 +22,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: maxDIIS
 
+  double precision,intent(in)   :: sign_XoB
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: thresh_in
   double precision,intent(in)   :: sigma
@@ -393,11 +394,11 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  do
   iter=iter+1 
 
-  ! Build using the time grid Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + G_hh(i tau) G_ee(-i tau) ]
+  ! Build using the time grid Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + sign_Xo G_hh(i tau) G_ee(-i tau) ]
   !  then Fourier transform Xo(i tau) -> Xo(i w)
   Chi0_ao_iw(:,:,:)=czero
   do itau=1,ntimes
-   ! Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + G_hh(i tau) G_ee(-i tau) ]
+   ! Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + sign_Xo G_hh(i tau) G_ee(-i tau) ]
    do ibas=1,nBas
     do jbas=1,nBas
      mbas=nBas+1+(jbas-1)
@@ -406,7 +407,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
       do lbas=1,nBas
                                    ! r1   r2'                    r2   r1'
        product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas) &
-               + G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)  ! This is the right sign when G_hh and G_ee are built with  - Mat2
+               + sign_XoB*G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)
        if(abs(product)<1e-12) product=czero
        Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
       enddo
@@ -430,13 +431,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    trace1=0d0; trace2=0d0; trace3=0d0;
    ! Xo(i w) -> Wp_ao_iw(i w)
    Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
-!   if(dophRPA) then
-!    Chi0v(:,:)=-Wp_ao_iw(:,:)
-!    call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
-!    do ibas=1,nBasSq
-!     trace3=trace3+Log(abs(1d0-Eigval_Xov(ibas)))
-!    enddo
-!   endif
    do ibas=1,nBasSq
     trace1=trace1+Wp_ao_iw(ibas,ibas)
     Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
@@ -447,9 +441,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    do ibas=1,nBasSq
     trace2=trace2+Wp_ao_iw(ibas,ibas)
    enddo
-!   if(dophRPA) then
-!    EcRPA=EcRPA+wweight(ifreq)*(trace3-trace1)/(2d0*pi) ! iw contribution to EcRPA
-!   endif
    EcGM=EcGM-wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcGM
    Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:))     ! Now Wp_ao_iw is on the iw grid
    ! Wp(i w) -> Wp(i tau) [ this transformation misses that Fourier[ Wp(i tau) ] is imaginary because of the factor i / 2pi ]
@@ -515,7 +506,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    if(file_exists) then
     write(*,*) 'Reading nfreqs_gauss_legendre grid (default: nfreqs_int=1000)'
     open(unit=937, form='formatted', file='nfreqs_gauss_legendre', status='old')
-    read(937) nfreqs_int
+    read(937,*) nfreqs_int
     close(937)
    endif
    write(*,*)
@@ -544,7 +535,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    call cgqf(nfreqs_int,1,0d0,0d0,0d0,1d0,wcoord_int,wweight_int)
    wweight_int(:)=wweight_int(:)/((1d0-wcoord_int(:))**2d0)
    wcoord_int(:)=wcoord_int(:)/(1d0-wcoord_int(:))
-   call Sigmac_MO_RHFB_GW_w(nOrb,nOrb+nOrb,nfreqs,0d0,0,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
+   call Sigmac_MO_RHFB_GW_w(nOrb,nOrb+nOrb,nfreqs,0d0,0,sign_XoB,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
                             vMAT_mo,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.true.,.true.)
    max_error_st2sw=-1d0
    sum_error_st2sw=0d0
@@ -709,10 +700,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   write(*,'(a,f15.8)')        ' EcGM        ',EcGM
   write(*,'(a,f15.8)')        ' Eelec       ',Ehfbl+EcGM
   write(*,'(a,f15.8)')        ' Etot        ',Ehfbl+EcGM+ENuc
-!  if(dophRPA) then
-!   write(*,'(a,f15.8)')       ' EcRPA       ',EcRPA
-!   write(*,'(a,f15.8)')       ' ERPA        ',Ehfbl+EcRPA+ENuc
-!  endif
   write(*,*)
 
   if(diff_Rao<=thrs_Rao) exit
@@ -787,10 +774,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,'(a,f15.8)')        ' EcGM         ',EcGM
  write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
  write(*,'(a,f15.8)')        ' scGWB Energy ',Ehfbl+EcGM+ENuc
-! if(dophRPA) then
-!  write(*,'(a,f15.8)')        ' EcRPA        ',EcRPA
-!  write(*,'(a,f15.8)')        ' ERPA  Energy ',Ehfbl+EcRPA+ENuc
-! endif
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
@@ -952,7 +935,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
       do lbas=1,nBas
                                    ! r1   r2'                    r2   r1'
        product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas) &
-               + G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)  ! This is the right sign when G_hh and G_ee are built with  - Mat2
+               + sign_XoB*G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)
        if(abs(product)<1e-12) product=czero
        Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
       enddo
@@ -993,7 +976,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   write(*,'(a,f15.8)')        ' Ehfbl         ',Ehfbl
   write(*,'(a,f15.8)')        ' EcRPA         ',EcRPA
   write(*,'(a,f15.8)')        ' Eelec         ',Ehfbl+EcRPA
-  write(*,'(a,f15.8)')        ' RPA Energy    ',Ehfbl+EcRPA+ENuc
+  write(*,'(a,f15.8)')        ' BRPA Energy   ',Ehfbl+EcRPA+ENuc
   write(*,*)
 
  endif

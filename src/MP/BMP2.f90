@@ -30,6 +30,8 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   double precision,allocatable  :: U_QP_sw(:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   double precision,allocatable  :: ERI_MO_sw(:,:,:,:)
+  double precision,allocatable  :: Omega40(:,:,:,:)
+  double precision,allocatable  :: Omega04(:,:,:,:)
   double precision,allocatable  :: Ua(:,:),Va(:,:),U(:,:),V(:,:)
 
 ! Output variables
@@ -121,8 +123,117 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   ERI_MO_sw(nOrb+1:nOrb2,      1:nOrb,nOrb+1:nOrb2,      1:nOrb)=ERI_MO(1:nOrb,1:nOrb,1:nOrb,1:nOrb) ! b a b a 
   deallocate(ERI_MO)
 
+! Build Ua, Va, V, U
+  allocate(Ua(nOrb2,nOrb2))
+  allocate(Va(nOrb2,nOrb2))
+  allocate(V(nOrb2,nOrb2))
+  allocate(U(nOrb2,nOrb2))
+  Va(1:nOrb2,1:nOrb2) = U_QP_sw(1:nOrb2      ,1:nOrb2)
+  Ua(1:nOrb2,1:nOrb2) = U_QP_sw(nOrb2+1:nOrb4,1:nOrb2)
+  U(1:nOrb2,1:nOrb2)  = U_QP_sw(1:nOrb2      ,nOrb2+1:nOrb4)
+  V(1:nOrb2,1:nOrb2)  = U_QP_sw(nOrb2+1:nOrb4,nOrb2+1:nOrb4)
+
+! Build Omega40 and Omega04
+  allocate(Omega40(nOrb2,nOrb2,nOrb2,nOrb2))
+  allocate(Omega04(nOrb2,nOrb2,nOrb2,nOrb2))
+  Omega40=0d0
+  Omega04=0d0
+
+  deallocate(Ua,Va,U,V)
+
+  deallocate(Omega40,Omega04)
   deallocate(ERI_MO_sw)
   deallocate(U_QP_sw)
   deallocate(eQP_sw)
 
 end subroutine 
+
+
+subroutine ERI_MO_2_QP(nOrb2,ERI_MO,MAT1,MAT2,MAT3,MAT4,H_QP)
+  implicit none
+
+! Input variables
+
+  integer,intent(in)            :: nOrb2
+  double precision,intent(in)   :: MAT1(nOrb2,nOrb2)
+  double precision,intent(in)   :: MAT2(nOrb2,nOrb2)
+  double precision,intent(in)   :: MAT3(nOrb2,nOrb2)
+  double precision,intent(in)   :: MAT4(nOrb2,nOrb2)
+  double precision,intent(in)   :: ERI_MO(nOrb2,nOrb2,nOrb2,nOrb2)
+
+! Local variables
+ 
+  integer                       :: l1,l2,l3,l4
+  integer                       :: k1,k2,k3,k4
+
+  double precision,allocatable  :: TMP_MAT1(:,:,:,:)
+  double precision,allocatable  :: TMP_MAT2(:,:,:,:)
+
+! Output variables
+
+  double precision,intent(inout) :: H_QP(nOrb2,nOrb2,nOrb2,nOrb2)
+
+  allocate(TMP_MAT1(nOrb2,nOrb2,nOrb2,nOrb2))
+  allocate(TMP_MAT2(nOrb2,nOrb2,nOrb2,nOrb2))
+ 
+
+  ! l1 -> k1
+  TMP_MAT1=0d0
+  do k1=1,nOrb2
+   do l1=1,nOrb2
+    do l2=1,nOrb2
+     do l3=1,nOrb2
+      do l4=1,nOrb2
+        TMP_MAT1(k1,l2,l3,l4)=TMP_MAT1(k1,l2,l3,l4)+(ERI_MO(l1,l2,l3,l4)-ERI_MO(l1,l2,l4,l3))*MAT1(l1,k1)
+      enddo 
+     enddo 
+    enddo 
+   enddo 
+  enddo 
+
+  ! l2 -> k2
+  TMP_MAT2=0d0
+  do k1=1,nOrb2
+   do k2=1,nOrb2
+    do l2=1,nOrb2
+     do l3=1,nOrb2
+      do l4=1,nOrb2
+        TMP_MAT2(k1,k2,l3,l4)=TMP_MAT2(k1,k2,l3,l4)+TMP_MAT1(k1,l2,l3,l4)*MAT2(l2,k2)
+      enddo 
+     enddo 
+    enddo 
+   enddo 
+  enddo 
+  
+  ! l3 -> k4
+  TMP_MAT1=0d0
+  do k1=1,nOrb2
+   do k2=1,nOrb2
+    do k3=1,nOrb2
+     do l3=1,nOrb2
+      do l4=1,nOrb2
+        TMP_MAT1(k1,k2,k3,l3)=TMP_MAT1(k1,k2,k3,l3)+TMP_MAT2(k1,k2,l3,l4)*MAT3(l4,k3)
+      enddo 
+     enddo 
+    enddo 
+   enddo 
+  enddo 
+
+  ! l4 -> k3
+  TMP_MAT2=0d0
+  do k1=1,nOrb2
+   do k2=1,nOrb2
+    do k3=1,nOrb2
+     do k4=1,nOrb2
+      do l3=1,nOrb2
+        H_QP(k1,k2,k3,k4)=H_QP(k1,k2,k3,k4)+TMP_MAT1(k1,k2,k3,l3)*MAT4(l3,k4)
+      enddo 
+     enddo 
+    enddo 
+   enddo 
+  enddo 
+
+  deallocate(TMP_MAT1,TMP_MAT2)
+
+end subroutine
+

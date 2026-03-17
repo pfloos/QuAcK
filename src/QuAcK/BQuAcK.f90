@@ -1,6 +1,6 @@
-subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
+subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,readFCIDUMP,nNuc,nBas,nOrb,         &
                   nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,         &
-                  level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,temperature,sigma,                 &
+                  level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,    &
                   chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
 
 ! Restricted branch of Bogoliubov QuAcK
@@ -22,6 +22,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
   logical,intent(in)             :: dophRPA
   logical,intent(in)             :: doMP2
   logical,intent(in)             :: dolinGW
+  logical,intent(in)             :: dosign_XoB
   logical,intent(in)             :: doscGW
   logical,intent(in)             :: restart_scGW
   logical,intent(in)             :: writeMOs
@@ -63,6 +64,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
   integer                        :: ixyz
   integer                        :: iorb,jorb,korb,lorb
                                 
+  double precision               :: sign_XoB
   double precision               :: chem_pot,Val
   double precision               :: start_HF     ,end_HF       ,t_HF
   double precision               :: start_Ecorr  ,end_Ecorr    ,t_Ecorr
@@ -97,6 +99,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
 ! Memory allocation !
 !-------------------!
 
+  sign_XoB=-1d0
+  if(dosign_XoB) sign_XoB=1d0
   verbose=0
   nOrb_twice=nOrb+nOrb
 
@@ -229,15 +233,15 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
    deallocate(ERI_MO)
    ! Direct MP2 term (the exchange term is not coded)
    if(doMP2) then
-    call EcMP2_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT,&
+    call EcMP2_w_RHFB(nOrb,nOrb_twice,1,sign_XoB,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT,&
                       U_QP,Eelec+ENuc,EcMP2)
    endif
-   call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
+   call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,sign_XoB,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
                           U_QP,Eelec+ENuc,EcRPA,EcGM)
    ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr and Panomcorr
    if(dolinGW) then
     allocate(pMATcorr(nBas,nBas),panomMATcorr(nBas,nBas))
-    call linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
+    call linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,sign_XoB,MOCoef,eQP_state,nfreqs,wweight,wcoord,ERI_AO,vMAT,U_QP,&
                           Enuc,EcGM,sigma,T,V,S,X,pMAT,panomMAT,pMATcorr,panomMATcorr)
     deallocate(pMATcorr,panomMATcorr)
    endif
@@ -264,9 +268,9 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
     enddo
    enddo
    no_fock=.false.
-   call scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,dophRPA,restart_scGW,verbose_scGW,       &
-                         chem_pot_scG,no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight, &
-                         U_QP,vMAT,ERI_AO)
+   call scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,dophRPA,restart_scGW,verbose_scGW, &
+                         chem_pot_scG,no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,sign_XoB,nfreqs, &
+                         wcoord,wweight,U_QP,vMAT,ERI_AO)
    deallocate(vMAT)
   endif
 
@@ -281,7 +285,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
    allocate(pMAT(nOrb,nOrb),panomMAT(nOrb,nOrb))
    allocate(Fock(nOrb,nOrb),Delta(nOrb,nOrb))
    allocate(vMAT(nOrb*nOrb,nOrb*nOrb),ERI_MO(nOrb,nOrb,nOrb,nOrb))
-   call EcRPA_Bogoliubov_FCIDUMP(nO,nOrb,nOrb_twice,sigma,ERI_MO,vMAT,Fock,Delta,pMAT,panomMAT,eQP_state,U_QP, &
+   call EcRPA_Bogoliubov_FCIDUMP(nO,nOrb,nOrb_twice,sigma,sign_XoB,ERI_MO,vMAT,Fock,Delta,pMAT,panomMAT,eQP_state,U_QP, &
                                  chem_pot,ntimes,nfreqs,wcoord,wweight)
    deallocate(vMAT,ERI_MO)
    call wall_time(end_Ecorr)

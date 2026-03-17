@@ -1,4 +1,4 @@
-subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,ntimes,&
+subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,sign_XoB,wtest,eHFB,nfreqs,ntimes,&
                                wweight,wcoord,vMAT,U_QP,Sigma_he_c_mo,Sigma_hh_c_mo,   &
                                Sigma_eh_c_mo,Sigma_ee_c_mo,doSigc_eh,doSigc_ee)
 
@@ -19,6 +19,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
 
+  double precision,intent(in)   :: sign_XoB
   double precision,intent(in)   :: eta
   double precision,intent(inout):: eHFB(nOrb_twice)
   double precision,intent(in)   :: wweight(nfreqs)
@@ -89,7 +90,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
    if(ntimes>0) then
     stop
    else
-    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
+    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
    ! Xo (iw) -> Wp (iw)
@@ -180,7 +181,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=eHFB(Istate)-Real(wtest(iE))
-       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
+       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
@@ -218,7 +219,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=-(Real(wtest(iE))-abs(eHFB(Istate)))
-       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
+       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))

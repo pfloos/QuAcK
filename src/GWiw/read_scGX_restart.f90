@@ -11,6 +11,7 @@ subroutine read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
   integer,intent(in)               :: nfreqs
   integer,intent(in)               :: ntimes_twice
 ! Local variables
+  logical                          :: files_exists
   integer                          :: iunit=312,itau,ifreq,ibas,jbas
   double precision                 :: val_print_r
   complex*16                       :: val_print_c
@@ -26,69 +27,40 @@ subroutine read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao
   write(*,*)
   write(*,'(a)') ' Reading restart files'
   write(*,*)
-  open(unit=iunit,form='unformatted',file='scGX_Gitau_bin',status='old')
-  write(*,'(a)') ' Reading scGX_Gitau_bin'
-  read(iunit) ibas
-  read(iunit) ibas
-  do itau=1,ntimes_twice
-   do ibas=1,nBas
-    do jbas=1,nBas
-     read(iunit) val_print_c
-     G_ao_itau(itau,ibas,jbas)=val_print_c
-    enddo
-   enddo
-  enddo
-  close(iunit)
-  open(unit=iunit,form='unformatted',file='scGX_Pao_bin',status='old')
-  write(*,'(a)') ' Reading scGX_Pao_bin'
-  read(iunit) ibas
-  do ibas=1,nBas
-   do jbas=1,nBas
-    read(iunit) val_print_r
-    P_ao(ibas,jbas)=val_print_r
-   enddo
-  enddo
-  close(iunit)
-  open(unit=iunit,form='unformatted',file='scGX_chem_pot_bin',status='old')
-  write(*,'(a)') ' Reading scGX_chem_pot_bin'
-  read(iunit) chem_pot
-  close(iunit)
-  if(read_SD_chkp) then
-   open(unit=iunit,form='unformatted',file='scGX_Gitau_sd_bin',status='old')
-   write(*,'(a)') ' Reading scGX_Gitau_sd_bin'
+  inquire(file='scGX_Gitau_bin', exist=files_exists)
+  if(files_exists) then
+   open(unit=iunit,form='unformatted',file='scGX_Gitau_bin',status='old')
+   write(*,'(a)') ' Reading scGX_Gitau_bin'
    read(iunit) ibas
    read(iunit) ibas
    do itau=1,ntimes_twice
     do ibas=1,nBas
      do jbas=1,nBas
       read(iunit) val_print_c
-      G_ao_itau_hf(itau,ibas,jbas)=val_print_c
+      G_ao_itau(itau,ibas,jbas)=val_print_c
      enddo
     enddo
    enddo
    close(iunit)
-   open(unit=iunit,form='unformatted',file='scGX_Giw_sd_bin',status='old')
-   write(*,'(a)') ' Reading scGX_Giw_sd_bin'
-   read(iunit) ibas
-   read(iunit) ibas
-   do ifreq=1,nfreqs
-    do ibas=1,nBas
-     do jbas=1,nBas
-      read(iunit) val_print_c
-      G_ao_iw_hf(ifreq,ibas,jbas)=val_print_c
-     enddo
-    enddo
-   enddo
-   close(iunit)
-   open(unit=iunit,form='unformatted',file='scGX_Pao_sd_bin',status='old')
-   write(*,'(a)') ' Reading scGX_Pao_sd_bin'
+  endif
+  inquire(file='scGX_Pao_bin', exist=files_exists)
+  if(files_exists) then
+   open(unit=iunit,form='unformatted',file='scGX_Pao_bin',status='old')
+   write(*,'(a)') ' Reading scGX_Pao_bin'
    read(iunit) ibas
    do ibas=1,nBas
     do jbas=1,nBas
      read(iunit) val_print_r
-     P_ao_hf(ibas,jbas)=val_print_r
+     P_ao(ibas,jbas)=val_print_r
     enddo
    enddo
+   close(iunit)
+  endif
+  inquire(file='scGX_chem_pot_bin', exist=files_exists)
+  if(files_exists) then
+   open(unit=iunit,form='unformatted',file='scGX_chem_pot_bin',status='old')
+   write(*,'(a)') ' Reading scGX_chem_pot_bin'
+   read(iunit) chem_pot
    close(iunit)
   endif
 

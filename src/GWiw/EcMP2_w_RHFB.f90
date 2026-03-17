@@ -1,4 +1,4 @@
-subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
+subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,sign_XoB,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
                         U_QP,EHFB_tot,EcMP2)
 
 ! Restricted direct EcMP2 
@@ -8,6 +8,7 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
 
 ! Input variables
 
+  double precision,intent(in)   :: sign_XoB
   integer,intent(in)            :: verbose
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
@@ -64,7 +65,7 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
     stop
    else
     eta=0d0
-    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
+    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
    ! Tr [ ( Xo v )^2 ]
@@ -88,8 +89,8 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
    write(*,*) '*********************************************'
    write(*,*)
    write(*,*)'-------------------------------------------------------------------------------'
-   write(*,'(2X,A60,F15.6,A3)') '    direct MP2 correlation energy = ',EcMP2,' au'
-   write(*,'(2X,A60,F15.6,A3)') '    direct MP2 total energy       = ',EHFB_tot+EcMP2,' au'
+   write(*,'(2X,A60,F15.6,A3)') '    direct BMP2 correlation energy = ',EcMP2,' au'
+   write(*,'(2X,A60,F15.6,A3)') '    direct BMP2 total energy       = ',EHFB_tot+EcMP2,' au'
    write(*,*)'-------------------------------------------------------------------------------'
    write(*,*)
   endif

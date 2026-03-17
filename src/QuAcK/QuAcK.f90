@@ -96,6 +96,7 @@ program QuAcK
   double precision              :: eta_GW
   double precision              :: shift_GW
   logical                       :: do_linDM_GW
+  logical                       :: dosign_XoB
 
   integer                       :: maxSCF_GT,max_diis_GT
   double precision              :: thresh_GT
@@ -203,7 +204,7 @@ program QuAcK
                     TDA,spin_conserved,spin_flip,nCVS,FC,                                                &
                     max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
-                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
+                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,dosign_XoB,&
                     nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,     &
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
@@ -420,9 +421,9 @@ program QuAcK
   if(doBQuAcK) & 
     call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,readFCIDUMP,nNuc,nBas,nOrb,nO,ENuc, &
                 eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,            &
-                thresh_HF,level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,do_linDM_GW,temperature,         &
-                sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,     &
-                writeMOs)
+                thresh_HF,level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,do_linDM_GW,dosign_XoB,          &
+                temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,      &
+                chem_pot_scG,writeMOs)
 
 !-----------!
 ! Stop Test !
