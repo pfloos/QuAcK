@@ -94,9 +94,10 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   !--------------!
   ! Block U_2h1p !
   !--------------!
+
   do p=1,nOrb
      
-     ija = 0
+     ija = nOrb
      do i=nC+1,nO
         do j=i+1,nO
            do a=nO+1,nOrb-nR
@@ -104,26 +105,26 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
               ! First-order contribution          
 
-              H(p    ,nOrb+ija) = ERI(i,j,p,a) - ERI(i,j,a,p)
+              H(p,ija) = ERI(i,j,p,a) - ERI(i,j,a,p)
 
               ! Second-order contribution        
 
               do c=nO+1,nOrb-nR
                  do d=nO+1,nOrb-nR
-                    H(p    ,nOrb+ija) = H(p    ,nOrb+ija) + 0.5d0*(ERI(c,d,p,a) - ERI(c,d,a,p))*(ERI(i,j,c,d) - ERI(i,j,d,c))/(eHF(i) + eHF(j) - eHF(c) - eHF(d))
+                    H(p,ija) = H(p,ija) + 0.5d0*(ERI(c,d,p,a) - ERI(c,d,a,p))*(ERI(i,j,c,d) - ERI(i,j,d,c))/(eHF(i) + eHF(j) - eHF(c) - eHF(d))
                  end do
               end do
               
               do k=nC+1,nO
                  do c=nO+1,nOrb-nR
-                    H(p    ,nOrb+ija) = H(p    ,nOrb+ija) - (ERI(c,j,p,k) - ERI(c,j,k,p))*(ERI(i,k,c,a) - ERI(i,k,a,c))/(eHF(i) + eHF(k) - eHF(c) - eHF(a))
-                    H(p    ,nOrb+ija) = H(p    ,nOrb+ija) + (ERI(c,i,p,k) - ERI(c,i,k,p))*(ERI(j,k,c,a) - ERI(j,k,a,c))/(eHF(j) + eHF(k) - eHF(c) - eHF(a))
+                    H(p,ija) = H(p,ija) - (ERI(c,j,p,k) - ERI(c,j,k,p))*(ERI(i,k,c,a) - ERI(i,k,a,c))/(eHF(i) + eHF(k) - eHF(c) - eHF(a))
+                    H(p,ija) = H(p,ija) + (ERI(c,i,p,k) - ERI(c,i,k,p))*(ERI(j,k,c,a) - ERI(j,k,a,c))/(eHF(j) + eHF(k) - eHF(c) - eHF(a))
                  end do
               end do
               
               ! Symmetrize
 
-              H(nOrb+ija,p    ) = H(p    ,nOrb+ija)
+              H(ija,p) = H(p,ija)
               
            end do
         end do
@@ -136,7 +137,7 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   !--------------!     
 
   do p=1,nOrb
-     iab = 0
+     iab = nOrb + n2h1p
      do i=nC+1,nO
         do a=nO+1,nOrb-nR
            do b=a+1,nOrb-nR
@@ -144,26 +145,26 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
               
               ! First-order contribution
 
-              H(p          ,nOrb+n2h1p+iab) = ERI(a,b,p,i) - ERI(a,b,i,p)
+              H(p,iab) = ERI(a,b,p,i) - ERI(a,b,i,p)
 
               ! Second-order contribution
 
               do k=nC+1,nO
                  do l=nC+1,nO
-                    H(p    ,nOrb+n2h1p+iab) = H(p    ,nOrb+n2h1p+iab) - 0.5d0*(ERI(k,l,p,i) - ERI(k,l,i,p))*(ERI(a,b,k,l) - ERI(a,b,l,k))/(eHF(a) + eHF(b) - eHF(k) - eHF(l))
+                    H(p,iab) = H(p,iab) - 0.5d0*(ERI(k,l,p,i) - ERI(k,l,i,p))*(ERI(a,b,k,l) - ERI(a,b,l,k))/(eHF(a) + eHF(b) - eHF(k) - eHF(l))
                  end do
               end do
               
               do k=nC+1,nO
                  do c=nO+1,nOrb-nR
-                    H(p    ,nOrb+n2h1p+iab) = H(p    ,nOrb+n2h1p+iab) + (ERI(k,b,p,c) - ERI(k,b,c,p))*(ERI(a,c,k,i) - ERI(a,c,i,k))/(eHF(a) + eHF(c) - eHF(k) - eHF(i))
-                    H(p    ,nOrb+n2h1p+iab) = H(p    ,nOrb+n2h1p+iab) - (ERI(k,a,p,c) - ERI(k,a,c,p))*(ERI(b,c,k,i) - ERI(b,c,i,k))/(eHF(b) + eHF(c) - eHF(k) - eHF(i))
+                    H(p,iab) = H(p,iab) + (ERI(k,b,p,c) - ERI(k,b,c,p))*(ERI(a,c,k,i) - ERI(a,c,i,k))/(eHF(a) + eHF(c) - eHF(k) - eHF(i))
+                    H(p,iab) = H(p,iab) - (ERI(k,a,p,c) - ERI(k,a,c,p))*(ERI(b,c,k,i) - ERI(b,c,i,k))/(eHF(b) + eHF(c) - eHF(k) - eHF(i))
                  end do
               end do
 
               ! Symmetrize
 
-              H(nOrb+n2h1p+iab,p          ) = H(p          ,nOrb+n2h1p+iab)
+              H(iab,p) = H(p,iab)
 
            end do
         end do
@@ -173,14 +174,15 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
    !--------------!
    ! Block K_2h1p !
-   !--------- ----!
-   ija = 0
+   !--------------!
+
+   ija = nOrb
    do i=nC+1,nO
      do j=i+1,nO
        do a=nO+1,nOrb-nR
          ija = ija + 1
             
-         H(nOrb+ija,nOrb+ija) = eHF(i) + eHF(j) - eHF(a)
+         H(ija,ija) = eHF(i) + eHF(j) - eHF(a)
 
        end do
      end do
@@ -189,13 +191,14 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    !--------------!
    ! Block K_2p1h !
    !--------------!
-   iab = 0
+
+   iab = nOrb + n2h1p
    do i=nC+1,nO
      do a=nO+1,nOrb-nR
        do b=a+1,nOrb-nR
          iab = iab + 1
               
-         H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(a) + eHF(b) - eHF(i)
+         H(iab,iab) = eHF(a) + eHF(b) - eHF(i)
        
        end do
      end do
@@ -205,24 +208,24 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    ! Block C_2h1p !
    !--------------!
 
-   ija = 0
+   ija = nOrb
    do i=nC+1,nO
       do j=i+1,nO
          do a=nO+1,nOrb-nR
             ija = ija + 1
           
-            klc = 0
+            klc = nOrb
             do k=nC+1,nO
                do l=k+1,nO
                   do c=nO+1,nOrb-nR
                      klc = klc + 1
           
-                     H(nOrb+ija,nOrb+klc) = H(nOrb+ija,nOrb+klc) &
-                                            - kronecker_delta(a,c) * (ERI(i,j,k,l) - ERI(i,j,l,k)) &
-                                            + kronecker_delta(i,k) * (ERI(c,j,a,l) - ERI(c,j,l,a)) &
-                                            + kronecker_delta(j,l) * (ERI(c,i,a,k) - ERI(c,i,k,a)) &
-                                            - kronecker_delta(i,l) * (ERI(c,j,a,k) - ERI(c,j,k,a)) &
-                                            - kronecker_delta(j,k) * (ERI(c,i,a,l) - ERI(c,i,l,a))
+                     H(ija,klc) = H(ija,klc) &
+                                - kronecker_delta(a,c) * (ERI(i,j,k,l) - ERI(i,j,l,k)) &
+                                + kronecker_delta(i,k) * (ERI(c,j,a,l) - ERI(c,j,l,a)) &
+                                + kronecker_delta(j,l) * (ERI(c,i,a,k) - ERI(c,i,k,a)) &
+                                - kronecker_delta(i,l) * (ERI(c,j,a,k) - ERI(c,j,k,a)) &
+                                - kronecker_delta(j,k) * (ERI(c,i,a,l) - ERI(c,i,l,a))
 
                   end do
                end do
@@ -236,24 +239,24 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    ! Block C_2p1h !
    !--------------!
 
-   iab = 0
+   iab = nOrb + n2h1p
    do i=nC+1,nO
       do a=nO+1,nOrb-nR
          do b=a+1,nOrb-nR
             iab = iab + 1
             
-              kcd = 0
+              kcd = nOrb + n2h1p
               do k=nC+1,nO
                  do c=nO+1,nOrb-nR
                     do d=c+1,nOrb-nR
                        kcd = kcd + 1
          
-                       H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) = H(nOrb+n2h1p+iab,nOrb+n2h1p+kcd) &
-                                                          + kronecker_delta(i,k) * (ERI(a,b,c,d) - ERI(a,b,d,c)) &
-                                                          - kronecker_delta(a,c) * (ERI(k,b,i,d) - ERI(k,b,d,i)) &
-                                                          - kronecker_delta(b,d) * (ERI(k,a,i,c) - ERI(k,a,c,i)) &
-                                                          + kronecker_delta(a,d) * (ERI(k,b,i,c) - ERI(k,b,c,i)) &
-                                                          + kronecker_delta(b,c) * (ERI(k,a,i,d) - ERI(k,a,d,i))
+                       H(iab,kcd) = H(iab,kcd) &
+                                  + kronecker_delta(i,k) * (ERI(a,b,c,d) - ERI(a,b,d,c)) &
+                                  - kronecker_delta(a,c) * (ERI(k,b,i,d) - ERI(k,b,d,i)) &
+                                  - kronecker_delta(b,d) * (ERI(k,a,i,c) - ERI(k,a,c,i)) &
+                                  + kronecker_delta(a,d) * (ERI(k,b,i,c) - ERI(k,b,c,i)) &
+                                  + kronecker_delta(b,c) * (ERI(k,a,i,d) - ERI(k,a,d,i))
 
                     end do
                  end do
@@ -346,7 +349,7 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
           ija = 0
           do i=nC+1,nO
-            do j=nC+1,nO
+            do j=i+1,nO
               do a=nO+1,nOrb-nR
                 ija = ija + 1
  
@@ -361,7 +364,7 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
           iab = 0
           do i=nC+1,nO
             do a=nO+1,nOrb-nR
-              do b=nO+1,nOrb-nR
+              do b=a+1,nOrb-nR
                 iab = iab + 1
 
                 if(abs(H(nOrb+n2h1p+iab,s)) > cutoff2)           &
