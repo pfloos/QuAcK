@@ -470,14 +470,14 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
        Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+im*G_ao_itau(2*itau ,kbas,lbas)  &
                                *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
        ! Sigma_c_hh(i tau) = - i G_hh Wp(i tau)
-       Sigma_c_plus(ibas,obas) =Sigma_c_plus(ibas,obas)+im*G_ao_itau(2*itau-1,kbas,qbas)    &
+       Sigma_c_plus(ibas,obas) =Sigma_c_plus(ibas,obas)+sign_XoB*im*G_ao_itau(2*itau-1,kbas,qbas)    &
                                *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas) ! Adding i to Wp that was missing
-       Sigma_c_minus(ibas,obas)=Sigma_c_minus(ibas,obas)+im*G_ao_itau(2*itau ,kbas,qbas)  &
+       Sigma_c_minus(ibas,obas)=Sigma_c_minus(ibas,obas)+sign_XoB*im*G_ao_itau(2*itau ,kbas,qbas)  &
                                *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas) ! Adding i to Wp that was missing
        ! Sigma_c_ee(i tau) = - i G_ee Wp(i tau)
-       Sigma_c_plus(mbas,jbas) =Sigma_c_plus(mbas,jbas)+im*G_ao_itau(2*itau-1,pbas,lbas)    &
+       Sigma_c_plus(mbas,jbas) =Sigma_c_plus(mbas,jbas)+sign_XoB*im*G_ao_itau(2*itau-1,pbas,lbas)    &
                                *im*Wp_ao_itau(itau,1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
-       Sigma_c_minus(mbas,jbas)=Sigma_c_minus(mbas,jbas)+im*G_ao_itau(2*itau ,pbas,lbas)  &
+       Sigma_c_minus(mbas,jbas)=Sigma_c_minus(mbas,jbas)+sign_XoB*im*G_ao_itau(2*itau ,pbas,lbas)  &
                                *im*Wp_ao_itau(itau,1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
        ! Sigma_c_eh(i tau) = i G_eh Wp(i tau)
        Sigma_c_plus(mbas,obas) =Sigma_c_plus(mbas,obas)+im*G_ao_itau(2*itau-1,pbas,qbas)    &
@@ -545,9 +545,9 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
     ! Sigma_c_he
     Mat_gorkov_tmp(1:nBas            ,1:nBas          ) =  matmul(transpose(cHFBinv),matmul(Sigma_c_he(ifreq,:,:),cHFBinv))
     ! Sigma_c_hh
-    Mat_gorkov_tmp(1:nBas           ,nBas+1:nBas_twice) = -matmul(transpose(cHFBinv),matmul(Sigma_c_hh(ifreq,:,:),cHFBinv))
+    Mat_gorkov_tmp(1:nBas           ,nBas+1:nBas_twice) = -sign_XoB*matmul(transpose(cHFBinv),matmul(Sigma_c_hh(ifreq,:,:),cHFBinv))
     ! Sigma_c_ee
-    Mat_gorkov_tmp(nBas+1:nBas_twice,1:nBas           ) = -matmul(transpose(cHFBinv),matmul(Sigma_c_ee(ifreq,:,:),cHFBinv))
+    Mat_gorkov_tmp(nBas+1:nBas_twice,1:nBas           ) = -sign_XoB*matmul(transpose(cHFBinv),matmul(Sigma_c_ee(ifreq,:,:),cHFBinv))
     ! Sigma_c_eh
     Mat_gorkov_tmp(nBas+1:nBas_twice,nBas+1:nBas_twice) =  matmul(transpose(cHFBinv),matmul(Sigma_c_eh(ifreq,:,:),cHFBinv))
     write(*,'(a,2f10.5)') ' Freq ',im*wcoord(ifreq)

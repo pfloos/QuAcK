@@ -128,8 +128,8 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,sign_XoB,c,eQP_state,nfreqs,wwe
   
    ! Sigma_c^Gorkov
    Sigma_c_QP(1:nOrb           ,1:nOrb           ) =  Sigma_c_he(ifreq,1:nOrb,1:nOrb)
-   Sigma_c_QP(1:nOrb           ,nOrb+1:nOrb_twice) = -Sigma_c_hh(ifreq,1:nOrb,1:nOrb)
-   Sigma_c_QP(nOrb+1:nOrb_twice,1:nOrb           ) = -Sigma_c_ee(ifreq,1:nOrb,1:nOrb)
+   Sigma_c_QP(1:nOrb           ,nOrb+1:nOrb_twice) = -sign_XoB*Sigma_c_hh(ifreq,1:nOrb,1:nOrb)
+   Sigma_c_QP(nOrb+1:nOrb_twice,1:nOrb           ) = -sign_XoB*Sigma_c_ee(ifreq,1:nOrb,1:nOrb)
    Sigma_c_QP(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) =  Sigma_c_eh(ifreq,1:nOrb,1:nOrb)
 
    ! G^Gorkov
