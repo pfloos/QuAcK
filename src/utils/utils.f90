@@ -114,6 +114,24 @@ subroutine diagonal_matrix(N,D,A)
   end do
 
 end subroutine
+!------------------------------------------------------------------------
+subroutine add_diagonal_matrix(N,D,A)
+
+! Add D as diagonal matrix to A
+
+  implicit none
+
+  integer,intent(in)            :: N
+  double precision,intent(in)   :: D(N)
+  double precision,intent(out)  :: A(N,N)
+
+  integer                       :: i
+
+  do i=1,N
+    A(i,i) = A(i,i) + D(i)
+  end do
+
+end subroutine
 
 !------------------------------------------------------------------------
 subroutine matrix_exponential(N, A, ExpA)
