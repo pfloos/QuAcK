@@ -70,7 +70,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
   double precision              :: sum_error_st2sw
-  double precision              :: EcGM,EcRPA,Ehfbl,Ecore,Eh,Ex,Epair
+  double precision              :: EcGM,EcGM2,EcRPA,Ehfbl,Ecore,Eh,Ex,Epair
   double precision              :: trace1,trace2,trace3
   double precision              :: trace_1_rdm
   double precision,external     :: trace_matrix
@@ -108,6 +108,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
+  complex*16                    :: EcGM_itau
   complex*16,allocatable        :: wtest(:)
   complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
   complex*16,allocatable        :: Sigma_c_c(:,:),Sigma_c_s(:,:)
@@ -451,6 +452,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   enddo
 
   ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024) ]
+  EcGM2=0d0;EcGM_itau=0d0;
   Sigma_c_w_ao=czero
   do itau=1,ntimes
    Sigma_c_plus=czero
@@ -497,7 +499,22 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
                             + 0.5d0*cost2w_weight(ifreq,itau)*Sigma_c_c(:,:) &
                             + 0.5d0*sint2w_weight(ifreq,itau)*Sigma_c_s(:,:)
    enddo
+   ! Galitskii-Migdal energy [ PRB, 80, 041103R (2009) ]
+    ! tau > 0
+    Mat_gorkov_tmp(:,:) =G_ao_itau(2*itau-1,:,:)
+    Mat_gorkov_tmp=matmul(Sigma_c_minus,Mat_gorkov_tmp)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(ibas,ibas)
+    enddo
+    ! tau < 0
+    Mat_gorkov_tmp(:,:) =G_ao_itau(2*itau,:,:)
+    Mat_gorkov_tmp=matmul(Sigma_c_plus,Mat_gorkov_tmp)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(ibas,ibas)
+    enddo
   enddo
+  EcGM2=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ] dt
+                         !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
 
   ! Check the quality of Sigma_c(i w) against our previous implementation
   if(iter==1 .and. (.not.restart_scGWB) .and. verbose/=0) then
@@ -770,19 +787,20 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,'(A50)') '     scGWB calculation completed       '
  write(*,'(A50)') '---------------------------------------'
  write(*,*)
- write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB  ',trace_1_rdm,' after ',iter,' global iterations '
- write(*,'(a,f15.8)')        ' Change of R  ',diff_Rao
- write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
- write(*,'(a,f15.8)')        ' N anomalus   ',N_anom
- write(*,'(a,f15.8)')        ' Enuc         ',ENuc
- write(*,'(a,f15.8)')        ' Ehcore       ',Ecore
- write(*,'(a,f15.8)')        ' Hartree      ',Eh
- write(*,'(a,f15.8)')        ' Exchange     ',Ex
- write(*,'(a,f15.8)')        ' Epairing     ',Epair
- write(*,'(a,f15.8)')        ' Ehfbl        ',Ehfbl
- write(*,'(a,f15.8)')        ' EcGM         ',EcGM
- write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
- write(*,'(a,f15.8)')        ' scGWB Energy ',Ehfbl+EcGM+ENuc
+ write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB    ',trace_1_rdm,' after ',iter,' global iterations '
+ write(*,'(a,f15.8)')        ' Change of R    ',diff_Rao
+ write(*,'(a,f15.8)')        ' Chem. Pot.     ',chem_pot
+ write(*,'(a,f15.8)')        ' N anomalus     ',N_anom
+ write(*,'(a,f15.8)')        ' Enuc           ',ENuc
+ write(*,'(a,f15.8)')        ' Ehcore         ',Ecore
+ write(*,'(a,f15.8)')        ' Hartree        ',Eh
+ write(*,'(a,f15.8)')        ' Exchange       ',Ex
+ write(*,'(a,f15.8)')        ' Epairing       ',Epair
+ write(*,'(a,f15.8)')        ' Ehfbl          ',Ehfbl
+ write(*,'(a,f15.8)')        ' EcGM(Xo,i w)   ',EcGM
+ write(*,'(a,f15.8)')        ' EcGM(SG,i tau) ',EcGM2
+ write(*,'(a,f15.8)')        ' Eelec          ',Ehfbl+EcGM
+ write(*,'(a,f15.8)')        ' scGWB Energy   ',Ehfbl+EcGM+ENuc
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
