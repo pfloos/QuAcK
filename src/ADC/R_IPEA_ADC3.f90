@@ -551,7 +551,6 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
     end do
   end do
 
-
   !----------------------------!
   ! Block C_2h1p: Part III-III !
   !----------------------------!
@@ -607,11 +606,16 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
                        - sqrt(1.5d0)*kronecker_delta(i,k)*ERI(c,i,l,a) &
                        + sqrt(1.5d0)*kronecker_delta(i,l)*ERI(c,i,k,a)  
 
+       
+            H(klc,ija) = H(klc,ija) &
+                       - sqrt(1.5d0)*kronecker_delta(i,k)*ERI(c,i,l,a) &
+                       + sqrt(1.5d0)*kronecker_delta(i,l)*ERI(c,i,k,a)  
+
           end do
         end do
       end do
 
-      H(klc,ija) = H(ija,klc)
+!     H(klc,ija) = H(ija,klc)
          
     end do
   end do
@@ -637,12 +641,19 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
                        - 0.5d0*sqrt(2d0)*kronecker_delta(i,k)*ERI(c,i,l,a) &
                        + sqrt(2d0)*kronecker_delta(i,l)*ERI(c,i,a,k) &
                        - 0.5d0*sqrt(2d0)*kronecker_delta(i,l)*ERI(c,i,k,a)  
+       
+            H(klc,ija) = H(klc,ija) &
+                       - sqrt(2d0)*kronecker_delta(a,c)*ERI(i,i,k,l) &
+                       + sqrt(2d0)*kronecker_delta(i,k)*ERI(c,i,a,l) &
+                       - 0.5d0*sqrt(2d0)*kronecker_delta(i,k)*ERI(c,i,l,a) &
+                       + sqrt(2d0)*kronecker_delta(i,l)*ERI(c,i,a,k) &
+                       - 0.5d0*sqrt(2d0)*kronecker_delta(i,l)*ERI(c,i,k,a)  
 
           end do
         end do
       end do
 
-      H(klc,ija) = H(ija,klc)
+!     H(klc,ija) = H(ija,klc)
          
     end do
   end do
@@ -820,11 +831,15 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
             H(iab,kcd) = H(iab,kcd) &
                        + sqrt(1.5d0)*kronecker_delta(a,c)*ERI(k,a,d,i) &
                        - sqrt(1.5d0)*kronecker_delta(a,d)*ERI(k,a,c,i) 
+      
+            H(kcd,iab) = H(kcd,iab) &
+                       + sqrt(1.5d0)*kronecker_delta(a,c)*ERI(k,a,d,i) &
+                       - sqrt(1.5d0)*kronecker_delta(a,d)*ERI(k,a,c,i) 
 
           end do
         end do
 
-        H(kcd,iab) = H(iab,kcd)
+!       H(kcd,iab) = H(iab,kcd)
            
       end do
     end do
@@ -852,10 +867,17 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
                        - sqrt(2d0)*kronecker_delta(a,d)*ERI(k,a,i,c) &
                        + 0.5d0*sqrt(2d0)*kronecker_delta(a,d)*ERI(k,a,c,i)  
 
+            H(kcd,iab) = H(kcd,iab) &
+                       + sqrt(2d0)*kronecker_delta(i,k)*ERI(a,a,c,d) &
+                       - sqrt(2d0)*kronecker_delta(a,c)*ERI(k,a,i,d) &
+                       + 0.5d0*sqrt(2d0)*kronecker_delta(a,c)*ERI(k,a,d,i) &
+                       - sqrt(2d0)*kronecker_delta(a,d)*ERI(k,a,i,c) &
+                       + 0.5d0*sqrt(2d0)*kronecker_delta(a,d)*ERI(k,a,c,i)  
+
           end do
         end do
 
-        H(kcd,iab) = H(iab,kcd)
+!       H(kcd,iab) = H(iab,kcd)
            
       end do
     end do
