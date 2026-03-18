@@ -501,7 +501,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
   ! Check the quality of Sigma_c(i w) against our previous implementation
   if(iter==1 .and. (.not.restart_scGWB) .and. verbose/=0) then
-   nfreqs_int=1000
+   nfreqs_int=nfreqs
    inquire(file='nfreqs_gauss_legendre', exist=file_exists)
    if(file_exists) then
     write(*,*) 'Reading nfreqs_gauss_legendre grid (default: nfreqs_int=1000)'
@@ -532,10 +532,19 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    do ifreq=1,nfreqs
     wtest(ifreq)=im*wcoord(ifreq)   
    enddo
-   call cgqf(nfreqs_int,1,0d0,0d0,0d0,1d0,wcoord_int,wweight_int)
-   wweight_int(:)=wweight_int(:)/((1d0-wcoord_int(:))**2d0)
-   wcoord_int(:)=wcoord_int(:)/(1d0-wcoord_int(:))
-   call Sigmac_MO_RHFB_GW_w(nOrb,nOrb+nOrb,nfreqs,0d0,0,sign_XoB,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
+   if(nfreqs_int/=nfreqs) then
+    call cgqf(nfreqs_int,1,0d0,0d0,0d0,1d0,wcoord_int,wweight_int)
+    wweight_int(:)=wweight_int(:)/((1d0-wcoord_int(:))**2d0)
+    wcoord_int(:)=wcoord_int(:)/(1d0-wcoord_int(:))
+   else
+    wweight_int(:)=wweight(:)
+    wcoord_int(:)=wcoord(:)
+   endif
+   write(*,*)
+   write(*,'(a,2f30.7)') ' Lower limit in the quadrature ',wcoord_int(1),wweight_int(1)
+   write(*,'(a,2f30.7)') ' Upper limit in the quadrature ',wcoord_int(nfreqs_int),wweight_int(nfreqs_int)
+   write(*,*)
+   call Sigmac_MO_RHFB_GW_w(nOrb,nOrb+nOrb,nfreqs,eta,0,sign_XoB,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
                             vMAT_mo,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.true.,.true.)
    max_error_st2sw=-1d0
    sum_error_st2sw=0d0
@@ -550,7 +559,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
     Mat_gorkov_tmp(nBas+1:nBas_twice,1:nBas           ) = -sign_XoB*matmul(transpose(cHFBinv),matmul(Sigma_c_ee(ifreq,:,:),cHFBinv))
     ! Sigma_c_eh
     Mat_gorkov_tmp(nBas+1:nBas_twice,nBas+1:nBas_twice) =  matmul(transpose(cHFBinv),matmul(Sigma_c_eh(ifreq,:,:),cHFBinv))
-    write(*,'(a,2f10.5)') ' Freq ',im*wcoord(ifreq)
+    write(*,'(a,2f10.5)') ' Freq ',wtest(ifreq)
     write(*,'(a)') ' GreenX grids'
     do ibas=1,nBas_twice
      write(*,'(*(f10.5))') Sigma_c_w_ao(ifreq,ibas,:)
