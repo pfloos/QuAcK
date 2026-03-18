@@ -614,8 +614,6 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
           end do
         end do
       end do
-
-!     H(klc,ija) = H(ija,klc)
          
     end do
   end do
@@ -652,8 +650,6 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
           end do
         end do
       end do
-
-!     H(klc,ija) = H(ija,klc)
          
     end do
   end do
@@ -838,8 +834,6 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
           end do
         end do
-
-!       H(kcd,iab) = H(iab,kcd)
            
       end do
     end do
@@ -876,8 +870,6 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
           end do
         end do
-
-!       H(kcd,iab) = H(iab,kcd)
            
       end do
     end do
