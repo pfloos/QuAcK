@@ -513,8 +513,8 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
      EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(ibas,ibas)
     enddo
   enddo
-  EcGM2=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ] dt
-                         !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for QP. restricted calcs.
+  EcGM2=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ]^he dt
+                         !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ]^he dt for QP. restricted calcs.
 
   ! Check the quality of Sigma_c(i w) against our previous implementation
   if(iter==1 .and. (.not.restart_scGWB) .and. verbose/=0) then
