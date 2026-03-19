@@ -11,7 +11,7 @@ subroutine complex_sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
   integer,intent(in)            :: nVV
   integer,intent(in)            :: nPP
   complex*16,intent(in)         :: Om(nPP)
-  complex*16,intent(in)         :: Z(nPP,nPP)
+  complex*16,intent(inout)      :: Z(nPP,nPP)
   
 ! Local variables
 
@@ -54,8 +54,10 @@ subroutine complex_sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
   Y2(:,:) = 0d0
   
   call complex_sort_eigenvalues(nPP,Om,Z)
-  Om1 = Om(1:nVV) 
-  Om2 = Om(nVV+1:nPP) 
+  Om1 = Om(nPP-nVV + 1:nPP) 
+  Om2 = Om(1:nOO)
+  Z(:,nPP-nVV+1:nPP)   = Z(:,nPP-nVV+1:nPP) 
+  Z(:,1:nOO)         = Z(:,1:nOO)
 
   ! Compute eta-norm
   M(:,:) = 0d0
@@ -69,12 +71,22 @@ subroutine complex_sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
   end do
   M  = matmul(matmul(transpose(Z),M),Z)
   print*,"Eta-norm:"
-  do pq=1,nPP
-    print*,pq,M(pq,pq)
-  end do
 
-!  if(ab /= nVV) call print_warning('You may have instabilities in pp-RPA [in virt-virt] !!')
-!  if(ij /= nOO) call print_warning('You may have instabilities in pp-RPA [in occ-occ] !!')
+  ! Count pp and hh and print eta norm
+  ab = 0
+  ij = 0
+  do pq=1,nPP
+    print*,pq, M(pq,pq)
+    if(real(M(pq,pq)) < 0d0 .and. abs(M(pq,pq)) > 1d-6) then
+      ij = ij + 1
+    else if (real(M(pq,pq)) > 0d0 .and. abs(M(pq,pq)) > 1d-6) then
+      ab = ab + 1
+    end if
+  end do
+  
+  if(ab /= nVV) call print_warning('You may have instabilities in pp-RPA [in virt-virt] !!')
+  if(ij /= nOO) call print_warning('You may have instabilities in pp-RPA [in occ-occ] !!')
+
 !  if(ab /= nVV .or. ij /= nOO) then
 !    call print_warning('pp-RPA excitation energies (incl. instabilities)')
 !    do pq=1,nPP
@@ -138,17 +150,17 @@ subroutine complex_sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
 !! Z1 = matmul(Z1,O1)
 !! Z2 = matmul(Z2,O2)
 !
-!! Define submatrices X1, Y1, X2, & Y2
-!
-!  X1(1:nVV,1:nVV) = Z1(    1:    nVV,1:nVV)
-!  Y1(1:nOO,1:nVV) = Z1(nVV+1:nPP,1:nVV)
-!
-!  X2(1:nVV,1:nOO) = Z2(    1:    nVV,1:nOO)
-!  Y2(1:nOO,1:nOO) = Z2(nVV+1:nPP,1:nOO)
-!
+! Define submatrices X1, Y1, X2, & Y2
+
+  X1(1:nVV,1:nVV) = Z1(    1:    nVV,1:nVV)
+  Y1(1:nOO,1:nVV) = Z1(nVV+1:nPP,1:nVV)
+
+  X2(1:nVV,1:nOO) = Z2(    1:    nVV,1:nOO)
+  Y2(1:nOO,1:nOO) = Z2(nVV+1:nPP,1:nOO)
+
 ! call matout(nVV,nVV,X1)
 ! call matout(nOO,nVV,Y1)
-
+!
 ! call matout(nVV,nOO,X2)
 ! call matout(nOO,nOO,Y2)
 

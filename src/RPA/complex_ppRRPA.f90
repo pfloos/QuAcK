@@ -42,7 +42,7 @@ subroutine complex_ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,EN
   complex*16,allocatable        :: X2(:,:)
   complex*16,allocatable        :: Y2(:,:)
 
-  double precision              :: EcRPA(nspin)
+  complex*16                    :: EcRPA(nspin)
 
 ! Hello world
 
@@ -123,10 +123,10 @@ subroutine complex_ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,EN
     
     call complex_ppRLR(TDA,nOO,nVV,complex_Bpp,complex_Cpp,complex_Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA(ispin))
 
-    call print_excitation_energies('Real ppRPA@RHF','2p (singlet)',nVV,real(Om1))
-    call print_excitation_energies('Imag ppRPA@RHF','2p (singlet)',nVV,aimag(Om1))
-    call print_excitation_energies('Real ppRPA@RHF','2h (singlet)',nOO,real(Om2))
-    call print_excitation_energies('Imag ppRPA@RHF','2h (singlet)',nOO,aimag(Om2))
+    call print_excitation_energies('Real ppRPA@RHF','2p (triplet)',nVV,real(Om1))
+    call print_excitation_energies('Imag ppRPA@RHF','2p (triplet)',nVV,aimag(Om1))
+    call print_excitation_energies('Real ppRPA@RHF','2h (triplet)',nOO,real(Om2))
+    call print_excitation_energies('Imag ppRPA@RHF','2h (triplet)',nOO,aimag(Om2))
 
     deallocate(Om1,X1,Y1,Om2,X2,Y2,complex_Bpp,complex_Cpp,complex_Dpp)
 
@@ -135,12 +135,22 @@ subroutine complex_ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,EN
   EcRPA(2) = 3d0*EcRPA(2)
 
   write(*,*)
+  write(*,*)'Real contribution'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy (singlet) = ',EcRPA(1),'au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy (triplet) = ',EcRPA(2),'au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy           = ',sum(EcRPA),'au'
-  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF total       energy           = ',ENuc + ERHF + sum(EcRPA),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy (singlet) = ',real(EcRPA(1)),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy (triplet) = ',real(EcRPA(2)),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy           = ',real(sum(EcRPA)),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF total       energy           = ',real(ENuc + ERHF + sum(EcRPA)),'au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 
+  write(*,*)
+  write(*,*)'Imaginary contribution'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy (singlet) = ',aimag(EcRPA(1)),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy (triplet) = ',aimag(EcRPA(2)),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF correlation energy           = ',aimag(sum(EcRPA)),'au'
+  write(*,'(2X,A50,F20.10,A3)') 'Tr@ppRPA@RHF total       energy           = ',aimag(ENuc + ERHF + sum(EcRPA)),'au'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)
 end subroutine

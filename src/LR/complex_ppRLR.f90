@@ -42,7 +42,7 @@ subroutine complex_ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
   complex*16                    :: thr_d,thr_nd,thr_deg
   complex*16,allocatable        :: M(:,:),Z(:,:),Om(:)
 
-  double precision,external     :: trace_matrix
+  double precision,external     :: complex_trace_matrix
 
   nPP = nOO + nVV
 
@@ -89,9 +89,8 @@ subroutine complex_ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
       if(nPP > 0) then
         call complex_diagonalize_matrix(nPP,M,Om)
         Z = M
-        print*,"blub"
       end if
-      call complex_vecout(nPP,Om)
+
       ! Split the various quantities in ee and hh parts
 
       call complex_sort_ppRPA(nOO,nVV,nPP,Om,Z,Om1,X1,Y1,Om2,X2,Y2)
@@ -131,11 +130,11 @@ subroutine complex_ppRLR(TDA,nOO,nVV,Bpp,Cpp,Dpp,Om1,X1,Y1,Om2,X2,Y2,EcRPA)
 
   ! Compute the RPA correlation energy
 
-  EcRPA = 0.5d0 * (sum(Om1) - sum(Om2) - trace_matrix(nVV,Cpp) - trace_matrix(nOO,Dpp))
-  EcRPA1 = +sum(Om1) - trace_matrix(nVV,Cpp)
-  EcRPA2 = -sum(Om2) - trace_matrix(nOO,Dpp)
+  EcRPA = 0.5d0 * (sum(Om1) - sum(Om2) - complex_trace_matrix(nVV,Cpp) - complex_trace_matrix(nOO,Dpp))
+  EcRPA1 = +sum(Om1) - complex_trace_matrix(nVV,Cpp)
+  EcRPA2 = -sum(Om2) - complex_trace_matrix(nOO,Dpp)
 
-  if(abs(EcRPA - EcRPA1) > 1d-6 .or. abs(EcRPA - EcRPA2) > 1d-6) then
+  if(abs(real(EcRPA - EcRPA1)) > 1d-6 .or. abs(real(EcRPA - EcRPA2)) > 1d-6) then
     print*,'!!! Issue in pp-RPA linear reponse calculation RPA1 != RPA2 !!!'
   endif
 
