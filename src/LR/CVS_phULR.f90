@@ -48,22 +48,20 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
      
     ! Build (\tilde{A} +B ) (\tilde{A} - B ) - 4*eF*\tilde{A} 
     eF  = 0d0
+    Om  = 1d0
     Aphtilde = Aph
-    if(eF>0d0) then
-      do i=1,nSt
-        Aphtilde(i,i) = Aphtilde(i,i) + 2*eF
-      enddo
-    endif
+    call add_diagonal_matrix(nSt,2*eF*Om,Aphtilde)
 
     ApB(:,:) = Aphtilde(:,:) + Bph(:,:) 
     AmB(:,:) = Aphtilde(:,:) - Bph(:,:)
 
-    ApB = matmul(ApB,AmB)
+    ApB      = matmul(ApB,AmB)
     ApB(:,:) = ApB(:,:) - 4*eF*Aphtilde(:,:)
+    call add_diagonal_matrix(nSt,4*eF**2*Om,ApB)
 
     ! Diagonalize linear response matrix
     call diagonalize_general_matrix(nSt,ApB,Om,XmY)
-    Om = sqrt(Om + 4*eF**2)
+    Om = sqrt(Om)
     
     ! Get XpY via (X+Y) =(\tilde{A}-B - 2*eF*Id)(X-Y)Omega^-1
     XpY = matmul(AmB,XmY) - 2*eF*XmY
