@@ -103,6 +103,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
   if(dosign_XoB) sign_XoB=1d0
   verbose=0
   nOrb_twice=nOrb+nOrb
+  Eelec=0d0
 
   allocate(eHF(nOrb))
 
@@ -150,6 +151,24 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
     write(*,*)
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
+
+    ! Test scGHF as method to do RHF (switch off the exchange in HF for testing)
+    if(.false.) then
+     allocate(vMAT(nBas*nBas,nBas*nBas))
+     do iorb=1,nBas
+      do jorb=1,nBas
+       do korb=1,nBas
+        do lorb=1,nBas
+         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+        enddo
+       enddo
+      enddo
+     enddo
+     call scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,max_diis,0,restart_scGW,chem_pot_scG, &
+                           ENuc,Hc,S,X,pMAT,MOCoef,eHF,nfreqs,wcoord,wweight,vMAT)
+     deallocate(vMAT)
+     stop
+    endif
     
     ! Compute EcRPA and EcGM energies and lin-G for RHF
     if(dophRPA) then
