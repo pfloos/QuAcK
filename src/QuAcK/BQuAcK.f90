@@ -1,6 +1,6 @@
 subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,readFCIDUMP,nNuc,nBas,nOrb,         &
-                  nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,thresh,         &
-                  level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,    &
+                  nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,doscGHF,thresh, &
+                  level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,      &
                   chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
 
 ! Restricted branch of Bogoliubov QuAcK
@@ -24,6 +24,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
   logical,intent(in)             :: dolinGW
   logical,intent(in)             :: dosign_XoB
   logical,intent(in)             :: doscGW
+  logical,intent(in)             :: doscGHF
   logical,intent(in)             :: restart_scGW
   logical,intent(in)             :: writeMOs
 
@@ -139,6 +140,25 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
 ! Hartree-Fock Bogoliubov module !
 !--------------------------------!
 
+  ! Test scGHF to do RHF after restricted Hartree
+  if(doscGHF) then
+   call RH(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+            nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,pMAT,Fock)
+   allocate(vMAT(nBas*nBas,nBas*nBas))
+   do iorb=1,nBas
+    do jorb=1,nBas
+     do korb=1,nBas
+      do lorb=1,nBas
+       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+      enddo
+     enddo
+    enddo
+   enddo
+   call scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,max_diis,0,restart_scGW,chem_pot_scG, &
+                         ENuc,Hc,S,X,pMAT,MOCoef,eHF,nfreqs,wcoord,wweight,vMAT)
+   deallocate(vMAT)
+  endif
+
   if(doRHFB) then
 
     ! Run first a RHF calculation 
@@ -152,24 +172,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
 
-    ! Test scGHF as method to do RHF (switch off the exchange in HF for testing)
-    if(.false.) then
-     allocate(vMAT(nBas*nBas,nBas*nBas))
-     do iorb=1,nBas
-      do jorb=1,nBas
-       do korb=1,nBas
-        do lorb=1,nBas
-         vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
-        enddo
-       enddo
-      enddo
-     enddo
-     call scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,max_diis,0,restart_scGW,chem_pot_scG, &
-                           ENuc,Hc,S,X,pMAT,MOCoef,eHF,nfreqs,wcoord,wweight,vMAT)
-     deallocate(vMAT)
-     stop
-    endif
-    
     ! Compute EcRPA and EcGM energies and lin-G for RHF
     if(dophRPA) then
 
