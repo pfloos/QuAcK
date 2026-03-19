@@ -69,7 +69,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
-  double precision              :: sum_error_st2sw
   double precision              :: EcGM,EcGM2,EcRPA,Ehfbl,Ecore,Eh,Ex,Epair
   double precision              :: trace1,trace2,trace3
   double precision              :: trace_1_rdm
@@ -564,7 +563,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    call Sigmac_MO_RHFB_GW_w(nOrb,nOrb+nOrb,nfreqs,eta,0,sign_XoB,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
                             vMAT_mo,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.true.,.true.)
    max_error_st2sw=-1d0
-   sum_error_st2sw=0d0
    error_st2sw=0d0
    imax_error_st2sw=1
    do ifreq=1,nfreqs
@@ -592,15 +590,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
     enddo
     error_st2sw=real(sum(Mat_gorkov_tmp(:,:)))
     write(*,'(a,f10.5)') ' Sum error ',error_st2sw
-    sum_error_st2sw=sum_error_st2sw+error_st2sw
     if(error_st2sw>max_error_st2sw) then
      imax_error_st2sw=ifreq
      max_error_st2sw=error_st2sw
     endif
    enddo
-   write(*,'(a,*(f20.8))') ' Sum error ',sum_error_st2sw
-   write(*,'(a,f20.8,a,2f20.8,a)') ' Max MAE   ',max_error_st2sw/(nBas_twice*nBas_twice),' is in the frequency ',0d0,wcoord(imax_error_st2sw),'i'
-   write(*,'(a,*(f20.8))') ' MAE       ',sum_error_st2sw/(nfreqs*nBas_twice*nBas_twice)
+   write(*,'(a,f20.8,a,2f20.8,a)') ' Max MAE  ',max_error_st2sw/(nBas_twice**2d0),' is in the frequency ',0d0,wcoord(imax_error_st2sw),'i'
    deallocate(ERI_MO)
    deallocate(vMAT_mo)
    deallocate(Sigma_c_he)
