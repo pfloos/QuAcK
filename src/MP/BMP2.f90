@@ -124,7 +124,7 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   ERI_MO_sw(nOrb+1:nOrb2,      1:nOrb,nOrb+1:nOrb2,      1:nOrb)=ERI_MO(1:nOrb,1:nOrb,1:nOrb,1:nOrb) ! b a b a 
   deallocate(ERI_MO)
 
-! Build Ua, Va, V, U
+! Build Ua, Va, V, U [ Note: we use Va and Ua to define U and V so that k1 is related to +- Ek ]
   allocate(Ua(nOrb2,nOrb2))
   allocate(Va(nOrb2,nOrb2))
   allocate(V(nOrb2,nOrb2))
@@ -158,7 +158,7 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
    do k2=1,nOrb2
     do k3=1,nOrb2
      do k4=1,nOrb2
-      Ek1k2k3k4=-(eQP_sw(k1)+eQP_sw(k2)+eQP_sw(k3)+eQP_sw(k4))
+      Ek1k2k3k4=-(eQP_sw(k1)+eQP_sw(k2)+eQP_sw(k3)+eQP_sw(k4))        ! Using negative energies as positive with a minus
       EcMP2=EcMP2+Omega40(k1,k2,k3,k4)*Omega04(k3,k4,k1,k2)/Ek1k2k3k4
      enddo 
     enddo 
