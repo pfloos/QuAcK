@@ -1,4 +1,4 @@
-subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,readFCIDUMP,nNuc,nBas,nOrb,         &
+subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGW,readFCIDUMP,nNuc,nBas,nOrb,&
                   nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,doscGHF,thresh, &
                   level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,      &
                   chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
@@ -19,6 +19,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
                                  
   logical,intent(in)             :: doRHFB
   logical,intent(in)             :: doBRPA
+  logical,intent(in)             :: dophRPAx
   logical,intent(in)             :: dophRPA
   logical,intent(in)             :: doMP2
   logical,intent(in)             :: dolinGW
@@ -66,6 +67,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
   integer                        :: iorb,jorb,korb,lorb
                                 
   double precision               :: sign_XoB
+  double precision               :: EcRPAx
   double precision               :: chem_pot,Val
   double precision               :: start_HF     ,end_HF       ,t_HF
   double precision               :: start_Ecorr  ,end_Ecorr    ,t_Ecorr
@@ -232,6 +234,18 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doMP2,doscGW,
    t_Ecorr = end_Ecorr - start_Ecorr
    write(*,*)
    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for EMP2 = ',t_Ecorr,' seconds'
+   write(*,*)
+  endif
+
+  ! Compute EcRPAx for RHFB
+  if(dophRPAx) then
+   call wall_time(start_Ecorr)
+   call phppLR_BRPAx(nBas,nOrb,MOCoef,Hc,S,ERI_AO,chem_pot,sigma,U_QP,Eelec+ENuc,EcRPAx)
+   call wall_time(end_Ecorr)
+
+   t_Ecorr = end_Ecorr - start_Ecorr
+   write(*,*)
+   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ERPAx = ',t_Ecorr,' seconds'
    write(*,*)
   endif
 
