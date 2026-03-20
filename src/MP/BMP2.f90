@@ -166,11 +166,6 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   enddo
   EcMP2=-EcMP2/2.4d1 
 
-  write(*,*)
-  write(*,*) '************************************'
-  write(*,*) '* EcMP2 computed from QP integrals *'
-  write(*,*) '************************************'
-  write(*,*)
   write(*,*)'------------------------------------------------------------------------'
   write(*,'(2X,A53,F15.6,A3)') 'BMP2 correlation energy = ',EcMP2,' au'
   write(*,'(2X,A53,F15.6,A3)') 'BMP2 total energy       = ',ERHFB+EcMP2,' au'
