@@ -47,7 +47,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
   double precision              :: rcond
   double precision              :: rcondP
   double precision              :: alpha_mixing
-  double precision              :: Ehfl
+  double precision              :: Ehl
   double precision              :: eta,diff_Pao
   double precision              :: nElectrons
   double precision              :: err_EcGM
@@ -71,7 +71,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
   double precision,allocatable  :: F_ao(:,:)
   double precision,allocatable  :: U_mo(:,:)
   double precision,allocatable  :: P_ao(:,:)
-  double precision,allocatable  :: P_ao_hf(:,:)
+  double precision,allocatable  :: P_ao_h(:,:)
   double precision,allocatable  :: P_ao_old(:,:)
   double precision,allocatable  :: P_ao_iter(:,:)
   double precision,allocatable  :: err_currentP(:)
@@ -84,7 +84,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
   complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
   complex*16,allocatable        :: DeltaG_ao_iw(:,:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
-  complex*16,allocatable        :: G_ao_iw_hf(:,:,:)
+  complex*16,allocatable        :: G_ao_iw_h(:,:,:)
   complex*16,allocatable        :: G_ao_iw(:,:,:)
   complex*16,allocatable        :: G_ao_iw_old(:,:,:)
   complex*16,allocatable        :: Mat_ao_tmp(:,:)
@@ -126,7 +126,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  chem_pot = chem_pot_saved
  alpha_mixing=0.6d0
  rcond=0d0
- Ehfl=0d0
+ Ehl=0d0
  ntimes=nfreqs
  ntimes_twice=2*ntimes
  nBasSqnfreqs=nBasSq*nfreqs
@@ -154,7 +154,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
 
  ! Allocate arrays  
  allocate(U_mo(nOrb,nOrb))
- allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_hf(nBas,nBas))
+ allocate(P_ao(nBas,nBas),P_ao_old(nBas,nBas),P_ao_iter(nBas,nBas),P_ao_h(nBas,nBas))
  allocate(F_ao(nBas,nBas),cHFinv(nOrb,nBas),Occ(nOrb),cNO(nBas,nOrb))
  allocate(Mat_ao_tmp(nBas,nBas)) 
  allocate(tweight(ntimes),tcoord(ntimes))
@@ -164,7 +164,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  allocate(sinw2t_weight(ntimes,nfreqs))
  allocate(G_ao_itau(ntimes_twice,nBas,nBas))
  allocate(G_ao_iw(nfreqs,nBas,nBas),G_ao_iw_old(nfreqs,nBas,nBas))
- allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),DeltaG_ao_iw(nfreqs,nBas,nBas),G_ao_iw_hf(nfreqs,nBas,nBas))
+ allocate(Sigma_c_w_ao(nfreqs,nBas,nBas),DeltaG_ao_iw(nfreqs,nBas,nBas),G_ao_iw_h(nfreqs,nBas,nBas))
  allocate(err_current(1))
  allocate(err_currentP(1))
  allocate(G_iw_extrap(1))
@@ -200,21 +200,21 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  err_diis=czero
  G_iw_old_diis=czero
  cHFinv=matmul(transpose(cHF),S)
- P_ao_hf=P_in
+ P_ao_h=P_in
  P_ao=P_in
  P_ao_iter=P_in
  F_ao=Hc
- Ehfl=0d0
+ Ehl=0d0
  trace_1_rdm=0d0
  do ibas=1,nBas
   do jbas=1,nBas
-   Ehfl=Ehfl+P_ao(ibas,jbas)*Hc(ibas,jbas)
+   Ehl=Ehl+P_ao(ibas,jbas)*Hc(ibas,jbas)
    trace_1_rdm=trace_1_rdm+P_ao(ibas,jbas)*S(ibas,jbas)
    do kbas=1,nBas
     do lbas=1,nBas
      F_ao(ibas,jbas)=F_ao(ibas,jbas)+P_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
                     -0.5d0*P_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
-     Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+     Ehl=Ehl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
          -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
     enddo
    enddo
@@ -229,12 +229,12 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  do ifreq=1,nfreqs
   weval_cpx=im*wcoord(ifreq)
   call G_AO_RHF_w(nBas,nOrb,nO,eta,cHF,eHF,weval_cpx,Mat_ao_tmp)
-  G_ao_iw_hf(ifreq,:,:)=Mat_ao_tmp(:,:)
+  G_ao_iw_h(ifreq,:,:)=Mat_ao_tmp(:,:)
  enddo
 
  ! If required, read the restart files
  if(restart_scGHF) then
-  call read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_hf,G_ao_iw_hf,G_ao_itau,G_ao_itau,read_SD_chkp)
+  call read_scGX_restart(nBas,nfreqs,ntimes_twice,chem_pot,P_ao,P_ao_h,G_ao_iw_h,G_ao_itau,G_ao_itau,read_SD_chkp)
   P_ao_iter=P_ao
  endif
 
@@ -257,15 +257,15 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
    ! Build F
    iter_fock=iter_fock+1
    F_ao=Hc
-   Ehfl=0d0
+   Ehl=0d0
    do ibas=1,nBas
     do jbas=1,nBas
-     Ehfl=Ehfl+P_ao(ibas,jbas)*Hc(ibas,jbas)
+     Ehl=Ehl+P_ao(ibas,jbas)*Hc(ibas,jbas)
      do kbas=1,nBas
       do lbas=1,nBas
        F_ao(ibas,jbas)=F_ao(ibas,jbas)+P_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
                       -0.5d0*P_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
-       Ehfl=Ehfl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
+       Ehl=Ehl+0.5d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
            -0.25d0*P_ao(kbas,lbas)*P_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
       enddo
      enddo
@@ -274,13 +274,13 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
    ! Build G(i w) and n(r)
    P_ao_old=P_ao
    call get_1rdm_scGX(nBas,nfreqs,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                      Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm)
+                      Mat_ao_tmp,G_ao_iw_h,DeltaG_ao_iw,P_ao,P_ao_h,trace_1_rdm)
 !  I. Duchemin's method to compute P_ao from G(i w) 
 !   call get_1rdm_scGX_v2(nBas,nOrb,nfreqs,iter_fock,chem_pot,S,X,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-!                         Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,trace_1_rdm) 
+!                         Mat_ao_tmp,G_ao_iw_h,DeltaG_ao_iw,P_ao,trace_1_rdm) 
    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
     call fix_chem_pot_scGX_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
-                                 Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGHF)
+                                 Mat_ao_tmp,G_ao_iw_h,DeltaG_ao_iw,P_ao,P_ao_h,trace_1_rdm,chem_pot_saved,verbose_scGHF)
    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. .not.chem_pot_scG) &
     P_ao=nElectrons*P_ao/trace_1_rdm
 
@@ -342,16 +342,16 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
   write(*,'(a,f15.8)')        ' Change of P  ',diff_Pao
   write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
   write(*,'(a,f15.8)')        ' Enuc         ',ENuc
-  write(*,'(a,f15.8)')        ' Ehfl         ',Ehfl
-  write(*,'(a,f15.8)')        ' Eelec        ',Ehfl
-  write(*,'(a,f15.8)')        ' Etot         ',Ehfl+ENuc
+  write(*,'(a,f15.8)')        ' Ehl          ',Ehl
+  write(*,'(a,f15.8)')        ' Eelec        ',Ehl
+  write(*,'(a,f15.8)')        ' Etot         ',Ehl+ENuc
   write(*,*)
 
   if(diff_Pao<=thrs_Pao) exit
 
   if(iter==maxSCF) exit
  
-  G_ao_iw=G_ao_iw_hf+DeltaG_ao_iw 
+  G_ao_iw=G_ao_iw_h+DeltaG_ao_iw 
   ! Do mixing with previous G(i w) to facilitate convergence
   if(maxDIIS>0) then
    n_diis=min(n_diis+1,maxDIIS)
@@ -392,9 +392,9 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  write(*,'(a,f15.8)')        ' Change of P  ',diff_Pao
  write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
  write(*,'(a,f15.8)')        ' Enuc         ',ENuc
- write(*,'(a,f15.8)')        ' Ehfl         ',Ehfl
- write(*,'(a,f15.8)')        ' Eelec        ',Ehfl
- write(*,'(a,f15.8)')        ' scGHF Energy ',Ehfl+ENuc
+ write(*,'(a,f15.8)')        ' Ehl          ',Ehl
+ write(*,'(a,f15.8)')        ' Eelec        ',Ehl
+ write(*,'(a,f15.8)')        ' scGHF Energy ',Ehl+ENuc
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
@@ -409,8 +409,8 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  write(*,*)
 
  ! Write restart files
- call write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau, &
-                         G_ao_iw_hf,DeltaG_ao_iw)
+ call write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_h,G_ao_itau,G_ao_itau, &
+                         G_ao_iw_h,DeltaG_ao_iw)
 
  call wall_time(end_scGHFitauiw)
  
@@ -427,8 +427,8 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  deallocate(sinw2t_weight)
  deallocate(G_ao_itau)
  deallocate(G_ao_iw,G_ao_iw_old)
- deallocate(Sigma_c_w_ao,DeltaG_ao_iw,G_ao_iw_hf)
- deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_hf,F_ao,U_mo,cHFinv,cNO,Occ) 
+ deallocate(Sigma_c_w_ao,DeltaG_ao_iw,G_ao_iw_h)
+ deallocate(P_ao,P_ao_old,P_ao_iter,P_ao_h,F_ao,U_mo,cHFinv,cNO,Occ) 
  deallocate(Mat_ao_tmp) 
  deallocate(err_current)
  deallocate(err_currentP)

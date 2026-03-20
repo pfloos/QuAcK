@@ -96,14 +96,6 @@ subroutine RH(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,write
 ! Guess coefficients and/or density matrix
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
-  if(guess_type == 6) then
-    ! Read MO Coefficients from file
-    print *, "Reading MO Coefficients from MOs dir..."
-    allocate(tmp(nBas,nBas))
-    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
-    c(:,:) = tmp
-    deallocate(tmp)
-  end if
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
   ! If guess_type is read density and files P_ao_bin and/or P_ao_form exists
   if(guess_type == 5) then
@@ -156,10 +148,10 @@ subroutine RH(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,write
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,*)'----------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(RHF)','|','EJ(RHF)','|','EK(RHF)','|','Conv','|'
-  write(*,*)'-----------------------------------------------------------------------------'
+            '|','#','|',' E(RH)','|',' EJ(RH)','|','Conv','|'
+  write(*,*)'----------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -231,11 +223,11 @@ subroutine RH(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,write
      enddo
     endif
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
-      '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',Conv,'|'
 
   end do
-  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,*)'----------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -266,32 +258,12 @@ subroutine RH(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,write
   c = matmul(X,cp)
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+  call print_RH(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,ERHF,dipole)
 
 ! Print the 1-RDM and 2-RDM in AO basis
   if(doaordm) then
    call print_RHF_AO_rdms(nBas,ENuc,S,T,V,P,ERI)
   endif
-
-! Write MOs
-
-  if(writeMOs) then
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
-  endif
-
-! Testing zone
-
-  if(dotest) then
- 
-    call dump_test_value('R','RHF energy',ERHF)
-    call dump_test_value('R','RHF HOMO energy',eHF(nO))
-    call dump_test_value('R','RHF LUMO energy',eHF(nO+1))
-    call dump_test_value('R','RHF dipole moment',norm2(dipole))
-
-  end if
 
 ! Memory deallocation
 
