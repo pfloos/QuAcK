@@ -18,11 +18,12 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
 
 ! Local variables
 
-  integer                       :: iorb,jorb,korb,lorb
+  integer                       :: iorb
+  integer                       :: k1,k2,k3,k4
   integer                       :: nOrb2,nOrb3,nOrb4
 
+  double precision              :: Ek1k2k3k4
   double precision              :: trace_1rdm
-  double precision              :: EcdMP2,EcxMP2
 
   double precision,allocatable  :: eQP_sw(:)
   double precision,allocatable  :: F(:,:),J(:,:),K(:,:),Delta(:,:)
@@ -130,8 +131,8 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   allocate(U(nOrb2,nOrb2))
   Va(1:nOrb2,1:nOrb2) = U_QP_sw(1:nOrb2      ,1:nOrb2)
   Ua(1:nOrb2,1:nOrb2) = U_QP_sw(nOrb2+1:nOrb4,1:nOrb2)
-  U(1:nOrb2,1:nOrb2)  = U_QP_sw(1:nOrb2      ,nOrb2+1:nOrb4)
-  V(1:nOrb2,1:nOrb2)  = U_QP_sw(nOrb2+1:nOrb4,nOrb2+1:nOrb4)
+  U(1:nOrb2,1:nOrb2)  = -Va(1:nOrb2,1:nOrb2)
+  V(1:nOrb2,1:nOrb2)  =  Ua(1:nOrb2,1:nOrb2)
 
 ! Build Omega40 and Omega04
   allocate(Omega40(nOrb2,nOrb2,nOrb2,nOrb2))
@@ -140,9 +141,43 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   Omega04=0d0
   call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
   call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
+  call ERI_MO2QP_H04(nOrb2,ERI_MO_sw,U,V,Omega04)
+  call ERI_MO2QP_H04_2(nOrb2,ERI_MO_sw,U,V,Omega04)
+  call ERI_MO2QP_H04_3(nOrb2,ERI_MO_sw,U,V,Omega04)
+  call ERI_MO2QP_H04_4(nOrb2,ERI_MO_sw,U,V,Omega04)
+  call ERI_MO2QP_H04_5(nOrb2,ERI_MO_sw,U,V,Omega04)
+  call ERI_MO2QP_H04_6(nOrb2,ERI_MO_sw,U,V,Omega04)
+
+! Compute EcMP2
+  EcMP2=0d0
+  do k1=1,nOrb2
+   do k2=1,nOrb2
+    do k3=1,nOrb2
+     do k4=1,nOrb2
+      Ek1k2k3k4=-(eQP_sw(k1)+eQP_sw(k2)+eQP_sw(k3)+eQP_sw(k4))
+      EcMP2=EcMP2+Omega40(k1,k2,k3,k4)*Omega04(k3,k4,k1,k2)/Ek1k2k3k4
+     enddo 
+    enddo 
+   enddo 
+  enddo
+  EcMP2=-EcMP2/2.4d1 
+
+  write(*,*)
+  write(*,*) '************************************'
+  write(*,*) '* EcMP2 computed from QP integrals *'
+  write(*,*) '************************************'
+  write(*,*)
+  write(*,*)'------------------------------------------------------------------------'
+  write(*,'(2X,A53,F15.6,A3)') 'BMP2 correlation energy = ',EcMP2,' au'
+  write(*,'(2X,A53,F15.6,A3)') 'BMP2 total energy       = ',ERHFB+EcMP2,' au'
+  write(*,*)'------------------------------------------------------------------------'
+  write(*,*)
 
   deallocate(Ua,Va,U,V)
-
   deallocate(Omega40,Omega04)
   deallocate(ERI_MO_sw)
   deallocate(U_QP_sw)
