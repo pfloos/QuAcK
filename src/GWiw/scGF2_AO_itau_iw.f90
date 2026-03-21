@@ -428,8 +428,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
      enddo
     enddo
    enddo
-   Sigma_c_minus=0.5d0*Sigma_c_minus
-   Sigma_c_plus =0.5d0*Sigma_c_plus
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
@@ -451,7 +449,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
      EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
     enddo
   enddo
-  EcGM=-real(EcGM_itau) ! EcGM = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
+  EcGM=-0.5d0*real(EcGM_itau) ! EcGM = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
 
   ! Check the error in Sigma_c(i w) at iter=1 [ if this is calc. is not with restart ]
   if(iter==1 .and. .not.restart_scGF2) then
@@ -462,7 +460,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    allocate(error_transf_mo(nfreqs,nOrb,nOrb),Sigma_c_w_mo(nOrb,nOrb))
    ! Build the analytic Sigma_c(iw)
    call Sigmac_MO_RHF_GF2_analytical(nBas,nOrb,nO,verbose,cHF,eHF,nfreqs,wcoord,ERI_AO,error_transf_mo,err_EcGM) ! error_transf_mo set to Sigma_c_mo(iw)
-   error_transf_mo=0.5d0*error_transf_mo
    do ifreq=1,nfreqs
     Sigma_c_w_mo=matmul(matmul(transpose(cHF(:,:)),Sigma_c_w_ao(ifreq,:,:)),cHF(:,:)) ! Fourier: Sigma_c_ao(iw) -> Sigma_c_mo(iw)
     if(verbose/=0) then
