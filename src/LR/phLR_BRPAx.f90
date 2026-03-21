@@ -26,7 +26,7 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
   double precision              :: Ekkprime
   double precision              :: trace_1rdm
 
-  double precision,allocatable  :: Omega_QP(:)
+  double precision,allocatable  :: Om(:)
   double precision,allocatable  :: eQP_sw(:)
   double precision,allocatable  :: F(:,:),J(:,:),EXX(:,:),Delta(:,:)
   double precision,allocatable  :: P(:,:),Panom(:,:),R(:,:)
@@ -126,20 +126,20 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
   Ua(1:nOrb2,1:nOrb2) = U_QP_sw(nOrb2+1:nOrb4,1:nOrb2)
   U(1:nOrb2,1:nOrb2)  = -Va(1:nOrb2,1:nOrb2)
   V(1:nOrb2,1:nOrb2)  =  Ua(1:nOrb2,1:nOrb2)
+  deallocate(U_QP_sw)
 
 ! Build H40 and H22
   allocate(H40(nOrb2,nOrb2,nOrb2,nOrb2))
   allocate(H22(nOrb2,nOrb2,nOrb2,nOrb2))
-  H40=0d0
-  H22=0d0
+  H40=0d0;  H22=0d0;
   call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,Ua,Va,H40)
+  H40=0.25d0*H40
   call ERI_MO2QP_H22(nOrb2,ERI_MO_sw,U,Ua,H22)
   call ERI_MO2QP_H22_2(nOrb2,ERI_MO_sw,V,Va,H22)
   call ERI_MO2QP_H22_3(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
   call ERI_MO2QP_H22_4(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
   call ERI_MO2QP_H22_5(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
   call ERI_MO2QP_H22_6(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
-  deallocate(U_QP_sw)
   deallocate(ERI_MO_sw)
   deallocate(Ua,Va,U,V)
 
@@ -154,7 +154,7 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
     do l=1,nOrb2
      do lprime=l+1,nOrb2
       Amat(iqp_pair,jqp_pair)=H22(k,kprime,l,lprime)
-      Bmat(iqp_pair,jqp_pair)=6.0d0*H40(k,kprime,l,lprime)
+      Bmat(iqp_pair,jqp_pair)=2.4d1*H40(k,kprime,l,lprime)
       if(iqp_pair==jqp_pair) then
        Amat(iqp_pair,jqp_pair)=Amat(iqp_pair,jqp_pair)+Ekkprime
       endif
@@ -169,27 +169,30 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
   enddo
 
 ! Prepare H_RPAx
-  allocate(H_RPAx(nRPA2,nRPA2),Omega_QP(nRPA2))
+  allocate(H_RPAx(nRPA2,nRPA2),Om(nRPA2))
   H_RPAx(1:nRPA      ,1:nRPA      )= Amat(1:nRPA,1:nRPA)
   H_RPAx(1:nRPA      ,nRPA+1:nRPA2)= Bmat(1:nRPA,1:nRPA)
   H_RPAx(nRPA+1:nRPA2,1:nRPA      )=-Bmat(1:nRPA,1:nRPA)
   H_RPAx(nRPA+1:nRPA2,nRPA+1:nRPA2)=-Amat(1:nRPA,1:nRPA)
 
 ! Diagonalize QP-RPAx
- call diagonalize_general_matrix(nRPA2,H_RPAx,Omega_QP,H_RPAx)
- call sort_ascending(nRPA2,Omega_QP)                        
+  call diagonalize_general_matrix(nRPA2,H_RPAx,Om,H_RPAx)
+  call sort_ascending(nRPA2,Om)                        
 
-! Compute EcRPAx = 1/2 sum_p  Omega_p - A_pp  (for Omega_p > 0 that's why we use a minus)
+! Compute EcRPAx = 1/2 sum_p  Om_p - A_pp  (for Om_p > 0, that's why we use a minus)
   EcRPAx=0d0
   do k=1,nRPA
-   EcRPAx=EcRPAx+(-Omega_QP(k)-Amat(k,k))
+   EcRPAx=EcRPAx+(-Om(k)-Amat(k,k))
   enddo
   EcRPAx=0.5d0*EcRPAx
 
-  write(*,*)'-------------------------------------------------------------------------'
-  write(*,'(2X,A53,F15.6,A3)') 'BRPAx correlation energy = ',EcRPAx,' au'
-  write(*,'(2X,A53,F15.6,A3)') 'BRPAx total energy       = ',ERHFB+EcRPAx,' au'
-  write(*,*)'-------------------------------------------------------------------------'
+! Print TD-HFB excitation energies
+  call print_excitation_energies('B-RPAx','Singlet',nRPA,Om(nRPA+1:nRPA2))
+
+  write(*,*)'--------------------------------------------------------------------------'
+  write(*,'(2X,A53,F15.6,A3)') 'B-RPAx correlation energy = ',EcRPAx,' au'
+  write(*,'(2X,A53,F15.6,A3)') 'B-RPAx total energy       = ',ERHFB+EcRPAx,' au'
+  write(*,*)'--------------------------------------------------------------------------'
   write(*,*)
 
   deallocate(H_RPAx)
