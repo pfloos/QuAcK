@@ -1,6 +1,6 @@
 subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGW,readFCIDUMP,nNuc,nBas,nOrb,&
                   nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,doscGHF,thresh, &
-                  level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,      &
+                  level_shift,guess_type,TDA,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,  &
                   chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
 
 ! Restricted branch of Bogoliubov QuAcK
@@ -16,6 +16,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   logical,intent(in)             :: error_P
   logical,intent(in)             :: verbose_scGW
   logical,intent(in)             :: chem_pot_scG
+  logical,intent(in)             :: TDA
                                  
   logical,intent(in)             :: doRHFB
   logical,intent(in)             :: doBRPA
@@ -229,18 +230,37 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   if(doMP2) then
    call wall_time(start_Ecorr)
    call BMP2(nBas,nOrb,MOCoef,Hc,S,ERI_AO,chem_pot,sigma,U_QP,Eelec+ENuc,EcMP2)
+   allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
+   allocate(ERI_MO(nOrb,nOrb,nOrb,nOrb))
+   call AOtoMO_ERI_RHF(nBas,nOrb,MOCoef,ERI_AO,ERI_MO)
+   do iorb=1,nOrb
+    do jorb=1,nOrb
+     do korb=1,nOrb
+      do lorb=1,nOrb
+       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_MO(iorb,jorb,korb,lorb)
+      enddo
+     enddo
+    enddo
+   enddo
+   deallocate(ERI_MO)
+   ! Direct MP2 term from Xo(i w)
+   if(nfreqs>1) then
+    call EcMP2_w_RHFB(nOrb,nOrb_twice,1,sign_XoB,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT,&
+                      U_QP,Eelec+ENuc,EcMP2)
+   endif
+   deallocate(vMAT)
    call wall_time(end_Ecorr)
 
    t_Ecorr = end_Ecorr - start_Ecorr
    write(*,*)
-   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for EMP2 = ',t_Ecorr,' seconds'
+   write(*,'(A65,1X,F9.3,A8)') 'Total wall time for EBMP2 = ',t_Ecorr,' seconds'
    write(*,*)
   endif
 
   ! Compute EcRPAx for RHFB
   if(dophRPAx) then
    call wall_time(start_Ecorr)
-   call phppLR_BRPAx(nBas,nOrb,MOCoef,Hc,S,ERI_AO,chem_pot,sigma,U_QP,Eelec+ENuc,EcRPAx)
+   call BRPAx(nBas,nOrb,TDA,MOCoef,Hc,S,ERI_AO,chem_pot,sigma,U_QP,Eelec+ENuc,EcRPAx)
    call wall_time(end_Ecorr)
 
    t_Ecorr = end_Ecorr - start_Ecorr
@@ -249,8 +269,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
    write(*,*)
   endif
 
-  ! Compute EcRPA, EcGM, and direct-EcMP2 energies and lin-G for RHFB
-  if(dophRPA .or. doMP2) then
+  ! Compute EcRPA and EcGM energies and lin-G for RHFB
+  if(dophRPA) then
 
    call wall_time(start_Ecorr)
    allocate(vMAT(nOrb*nOrb,nOrb*nOrb))
@@ -266,11 +286,6 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
     enddo
    enddo
    deallocate(ERI_MO)
-   ! Direct MP2 term (the exchange term is not coded)
-   if(doMP2) then
-    call EcMP2_w_RHFB(nOrb,nOrb_twice,1,sign_XoB,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT,&
-                      U_QP,Eelec+ENuc,EcMP2)
-   endif
    call EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,1,sign_XoB,eQP_state,nfreqs,ntimes,wweight,wcoord,vMAT, &
                           U_QP,Eelec+ENuc,EcRPA,EcGM)
    ! Test linearized-Dyson equation G ~ Go + Go Sigma_c Go -> Pcorr and Panomcorr

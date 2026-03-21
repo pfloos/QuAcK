@@ -166,11 +166,16 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   enddo
   EcMP2=-EcMP2/2.4d1 
 
-  write(*,*)'------------------------------------------------------------------------'
-  write(*,'(2X,A53,F15.6,A3)') 'BMP2 correlation energy = ',EcMP2,' au'
-  write(*,'(2X,A53,F15.6,A3)') 'BMP2 total energy       = ',ERHFB+EcMP2,' au'
-  write(*,*)'------------------------------------------------------------------------'
   write(*,*)
+  write(*,'(A32)')           '---------------------------'
+  write(*,'(A32)')           ' BMP2 calculation          '
+  write(*,'(A32)')           '---------------------------'
+  write(*,'(A32,1X,F16.10)') ' BMP2 correlation energy = ',EcMP2
+!  write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2d
+!  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2x
+  write(*,'(A32)')           '---------------------------'
+  write(*,'(A32,1X,F16.10)') ' BMP2 total       energy = ',ERHFB + EcMP2
+  write(*,'(A32)')           '---------------------------'
 
   deallocate(Ua,Va,U,V)
   deallocate(Omega40,Omega04)

@@ -1,4 +1,4 @@
-subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
+subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
 
 ! Perform second-order Bogoliubov RPAx calculation
 
@@ -6,6 +6,7 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
 
 ! Input variables
 
+  logical,intent(in)            :: TDA
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   double precision,intent(in)   :: sigma,chem_pot
@@ -25,6 +26,7 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
 
   double precision              :: Ekkprime
   double precision              :: trace_1rdm
+  double precision              :: trace_matrix
 
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: eQP_sw(:)
@@ -128,12 +130,17 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
   V(1:nOrb2,1:nOrb2)  =  Ua(1:nOrb2,1:nOrb2)
   deallocate(U_QP_sw)
 
-! Build H40 and H22
+! Build H40 and H22 (making H40 also be anti-symmetric; using Omega40)
   allocate(H40(nOrb2,nOrb2,nOrb2,nOrb2))
   allocate(H22(nOrb2,nOrb2,nOrb2,nOrb2))
   H40=0d0;  H22=0d0;
   call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,Ua,Va,H40)
-  H40=0.25d0*H40
+  call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,Ua,Va,H40)
+  call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,Ua,Va,H40)
+  call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,Ua,Va,H40)
+  call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,Ua,Va,H40)
+  call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,Ua,Va,H40)
+!  H40=0.25d0*H40  ! Remove this factor when using Omega40
   call ERI_MO2QP_H22(nOrb2,ERI_MO_sw,U,Ua,H22)
   call ERI_MO2QP_H22_2(nOrb2,ERI_MO_sw,V,Va,H22)
   call ERI_MO2QP_H22_3(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
@@ -154,7 +161,8 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
     do l=1,nOrb2
      do lprime=l+1,nOrb2
       Amat(iqp_pair,jqp_pair)=H22(k,kprime,l,lprime)
-      Bmat(iqp_pair,jqp_pair)=2.4d1*H40(k,kprime,l,lprime)
+      Bmat(iqp_pair,jqp_pair)=H40(k,kprime,l,lprime)        ! Version using Omega40
+!      Bmat(iqp_pair,jqp_pair)=2.4d1*H40(k,kprime,l,lprime) !         using H40 in Ring and Schuck to be corrected with permutations. 
       if(iqp_pair==jqp_pair) then
        Amat(iqp_pair,jqp_pair)=Amat(iqp_pair,jqp_pair)+Ekkprime
       endif
@@ -167,6 +175,12 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
     enddo 
    enddo 
   enddo
+  if(TDA) then
+   Bmat=0d0
+   write(*,*)
+   write(*,*) ' Tamm-Dancoff approximation activated!'
+   write(*,*)
+  endif
 
 ! Prepare H_RPAx
   allocate(H_RPAx(nRPA2,nRPA2),Om(nRPA2))
@@ -179,19 +193,15 @@ subroutine phppLR_BRPAx(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx
   call diagonalize_general_matrix(nRPA2,H_RPAx,Om,H_RPAx)
   call sort_ascending(nRPA2,Om)                        
 
-! Compute EcRPAx = 1/2 sum_p  Om_p - A_pp  (for Om_p > 0, that's why we use a minus)
-  EcRPAx=0d0
-  do k=1,nRPA
-   EcRPAx=EcRPAx+(-Om(k)-Amat(k,k))
-  enddo
-  EcRPAx=0.5d0*EcRPAx
+! Compute EcRPAx = 1/2 sum_p  Om_p - A_pp  (for Om_p > 0)
+  EcRPAx=0.5d0*( sum(Om(nRPA+1:nRPA2))-trace_matrix(nRPA,Amat) )
 
 ! Print TD-HFB excitation energies
-  call print_excitation_energies('B-RPAx','Singlet',nRPA,Om(nRPA+1:nRPA2))
+  call print_excitation_energies('RPAx@RHFB','Singlet',nRPA,Om(nRPA+1:nRPA2))
 
   write(*,*)'--------------------------------------------------------------------------'
-  write(*,'(2X,A53,F15.6,A3)') 'B-RPAx correlation energy = ',EcRPAx,' au'
-  write(*,'(2X,A53,F15.6,A3)') 'B-RPAx total energy       = ',ERHFB+EcRPAx,' au'
+  write(*,'(A53,F15.6,A3)') 'Tr@RPAx@RHFB correlation energy = ',EcRPAx,' au'
+  write(*,'(A53,F15.6,A3)') 'Tr@RPAx@RHFB total energy       = ',ERHFB+EcRPAx,' au'
   write(*,*)'--------------------------------------------------------------------------'
   write(*,*)
 

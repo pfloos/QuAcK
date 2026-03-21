@@ -83,16 +83,13 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,sign_XoB,eHFB,nfreqs,ntimes,wwei
 ! Print results
  
   if(verbose/=0) then 
-   write(*,*)
-   write(*,*) '*********************************************'
-   write(*,*) '* EcMP2 computed with imaginary frequencies *'
-   write(*,*) '*********************************************'
-   write(*,*)
-   write(*,*)'-------------------------------------------------------------------------------'
-   write(*,'(2X,A60,F15.6,A3)') '    direct BMP2 correlation energy = ',EcMP2,' au'
-   write(*,'(2X,A60,F15.6,A3)') '    direct BMP2 total energy       = ',EHFB_tot+EcMP2,' au'
-   write(*,*)'-------------------------------------------------------------------------------'
-   write(*,*)
+!   write(*,*)
+!   write(*,*) '*********************************************'
+!   write(*,*) '* EcMP2 computed with imaginary frequencies *'
+!   write(*,*) '*********************************************'
+!   write(*,*)
+   write(*,'(A32,1X,F16.10)') ' Direct part from Xo(iw) = ',EcMP2
+   write(*,'(A32)')           '---------------------------'
   endif
 
   ! Deallocate arrays
