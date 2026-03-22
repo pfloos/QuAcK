@@ -1,7 +1,7 @@
-subroutine EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
+subroutine EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,verbose,sign_XoB,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
                              U_QP,EHFB_tot,EcRPA,EcGM)
 
-! Restricted Sigma_c(E)
+! Restricted EcRPA and EcGM for RHFB
 
   implicit none
   include 'parameters.h'
@@ -14,6 +14,7 @@ subroutine EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
 
+  double precision,intent(in)   :: sign_XoB
   double precision,intent(in)   :: EHFB_tot
   double precision,intent(inout):: eHFB(nOrb_twice)
   double precision,intent(in)   :: wweight(nfreqs)
@@ -64,7 +65,7 @@ subroutine EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,
     stop
    else
     eta=0d0
-    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
+    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
    ! Tr [ Xo v ] and define eps
@@ -102,10 +103,10 @@ subroutine EcRPA_EcGM_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,
    write(*,*) '******************************************************'
    write(*,*)
    write(*,*)'-------------------------------------------------------------------------------'
-   write(*,'(2X,A60,F15.6,A3)') '         phRPA correlation energy = ',EcRPA,' au'
-   write(*,'(2X,A60,F15.6,A3)') '         phRPA total energy       = ',EHFB_tot+EcRPA,' au'
-   write(*,'(2X,A60,F15.6,A3)') '            GM correlation energy = ',EcGM,' au'
-   write(*,'(2X,A60,F15.6,A3)') '            GM total energy       = ',EHFB_tot+EcGM,' au'
+   write(*,'(2X,A60,F15.6,A3)') '         phBRPA correlation energy = ',EcRPA,' au'
+   write(*,'(2X,A60,F15.6,A3)') '         phBRPA total energy       = ',EHFB_tot+EcRPA,' au'
+   write(*,'(2X,A60,F15.6,A3)') '            BGM correlation energy = ',EcGM,' au'
+   write(*,'(2X,A60,F15.6,A3)') '            BGM total energy       = ',EHFB_tot+EcGM,' au'
    write(*,*)'-------------------------------------------------------------------------------'
    write(*,*)
   endif

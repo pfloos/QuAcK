@@ -1,13 +1,14 @@
-subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
+subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,sign_XoB,eHFB,nfreqs,ntimes,wweight,wcoord,vMAT,&
                         U_QP,EHFB_tot,EcMP2)
 
-! Restricted Sigma_c(E)
+! Restricted direct EcMP2 
 
   implicit none
   include 'parameters.h'
 
 ! Input variables
 
+  double precision,intent(in)   :: sign_XoB
   integer,intent(in)            :: verbose
   integer,intent(in)            :: nfreqs
   integer,intent(in)            :: ntimes
@@ -64,7 +65,7 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
     stop
    else
     eta=0d0
-    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
+    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
    ! Tr [ ( Xo v )^2 ]
@@ -74,24 +75,21 @@ subroutine EcMP2_w_RHFB(nOrb,nOrb_twice,verbose,eHFB,nfreqs,ntimes,wweight,wcoor
     trace1=trace1+Tmp_mo_w(iorb,iorb)
    enddo
 
-   ! Compute EcMP2
-   EcMP2=EcMP2-wweight(ifreq)*trace1/(8d0*pi)
+   ! Compute direct EcMP2
+   EcMP2=EcMP2-wweight(ifreq)*trace1/(4d0*pi)
 
   enddo
 
 ! Print results
  
   if(verbose/=0) then 
-   write(*,*)
-   write(*,*) '*********************************************'
-   write(*,*) '* EcMP2 computed with imaginary frequencies *'
-   write(*,*) '*********************************************'
-   write(*,*)
-   write(*,*)'-------------------------------------------------------------------------------'
-   write(*,'(2X,A60,F15.6,A3)') '           MP2 correlation energy = ',EcMP2,' au'
-   write(*,'(2X,A60,F15.6,A3)') '           MP2 total energy       = ',EHFB_tot+EcMP2,' au'
-   write(*,*)'-------------------------------------------------------------------------------'
-   write(*,*)
+!   write(*,*)
+!   write(*,*) '*********************************************'
+!   write(*,*) '* EcMP2 computed with imaginary frequencies *'
+!   write(*,*) '*********************************************'
+!   write(*,*)
+   write(*,'(A32,1X,F16.10)') ' Direct part from Xo(iw) = ',EcMP2
+   write(*,'(A32)')           '---------------------------'
   endif
 
   ! Deallocate arrays

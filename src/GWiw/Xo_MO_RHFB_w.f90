@@ -1,4 +1,4 @@
-subroutine Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
+subroutine Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
 
 ! Restricted Xo(i w) in MO basis
 
@@ -10,6 +10,7 @@ subroutine Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
 
+  double precision,intent(in)   :: sign_XoB
   double precision,intent(in)   :: eta
   double precision,intent(inout):: eHFB(nOrb_twice)
   double precision,intent(in)   :: Mat1(nOrb,nOrb)
@@ -45,17 +46,17 @@ subroutine Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
   allocate(Mat_rsI_3(nOrb,nOrb,nState))
   allocate(Mat_rsI_4(nOrb,nOrb,nState))
 
-  ! M^6
+!  ! M^6
 !  do porb=1,nOrb
 !   do qorb=1,nOrb
 !    do rorb=1,nOrb
 !     do sorb=1,nOrb
 !      do Istate=1,nState
 !       do Jstate=1,nState
-!        factor1=Mat2(porb,Istate)*Mat2(qorb,Istate)*Mat1(rorb,Jstate)*Mat1(sorb,Jstate) & ! G_he G_he
-!               -Mat2(porb,Istate)*Mat1(qorb,Istate)*Mat2(rorb,Jstate)*Mat1(sorb,Jstate)   ! G_hh G_ee
-!        factor2=Mat2(rorb,Jstate)*Mat2(sorb,Jstate)*Mat1(porb,Istate)*Mat1(qorb,Istate) & ! G_he G_he
-!               -Mat1(rorb,Jstate)*Mat2(sorb,Jstate)*Mat1(porb,Istate)*Mat2(qorb,Istate)   ! G_hh G_ee
+!        factor1=Mat2(porb,Istate)*Mat2(qorb,Istate)*Mat1(rorb,Jstate)*Mat1(sorb,Jstate)          & ! G_he G_he
+!               -sign_XoB*Mat2(porb,Istate)*Mat1(qorb,Istate)*Mat2(rorb,Jstate)*Mat1(sorb,Jstate)   ! G_hh G_ee
+!        factor2=Mat2(rorb,Jstate)*Mat2(sorb,Jstate)*Mat1(porb,Istate)*Mat1(qorb,Istate)          & ! G_he G_he
+!               -sign_XoB*Mat1(rorb,Jstate)*Mat2(sorb,Jstate)*Mat1(porb,Istate)*Mat2(qorb,Istate)   ! G_hh G_ee
 !        index_ps=1+(sorb-1)+(porb-1)*nOrb
 !        index_rq=1+(rorb-1)+(qorb-1)*nOrb
 !        Chi0_mo_iw(index_ps,index_rq)=Chi0_mo_iw(index_ps,index_rq)                     &
@@ -96,10 +97,10 @@ subroutine Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
     do rorb=1,nOrb
      do sorb=1,nOrb
       do Istate=1,nState
-       factor1=Mat2(porb,Istate)*Mat2(qorb,Istate)*Mat_rsI_1(rorb,sorb,Istate) & ! G_he G_he
-              -Mat2(porb,Istate)*Mat1(qorb,Istate)*Mat_rsI_2(rorb,sorb,Istate)   ! G_hh G_ee
-       factor2=Mat1(porb,Istate)*Mat1(qorb,Istate)*Mat_rsI_3(rorb,sorb,Istate) & ! G_he G_he
-              -Mat1(porb,Istate)*Mat2(qorb,Istate)*Mat_rsI_4(rorb,sorb,Istate)   ! G_hh G_ee
+       factor1=Mat2(porb,Istate)*Mat2(qorb,Istate)*Mat_rsI_1(rorb,sorb,Istate) &          ! G_he G_he
+              -sign_XoB*Mat2(porb,Istate)*Mat1(qorb,Istate)*Mat_rsI_2(rorb,sorb,Istate)   ! G_hh G_ee
+       factor2=Mat1(porb,Istate)*Mat1(qorb,Istate)*Mat_rsI_3(rorb,sorb,Istate) &          ! G_he G_he
+              -sign_XoB*Mat1(porb,Istate)*Mat2(qorb,Istate)*Mat_rsI_4(rorb,sorb,Istate)   ! G_hh G_ee
        index_ps=1+(sorb-1)+(porb-1)*nOrb
        index_rq=1+(rorb-1)+(qorb-1)*nOrb
        Chi0_mo_iw(index_ps,index_rq)=Chi0_mo_iw(index_ps,index_rq) + factor1 - factor2
@@ -108,7 +109,7 @@ subroutine Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_iw)
     enddo
    enddo
   enddo
-  
+ 
   Chi0_mo_iw=2d0*Chi0_mo_iw  ! Times 2 because of the spin contributions
                              ! [ i.e., for Ghe Ghe take (up,up,up,up) and (down,down,down,down) 
                              !                                 & 

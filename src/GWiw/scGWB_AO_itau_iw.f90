@@ -1,6 +1,6 @@
-subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA,doMP2,restart_scGWB,verbose_scGWB,     &
-                           chem_pot_scG,no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight, &
-                           U_QP,vMAT,ERI_AO)
+subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA,restart_scGWB,verbose_scGWB,     &
+                           chem_pot_scG,no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,sign_XoB,nfreqs, &
+                           wcoord,wweight,U_QP,vMAT,ERI_AO)
 
 ! Restricted scGWB
 
@@ -10,7 +10,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 ! Input variables
  
   logical,intent(in)            :: dophRPA
-  logical,intent(in)            :: doMP2
   logical,intent(in)            :: dolinGW
   logical,intent(in)            :: no_h_hfb
   logical,intent(in)            :: restart_scGWB
@@ -23,6 +22,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: maxDIIS
 
+  double precision,intent(in)   :: sign_XoB
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: thresh_in
   double precision,intent(in)   :: sigma
@@ -69,9 +69,8 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
-  double precision              :: sum_error_st2sw
-  double precision              :: EcGM,EcRPA,EcMP2,Ehfbl,Ecore,Eh,Ex,Epair
-  double precision              :: trace1,trace2,trace3,trace4
+  double precision              :: EcGM,EcGM2,EcRPA,Ehfbl,Ecore,Eh,Ex,Epair
+  double precision              :: trace1,trace2,trace3
   double precision              :: trace_1_rdm
   double precision,external     :: trace_matrix
   double precision              :: start_scGWBitauiw,end_scGWBitauiw,t_scGWBitauiw
@@ -108,6 +107,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
   complex*16                    :: product
   complex*16                    :: weval_cpx
+  complex*16                    :: EcGM_itau
   complex*16,allocatable        :: wtest(:)
   complex*16,allocatable        :: Sigma_c_w_ao(:,:,:)
   complex*16,allocatable        :: Sigma_c_c(:,:),Sigma_c_s(:,:)
@@ -207,7 +207,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  allocate(G_ao_itau_old(ntimes_twice,nBas_twice,nBas_twice))
  allocate(Chi0_ao_itau(nBasSq,nBasSq))
  allocate(Chi0_ao_iw(nfreqs,nBasSq,nBasSq),Wp_ao_iw(nBasSq,nBasSq),Chi0v(1,1),Eigval_Xov(1))
- if(dophRPA .or. doMP2) then
+ if(dophRPA) then
   deallocate(Chi0v,Eigval_Xov)
   allocate(Chi0v(nBasSq,nBasSq),Eigval_Xov(nBasSq))
  endif
@@ -394,11 +394,11 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  do
   iter=iter+1 
 
-  ! Build using the time grid Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + G_hh(i tau) G_ee(-i tau) ]
+  ! Build using the time grid Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + sign_Xo G_hh(i tau) G_ee(-i tau) ]
   !  then Fourier transform Xo(i tau) -> Xo(i w)
   Chi0_ao_iw(:,:,:)=czero
   do itau=1,ntimes
-   ! Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + G_hh(i tau) G_ee(-i tau) ]
+   ! Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + sign_Xo G_hh(i tau) G_ee(-i tau) ]
    do ibas=1,nBas
     do jbas=1,nBas
      mbas=nBas+1+(jbas-1)
@@ -407,7 +407,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
       do lbas=1,nBas
                                    ! r1   r2'                    r2   r1'
        product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas) &
-               + G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)  ! This is the right sign when G_hh and G_ee are built with  - Mat2
+               + sign_XoB*G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)
        if(abs(product)<1e-12) product=czero
        Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
       enddo
@@ -425,26 +425,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
   ! Build Wp(i w) and compute Ec Galitskii-Migdal 
   !  and Wp(i w) -> Wp(i tau)
-  EcGM=0d0;EcRPA=0d0;EcMP2=0d0;
+  EcGM=0d0;EcRPA=0d0;
   Wp_ao_itau=0d0
   do ifreq=1,nfreqs
-   trace1=0d0; trace2=0d0; trace3=0d0; trace4=0d0;
+   trace1=0d0; trace2=0d0; trace3=0d0;
    ! Xo(i w) -> Wp_ao_iw(i w)
    Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
-   if(doMP2) then
-    Chi0v(:,:)=-Wp_ao_iw(:,:)
-    Chi0v(:,:)=matmul(Chi0v(:,:),Chi0v(:,:)) ! (Xov)^2
-    do ibas=1,nBasSq
-     trace4=trace4-Chi0v(ibas,ibas)
-    enddo
-   endif
-   if(dophRPA) then
-    Chi0v(:,:)=-Wp_ao_iw(:,:)
-    call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
-    do ibas=1,nBasSq
-     trace3=trace3+Log(abs(1d0-Eigval_Xov(ibas)))
-    enddo
-   endif
    do ibas=1,nBasSq
     trace1=trace1+Wp_ao_iw(ibas,ibas)
     Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
@@ -455,12 +441,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    do ibas=1,nBasSq
     trace2=trace2+Wp_ao_iw(ibas,ibas)
    enddo
-   if(doMP2) then
-    EcMP2=EcMP2+wweight(ifreq)*trace4/(8d0*pi) ! iw contribution to EcMP2
-   endif
-   if(dophRPA) then
-    EcRPA=EcRPA+wweight(ifreq)*(trace3-trace1)/(2d0*pi) ! iw contribution to EcRPA
-   endif
    EcGM=EcGM-wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcGM
    Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:))     ! Now Wp_ao_iw is on the iw grid
    ! Wp(i w) -> Wp(i tau) [ this transformation misses that Fourier[ Wp(i tau) ] is imaginary because of the factor i / 2pi ]
@@ -471,6 +451,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   enddo
 
   ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024) ]
+  EcGM2=0d0;EcGM_itau=0d0;
   Sigma_c_w_ao=czero
   do itau=1,ntimes
    Sigma_c_plus=czero
@@ -490,14 +471,14 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
        Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+im*G_ao_itau(2*itau ,kbas,lbas)  &
                                *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
        ! Sigma_c_hh(i tau) = - i G_hh Wp(i tau)
-       Sigma_c_plus(ibas,obas) =Sigma_c_plus(ibas,obas)+im*G_ao_itau(2*itau-1,kbas,qbas)    &
+       Sigma_c_plus(ibas,obas) =Sigma_c_plus(ibas,obas)+sign_XoB*im*G_ao_itau(2*itau-1,kbas,qbas)    &
                                *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas) ! Adding i to Wp that was missing
-       Sigma_c_minus(ibas,obas)=Sigma_c_minus(ibas,obas)+im*G_ao_itau(2*itau ,kbas,qbas)  &
+       Sigma_c_minus(ibas,obas)=Sigma_c_minus(ibas,obas)+sign_XoB*im*G_ao_itau(2*itau ,kbas,qbas)  &
                                *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas) ! Adding i to Wp that was missing
        ! Sigma_c_ee(i tau) = - i G_ee Wp(i tau)
-       Sigma_c_plus(mbas,jbas) =Sigma_c_plus(mbas,jbas)+im*G_ao_itau(2*itau-1,pbas,lbas)    &
+       Sigma_c_plus(mbas,jbas) =Sigma_c_plus(mbas,jbas)+sign_XoB*im*G_ao_itau(2*itau-1,pbas,lbas)    &
                                *im*Wp_ao_itau(itau,1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
-       Sigma_c_minus(mbas,jbas)=Sigma_c_minus(mbas,jbas)+im*G_ao_itau(2*itau ,pbas,lbas)  &
+       Sigma_c_minus(mbas,jbas)=Sigma_c_minus(mbas,jbas)+sign_XoB*im*G_ao_itau(2*itau ,pbas,lbas)  &
                                *im*Wp_ao_itau(itau,1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
        ! Sigma_c_eh(i tau) = i G_eh Wp(i tau)
        Sigma_c_plus(mbas,obas) =Sigma_c_plus(mbas,obas)+im*G_ao_itau(2*itau-1,pbas,qbas)    &
@@ -517,16 +498,31 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
                             + 0.5d0*cost2w_weight(ifreq,itau)*Sigma_c_c(:,:) &
                             + 0.5d0*sint2w_weight(ifreq,itau)*Sigma_c_s(:,:)
    enddo
+   ! Galitskii-Migdal energy [ PRB, 80, 041103R (2009) ]
+    ! tau > 0
+    Mat_gorkov_tmp(:,:) =G_ao_itau(2*itau-1,:,:) ! G_ao_itau (+)
+    Mat_gorkov_tmp=matmul(Sigma_c_minus,Mat_gorkov_tmp)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(ibas,ibas)
+    enddo
+    ! tau < 0
+    Mat_gorkov_tmp(:,:) =G_ao_itau(2*itau,:,:)   ! G_ao_itau (-)
+    Mat_gorkov_tmp=matmul(Sigma_c_plus,Mat_gorkov_tmp)
+    do ibas=1,nBas
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(ibas,ibas)
+    enddo
   enddo
+  EcGM2=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ]^he dt
+                         !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ]^he dt for QP. restricted calcs.
 
   ! Check the quality of Sigma_c(i w) against our previous implementation
   if(iter==1 .and. (.not.restart_scGWB) .and. verbose/=0) then
-   nfreqs_int=1000
+   nfreqs_int=nfreqs
    inquire(file='nfreqs_gauss_legendre', exist=file_exists)
    if(file_exists) then
     write(*,*) 'Reading nfreqs_gauss_legendre grid (default: nfreqs_int=1000)'
     open(unit=937, form='formatted', file='nfreqs_gauss_legendre', status='old')
-    read(937) nfreqs_int
+    read(937,*) nfreqs_int
     close(937)
    endif
    write(*,*)
@@ -552,25 +548,33 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
    do ifreq=1,nfreqs
     wtest(ifreq)=im*wcoord(ifreq)   
    enddo
-   call cgqf(nfreqs_int,1,0d0,0d0,0d0,1d0,wcoord_int,wweight_int)
-   wweight_int(:)=wweight_int(:)/((1d0-wcoord_int(:))**2d0)
-   wcoord_int(:)=wcoord_int(:)/(1d0-wcoord_int(:))
-   call Sigmac_MO_RHFB_GW_w(nOrb,nOrb+nOrb,nfreqs,0d0,0,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
+   if(nfreqs_int/=nfreqs) then
+    call cgqf(nfreqs_int,1,0d0,0d0,0d0,1d0,wcoord_int,wweight_int)
+    wweight_int(:)=wweight_int(:)/((1d0-wcoord_int(:))**2d0)
+    wcoord_int(:)=wcoord_int(:)/(1d0-wcoord_int(:))
+   else
+    wweight_int(:)=wweight(:)
+    wcoord_int(:)=wcoord(:)
+   endif
+   write(*,*)
+   write(*,'(a,2f30.7)') ' Lower limit in the quadrature ',wcoord_int(1),wweight_int(1)
+   write(*,'(a,2f30.7)') ' Upper limit in the quadrature ',wcoord_int(nfreqs_int),wweight_int(nfreqs_int)
+   write(*,*)
+   call Sigmac_MO_RHFB_GW_w(nOrb,nOrb+nOrb,nfreqs,eta,0,sign_XoB,wtest,eQP_state,nfreqs_int,0,wweight_int,wcoord_int, &
                             vMAT_mo,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.true.,.true.)
    max_error_st2sw=-1d0
-   sum_error_st2sw=0d0
    error_st2sw=0d0
    imax_error_st2sw=1
    do ifreq=1,nfreqs
     ! Sigma_c_he
     Mat_gorkov_tmp(1:nBas            ,1:nBas          ) =  matmul(transpose(cHFBinv),matmul(Sigma_c_he(ifreq,:,:),cHFBinv))
     ! Sigma_c_hh
-    Mat_gorkov_tmp(1:nBas           ,nBas+1:nBas_twice) = -matmul(transpose(cHFBinv),matmul(Sigma_c_hh(ifreq,:,:),cHFBinv))
+    Mat_gorkov_tmp(1:nBas           ,nBas+1:nBas_twice) = -sign_XoB*matmul(transpose(cHFBinv),matmul(Sigma_c_hh(ifreq,:,:),cHFBinv))
     ! Sigma_c_ee
-    Mat_gorkov_tmp(nBas+1:nBas_twice,1:nBas           ) = -matmul(transpose(cHFBinv),matmul(Sigma_c_ee(ifreq,:,:),cHFBinv))
+    Mat_gorkov_tmp(nBas+1:nBas_twice,1:nBas           ) = -sign_XoB*matmul(transpose(cHFBinv),matmul(Sigma_c_ee(ifreq,:,:),cHFBinv))
     ! Sigma_c_eh
     Mat_gorkov_tmp(nBas+1:nBas_twice,nBas+1:nBas_twice) =  matmul(transpose(cHFBinv),matmul(Sigma_c_eh(ifreq,:,:),cHFBinv))
-    write(*,'(a,2f10.5)') ' Freq ',im*wcoord(ifreq)
+    write(*,'(a,2f10.5)') ' Freq ',wtest(ifreq)
     write(*,'(a)') ' GreenX grids'
     do ibas=1,nBas_twice
      write(*,'(*(f10.5))') Sigma_c_w_ao(ifreq,ibas,:)
@@ -586,15 +590,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
     enddo
     error_st2sw=real(sum(Mat_gorkov_tmp(:,:)))
     write(*,'(a,f10.5)') ' Sum error ',error_st2sw
-    sum_error_st2sw=sum_error_st2sw+error_st2sw
     if(error_st2sw>max_error_st2sw) then
      imax_error_st2sw=ifreq
      max_error_st2sw=error_st2sw
     endif
    enddo
-   write(*,'(a,*(f20.8))') ' Sum error ',sum_error_st2sw
-   write(*,'(a,f20.8,a,2f20.8,a)') ' Max MAE   ',max_error_st2sw/(nBas_twice*nBas_twice),' is in the frequency ',0d0,wcoord(imax_error_st2sw),'i'
-   write(*,'(a,*(f20.8))') ' MAE       ',sum_error_st2sw/(nfreqs*nBas_twice*nBas_twice)
+   write(*,'(a,f20.8,a,2f20.8,a)') ' Max MAE  ',max_error_st2sw/(nBas_twice**2d0),' is in the frequency ',0d0,wcoord(imax_error_st2sw),'i'
    deallocate(ERI_MO)
    deallocate(vMAT_mo)
    deallocate(Sigma_c_he)
@@ -781,27 +782,20 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,'(A50)') '     scGWB calculation completed       '
  write(*,'(A50)') '---------------------------------------'
  write(*,*)
- write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB  ',trace_1_rdm,' after ',iter,' global iterations '
- write(*,'(a,f15.8)')        ' Change of R  ',diff_Rao
- write(*,'(a,f15.8)')        ' Chem. Pot.   ',chem_pot
- write(*,'(a,f15.8)')        ' N anomalus   ',N_anom
- write(*,'(a,f15.8)')        ' Enuc         ',ENuc
- write(*,'(a,f15.8)')        ' Ehcore       ',Ecore
- write(*,'(a,f15.8)')        ' Hartree      ',Eh
- write(*,'(a,f15.8)')        ' Exchange     ',Ex
- write(*,'(a,f15.8)')        ' Epairing     ',Epair
- write(*,'(a,f15.8)')        ' Ehfbl        ',Ehfbl
- write(*,'(a,f15.8)')        ' EcGM         ',EcGM
- write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
- write(*,'(a,f15.8)')        ' scGWB Energy ',Ehfbl+EcGM+ENuc
- if(doMP2) then
-  write(*,'(a,f15.8)')        ' EcMP2        ',EcMP2
-  write(*,'(a,f15.8)')        ' EMP2  Energy ',Ehfbl+EcMP2+ENuc
- endif
- if(dophRPA) then
-  write(*,'(a,f15.8)')        ' EcRPA        ',EcRPA
-  write(*,'(a,f15.8)')        ' ERPA  Energy ',Ehfbl+EcRPA+ENuc
- endif
+ write(*,'(a,f15.8,a,i5,a)') ' Trace scGWB    ',trace_1_rdm,' after ',iter,' global iterations '
+ write(*,'(a,f15.8)')        ' Change of R    ',diff_Rao
+ write(*,'(a,f15.8)')        ' Chem. Pot.     ',chem_pot
+ write(*,'(a,f15.8)')        ' N anomalus     ',N_anom
+ write(*,'(a,f15.8)')        ' Enuc           ',ENuc
+ write(*,'(a,f15.8)')        ' Ehcore         ',Ecore
+ write(*,'(a,f15.8)')        ' Hartree        ',Eh
+ write(*,'(a,f15.8)')        ' Exchange       ',Ex
+ write(*,'(a,f15.8)')        ' Epairing       ',Epair
+ write(*,'(a,f15.8)')        ' Ehfbl          ',Ehfbl
+ write(*,'(a,f15.8)')        ' EcGM(Xo,i w)   ',EcGM
+ write(*,'(a,f15.8)')        ' EcGM(SG,i tau) ',EcGM2
+ write(*,'(a,f15.8)')        ' Eelec          ',Ehfbl+EcGM
+ write(*,'(a,f15.8)')        ' scGWB Energy   ',Ehfbl+EcGM+ENuc
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
@@ -895,6 +889,118 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
     write(*,'(*(f15.8))') cNO(ibas,:)
    enddo
   endif
+ endif
+
+ ! MRM: TODO confirm it makes sense
+ ! Build Go = (iw - H)^-1
+ ! - Get Ro from Go. 
+ ! - Compute E_HFB[Ro] and EcRPA[Go]
+ ! - Evaluate E_RPA = E_HFB[Ro] + EcRPA[Go]    (a.k.a. the RPA functional)
+ if(dophRPA) then
+  write(*,*)
+  write(*,*) ' -----------------------------------------------------------'
+  write(*,*) ' Computing RPA functional building Go = [iw - mu + H_HFB]^-1'
+  write(*,*) ' -----------------------------------------------------------'
+  ! Compute Go and Ro
+  Sigma_c_w_ao=czero
+  call get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
+                      Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
+  if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
+   call fix_chem_pot_scGWB_bisec(iter_hfb,nBas,nBas_twice,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,   &
+                                 wcoord,wweight,Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm,chem_pot_saved, &
+                                 verbose_scGWB)
+  if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. .not.chem_pot_scG) &
+   R_ao=nElectrons*R_ao/trace_1_rdm
+  ! Compute E_HFB[Ro]
+  Ecore=0d0; Eh=0d0; Ex=0d0; Epair=0d0;
+  do ibas=1,nBas
+   do jbas=1,nBas
+    obas=nBas+1+(jbas-1)
+    Ecore=Ecore+2d0*R_ao(ibas,jbas)*Hc(ibas,jbas)
+    do kbas=1,nBas
+     do lbas=1,nBas
+      qbas=nBas+1+(lbas-1)
+      Eh=Eh+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
+      Ex=Ex-R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
+      Epair=Epair+sigma*R_ao(ibas,obas)*R_ao(kbas,qbas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) 
+     enddo
+    enddo
+   enddo
+  enddo
+  Ehfbl=Ecore+Eh+Ex+Epair
+  N_anom = trace_matrix(nBas,matmul(transpose(R_ao(1:nBas,nBas+1:nBas_twice)), &
+           R_ao(1:nBas,nBas+1:nBas_twice)))
+  ! Compute Go(i w) -> Go(i tau) 
+  G_ao_itau=czero
+  do itau=1,ntimes
+   Mat_gorkov_tmp(:,:)=czero
+   Mat_gorkov_tmp2(:,:)=czero
+   do ifreq=1,nfreqs
+    Mat_gorkov_tmp(:,:) = Mat_gorkov_tmp(:,:)   + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                                - im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:))
+    Mat_gorkov_tmp2(:,:) = Mat_gorkov_tmp2(:,:) + im*cosw2t_weight(itau,ifreq)*Real(DeltaG_ao_iw(ifreq,:,:))  &
+                                                + im*sinw2t_weight(itau,ifreq)*Aimag(DeltaG_ao_iw(ifreq,:,:))
+   enddo
+   ! Build G(i tau) = DeltaG(i tau) + Go(i tau)
+   G_ao_itau(2*itau-1,:,:)=Mat_gorkov_tmp(:,:) +G_ao_itau_hfb(2*itau-1,:,:)
+   G_ao_itau(2*itau  ,:,:)=Mat_gorkov_tmp2(:,:)+G_ao_itau_hfb(2*itau  ,:,:)
+  enddo
+  ! Use Go(i tau) -> Xo(i w)
+  Chi0_ao_iw(:,:,:)=czero
+  do itau=1,ntimes
+   ! Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + G_hh(i tau) G_ee(-i tau) ]
+   do ibas=1,nBas
+    do jbas=1,nBas
+     mbas=nBas+1+(jbas-1)
+     do kbas=1,nBas
+      obas=nBas+1+(kbas-1)
+      do lbas=1,nBas
+                                   ! r1   r2'                    r2   r1'
+       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas) &
+               + sign_XoB*G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)
+       if(abs(product)<1e-12) product=czero
+       Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
+      enddo
+     enddo
+    enddo
+   enddo
+   Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
+   ! Xo(i tau) -> Xo(i w)            [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
+   do ifreq=1,nfreqs
+    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau(:,:)
+   enddo
+  enddo
+  Chi0_ao_iw(:,:,:) = Real(Chi0_ao_iw(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
+  ! Compute Ec RPA
+  EcRPA=0d0;
+  do ifreq=1,nfreqs
+   trace1=0d0; trace2=0d0;
+   Chi0v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
+   do ibas=1,nBasSq
+    trace1=trace1+Chi0v(ibas,ibas)
+   enddo
+   call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
+   do ibas=1,nBasSq
+    trace2=trace2+Log(abs(1d0-Eigval_Xov(ibas)))
+   enddo
+   EcRPA=EcRPA+wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcRPA
+  enddo
+
+  write(*,*)
+  write(*,'(a,f15.8)')        ' Trace Go      ',2d0*trace_1_rdm
+  write(*,'(a,f15.8)')        ' Chem. Pot.    ',chem_pot
+  write(*,'(a,f15.8)')        ' N anomalus    ',N_anom
+  write(*,'(a,f15.8)')        ' Enuc          ',ENuc
+  write(*,'(a,f15.8)')        ' Ehcore        ',Ecore
+  write(*,'(a,f15.8)')        ' Hartree       ',Eh
+  write(*,'(a,f15.8)')        ' Exchange      ',Ex
+  write(*,'(a,f15.8)')        ' Epairing      ',Epair
+  write(*,'(a,f15.8)')        ' Ehfbl         ',Ehfbl
+  write(*,'(a,f15.8)')        ' EcRPA         ',EcRPA
+  write(*,'(a,f15.8)')        ' Eelec         ',Ehfbl+EcRPA
+  write(*,'(a,f15.8)')        ' BRPA Energy   ',Ehfbl+EcRPA+ENuc
+  write(*,*)
+
  endif
 
  ! Deallocate arrays

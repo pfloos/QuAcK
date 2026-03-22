@@ -1,22 +1,22 @@
-subroutine read_methods(working_dir,                                             &
-                        doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF,    &
-                        doMP2,doMP3,                                             & 
-                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                       & 
-                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,                       &
-                        doCIS,doCIS_D,doCID,doCISD,doFCI,                        & 
-                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,                 &
-                        doOORPA,                                                 &
-                        doG0F2,doevGF2,doqsGF2,                                  &
-                        doG0F3,doevGF3,                                          & 
-                        doG0W0,doevGW,doqsGW,                                    &
-                        doscGW,doscGF2,                                          & 
-                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                   &
-                        doG0T0eh,doevGTeh,doqsGTeh,                              &
-                        doevParquet,doqsParquet,                                 &
-                        do_IPEA_ADC2,do_IPEA_ADC3,                               &
-                        do_SOSEX,do_2SOSEX,do_G3W2,                              &
-                        do_ADC_GW,do_ADC_2SOSEX,                                 &
-                        do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                 &
+subroutine read_methods(working_dir,                                                  &
+                        doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF,doscGHF, &
+                        doMP2,doMP3,                                                  & 
+                        doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                            & 
+                        do_drCCD,do_rCCD,do_crCCD,do_lCCD,                            &
+                        doCIS,doCIS_D,doCID,doCISD,doFCI,                             & 
+                        dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,                      &
+                        doOORPA,                                                      &
+                        doG0F2,doevGF2,doqsGF2,                                       &
+                        doG0F3,doevGF3,                                               & 
+                        doG0W0,doevGW,doqsGW,                                         &
+                        doscGW,doscGF2,                                               & 
+                        doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                        &
+                        doG0T0eh,doevGTeh,doqsGTeh,                                   &
+                        doevParquet,doqsParquet,                                      &
+                        do_IPEA_ADC2,do_IPEA_ADC3,                                    &
+                        do_SOSEX,do_2SOSEX,do_G3W2,                                   &
+                        do_ADC_GW,do_ADC_2SOSEX,                                      &
+                        do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                      &
                         doRtest,doUtest,doGtest)
 
 ! Read desired methods 
@@ -29,7 +29,7 @@ subroutine read_methods(working_dir,                                            
 
 ! Output variables
 
-  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF
+  logical,intent(out)           :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF,doscGHF
   logical,intent(out)           :: doMP2,doMP3
   logical,intent(out)           :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
   logical,intent(out)           :: do_drCCD,do_rCCD,do_crCCD,do_lCCD
@@ -49,7 +49,7 @@ subroutine read_methods(working_dir,                                            
 
 ! Local variables
 
-  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8
+  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
   integer                       :: status
   character(len=256)            :: file_path
 
@@ -74,9 +74,10 @@ subroutine read_methods(working_dir,                                            
       docRHF = .false.
       docUHF = .false.
       doeRHF = .false.
+      doscGHF = .false.
       
       read(1,*) 
-      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8
+      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
       if(ans1 == 'T') doRHF  = .true.
       if(ans2 == 'T') doUHF  = .true.
       if(ans3 == 'T') doGHF  = .true.
@@ -85,6 +86,7 @@ subroutine read_methods(working_dir,                                            
       if(ans6 == 'T') docRHF = .true.
       if(ans7 == 'T') docUHF = .true.
       if(ans8 == 'T') doeRHF = .true.
+      if(ans9 == 'T') doscGHF = .true.
 
       ! Read MPn methods
       

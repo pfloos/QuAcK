@@ -1,4 +1,4 @@
-subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,ntimes,&
+subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,sign_XoB,wtest,eHFB,nfreqs,ntimes,&
                                wweight,wcoord,vMAT,U_QP,Sigma_he_c_mo,Sigma_hh_c_mo,   &
                                Sigma_eh_c_mo,Sigma_ee_c_mo,doSigc_eh,doSigc_ee)
 
@@ -19,6 +19,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
 
+  double precision,intent(in)   :: sign_XoB
   double precision,intent(in)   :: eta
   double precision,intent(inout):: eHFB(nOrb_twice)
   double precision,intent(in)   :: wweight(nfreqs)
@@ -39,6 +40,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
   double precision,allocatable  :: Tmp_mo_w(:,:)
   double precision,allocatable  :: Mat1(:,:)
   double precision,allocatable  :: Mat2(:,:)
+  double precision,allocatable  :: Chi0_mo_w_real(:,:)
 
   complex *16                   :: weval
   complex *16,allocatable       :: Chi0_mo_w(:,:)
@@ -66,7 +68,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
   Sigma_hh_c_mo=czero
   Sigma_eh_c_mo=czero
   Sigma_ee_c_mo=czero
-  allocate(Chi0_mo_w(nOrb2,nOrb2),Tmp_mo_w(nOrb2,nOrb2))
+  allocate(Chi0_mo_w(nOrb2,nOrb2),Tmp_mo_w(nOrb2,nOrb2),Chi0_mo_w_real(nOrb2,nOrb2))
   allocate(Mat1(nOrb,nOrb),Mat2(nOrb,nOrb))
   allocate(G_mo_1(nOrb,nOrb),G_mo_2(nOrb,nOrb))
   allocate(G_mo_3(nOrb,nOrb),G_mo_4(nOrb,nOrb))
@@ -89,13 +91,14 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
    if(ntimes>0) then
     stop
    else
-    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
+    call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,im*wcoord(ifreq),Mat1,Mat2,Chi0_mo_w)
    endif
 
    ! Xo (iw) -> Wp (iw)
-   Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
+   Chi0_mo_w_real(:,:)=Real(Chi0_mo_w(:,:))
+   Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Chi0_mo_w_real(:,:),vMAT(:,:))
    call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
-   Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
+   Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Chi0_mo_w_real(:,:))
    Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),vMAT(:,:))
    Tmp_mo_w(:,:)=matmul(vMAT(:,:),Tmp_mo_w(:,:)) ! Now Tmp_mo_w is Wp(iw) in MO
 
@@ -180,7 +183,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=eHFB(Istate)-Real(wtest(iE))
-       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
+       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
@@ -218,7 +221,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
         Tmp_mo_w(iorb,iorb)=1d0
        enddo
        weval=-(Real(wtest(iE))-abs(eHFB(Istate)))
-       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
+       call Xo_MO_RHFB_w(nOrb,nOrb_twice,eta,sign_XoB,eHFB,weval,Mat1,Mat2,Chi0_mo_w)
        Tmp_mo_w(:,:)=Tmp_mo_w(:,:)-matmul(Real(Chi0_mo_w(:,:)),vMAT(:,:))
        call inverse_matrix(nOrb2,Tmp_mo_w,Tmp_mo_w)
        Tmp_mo_w(:,:)=matmul(Tmp_mo_w(:,:),Real(Chi0_mo_w(:,:)))
@@ -284,6 +287,7 @@ subroutine Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nE,eta,verbose,wtest,eHFB,nfreqs,
   ! Deallocate arrays
   deallocate(Chi0_mo_w)
   deallocate(Tmp_mo_w)
+  deallocate(Chi0_mo_w_real)
   deallocate(G_mo_1,G_mo_2)
   deallocate(G_mo_3,G_mo_4)
   deallocate(G_mo_5,G_mo_6)
