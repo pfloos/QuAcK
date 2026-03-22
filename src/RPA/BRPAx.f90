@@ -19,6 +19,9 @@ subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
 
 ! Local variables
 
+  logical                       :: ring_shuck
+  logical                       :: file_exists
+
   integer                       :: iorb
   integer                       :: k,kprime,l,lprime
   integer                       :: iqp_pair,jqp_pair
@@ -55,6 +58,9 @@ subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
   write(*,*)'*******************************'
   write(*,*)
 
+  ring_shuck=.true.
+  inquire(file='use_Omega40_Omega22_BRPAx', exist=file_exists)
+  if(file_exists) ring_shuck=.false.
   nOrb2=2*nOrb
   nOrb3=nOrb2+nOrb
   nOrb4=2*nOrb2
@@ -130,17 +136,27 @@ subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
   V(1:nOrb2,1:nOrb2)  =  Ua(1:nOrb2,1:nOrb2)
   deallocate(U_QP_sw)
 
-! Build H40 and H22 (making H40 also be anti-symmetric; using Omega40)
+! Build H40 and H22 (making H40 also be anti-symmetric)
+  
   allocate(H40(nOrb2,nOrb2,nOrb2,nOrb2))
   allocate(H22(nOrb2,nOrb2,nOrb2,nOrb2))
   H40=0d0;  H22=0d0;
   call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,Ua,Va,H40)
-  call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,Ua,Va,H40)
-  call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,Ua,Va,H40)
-  call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,Ua,Va,H40)
-  call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,Ua,Va,H40)
-  call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,Ua,Va,H40)
-!  H40=0.25d0*H40  ! Remove this factor when using Omega40
+  if(.not. ring_shuck) then ! Using Omega40
+   write(*,*)
+   write(*,*) ' Building Omega40 and Omega22'
+   write(*,*)
+   call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,Ua,Va,H40)
+   call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,Ua,Va,H40)
+   call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,Ua,Va,H40)
+   call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,Ua,Va,H40)
+   call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,Ua,Va,H40)
+  else  ! Using H40
+   write(*,*)
+   write(*,*) ' Building H40 and H22'
+   write(*,*)
+   H40=0.25d0*H40
+  endif
   call ERI_MO2QP_H22(nOrb2,ERI_MO_sw,U,Ua,H22)
   call ERI_MO2QP_H22_2(nOrb2,ERI_MO_sw,V,Va,H22)
   call ERI_MO2QP_H22_3(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
@@ -154,22 +170,24 @@ subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
   allocate(Amat(nRPA,nRPA))
   allocate(Bmat(nRPA,nRPA))
   Amat=0d0; Bmat=0d0;
-  iqp_pair=1; jqp_pair=1;
+  iqp_pair=0
   do k=1,nOrb2
    do kprime=k+1,nOrb2
     Ekkprime=-(eQP_sw(k)+eQP_sw(kprime))        ! Using negative energies as positive with a minus
+    iqp_pair=iqp_pair+1
+    jqp_pair=0
     do l=1,nOrb2
      do lprime=l+1,nOrb2
+      jqp_pair=jqp_pair+1
       Amat(iqp_pair,jqp_pair)=H22(k,kprime,l,lprime)
-      Bmat(iqp_pair,jqp_pair)=H40(k,kprime,l,lprime)        ! Version using Omega40
-!      Bmat(iqp_pair,jqp_pair)=2.4d1*H40(k,kprime,l,lprime) !         using H40 in Ring and Schuck to be corrected with permutations. 
+      if(ring_shuck) then
+       Bmat(iqp_pair,jqp_pair)=4d0*( H40(k,kprime,l,lprime) + H40(l,lprime,k,kprime) - H40(kprime,lprime,k,l) &   !  using H40 as in Ring and Schuck. 
+                                    -H40(k,l,kprime,lprime) + H40(kprime,l,k,lprime) + H40(k,lprime,kprime,l) )
+      else
+       Bmat(iqp_pair,jqp_pair)=H40(k,kprime,l,lprime)        ! Version using Omega40
+      endif
       if(iqp_pair==jqp_pair) then
        Amat(iqp_pair,jqp_pair)=Amat(iqp_pair,jqp_pair)+Ekkprime
-      endif
-      jqp_pair=jqp_pair+1
-      if(jqp_pair>nRPA) then
-       jqp_pair=1
-       iqp_pair=iqp_pair+1
       endif
      enddo 
     enddo 
