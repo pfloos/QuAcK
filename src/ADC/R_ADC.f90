@@ -146,8 +146,8 @@ subroutine R_ADC(dotest,                                               &
           print*, 'Diagonal version of IPEA-ADC(3) not yet implemented'
 !         call R_IPEA_ADC3_diag(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          print*, 'Full version of IPEA-ADC(3) not yet implemented'
-!         call R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         print*, 'Full version of IPEA-ADC(3) not yet implemented'
+          call R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       else
@@ -268,7 +268,7 @@ subroutine R_ADC(dotest,                                               &
         if(diag_approx) then
           call R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-!         call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       else

@@ -1,6 +1,6 @@
 subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-! Compute linear response for complex unrestricted formalism using the c-product
+! Compute linear response for unrestricted formalism
 
   implicit none
   include 'parameters.h'
@@ -17,10 +17,10 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 ! Local variables
 
   double precision,external     :: trace_matrix
-  double precision,allocatable  :: RPA_matrix(:,:)
-  complex*16,allocatable        :: complex_RPA_matrix(:,:)
-  double precision,allocatable  :: vectors(:,:)
-  double precision,allocatable  :: OmOmminus(:)
+  double precision,allocatable  :: ApB(:,:)
+  double precision,allocatable  :: Aphtilde(:,:)
+  double precision,allocatable  :: AmB(:,:)
+  double precision              :: eF
   integer                       :: i
 
 ! Output variables
@@ -30,7 +30,12 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   double precision,intent(out)  :: XpY(nSt,nSt)
   double precision,intent(out)  :: XmY(nSt,nSt)
 
+! Memory allocation
+
+  allocate(ApB(nSt,nSt),AmB(nSt,nSt),Aphtilde(nSt,nSt))
+
 ! Tamm-Dancoff approximation
+
 
   if(TDA) then
 
@@ -39,68 +44,57 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
     XpY(:,:) = transpose(XpY(:,:))
     XmY(:,:) = XpY(:,:)
 
-
   else
+     
+    ! Build (\tilde{A} +B ) (\tilde{A} - B ) - 4*eF*\tilde{A} 
+    eF  = 0d0
+    Om  = 1d0
+    Aphtilde = Aph
+    call add_diagonal_matrix(nSt,2*eF*Om,Aphtilde)
 
-    allocate(RPA_matrix(2*nSt,2*nSt),vectors(2*nSt,2*nSt),OmOmminus(2*nSt))
-    
-    RPA_matrix(1:nSt,1:nSt)             =  Aph(:,:)
-    RPA_matrix(1:nSt,nSt+1:2*nSt)       =  Bph(:,:)
-    RPA_matrix(nSt+1:2*nSt,1:nSt)       = -Bph(:,:)
-    RPA_matrix(nSt+1:2*nSt,nSt+1:2*nSt) = -Aph(:,:)
-    
-    call diagonalize_general_matrix(2*nSt,RPA_matrix,OmOmminus,vectors)
-    
-    RPA_matrix(:,:) = vectors(:,:)
-    
-    deallocate(vectors)
-    
-    call sort_eigenvalues_RPA(2*nSt,OmOmminus,RPA_matrix)
-    
-    allocate(complex_RPA_matrix(2*nSt,2*nSt))
-    
-    complex_RPA_matrix = cmplx(RPA_matrix(:,:),0d0,kind=8) 
-    
-    deallocate(RPA_matrix)
-    
-    call complex_normalize_RPA(nSt,complex_RPA_matrix)
-    
-    if(maxval(abs(OmOmminus(1:nSt)+OmOmminus(nSt+1:2*nSt))) > 1e-8) then
-      call print_warning('We dont find a Om and -Om structure as solution of the RPA. There might be a problem somewhere.')
-      write(*,*) "Maximal difference :", maxval(abs(OmOmminus(1:nSt)+OmOmminus(nSt+1:2*nSt)))
-    end if
+    ApB(:,:) = Aphtilde(:,:) + Bph(:,:) 
+    AmB(:,:) = Aphtilde(:,:) - Bph(:,:)
 
-    Om(:) = OmOmminus(1:nSt)
+    ApB      = matmul(ApB,AmB)
+    ApB(:,:) = ApB(:,:) - 4*eF*Aphtilde(:,:)
+    call add_diagonal_matrix(nSt,4*eF**2*Om,ApB)
+
+    ! Diagonalize linear response matrix
+    call diagonalize_general_matrix(nSt,ApB,Om,XmY)
+    Om = sqrt(Om)
     
-    deallocate(OmOmminus)
-    
-    ! Set transition vectors of zero modes to 0
+    ! Get XpY via (X+Y) =(\tilde{A}-B - 2*eF*Id)(X-Y)Omega^-1
+    XpY = matmul(AmB,XmY) - 2*eF*XmY
+    call AD(nSt,XpY,1/Om)
+     
+    ! Compute Overlap and assign ex-/deexcitations
+    ApB = matmul(transpose(XmY),XpY)
     do i=1,nSt
-      if(abs(Om(i))<1d-8) then
-         complex_RPA_matrix(:,i) = (0d0,0d0)
-         complex_RPA_matrix(:,i+nSt) = (0d0,0d0)
+      if(ApB(i,i)<0d0) then
+        Om(i)    = - Om(i)
+        ! Correct column for right sign of Om 
+        XpY(:,i) = - XpY(:,i) 
       end if
-    end do
-
-
-    if(maxval(aimag(complex_RPA_matrix(1:2*nSt,1:nSt)))>1d-8) then
-      call print_warning('You may have instabilities in linear response: complex transition vectors !')
-      print *, "Max imag value X+Y:",maxval(aimag(transpose(complex_RPA_matrix(1:nSt,1:nSt) + complex_RPA_matrix(nSt+1:2*nSt,1:nSt)))),&
-               "at"                 ,maxloc(aimag(transpose(complex_RPA_matrix(1:nSt,1:nSt) + complex_RPA_matrix(nSt+1:2*nSt,1:nSt))))
- 
-      print *, "Max imag value X-Y:",maxval(aimag(transpose(complex_RPA_matrix(1:nSt,1:nSt) - complex_RPA_matrix(nSt+1:2*nSt,1:nSt)))),&
-               "at"                 ,maxloc(aimag(transpose(complex_RPA_matrix(1:nSt,1:nSt) - complex_RPA_matrix(nSt+1:2*nSt,1:nSt))))
-    end if
-
-    XpY(:,:) = transpose(real(complex_RPA_matrix(1:nSt,1:nSt) + complex_RPA_matrix(nSt+1:2*nSt,1:nSt))) 
-    XmY(:,:) = transpose(real(complex_RPA_matrix(1:nSt,1:nSt) - complex_RPA_matrix(nSt+1:2*nSt,1:nSt))) 
+    enddo
     
-    deallocate(complex_RPA_matrix) 
-  
+    call sort_eigenvalues_vec_vec(nSt,Om,XmY,XpY)
+    
+    ! Orthonormalize
+    ApB = matmul(transpose(XmY),XpY)
+    call orthogonalize_matrix(1,nSt,ApB,AmB)
+    XmY = matmul(XmY,AmB)
+    XpY = matmul(XpY,AmB)
+    
+    ! Transpose XmY and XpY because Quack wants this
+    XmY = transpose(XmY) 
+    XpY = transpose(XpY)
+    
   end if
 
 ! Compute the RPA correlation energy
 
   EcRPA = 0.5d0*(sum(Om) - trace_matrix(nSt,Aph))
+  
+  deallocate(ApB,AmB,Aphtilde)
 
 end subroutine 

@@ -15,6 +15,9 @@ subroutine complex_mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
   complex*16,intent(in)         :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nOrb)
 
+! Local variables  
+  integer                       :: iorb
+
 ! Output variables
 
   complex*16,intent(inout)      :: c(nBas,nOrb)
@@ -33,6 +36,13 @@ subroutine complex_mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
     write(*,*) 'Huckel guess...'
     call complex_huckel_guess(nBas, nOrb,S,Hc, X, c)
+  elseif(guess_type == 4) then
+
+    write(*,*) 'Site basis guess for Hubbard...'
+    c(:,:)=(0d0,0d0)
+    do iorb=1,nOrb
+     c(iorb,iorb) = (1d0,0d0)
+    enddo
   else
     print*,'Wrong guess option'
     stop
