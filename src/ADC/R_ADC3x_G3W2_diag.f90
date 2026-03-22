@@ -203,7 +203,6 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
       do i=nC+1,nO
         do mu=1,nS
           ija = ija + 1
-  
 
           H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
 
@@ -571,7 +570,6 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
       do a=nO+1,nOrb-nR
         do mu=1,nS
           iab = iab + 1
-     
      
           H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)
      
