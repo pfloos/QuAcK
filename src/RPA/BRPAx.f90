@@ -53,9 +53,9 @@ subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
 ! Hello world
 
   write(*,*)
-  write(*,*)'*******************************'
-  write(*,*)'* Bogoliubov RPAx Calculation *'
-  write(*,*)'*******************************'
+  write(*,*)'**************************************'
+  write(*,*)'* Bogoliubov RPAx/TD-HFB Calculation *'
+  write(*,*)'**************************************'
   write(*,*)
 
   ring_shuck=.true.
