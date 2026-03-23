@@ -76,7 +76,7 @@ subroutine R_IP_ADC2_diag(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO
+  do p=nC+1,nO
 
      H(:,:) = 0d0
      Reigv(:,:) = 0d0
