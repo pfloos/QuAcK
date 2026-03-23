@@ -76,7 +76,7 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 500d0
+  double precision,parameter    :: flow = 1d6
 
   logical                       :: do_hierarchy_GW = .false.
   logical                       :: do_1h1p,do_1h,do_diag
