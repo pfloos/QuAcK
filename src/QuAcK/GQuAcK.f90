@@ -6,7 +6,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                                            &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                                        &
                   maxSCF_CC,max_diis_CC,thresh_CC,                                                                          &
-                  TDA,                                                                                                      &
+                  TDA,nfreqs,wcoord,wweight,                                                                                &
                   max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                                          & 
                   maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                                     &
                   maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                                   &
@@ -72,6 +72,8 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
   integer,intent(in)            :: max_iter_OO,mu_OO
   double precision,intent(in)   :: thresh_OO
   logical,intent(in)            :: dRPA_OO,diagHess_OO
+  integer,intent(in)            :: nfreqs
+  double precision,intent(inout):: wcoord(nfreqs),wweight(nfreqs)
 
   integer,intent(in)            :: maxSCF_GF,max_diis_GF
   double precision,intent(in)   :: thresh_GF
@@ -127,7 +129,9 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
   double precision,allocatable  :: ERI_MO(:,:,:,:)
   double precision,allocatable  :: ERI_tmp(:,:,:,:)
   double precision,allocatable  :: Ca(:,:),Cb(:,:)
+  double precision,allocatable  :: vMAT(:,:)
 
+  integer                       :: ibas,jbas,kbas,lbas
   integer                       :: ixyz
   integer                       :: nBas2
   integer                       :: nS
@@ -182,6 +186,33 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
     write(*,*)
 
   end if
+
+!------------------------!
+! EcRPA with iw and itau !
+!------------------------!
+
+  if(dophRPA .and. nfreqs>1) then
+
+   call wall_time(start_RPA)
+   allocate(vMAT(nBas*nBas,nBas*nBas))
+   do ibas=1,nBas
+    do jbas=1,nBas
+     do kbas=1,nBas
+      do lbas=1,nBas
+       vMAT(1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas)=ERI_AO(ibas,jbas,kbas,lbas)
+      enddo
+     enddo
+    enddo
+   enddo
+   call EcRPA_EcGM_w_GHF(nBas,nBas2,nO,1,eHF,cHF,nfreqs,wweight,wcoord,vMAT,EGHF)
+   deallocate(vMAT)
+   call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for RPA = ',t_RPA,' seconds'
+    write(*,*)
+
+  endif
 
 !----------------------------------!
 ! AO to MO integral transformation !
