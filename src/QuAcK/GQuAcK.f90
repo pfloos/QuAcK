@@ -1,4 +1,4 @@
-subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                   &
+subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,       &
                   dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                                      &
                   doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,  & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                                     & 
@@ -23,6 +23,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: doGHF
+  logical,intent(in)            :: readFCIDUMP
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
   logical,intent(in)            :: doMP2
@@ -153,6 +154,11 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dop
   allocate(ERI_AO(nBas,nBas,nBas,nBas))
   call wall_time(start_int)
   call read_2e_integrals(working_dir,nBas,ERI_AO)
+! For the FCIDUMP case, read two-body integrals
+
+  if (readFCIDUMP) then 
+    call read_fcidump_2body(nBas,ERI_AO)
+  endif  
   call wall_time(end_int)
   t_int = end_int - start_int
   write(*,*)

@@ -397,7 +397,7 @@ program QuAcK
 ! Generalized QuAcK branch !
 !--------------------------!
   if(doGQuAcK) & 
-    call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+    call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                     &
                 doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                             &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                             & 
