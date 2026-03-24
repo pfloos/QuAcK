@@ -72,4 +72,20 @@ subroutine complex_RRPA(use_gpu,dotest,dophRPA,dophRPAx,docrRPA,doppRPA,TDA,doAC
 
   end if
 
+!------------------------------------------------------------------------
+! Compute ppRPA excitations
+!------------------------------------------------------------------------
+
+  if(doppRPA) then
+
+    call wall_time(start_RPA)
+    call complex_ppRRPA(dotest,TDA,doACFDT,singlet,triplet,nBas,nC,nO,nV,nR,ENuc,ERHF,ERI,dipole_int,eHF)
+    call wall_time(end_RPA)
+
+    t_RPA = end_RPA - start_RPA
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for pp-RPA = ',t_RPA,' seconds'
+    write(*,*)
+
+  end if
+
 end subroutine

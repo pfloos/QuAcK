@@ -188,14 +188,13 @@ subroutine RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triple
 
   end if
 
-! Scale properly correlation energy if exchange is included in interaction kernel
+! Scale properly correlation energy if exchange is included in interaction kernel, and take triplets times 3
 
-  if(exchange_kernel) then
-
-    EcBSE(1) = 0.5d0*EcBSE(1)
-    EcBSE(2) = 1.5d0*EcBSE(2)
-
-  end if
+  
+  EcBSE(2) = 3.0d0*EcBSE(2)
+  
+  if(exchange_kernel)&
+    EcBSE = 0.5d0*EcBSE
 
   deallocate(OmRPA,XpY_RPA,XmY_RPA,rho_RPA,Aph,Bph,KA_sta,KB_sta,OmBSE,XpY_BSE,XmY_BSE)
   

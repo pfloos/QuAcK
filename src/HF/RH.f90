@@ -1,8 +1,7 @@
-! MRM NOTE: If the call to RHF is modified, please also incorporate the changes to the call of RHF in the BQuAcK branch
-subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F)
+subroutine RH(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
+              nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F)
 
-! Perform restricted Hartree-Fock calculation
+! Perform restricted Hartree calculation
 
   implicit none
   include 'parameters.h'
@@ -58,7 +57,6 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
   double precision,allocatable  :: err_diis(:,:)
   double precision,allocatable  :: F_diis(:,:)
   double precision,allocatable  :: J(:,:)
-  double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: cp(:,:)
   double precision,allocatable  :: tmp(:,:)
   double precision,allocatable  :: Fp(:,:)
@@ -74,18 +72,18 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 ! Hello world
 
   write(*,*)
-  write(*,*)'*****************************'
-  write(*,*)'* Restricted HF Calculation *'
-  write(*,*)'*****************************'
+  write(*,*)'****************************'
+  write(*,*)'* Restricted H Calculation *'
+  write(*,*)'****************************'
   write(*,*)
 
 ! Useful quantities
   nBas_Sq = nBas*nBas
+  EK = 0d0
 
 ! Memory allocation
 
   allocate(J(nBas,nBas))
-  allocate(K(nBas,nBas))
 
   allocate(err(nBas,nBas))
 
@@ -98,14 +96,6 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 ! Guess coefficients and/or density matrix
 
   call mo_guess(nBas,nOrb,guess_type,S,Hc,X,c)
-  if(guess_type == 6) then
-    ! Read MO Coefficients from file
-    print *, "Reading MO Coefficients from MOs dir..."
-    allocate(tmp(nBas,nBas))
-    call read_matin(nBas,nBas,tmp,"real_MOs_alpha.dat")
-    c(:,:) = tmp
-    deallocate(tmp)
-  end if
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
   ! If guess_type is read density and files P_ao_bin and/or P_ao_form exists
   if(guess_type == 5) then
@@ -158,10 +148,10 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 !------------------------------------------------------------------------
 
   write(*,*)
-  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,*)'----------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A16,1X,A1,1X,A10,1X,A1,1X)') &
-            '|','#','|','E(RHF)','|','EJ(RHF)','|','EK(RHF)','|','Conv','|'
-  write(*,*)'-----------------------------------------------------------------------------'
+            '|','#','|',' E(RH)','|',' EJ(RH)','|','Conv','|'
+  write(*,*)'----------------------------------------------------------------'
 
   do while(Conv > thresh .and. nSCF < maxSCF)
 
@@ -172,8 +162,7 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
     ! Build Fock matrix
     
     call Hartree_matrix_AO_basis(nBas,P,ERI,J)
-    call exchange_matrix_AO_basis(nBas,P,ERI,K)
-    F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+    F(:,:) = Hc(:,:) + J(:,:) 
 
     ! Check convergence 
 
@@ -192,13 +181,9 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 
     EJ = 0.5d0*trace_matrix(nBas,matmul(P,J))
 
-    ! Exchange energy
-
-    EK = 0.25d0*trace_matrix(nBas,matmul(P,K))
-
     ! Total energy
 
-    ERHF = ET + EV + EJ + EK
+    ERHF = ET + EV + EJ
 
     ! DIIS extrapolation
 
@@ -238,11 +223,11 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
      enddo
     endif
 
-    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
-      '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',EK,'|',Conv,'|'
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F16.10,1X,A1,1X,F16.10,1X,A1,1X,E10.2,1X,A1,1X)') &
+      '|',nSCF,'|',ERHF + ENuc,'|',EJ,'|',Conv,'|'
 
   end do
-  write(*,*)'-----------------------------------------------------------------------------'
+  write(*,*)'----------------------------------------------------------------'
 !------------------------------------------------------------------------
 ! End of SCF loop
 !------------------------------------------------------------------------
@@ -266,44 +251,23 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 ! Compute dipole moments
 
   call Hartree_matrix_AO_basis(nBas,P,ERI,J)
-  call exchange_matrix_AO_basis(nBas,P,ERI,K)
-  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+  F(:,:) = Hc(:,:) + J(:,:)
   Fp = matmul(transpose(X),matmul(F,X))
   cp(:,:) = Fp(:,:)
   call diagonalize_matrix(nOrb,cp,eHF)
   c = matmul(X,cp)
 
   call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int,dipole)
-  call print_RHF(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,EK,ERHF,dipole)
+  call print_RH(nBas,nOrb,nO,eHF,c,ENuc,ET,EV,EJ,ERHF,dipole)
 
 ! Print the 1-RDM and 2-RDM in AO basis
   if(doaordm) then
    call print_RHF_AO_rdms(nBas,ENuc,S,T,V,P,ERI)
   endif
 
-! Write MOs
-
-  if(writeMOs) then
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
-  endif
-
-! Testing zone
-
-  if(dotest) then
- 
-    call dump_test_value('R','RHF energy',ERHF)
-    call dump_test_value('R','RHF HOMO energy',eHF(nO))
-    call dump_test_value('R','RHF LUMO energy',eHF(nO+1))
-    call dump_test_value('R','RHF dipole moment',norm2(dipole))
-
-  end if
-
 ! Memory deallocation
 
-  deallocate(J,K,err,cp,Fp,err_diis,F_diis)
+  deallocate(J,err,cp,Fp,err_diis,F_diis)
 
 end subroutine 
 

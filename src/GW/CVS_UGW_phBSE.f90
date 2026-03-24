@@ -170,22 +170,22 @@ subroutine CVS_UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin
 
     ! Compute spin-conserved BSE excitation energies
 
-                 call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,nCVS,nFC,occupations,virtuals,  &
+                 call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nCVS,nFC,occupations,virtuals,  &
                                 1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sf,nCVS,nFC,occupations,virtuals,  &
+    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nCVS,nFC,occupations,virtuals,  &
                                 1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
 
-                 call CVS_UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sf,         &
+                 call CVS_UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,         &
                                                      nCVS,nFC,occupations,virtuals,                             &
                                                       1d0,OmRPA,rho_RPA,KA)
-    if(.not.TDA) call CVS_UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_aa,nS_bb,nS_sc,nS_sf,         &
+    if(.not.TDA) call CVS_UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nS_ab,nS_ba,nS_sf,nS_sc,         &
                                                       nCVS,nFC,occupations,virtuals,                            &
                                                       1d0,OmRPA,rho_RPA,KB)
 
                  Aph(:,:) = Aph(:,:) + KA(:,:)
     if(.not.TDA) Bph(:,:) = Bph(:,:) + KB(:,:)
 
-    call CVS_phULR(TDA,nS_aa,nS_bb,nS_sc,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
+    call CVS_phULR(TDA,nS_ab,nS_ba,nS_sf,Aph,Bph,EcBSE(ispin),OmBSE,XpY_BSE,XmY_BSE)
 
     call print_excitation_energies('phBSE@GW@UHF','spin-flip',nS_sf,OmBSE)
     call CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nS_ab,nS_ba,nS_sf,nCVS,nFC,occupations,virtuals,&
@@ -212,10 +212,6 @@ subroutine CVS_UGW_phBSE(exchange_kernel,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin
   if(exchange_kernel) then
 
     EcBSE(:) = 0.5d0*EcBSE(:)
-
-  else
-
-    EcBSE(2) = 0.0d0
 
   end if
 

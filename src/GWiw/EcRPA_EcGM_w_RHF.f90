@@ -1,7 +1,7 @@
 subroutine EcRPA_EcGM_w_RHF(nOrb,nO,verbose,eHF,nfreqs,ntimes,wweight,wcoord,vMAT,&
                             ERHF,EcRPA,EcGM)
 
-! Restricted Sigma_c(E)
+! Restricted EcRPA and EcGM for RHF
 
   implicit none
   include 'parameters.h'

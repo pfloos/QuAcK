@@ -35,10 +35,15 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 
 ! Local variables
 
+
+  logical                       :: file_exists
+
+  integer                       :: ibas,jbas
   integer                       :: nSCF
   integer                       :: nBasSq
   integer                       :: nBas2Sq
   integer                       :: n_diis
+  double precision              :: Val
   double precision              :: Conv
   double precision              :: rcond
   double precision              :: ET,ETaa,ETbb
@@ -128,7 +133,82 @@ subroutine GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,nNuc,ZNu
 ! Construct super density matrix
 
   P(:,:) = matmul(C(:,1:nO),transpose(C(:,1:nO)))
-
+  Paa(:,:) = P(     1:nBas ,     1:nBas )
+  Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
+  Pba(:,:) = P(nBas+1:nBas2,     1:nBas )
+  Pbb(:,:) = P(nBas+1:nBas2,nBas+1:nBas2)
+  ! If guess_type is read the density form files P_ao_form
+  if(guess_type == 5) then
+   ! Read P_aa
+   inquire(file='P_ao_form_aa', exist=file_exists)
+   if(file_exists) then
+    write(*,*) 'Reading P_ao_form matrices...'
+    open(unit=314, form='formatted', file='P_ao_form_aa', status='old')
+    ibas=1;jbas=0;
+    do
+     read(314,*) Val
+     jbas=jbas+1
+     if(jbas>nBas) then
+      ibas=ibas+1
+      jbas=1
+     endif
+     P(ibas,jbas)=Val 
+     if(ibas==jbas .and. ibas==nBas) exit
+    enddo
+    close(314)
+   endif
+   ! Read P_bb
+   inquire(file='P_ao_form_bb', exist=file_exists)
+   if(file_exists) then
+    open(unit=314, form='formatted', file='P_ao_form_bb', status='old')
+    ibas=1;jbas=0;
+    do
+     read(314,*) Val
+     jbas=jbas+1
+     if(jbas>nBas) then
+      ibas=ibas+1
+      jbas=1
+     endif
+     P(nBas+ibas,nBas+jbas)=Val 
+     if(ibas==jbas .and. ibas==nBas) exit
+    enddo
+    close(314)
+   endif
+   ! Read P_ab
+   inquire(file='P_ao_form_ab', exist=file_exists)
+   if(file_exists) then
+    open(unit=314, form='formatted', file='P_ao_form_ab', status='old')
+    ibas=1;jbas=0;
+    do
+     read(314,*) Val
+     jbas=jbas+1
+     if(jbas>nBas) then
+      ibas=ibas+1
+      jbas=1
+     endif
+     P(ibas,nBas+jbas)=Val 
+     if(ibas==jbas .and. ibas==nBas) exit
+    enddo
+    close(314)
+   endif
+   ! Read P_ba
+   inquire(file='P_ao_form_ba', exist=file_exists)
+   if(file_exists) then
+    open(unit=314, form='formatted', file='P_ao_form_ba', status='old')
+    ibas=1;jbas=0;
+    do
+     read(314,*) Val
+     jbas=jbas+1
+     if(jbas>nBas) then
+      ibas=ibas+1
+      jbas=1
+     endif
+     P(ibas+nBas,jbas)=Val 
+     if(ibas==jbas .and. ibas==nBas) exit
+    enddo
+    close(314)
+   endif
+  endif
   Paa(:,:) = P(     1:nBas ,     1:nBas )
   Pab(:,:) = P(     1:nBas ,nBas+1:nBas2)
   Pba(:,:) = P(nBas+1:nBas2,     1:nBas )

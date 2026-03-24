@@ -1,6 +1,6 @@
-subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Dyson version of IP/EA-ADC(2)
+! Non-Dyson version of ADC(2) aka IP-ADC(2)
 
   implicit none
   include 'parameters.h'
@@ -30,14 +30,14 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: jb,kc,ia,ja
   integer                       :: klc,kcd,ija,ijb,iab,jab
 
-  integer                       :: n2h1p,n2p1h,nH
+  integer                       :: n2h1p,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: Z(:)
 
   logical                       :: verbose = .false.
-  double precision,parameter    :: cutoff1 = 0.1d0
+  double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
@@ -51,16 +51,15 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'***************************************'
-  write(*,*)'* Restricted IP/EA-ADC(2) Calculation *'
-  write(*,*)'***************************************'
+  write(*,*)'************************************'
+  write(*,*)'* Restricted IP-ADC(2) Calculation *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
-  n2p1h = nV*nV*nO
-  nH = nOrb + n2h1p + n2p1h
+  nH = nO + n2h1p 
 
 ! Memory allocation
 
@@ -68,112 +67,90 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   eF = 0.5d0*(eHF(nO) + eHF(nO+1))
 
-! Initialization
+!-------------------------!
+! Main loop over orbitals !
+!-------------------------!
 
-   H(:,:) = 0d0
-   Reigv(:,:) = 0d0
+  H(:,:) = 0d0
+  Reigv(:,:) = 0d0
 
-  !--------------------------------------!
-  ! Compute IP/EA-ADC(2) supermatrix     !
-  !--------------------------------------!
-  !                                      !
-  !     |   F    U_2h1p U_2p1h |         ! 
-  !     |                      |         ! 
-  ! H = | U_2h1p K_2h1p 0      |         ! 
-  !     |                      |         ! 
-  !     | U_2p1h 0      K_2p1h |         ! 
-  !                                      !
-  !--------------------------------------!
+  !---------------------------------!
+  ! Compute IP-ADC2 supermatrix     !
+  !---------------------------------!
+  !                                 !
+  !     | (K+C)_1h    (C)_1h-2h1p | ! 
+  ! H = |                         | ! 
+  !     | (C)_2h1p-1h (K+C)_2h1p  | ! 
+  !                                 !
+  !---------------------------------!
 
   call wall_time(start_timing)
 
-  !---------!
-  ! Block F !
-  !---------!
-  
-  do p=nC+1,nOrb-nR
-  
-    H(p,p) = eHF(p)
+  !----------------!
+  ! Block (K+C)_1h !
+  !----------------!
+
+  do k=nC+1,nO
+
+    H(k,k) = eHF(k) 
 
   end do
 
-  !--------------!
-  ! Block U_2h1p !
-  !--------------!
+  do k=nC+1,nO
+    do l=nC+1,nO
 
-  do p=nC+1,nOrb-nR
-
-    ija = 0
-    do i=nC+1,nO
-      do j=nC+1,nO
+      do i=nC+1,nO
         do a=nO+1,nOrb-nR
-          ija = ija + 1
-             
-          H(p       ,nOrb+ija) = 2d0*ERI(p,a,i,j) - ERI(p,a,j,i)
-          H(nOrb+ija,p       ) = ERI(p,a,i,j)
-             
-        end do
-      end do
-    end do
-
-  end do
-
-  !--------------!
-  ! Block U_2p1h !
-  !--------------!     
-
-  do p=nC+1,nOrb-nR
-
-    iab = 0
-    do i=nC+1,nO
-      do a=nO+1,nOrb-nR
-        do b=nO+1,nOrb-nR
-          iab = iab + 1   
- 
-          H(p             ,nOrb+n2h1p+iab) = 2d0*ERI(p,i,a,b) - ERI(p,i,b,a)
-          H(nOrb+n2h1p+iab,p             ) = ERI(p,i,a,b)
-               
+          do b=nO+1,nOrb-nR
+     
+            H(k,l) = H(k,l) - (2d0*ERI(a,b,k,i) - ERI(a,b,i,k))*ERI(l,i,a,b)/(eHF(a) + eHF(b) - 0.5d0*eHF(k) - 0.5d0*eHF(l))
+     
           end do
         end do
       end do
 
+    end do
   end do
 
-  !--------------!
-  ! Block K_2h1p !
-  !--------- ----!
-
+  !------------------!
+  ! Block (K+C)_2h1p !
+  !------------------!
+ 
   ija = 0
   do i=nC+1,nO
     do j=nC+1,nO
       do a=nO+1,nOrb-nR
         ija = ija + 1
              
-        H(nOrb+ija,nOrb+ija) = eHF(i) + eHF(j) - eHF(a)
-
-
+        H(nO+ija,nO+ija) = eHF(i) + eHF(j) - eHF(a)
+ 
       end do
     end do
   end do
-
-  !--------------!
-  ! Block K_2p1h !
-  !--------------!
+ 
+  !-------------------!
+  ! Block (C)_2h1p-1h !
+  !-------------------!
     
-  iab = 0
-  do i=nC+1,nO
-    do a=nO+1,nOrb-nR
-      do b=nO+1,nOrb-nR
-        iab = iab + 1
-             
-        H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(a) + eHF(b) - eHF(i)
-      
+  do k=nC+1,nO
+
+    ija = 0
+    do i=nC+1,nO
+      do j=nC+1,nO
+        do a=nO+1,nOrb-nR
+          ija = ija + 1
+                   
+          H(nO+ija,k     ) = 2d0*ERI(k,a,i,j) - ERI(k,a,j,i)
+          H(k     ,nO+ija) = ERI(k,a,i,j)
+        
+        end do
       end do
     end do
+
   end do
 
   call wall_time(end_timing)
-
+ 
   timing = end_timing - start_timing
   write(*,*)
   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of supermatrix = ',timing,' seconds'
@@ -182,11 +159,11 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !-------------------------!
   ! Diagonalize supermatrix !
   !-------------------------!
-
+ 
   call wall_time(start_timing)
 
   call diagonalize_general_matrix(nH,H,eGF,Reigv)
-
+ 
   call wall_time(end_timing)
 
   timing = end_timing - start_timing
@@ -197,36 +174,33 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !-----------------!
   ! Compute weights !
   !-----------------!
-
-  Z(:) = 0d0
+ 
   do s=1,nH
-    do p=nC+1,nOrb-nR
-      Z(s) = Z(s) + Reigv(p,s)**2
-    end do
+    Z(s) = Reigv(1,s)**2
   end do
 
   !--------------!
   ! Dump results !
   !--------------!
-
+ 
   write(*,*)'-------------------------------------------'
-  write(*,'(1X,A43)')'| IPEA-ADC(2) energies for all orbitals   |'
+  write(*,'(1X,A37,I3,A3)')'| IP-ADC(2) energies (eV) for orbital',p,'  |'
   write(*,*)'-------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-            '|','#','|','e_QP (eV)','|','Z','|'
+            '|','#','|','e_QP','|','Z','|'
   write(*,*)'-------------------------------------------'
-
+  
   do s=1,nH
-!   if(eGF(s) < eF .and. eGF(s) > eF - window) then
-    if(Z(s) > cutoff1) then
+    if(eGF(s) < eF .and. eGF(s) > eF - window) then
+    ! if(Z(s) > cutoff1) then
       write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
       '|',s,'|',eGF(s)*HaToeV,'|',Z(s),'|'
     end if
   end do
-
+  
   write(*,*)'-------------------------------------------'
   write(*,*)
-
+ 
   if(verbose) then
 
     do s=1,nH
@@ -244,16 +218,13 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         if(p <= nO) & 
              write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6,1X,F12.6)') &
              '      (',p,')               ',Reigv(1,s),Reigv(1,s)**2,-eHF(p)*HaToeV
-        if(p > nO) & 
-             write(*,'(1X,A16,I3,A7,1X,F15.6,1X,F15.6)') &
-             '               (',p,')      ',Reigv(1,s),Reigv(1,s)**2,-eHF(p)*HaToeV
   
         ija = 0
         do i=nC+1,nO
           do j=nC+1,nO
             do a=nO+1,nOrb-nR
               ija = ija + 1
-
+  
               if(abs(Reigv(1+ija,s)) > cutoff2)               &
                    write(*,'(1X,A3,I3,A1,I3,A6,I3,A7,1X,F15.6,1X,F15.6,1X,F12.6)') &
                    '  (',i,',',j,') -> (',a,')      ',Reigv(1+ija,s),Reigv(1+ija,s)**2, & 
@@ -263,21 +234,6 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
           end do
         end do
          
-        iab = 0
-        do i=nC+1,nO
-          do a=nO+1,nOrb-nR
-            do b=nO+1,nOrb-nR
-              iab = iab + 1
-
-              if(abs(Reigv(1+n2h1p+iab,s)) > cutoff2)           &
-                   write(*,'(1X,A7,I3,A6,I3,A1,I3,A3,1X,F15.6,1X,F15.6,1X,F12.6)') &
-                   '      (',i,') -> (',a,',',b,')  ',Reigv(1+n2h1p+iab,s),Reigv(1+n2h1p+iab,s)**2, & 
-                                                      (eHF(a) + eHF(b) - eHF(i))*HaToeV
-                
-            end do
-          end do
-        end do
-
         write(*,*)'------------------------------------------------------------------------------'
         write(*,*)
 

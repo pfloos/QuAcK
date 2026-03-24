@@ -1,6 +1,6 @@
 subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! ADC(3)-x version of G3W2
+! ADC(3x) version of G3W2
 
   implicit none
   include 'parameters.h'
@@ -80,9 +80,9 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
+  write(*,*)'***************************************'
   write(*,*)'* Restricted ADC(3x)-G3W2 Calculation *'
-  write(*,*)'**************************************'
+  write(*,*)'***************************************'
   write(*,*)
 
 ! Dimension of the supermatrix

@@ -4,7 +4,7 @@ program QuAcK
   include 'parameters.h'
 
   logical                       :: doRQuAcK,doUQuAcK,doGQuAcK,doBQuAcK
-  logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF
+  logical                       :: doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF,doscGHF
   logical                       :: doMOM
   logical                       :: writeMOs
   logical                       :: dostab,dosearch,doaordm,readFCIDUMP
@@ -96,6 +96,7 @@ program QuAcK
   double precision              :: eta_GW
   double precision              :: shift_GW
   logical                       :: do_linDM_GW
+  logical                       :: dosign_XoB
 
   integer                       :: maxSCF_GT,max_diis_GT
   double precision              :: thresh_GT
@@ -164,25 +165,25 @@ program QuAcK
 ! Method selection !
 !------------------!
 
-  call read_methods(working_dir,                                                &
-                    doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF,       &
-                    doMP2,doMP3,                                                &
-                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                          &
-                    dodrCCD,dorCCD,docrCCD,dolCCD,                              &
-                    doCIS,doCIS_D,doCID,doCISD,doFCI,                           & 
-                    dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,                    &
-                    doOO,                                                       &
-                    doG0F2,doevGF2,doqsGF2,                                     & 
-                    doG0F3,doevGF3,                                             &
-                    doG0W0,doevGW,doqsGW,                                       &
-                    doscGW,doscGF2,                                             &
-                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                      &
-                    doG0T0eh,doevGTeh,doqsGTeh,                                 &
-                    doevParquet,doqsParquet,                                    &
-                    do_IPEA_ADC2,do_IPEA_ADC3,                                  & 
-                    do_SOSEX,do_2SOSEX,do_G3W2,                                 & 
-                    do_ADC_GW,do_ADC_2SOSEX,                                    &
-                    do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                    &
+  call read_methods(working_dir,                                                  &
+                    doRHF,doUHF,doGHF,doROHF,doRHFB,docRHF,docUHF,doeRHF,doscGHF, &
+                    doMP2,doMP3,                                                  &
+                    doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                            &
+                    dodrCCD,dorCCD,docrCCD,dolCCD,                                &
+                    doCIS,doCIS_D,doCID,doCISD,doFCI,                             & 
+                    dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,                      &
+                    doOO,                                                         &
+                    doG0F2,doevGF2,doqsGF2,                                       & 
+                    doG0F3,doevGF3,                                               &
+                    doG0W0,doevGW,doqsGW,                                         &
+                    doscGW,doscGF2,                                               &
+                    doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                        &
+                    doG0T0eh,doevGTeh,doqsGTeh,                                   &
+                    doevParquet,doqsParquet,                                      &
+                    do_IPEA_ADC2,do_IPEA_ADC3,                                    & 
+                    do_SOSEX,do_2SOSEX,do_G3W2,                                   & 
+                    do_ADC_GW,do_ADC_2SOSEX,                                      &
+                    do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                      &
                     doRtest,doUtest,doGtest)
   
 ! Determine complex function calls  
@@ -203,7 +204,7 @@ program QuAcK
                     TDA,spin_conserved,spin_flip,nCVS,FC,                                                &
                     max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                     maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
-                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
+                    maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,dosign_XoB,&
                     nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,     &
                     maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              & 
                     doACFDT,exchange_kernel,doXBS,                                                       &
@@ -396,7 +397,7 @@ program QuAcK
 ! Generalized QuAcK branch !
 !--------------------------!
   if(doGQuAcK) & 
-    call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+    call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                     &
                 doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                             &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                             & 
@@ -404,7 +405,7 @@ program QuAcK
                 do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                         &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,       &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                       &
-                maxSCF_CC,max_diis_CC,thresh_CC,TDA,                                                     &
+                maxSCF_CC,max_diis_CC,thresh_CC,TDA,nfreqs,wcoord,wweight,                               &
                 max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                         & 
                 maxSCF_GF,max_diis_GF,thresh_GF,lin_GF,reg_GF,eta_GF,                                    &
                 maxSCF_GW,max_diis_GW,thresh_GW,TDA_W,lin_GW,reg_GW,eta_GW,do_linDM_GW,                  &
@@ -418,10 +419,11 @@ program QuAcK
 ! Bogoliubov QuAcK branch !
 !-------------------------!
   if(doBQuAcK) & 
-    call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,doG0W0,doqsGW,doscGW,readFCIDUMP,nNuc,nBas,nOrb, &
-                nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,max_diis_HF,    &
-                thresh_HF,level_shift,guess_type,maxSCF_GW,max_diis_GW,thresh_GW,do_linDM_GW,temperature,sigma,   &
-                chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
+    call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGW,readFCIDUMP,nNuc,nBas,  &
+                nOrb,nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,        &
+                max_diis_HF,doscGHF,thresh_HF,level_shift,guess_type,TDA,maxSCF_GW,max_diis_GW,thresh_GW,      &
+                do_linDM_GW,dosign_XoB,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight, &
+                error_P,verbose_scGW,chem_pot_scG,writeMOs)
 
 !-----------!
 ! Stop Test !

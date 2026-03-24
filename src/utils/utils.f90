@@ -114,6 +114,24 @@ subroutine diagonal_matrix(N,D,A)
   end do
 
 end subroutine
+!------------------------------------------------------------------------
+subroutine add_diagonal_matrix(N,D,A)
+
+! Add D as diagonal matrix to A
+
+  implicit none
+
+  integer,intent(in)            :: N
+  double precision,intent(in)   :: D(N)
+  double precision,intent(out)  :: A(N,N)
+
+  integer                       :: i
+
+  do i=1,N
+    A(i,i) = A(i,i) + D(i)
+  end do
+
+end subroutine
 
 !------------------------------------------------------------------------
 subroutine matrix_exponential(N, A, ExpA)
@@ -235,6 +253,24 @@ subroutine matout(m,n,A)
       end do
       write(*,'(I7,10F15.8)') i,(B(j),j=1,num)
     end do
+  end do
+
+end subroutine 
+!------------------------------------------------------------------------
+subroutine matdiagout(m,n,A)
+
+! Print the diagonal of a MxN matrix A
+
+  implicit none
+
+  double precision,parameter    :: small = 1d-10
+  integer,intent(in)            :: m,n
+  double precision,intent(in)   :: A(m,n)
+
+  integer                       :: i
+  
+  do i=1,max(n,m)
+      write(*,'(I7,X,I7,10F15.8)') i,i,A(i,i)
   end do
 
 end subroutine 
