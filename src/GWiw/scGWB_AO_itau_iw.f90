@@ -106,6 +106,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   double precision,allocatable  :: ERI_MO(:,:,:,:)
 
   complex*16                    :: product
+  !complex*16                    :: trace_sigma
   complex*16                    :: weval_cpx
   complex*16                    :: EcGM_itau
   complex*16,allocatable        :: wtest(:)
@@ -574,11 +575,14 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
     Mat_gorkov_tmp(nBas+1:nBas_twice,1:nBas           ) = -sign_XoB*matmul(transpose(cHFBinv),matmul(Sigma_c_ee(ifreq,:,:),cHFBinv))
     ! Sigma_c_eh
     Mat_gorkov_tmp(nBas+1:nBas_twice,nBas+1:nBas_twice) =  matmul(transpose(cHFBinv),matmul(Sigma_c_eh(ifreq,:,:),cHFBinv))
-    write(*,'(a,2f10.5)') ' Freq ',wtest(ifreq)
+    !trace_sigma=czero
+    write(*,'(a,2f17.5)') ' Freq ',wtest(ifreq)
     write(*,'(a)') ' GreenX grids'
     do ibas=1,nBas_twice
      write(*,'(*(f10.5))') Sigma_c_w_ao(ifreq,ibas,:)
+     !trace_sigma=trace_sigma+Sigma_c_w_ao(ifreq,ibas,ibas)
     enddo
+    !write(*,'(a,*(f15.5))') ' w  Re(Tr[Sigma]) Im(Tr[Sigma]) ',aimag(wtest(ifreq)),real(trace_sigma),aimag(trace_sigma)
     write(*,'(a)') ' Gauss-Legendre grids'
     do ibas=1,nBas_twice
      write(*,'(*(f10.5))') Mat_gorkov_tmp(ibas,:)

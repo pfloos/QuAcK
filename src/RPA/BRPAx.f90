@@ -187,7 +187,7 @@ subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
        Bmat(iqp_pair,jqp_pair)=H40(k,kprime,l,lprime)        ! Version using Omega40
       endif
       if(iqp_pair==jqp_pair) then
-       Amat(iqp_pair,jqp_pair)=Amat(iqp_pair,jqp_pair)+Ekkprime
+       Amat(iqp_pair,iqp_pair)=Amat(iqp_pair,iqp_pair)+Ekkprime
       endif
      enddo 
     enddo 
