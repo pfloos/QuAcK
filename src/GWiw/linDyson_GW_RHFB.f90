@@ -1,4 +1,4 @@
-subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoord,ERI,vMAT,U_QP,&
+subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,sign_XoB,c,eQP_state,nfreqs,wweight,wcoord,ERI,vMAT,U_QP,&
                             Enuc,EcGM,sigma,T,V,S,X,P,Panom,Pcorr,Panomcorr)
 
 ! Use the restricted Sigma_c(E) to compute the linearized approx. to the Dyson eq
@@ -13,6 +13,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nOrb_twice
 
+  double precision,intent(in)   :: sign_XoB
   double precision,intent(in)   :: Enuc,EcGM,sigma
   double precision,intent(inout):: eQP_state(nOrb_twice)
   double precision,intent(in)   :: wweight(nfreqs)
@@ -117,7 +118,7 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
 
 ! Build Sigma_c(iw)
 
-  call Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nfreqs2,eta,0,wcoord2_cpx,eQP_state,nfreqs,0,wweight,wcoord, & 
+  call Sigmac_MO_RHFB_GW_w(nOrb,nOrb_twice,nfreqs2,eta,0,sign_XoB,wcoord2_cpx,eQP_state,nfreqs,0,wweight,wcoord, & 
                            vMAT,U_QP,Sigma_c_he,Sigma_c_hh,Sigma_c_eh,Sigma_c_ee,.true.,.true.)
 
 ! Integration along imag. freqs contributions
@@ -127,8 +128,8 @@ subroutine linDyson_GW_RHFB(nBas,nOrb,nOrb_twice,c,eQP_state,nfreqs,wweight,wcoo
   
    ! Sigma_c^Gorkov
    Sigma_c_QP(1:nOrb           ,1:nOrb           ) =  Sigma_c_he(ifreq,1:nOrb,1:nOrb)
-   Sigma_c_QP(1:nOrb           ,nOrb+1:nOrb_twice) = -Sigma_c_hh(ifreq,1:nOrb,1:nOrb)
-   Sigma_c_QP(nOrb+1:nOrb_twice,1:nOrb           ) = -Sigma_c_ee(ifreq,1:nOrb,1:nOrb)
+   Sigma_c_QP(1:nOrb           ,nOrb+1:nOrb_twice) = -sign_XoB*Sigma_c_hh(ifreq,1:nOrb,1:nOrb)
+   Sigma_c_QP(nOrb+1:nOrb_twice,1:nOrb           ) = -sign_XoB*Sigma_c_ee(ifreq,1:nOrb,1:nOrb)
    Sigma_c_QP(nOrb+1:nOrb_twice,nOrb+1:nOrb_twice) =  Sigma_c_eh(ifreq,1:nOrb,1:nOrb)
 
    ! G^Gorkov

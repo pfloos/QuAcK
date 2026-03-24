@@ -5,7 +5,7 @@ subroutine read_options(working_dir,                                            
                         TDA,spin_conserved,spin_flip,nCVS,FC,                                                &
                         max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                     &
                         maxSCF_GF,thresh_GF,max_diis_GF,lin_GF,eta_GF,renorm_GF,reg_GF,do_linDM_GF2,         &
-                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,           &
+                        maxSCF_GW,thresh_GW,max_diis_GW,lin_GW,eta_GW,shift_GW,reg_GW,do_linDM_GW,dosign_XoB,&
                         nfreqs,TDA_W,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,     &
                         maxSCF_GT,thresh_GT,max_diis_GT,lin_GT,eta_GT,reg_GT,TDA_T,do_linDM_GT,              &
                         doACFDT,exchange_kernel,doXBS,                                                       &
@@ -84,6 +84,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: reg_GW
   integer,intent(out)           :: nfreqs
   logical,intent(out)           :: do_linDM_GW
+  logical,intent(out)           :: dosign_XoB
 
   integer,intent(out)           :: maxSCF_GT
   double precision,intent(out)  :: thresh_GT
@@ -124,7 +125,7 @@ subroutine read_options(working_dir,                                            
 
 ! Local variables
 
-  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7
+  character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8
   integer                       :: status
   character(len=256)            :: file_path
 
@@ -247,12 +248,13 @@ subroutine read_options(working_dir,                                            
       reg_GW      = .false.
       TDA_W       = .false.
       do_linDM_GW = .false.
+      dosign_XoB  = .false.
       restart_scGW = .false.
       verbose_scGW = .false.
       chem_pot_scG = .false.
     
       read(1,*) 
-      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,nfreqs,shift_GW,ans4,ans5,ans6,ans7
+      read(1,*) maxSCF_GW,thresh_GW,max_diis_GW,ans1,eta_GW,ans2,ans3,nfreqs,shift_GW,ans4,ans5,ans6,ans7,ans8
     
       if(ans1 == 'T') lin_GW       = .true.
       if(ans2 == 'T') TDA_W        = .true.
@@ -261,6 +263,7 @@ subroutine read_options(working_dir,                                            
       if(ans5 == 'T') restart_scGW = .true.
       if(ans6 == 'T') verbose_scGW = .true.
       if(ans7 == 'T') chem_pot_scG = .true.
+      if(ans8 == 'T') dosign_XoB   = .true.
    
       ! Read GT options
     
