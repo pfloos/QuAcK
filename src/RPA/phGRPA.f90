@@ -55,7 +55,7 @@ subroutine phGRPA(dotest,TDA,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
   dRPA  = .true.
   EcRPA = 0d0
-  lambda = 0d0
+  lambda = 1d0
 
 ! Memory allocation
 
