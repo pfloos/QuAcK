@@ -256,6 +256,24 @@ subroutine matout(m,n,A)
   end do
 
 end subroutine 
+!------------------------------------------------------------------------
+subroutine matdiagout(m,n,A)
+
+! Print the diagonal of a MxN matrix A
+
+  implicit none
+
+  double precision,parameter    :: small = 1d-10
+  integer,intent(in)            :: m,n
+  double precision,intent(in)   :: A(m,n)
+
+  integer                       :: i
+  
+  do i=1,max(n,m)
+      write(*,'(I7,X,I7,10F15.8)') i,i,A(i,i)
+  end do
+
+end subroutine 
 
 !------------------------------------------------------------------------
 subroutine vecout(m,A)
