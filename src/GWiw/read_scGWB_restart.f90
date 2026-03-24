@@ -11,6 +11,7 @@ subroutine read_scGWB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_
   integer,intent(in)               :: nfreqs
   integer,intent(in)               :: ntimes_twice
 ! Local variables
+  logical                          :: files_exists
   integer                          :: iunit=312,itau,ifreq,ibas,jbas
   double precision                 :: val_print_r
   complex*16                       :: val_print_c
@@ -26,69 +27,40 @@ subroutine read_scGWB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_
   write(*,*)
   write(*,'(a)') ' Reading restart files'
   write(*,*)
-  open(unit=iunit,form='unformatted',file='scGWB_Gitau_bin',status='old')
-  write(*,'(a)') ' Reading scGWB_Gitau_bin'
-  read(iunit) ibas
-  read(iunit) ibas
-  do itau=1,ntimes_twice
-   do ibas=1,nBas_twice
-    do jbas=1,nBas_twice
-     read(iunit) val_print_c
-     G_ao_itau(itau,ibas,jbas)=val_print_c
-    enddo
-   enddo
-  enddo
-  close(iunit)
-  open(unit=iunit,form='unformatted',file='scGWB_Rao_bin',status='old')
-  write(*,'(a)') ' Reading scGWB_Rao_bin'
-  read(iunit) ibas
-  do ibas=1,nBas_twice
-   do jbas=1,nBas_twice
-    read(iunit) val_print_r
-    R_ao(ibas,jbas)=val_print_r
-   enddo
-  enddo
-  close(iunit)
-  open(unit=iunit,form='unformatted',file='scGWB_chem_pot_bin',status='old')
-  write(*,'(a)') ' Reading scGWB_chem_pot_bin'
-  read(iunit) chem_pot
-  close(iunit)
-  if(read_SD_chkp) then
-   open(unit=iunit,form='unformatted',file='scGWB_Gitau_hfb_bin',status='old')
-   write(*,'(a)') ' Reading scGWB_Gitau_hfb_bin'
+  inquire(file='scGWB_Gitau_bin', exist=files_exists)
+  if(files_exists) then
+   open(unit=iunit,form='unformatted',file='scGWB_Gitau_bin',status='old')
+   write(*,'(a)') ' Reading scGWB_Gitau_bin'
    read(iunit) ibas
    read(iunit) ibas
    do itau=1,ntimes_twice
     do ibas=1,nBas_twice
      do jbas=1,nBas_twice
       read(iunit) val_print_c
-      G_ao_itau_hfb(itau,ibas,jbas)=val_print_c
+      G_ao_itau(itau,ibas,jbas)=val_print_c
      enddo
     enddo
    enddo
    close(iunit)
-   open(unit=iunit,form='unformatted',file='scGWB_Giw_hfb_bin',status='old')
-   write(*,'(a)') ' Reading scGWB_Giw_hfb_bin'
-   read(iunit) ibas
-   read(iunit) ibas
-   do ifreq=1,nfreqs
-    do ibas=1,nBas_twice
-     do jbas=1,nBas_twice
-      read(iunit) val_print_c
-      G_ao_iw_hfb(ifreq,ibas,jbas)=val_print_c
-     enddo
-    enddo
-   enddo
-   close(iunit)
-   open(unit=iunit,form='unformatted',file='scGWB_Rao_hfb_bin',status='old')
-   write(*,'(a)') ' Reading scGWB_Rao_hfb_bin'
+  endif
+  inquire(file='scGWB_Rao_bin', exist=files_exists)
+  if(files_exists) then
+   open(unit=iunit,form='unformatted',file='scGWB_Rao_bin',status='old')
+   write(*,'(a)') ' Reading scGWB_Rao_bin'
    read(iunit) ibas
    do ibas=1,nBas_twice
     do jbas=1,nBas_twice
      read(iunit) val_print_r
-     R_ao_hfb(ibas,jbas)=val_print_r
+     R_ao(ibas,jbas)=val_print_r
     enddo
    enddo
+   close(iunit)
+  endif
+  inquire(file='scGWB_chem_pot_bin', exist=files_exists)
+  if(files_exists) then
+   open(unit=iunit,form='unformatted',file='scGWB_chem_pot_bin',status='old')
+   write(*,'(a)') ' Reading scGWB_chem_pot_bin'
+   read(iunit) chem_pot
    close(iunit)
   endif
 
