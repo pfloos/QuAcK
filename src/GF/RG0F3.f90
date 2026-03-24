@@ -504,7 +504,7 @@ subroutine RG0F3(dotest,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,E
 
   else
 
-    ! TODO call RGF3_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,Ec,SigC,Z)
+    call RGF3_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,SigC,Z)
 
   end if
   
@@ -521,13 +521,13 @@ subroutine RG0F3(dotest,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,E
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    ! call RGF3_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
+    call RGF3_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
 
   end if
 
   ! Print results
 
-  ! TODO call print_RG0F3(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call print_RG0F3(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
 
 ! Testing zone
 

@@ -64,11 +64,11 @@ subroutine GG0F3(dotest,linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eH
 
   if(doSRG) then 
 
-    ! TODO call GGF3_SRG_self_energy_diag(flow,nOrb,nC,nO,nV,nR,eHF,ERI,Ec,SigC,Z)
+    ! TODO call GGF3_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,eHF,ERI,Ec,SigC,Z)
 
   else
 
-    ! TODO call GGF3_self_energy_diag(eta,nOrb,nC,nO,nV,nR,eHF,ERI,Ec,SigC,Z)
+    call GGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,eHF,ERI,SigC,Z)
 
   end if
   
@@ -85,13 +85,13 @@ subroutine GG0F3(dotest,linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eH
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    ! call GGF3_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
+    call GGF3_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
 
   end if
 
   ! Print results
 
-  ! TODO call print_GG0F3(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call print_GG0F3(nBas,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,EGHF,Ec)
 
 ! Testing zone
 
