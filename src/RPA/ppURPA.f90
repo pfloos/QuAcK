@@ -38,6 +38,7 @@ subroutine ppURPA(dotest,TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,E
   double precision,allocatable  :: Y2sc(:,:),Y2sf(:,:)
 
   double precision              :: EcRPA(nspin)
+  double precision              :: EcRPA_tmp
   double precision              :: EcAC(nspin)
 
 ! Hello world
@@ -52,6 +53,7 @@ subroutine ppURPA(dotest,TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,E
 
   EcRPA(:) = 0d0
   EcAC(:)   = 0d0
+  EcRPA_tmp = 0d0
 
 !alpha-beta block  
 
@@ -72,7 +74,8 @@ subroutine ppURPA(dotest,TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,E
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
              nP_sc,nHaa,nHab,nHbb,nH_sc,1d0,e,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1sc,X1sc,Y1sc, &
-             Om2sc,X2sc,Y2sc,EcRPA(ispin))
+             Om2sc,X2sc,Y2sc,EcRPA_tmp)
+  EcRPA(ispin) = EcRPA(ispin) + EcRPA_tmp
     
   call print_excitation_energies('ppRPA@UHF','2p (alpha-beta)',nP_sc,Om1sc)
   call print_excitation_energies('ppRPA@UHF','2h (alpha-beta)',nH_sc,Om2sc)
@@ -98,7 +101,8 @@ subroutine ppURPA(dotest,TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,E
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb, &
              nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa, &
              ERI_aabb,ERI_bbbb,Om1sf,X1sf,Y1sf, &
-             Om2sf,X2sf,Y2sf,EcRPA(ispin))
+             Om2sf,X2sf,Y2sf,EcRPA_tmp)
+  EcRPA(ispin) = EcRPA(ispin) + EcRPA_tmp
 
   call print_excitation_energies('ppRPA@UHF','2h (alpha-alpha)',nP_sf,Om1sf)
   call print_excitation_energies('ppRPA@UHF','2p (alpha-alpha)',nH_sf,Om2sf)
@@ -118,12 +122,11 @@ subroutine ppURPA(dotest,TDA,doACFDT,spin_conserved,spin_flip,nBas,nC,nO,nV,nR,E
   call ppULR(iblock,TDA,nBas,nC,nO,nV,nR,nPaa,nPab,nPbb,&
              nP_sf,nHaa,nHab,nHbb,nH_sf,1d0,e,ERI_aaaa,&
              ERI_aabb,ERI_bbbb,Om1sf,X1sf,Y1sf,&
-             Om2sf,X2sf,Y2sf,EcRPA(ispin))
+             Om2sf,X2sf,Y2sf,EcRPA_tmp)
+  EcRPA(ispin) = EcRPA(ispin) + EcRPA_tmp
 
   call print_excitation_energies('ppRPA@UHF','2p (beta-beta)',nP_sf,Om1sf)
   call print_excitation_energies('ppRPA@UHF','2h (beta-beta)',nH_sf,Om2sf)
-
-  EcRPA(2) = 3d0*EcRPA(2)
 
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------------'
