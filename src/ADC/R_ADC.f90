@@ -76,7 +76,7 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 500d0
+  double precision,parameter    :: flow = 1d6
 
   logical                       :: do_hierarchy_GW = .false.
   logical                       :: do_1h1p,do_1h,do_diag
@@ -119,9 +119,11 @@ subroutine R_ADC(dotest,                                               &
       else
 
         if(diag_approx) then
+          print*, 'Diagonal version of IP-ADC(2) not yet debugged'
           call R_IP_ADC2_diag(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          print*, 'Full version of IP-ADC(2) not yet implemented'
+          print*, 'Full version of IP-ADC(2) not yet debugged'
+          call R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
    
       end if

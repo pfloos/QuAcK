@@ -1,4 +1,4 @@
-subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
+subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Dyson version of ADC(3)
 
@@ -17,7 +17,7 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EGHF
+  double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eHF(nOrb)
 

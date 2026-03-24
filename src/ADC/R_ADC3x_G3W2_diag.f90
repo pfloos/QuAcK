@@ -203,7 +203,6 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
       do i=nC+1,nO
         do mu=1,nS
           ija = ija + 1
-  
 
           H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
 
@@ -360,9 +359,9 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
           iab = iab + 1
   
 
-          H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(a,p,mu)
+          H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
 
-          H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(a,p,mu)
+          H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,a,mu)
 
         end do
       end do
@@ -453,7 +452,7 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
                 reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
                 
                 H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + num*reg1*reg2
-                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,p          ) + num*reg1*reg2
+                H(1+n2h1p+iab,1          ) = H(1+n2h1p+iab,1          ) + num*reg1*reg2
 
               end do
             end do
@@ -500,9 +499,9 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
     end if
 
-    !-----------------------!
-    ! Block (K+C)_2h1p-2h1p !
-    !-----------------------!
+    !------------------!
+    ! Block (K+C)_2h1p !
+    !------------------!
 
     ! Zeroth-order terms
 
@@ -559,9 +558,9 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
     end if
 
-    !-----------------------!
-    ! Block (K+C)_2p1h-2p1h !
-    !-----------------------!
+    !------------------!
+    ! Block (K+C)_2p1h !
+    !------------------!
 
     ! Zeroth-order terms
 
@@ -571,7 +570,6 @@ subroutine R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
       do a=nO+1,nOrb-nR
         do mu=1,nS
           iab = iab + 1
-     
      
           H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)
      
