@@ -23,16 +23,16 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
-  integer,intent(in)            :: nO
   integer,intent(in)            :: nC
+  integer,intent(in)            :: nO
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: ERHF
-  double precision,intent(in)   :: eHF(nOrb)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
+  double precision,intent(in)   :: eHF(nOrb)
 
 ! Local variables
 
