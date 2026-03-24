@@ -399,7 +399,7 @@ program QuAcK
   if(doGQuAcK) & 
     call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                     &
-                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,                                             &
+                doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0F3,                                      &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                             & 
                 do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                    &
                 do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                         &

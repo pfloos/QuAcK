@@ -433,10 +433,9 @@
 
 ! end subroutine RG0F3
 
-subroutine RG0F3(dotest,linearize,eta,doSRG, &
-                 nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine RG0F3(dotest,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Perform third-order Green function calculation in diagonal approximation
+! Perform a one-shot third-order Green function calculation
 
   implicit none
   include 'parameters.h'
@@ -460,7 +459,6 @@ subroutine RG0F3(dotest,linearize,eta,doSRG, &
   double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eHF(nOrb)
-  
 
 ! Local variables
 
@@ -470,8 +468,6 @@ subroutine RG0F3(dotest,linearize,eta,doSRG, &
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
-
-  integer                       :: i,j,k,l,a,b,c,d,p
 
 ! Hello world
 
@@ -525,7 +521,7 @@ subroutine RG0F3(dotest,linearize,eta,doSRG, &
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    ! call RGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
+    ! call RGF3_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
 
   end if
 

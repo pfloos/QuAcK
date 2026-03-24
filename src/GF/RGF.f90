@@ -127,11 +127,11 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,      
   if(doG0F3) then
 
     call wall_time(start_GF)
-    call RG0F3(dotest,renorm,nBas,nOrb,nC,nO,nV,nR,ERI_MO, eHF)
+    call RG0F3(dotest,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF3 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
     write(*,*)
 
   end if

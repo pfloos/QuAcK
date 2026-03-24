@@ -1,4 +1,4 @@
-subroutine GGF(dotest,doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, & 
+subroutine GGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, & 
                nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,EHF,S,X,T,V,Hc,ERI_AO,ERI,dipole_int_AO,dipole_int,PHF,cHF,epsHF)
 
 ! Green's function module
@@ -13,6 +13,7 @@ subroutine GGF(dotest,doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,dopp
   logical,intent(in)            :: doG0F2
   logical,intent(in)            :: doevGF2
   logical,intent(in)            :: doqsGF2
+  logical,intent(in)            :: doG0F3
 
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
@@ -107,4 +108,20 @@ subroutine GGF(dotest,doG0F2,doevGF2,doqsGF2,maxSCF,thresh,max_diis,dophBSE,dopp
 
   end if
 
+!------------------------------------------------------------------------
+! Compute G0F3 electronic binding energies
+!------------------------------------------------------------------------
+
+  if(doG0F3) then
+
+    call wall_time(start_GF)
+    call GG0F3(dotest,linearize,eta,regularize,nBas,nC,nO,nV,nR,nS,ENuc,EHF,ERI,epsHF)
+    call wall_time(end_GF)
+
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for GF3 = ',t_GF,' seconds'
+    write(*,*)
+
+  end if
+  
 end subroutine
