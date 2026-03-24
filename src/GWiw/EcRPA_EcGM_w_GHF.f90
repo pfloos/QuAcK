@@ -95,10 +95,10 @@ subroutine EcRPA_EcGM_w_GHF(nBas,nBas2,nO,verbose,e_GHF,cGHF,nfreqs,wweight,wcoo
       do lbas=1,nBas
        tbas=nBas+1+(lbas-1)
                                    ! r1   r2'                    r2   r1'
-       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas) &
-               + G_ao_itau(2*itau-1,ibas,rbas)*G_ao_itau(2*itau,sbas,lbas) &
-               + G_ao_itau(2*itau-1,qbas,jbas)*G_ao_itau(2*itau,kbas,tbas) &
-               + G_ao_itau(2*itau-1,qbas,rbas)*G_ao_itau(2*itau,sbas,tbas)
+       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas) &  ! up up up up
+               + G_ao_itau(2*itau-1,ibas,rbas)*G_ao_itau(2*itau,sbas,lbas) &  ! up down down up
+               + G_ao_itau(2*itau-1,qbas,jbas)*G_ao_itau(2*itau,kbas,tbas) &  ! down up up down
+               + G_ao_itau(2*itau-1,qbas,rbas)*G_ao_itau(2*itau,sbas,tbas)    ! down down down down
        if(abs(product)<1e-12) product=czero
        Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
       enddo
