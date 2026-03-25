@@ -1,6 +1,6 @@
-subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Half-and-half version of GW in the 1h space
+! Non-Dyson ADC version of GW 
 
   implicit none
   include 'parameters.h'
@@ -39,7 +39,7 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   logical                       :: dRPA
   integer                       :: ispin
   double precision              :: EcRPA
-  integer                       :: n2h1p,nH
+  integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGW(:)
@@ -69,15 +69,15 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 ! Hello world
 
   write(*,*)
-  write(*,*)'**********************************************'
-  write(*,*)'* Restricted 1h-half-and-half-GW Calculation *'
-  write(*,*)'**********************************************'
+  write(*,*)'************************************'
+  write(*,*)'* Restricted IP-ADC-GW Calculation *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
-  nH = nO + n2h1p
+  nH = nO + n2h1p 
 
 ! Memory allocation
 
@@ -142,15 +142,17 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
   H(:,:) = 0d0
 
-  !------------------------------!
-  ! Compute IP-ADC-GW matrix     !
-  !------------------------------!
-  !                              !
-  !     | F      U_2h1p        | !
-  ! H = |                      | ! 
-  !     | U_2h1p (K+C)_2h1p    | !
-  !                              !
-  !------------------------------!
+  !--------------------------------------!
+  !     Compute ADC-GW matrix            !
+  !--------------------------------------!
+  !                                      !
+  !     | F      U_2h1p     U_2p1h     | ! 
+  !     |                              | ! 
+  ! H = | U_2h1p (K+C)_2h1p 0          | ! 
+  !     |                              | ! 
+  !     | U_2p1h 0          (K+C)_2p1h | ! 
+  !                                      !
+  !--------------------------------------!
 
   call wall_time(start_timing)
 
@@ -163,9 +165,7 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
     H(i,i) = eHF(i)
 
     do j=nC+1,nO
-
       H(i,j) = H(i,j) + F(i,j)
-
     end do
 
   end do
@@ -181,18 +181,12 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
         do a=nO+1,nOrb-nR
 
           num = 2d0*rho(i,a,mu)*rho(j,a,mu)
-          dem = 0.5d0*(eHF(i) + eHF(j)) - eHF(a) - Om(mu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+          dem1 = eHF(i) - eHF(a) - Om(mu)
+          dem2 = eHF(j) - eHF(a) - Om(mu)
+          reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+          reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
 
-          H(i,j) = H(i,j) + num*reg
-
-!         num = 2d0*rho(i,a,mu)*rho(j,a,mu)
-!         dem1 = eHF(i) - eHF(a) - Om(mu)
-!         dem2 = eHF(j) - eHF(a) - Om(mu)
-!         reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-!         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-
-!         H(i,j) = H(i,j) + num*0.5d0*(reg1 + reg2)
+          H(i,j) = H(i,j) + num*0.5d0*(reg1 + reg2)
 
         end do
       end do
@@ -211,8 +205,8 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
       do mu=1,nS
         ija = ija + 1
 
-        H(k       ,nO+ija) = sqrt(2d0)*rho(k,i,mu)
-        H(nO+ija,k       ) = sqrt(2d0)*rho(k,i,mu)
+        H(k     ,nO+ija) = sqrt(2d0)*rho(k,i,mu)
+        H(nO+ija,k     ) = sqrt(2d0)*rho(k,i,mu)
 
       end do
     end do
@@ -262,19 +256,7 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   Z(:) = 0d0
   do s=1,nH
     do i=nC+1,nO
-
       Z(s) = Z(s) + H(i,s)**2
-
-      do mu=1,nS
-        do a=nO+1,nOrb-nR
-
-          num = sqrt(2d0)*rho(i,a,mu)*H(i,s)
-          dem = eHF(i) - eHF(a) - Om(mu)
-          Z(s) = Z(s) + (num/dem)**2
-
-        end do
-      end do
-
     end do
   end do
 
@@ -283,7 +265,7 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| ADC-GW energies for occupied orbitals     |'
+  write(*,'(1X,A45)')'| IP-ADC-GW energies for all orbitals       |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
@@ -319,19 +301,36 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
             write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
             '      (',p,'    )           ',H(p,s),H(p,s)**2
         end do
+        do p=nO+1,nOrb-nR
+          if(abs(H(p,s)) > cutoff2)                     &
+            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+            '      (',p,'    )           ',H(p,s),H(p,s)**2
+        end do
 
         ija = 0
         do i=nC+1,nO
           do mu=1,nS
             ija = ija + 1
  
-            if(abs(H(nO+ija,s)) > cutoff2)                  &
+            if(abs(H(nOrb+ija,s)) > cutoff2)                  &
             write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-            '      (',i,',',mu,')           ',H(nO+ija,s),H(nO+ija,s)**2
+            '      (',i,',',mu,')           ',H(nOrb+ija,s),H(nOrb+ija,s)**2
        
           end do
         end do
        
+        iab = 0
+        do mu=1,nS
+          do b=nO+1,nOrb-nR
+            iab = iab + 1
+
+              if(abs(H(nOrb+n2h1p+iab,s)) > cutoff2)              &
+                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
+                '      (',mu,',',b,')           ',H(nOrb+n2h1p+iab,s),H(nOrb+n2h1p+iab,s)**2
+              
+          end do
+        end do
+
         write(*,*)'-------------------------------------------------------------'
         write(*,*)
 
