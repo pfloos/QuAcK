@@ -210,7 +210,7 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
 
   write(*,*)'-------------------------------------------'
-  write(*,'(1X,A43)')'| IPEA-ADC(2) energies for all orbitals   |'
+  write(*,'(1X,A43)')'| IP-ADC(2) energies for all orbitals     |'
   write(*,*)'-------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
