@@ -20,6 +20,7 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   double precision,allocatable  :: ApB(:,:)
   double precision,allocatable  :: Aphtilde(:,:)
   double precision,allocatable  :: AmB(:,:)
+  complex*16,allocatable        :: complex_Om(:)
   double precision              :: eF
   integer                       :: i
 
@@ -61,6 +62,22 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     ! Diagonalize linear response matrix
     call diagonalize_general_matrix(nSt,ApB,Om,XmY)
+    
+    ! Deal with complex eigenvalue and then stop program
+    if(any(Om < 0d0)) then
+      print*,"Found complex eigenvalue in Linear Response ! Use complex code !"
+      allocate(complex_Om(nSt))
+      complex_Om = cmplx(Om,0d0,kind=8)
+      complex_Om = sqrt(complex_Om)
+      print*,"Excitation energies:"
+      call complex_vecout(nSt,complex_Om)
+      EcRPA      = 0.5d0*(sum(real(complex_Om)) - trace_matrix(nSt,Aph))
+      print*, " Re(EcRPA)  = ", EcRPA 
+      print*, "|Im(EcRPA)| = ", 0.5d0*sum(aimag(complex_Om))
+      deallocate(complex_Om)
+      stop
+    end if
+
     Om = sqrt(Om)
     
     ! Get XpY via (X+Y) =(\tilde{A}-B - 2*eF*Id)(X-Y)Omega^-1
@@ -73,10 +90,11 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
       if(ApB(i,i)<0d0) then
         Om(i)    = - Om(i)
         ! Correct column for right sign of Om 
-        XpY(:,i) = - XpY(:,i) 
+        XpY(:,i) = - XpY(:,i)
       end if
     enddo
     
+
     call sort_eigenvalues_vec_vec(nSt,Om,XmY,XpY)
     
     ! Orthonormalize
