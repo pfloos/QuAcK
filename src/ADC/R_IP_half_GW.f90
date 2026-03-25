@@ -265,16 +265,6 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
       Z(s) = Z(s) + H(i,s)**2
 
-      do mu=1,nS
-        do a=nO+1,nOrb-nR
-
-          num = sqrt(2d0)*rho(i,a,mu)*H(i,s)
-          dem = eHF(i) - eHF(a) - Om(mu)
-          Z(s) = Z(s) + (num/dem)**2
-
-        end do
-      end do
-
     end do
   end do
 

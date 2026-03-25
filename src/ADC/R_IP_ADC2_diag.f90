@@ -177,7 +177,7 @@ subroutine R_IP_ADC2_diag(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     !--------------!
  
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A32,I3,A3)')'| IP-ADC(2) energies for orbital',p,'  |'
+    write(*,'(1X,A32,I3,A8)')'| IP-ADC(2) energies for orbital',p,'       |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP (eV)','|','Z','|'
