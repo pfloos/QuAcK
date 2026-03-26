@@ -50,6 +50,15 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   SigC(:) = 0d0
   Z(:)    = 0d0
 
+! The expressions for the spin-adapted third-order self energy can be found in
+! von Niessen Schirmer Cederbaum 1984 Comp Phys Rep
+! Cederbaum Domcke 1977 Adv Chem Phys
+! We use their nomenclature for the different terms  
+
+! There are some typos in these paper though that we debugged through comparison with GHF
+! 
+! A2 wrong in 1977 and correct in 1984
+  
 !---------------------------!
 ! Second-order contribution !
 !           2h1p            !
@@ -131,7 +140,7 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
                     eps1 = e(j) + e(i) - e(a) - e(b)
                     eps2 = e(j) + e(i) - e(a) - e(c)
-                    num = + (2d0*ERI(p,c,p,b) - ERI(p,c,b,p)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(j,i,c,a)
+                    num = + (2d0*ERI(p,c,p,b) - ERI(p,c,b,p)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(i,j,c,a)
 
                     App(p,2) = App(p,2) + num / (eps1*eps2)
                     

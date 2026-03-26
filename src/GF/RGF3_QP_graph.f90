@@ -55,9 +55,11 @@ subroutine RGF3_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
       if(doSRG) then
         ! SigC  = RGF3_SRG_SigC(p,w,flow,nBas,nC,nO,nV,nR,eOld,ERI)
         ! dSigC = RGF3_SRG_dSigC(p,w,flow,nBas,nC,nO,nV,nR,eOld,ERI)
+         SigC = 0d0
+         dSigC = 0d0
       else
-        SigC  = RGF3_SigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
-        dSigC = RGF3_dSigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
+         SigC  = RGF3_SigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
+         dSigC = RGF3_dSigC(p,w,eta,nBas,nC,nO,nV,nR,eOld,ERI)
       end if
 
       f  = w - eHF(p) - SigC
