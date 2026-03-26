@@ -174,8 +174,6 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 !                                      !
 !--------------------------------------!
 
-  call wall_time(start_time)
-
   !---------!
   ! Block F !
   !---------!
@@ -189,6 +187,8 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   !--------------!
   
   ! First-order terms
+
+  call wall_time(start_time)
 
   if(add_U1_2h1p) then
 
@@ -209,8 +209,17 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   
   end if
   
+  call wall_time(end_time)
+
+  time = end_time - start_time
+
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of U1_2h1p = ',time,' seconds'
+  write(*,*)
      
   ! Second-order terms
+
+  call wall_time(start_time)
 
   if(add_U2_2h1p) then
 
@@ -248,7 +257,18 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
   end if
  
+
+  call wall_time(end_time)
+
+  time = end_time - start_time
+
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of U2_2h1p = ',time,' seconds'
+  write(*,*)
+
   ! Third-order terms
+
+  call wall_time(start_time)
 
   if(add_U3_2h1p) then
  
@@ -348,12 +368,22 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
     end do
 
   end if
+
+  call wall_time(end_time)
+
+  time = end_time - start_time
+
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of U3_2h1p = ',time,' seconds'
+  write(*,*)
      
   !--------------!
   ! Block U_2p1h !
   !--------------!
   
   ! First-order terms
+
+  call wall_time(start_time)
 
   if(add_U1_2p1h) then
 
@@ -373,8 +403,18 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
     end do
 
   end if
-     
+   
+  call wall_time(end_time)
+
+  time = end_time - start_time
+
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of U1_2p1h = ',time,' seconds'
+  write(*,*)  
+
   ! Second-order terms
+
+  call wall_time(start_time)
 
   if(add_U2_2p1h) then
 
@@ -411,8 +451,18 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
     end do
 
   end if
+
+  call wall_time(end_time)
+
+  time = end_time - start_time
+
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of U2_2p1h = ',time,' seconds'
+  write(*,*)
  
   ! Third-order terms
+
+  call wall_time(start_time)
 
   if(add_U3_2p1h) then
 
@@ -512,16 +562,15 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
     end do
      
   end if
-   
+
+
   call wall_time(end_time)
 
   time = end_time - start_time
 
   write(*,*)
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of U blocks = ',time,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of U3_2p1h = ',time,' seconds'
   write(*,*)
-
-  call wall_time(start_time)
   
   !------------------!
   ! Block (K+C)_2h1p !
@@ -544,6 +593,8 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   end if
 
  ! First-order terms
+
+  call wall_time(start_time)
 
   if(add_C1_2h1p) then
 
@@ -581,6 +632,14 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
   end if
 
+  call wall_time(end_time)
+
+  time = end_time - start_time
+
+  write(*,*)
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of C1_2h1p = ',time,' seconds'
+  write(*,*)
+
   !------------------!
   ! Block (K+C)_2p1h !
   !------------------!
@@ -602,6 +661,8 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   end if
 
   ! First-order terms
+
+  call wall_time(start_time)
 
   if(add_C1_2p1h) then
 
@@ -639,12 +700,13 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
   end if
 
+
   call wall_time(end_time)
 
   time = end_time - start_time
 
   write(*,*)
-  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of C blocks = ',time,' seconds'
+  write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for construction of C1_2p1h = ',time,' seconds'
   write(*,*)
 
   !-------------------------!

@@ -1,6 +1,6 @@
-subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Static version of GW in the 1h+1p space
+! Non-Dyson ADC version of GW 
 
   implicit none
   include 'parameters.h'
@@ -39,7 +39,7 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   logical                       :: dRPA
   integer                       :: ispin
   double precision              :: EcRPA
-  integer                       :: nH
+  integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGW(:)
@@ -69,14 +69,15 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 ! Hello world
 
   write(*,*)
-  write(*,*)'******************************************'
-  write(*,*)'* Restricted 1h+1p-static-GW Calculation *'
-  write(*,*)'******************************************'
+  write(*,*)'************************************'
+  write(*,*)'* Restricted IP-ADC-GW Calculation *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
-  nH = nOrb
+  n2h1p = nO*nO*nV
+  nH = nO + n2h1p 
 
 ! Memory allocation
 
@@ -141,15 +142,17 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   H(:,:) = 0d0
 
-  !------------------------------!
-  ! Compute ADC-GW matrix        !
-  !------------------------------!
-  !                              !
-  !     | F      U_2h1p        | !
-  ! H = |                      | ! 
-  !     | U_2h1p (K+C)_2h1p    | !
-  !                              !
-  !------------------------------!
+  !--------------------------------------!
+  !     Compute ADC-GW matrix            !
+  !--------------------------------------!
+  !                                      !
+  !     | F      U_2h1p     U_2p1h     | ! 
+  !     |                              | ! 
+  ! H = | U_2h1p (K+C)_2h1p 0          | ! 
+  !     |                              | ! 
+  !     | U_2p1h 0          (K+C)_2p1h | ! 
+  !                                      !
+  !--------------------------------------!
 
   call wall_time(start_timing)
 
@@ -157,74 +160,69 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   ! Block F !
   !---------!
 
-  do p=nC+1,nOrb-nR
+  do i=nC+1,nO
 
-    H(p,p) = eHF(p)
+    H(i,i) = eHF(i)
 
-    do q=nC+1,nOrb-nR
-
-      H(p,q) = H(p,q) + F(p,q)
-
+    do j=nC+1,nO
+      H(i,j) = H(i,j) + F(i,j)
     end do
 
-  end do
-
-  !-------------------!
-  ! Block static 2h1p !
-  !-------------------!
-
-  do p=nC+1,nOrb-nR
-    do q=nC+1,nOrb-nR
-
-      do mu=1,nS
-        do k=nC+1,nO
-
-          num = 2d0*rho(p,k,mu)*rho(q,k,mu)
-          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(k) + Om(mu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-          H(p,q) = H(p,q) + num*reg
-
-!         num = 2d0*rho(p,k,mu)*rho(q,k,mu)
-!         dem1 = eHF(p) - eHF(k) + Om(mu)
-!         dem2 = eHF(q) - eHF(k) + Om(mu)
-!         reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-!         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-
-!         H(p,q) = H(p,q) + num*0.5d0*(reg1 + reg2)
-
-        end do
-      end do
-
-    end do
   end do
 
   !-------------------!
   ! Block static 2p1h !
   !-------------------!
 
-  do p=nC+1,nOrb-nR
-    do q=nC+1,nOrb-nR
+  do i=nC+1,nO
+    do j=nC+1,nO
 
       do mu=1,nS
         do a=nO+1,nOrb-nR
 
-          num = 2d0*rho(p,a,mu)*rho(q,a,mu)
-          dem = 0.5d0*(eHF(p) + eHF(q)) - eHF(a) - Om(mu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+          num = 2d0*rho(i,a,mu)*rho(j,a,mu)
+          dem1 = eHF(i) - eHF(a) - Om(mu)
+          dem2 = eHF(j) - eHF(a) - Om(mu)
+          reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+          reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
 
-          H(p,q) = H(p,q) + num*reg
-
-!         num = 2d0*rho(p,a,mu)*rho(q,a,mu)
-!         dem1 = eHF(p) - eHF(a) - Om(mu)
-!         dem2 = eHF(q) - eHF(a) - Om(mu)
-!         reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-!         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-
-!         H(p,q) = H(p,q) + num*0.5d0*(reg1 + reg2)
+          H(i,j) = H(i,j) + num*0.5d0*(reg1 + reg2)
 
         end do
       end do
+
+    end do
+  end do
+
+  !--------------!
+  ! Block U_2h1p !
+  !--------------!
+
+  do k=nC+1,nO
+
+    ija = 0
+    do i=nC+1,nO
+      do mu=1,nS
+        ija = ija + 1
+
+        H(k     ,nO+ija) = sqrt(2d0)*rho(k,i,mu)
+        H(nO+ija,k     ) = sqrt(2d0)*rho(k,i,mu)
+
+      end do
+    end do
+
+  end do
+
+  !------------------!
+  ! Block (K+C)_2h1p !
+  !------------------!
+
+  ija = 0
+  do i=nC+1,nO
+    do mu=1,nS
+      ija = ija + 1
+
+      H(nO+ija,nO+ija) = eHF(i) - Om(mu) 
 
     end do
   end do
@@ -257,22 +255,8 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   Z(:) = 0d0
   do s=1,nH
-    do p=nC+1,nOrb-nR
-
-      Z(s) = Z(s) + H(p,s)**2
-
-! I must fix the computation of Z
-
-!     do mu=1,nS
-!       do a=nO+1,nOrb-nR
-
-!         num = 2d0*rho(i,a,mu)*rho(i,a,mu)
-!         dem = eHF(i) - eHF(a) - Om(mu)
-!         Z(s) = Z(s) - num/dem**2
-
-!       end do
-!     end do
-
+    do i=nC+1,nO
+      Z(s) = Z(s) + H(i,s)**2
     end do
   end do
 
@@ -281,7 +265,7 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| ADC-GW energies for all orbitals          |'
+  write(*,'(1X,A45)')'| IP-ADC-GW energies for all orbitals       |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
@@ -300,6 +284,60 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   if(verbose) then 
   
+    do s=1,nH
+
+      if(eGW(s) < eF .and. eGW(s) > eF - window) then
+
+        write(*,*)'-------------------------------------------------------------'
+        write(*,'(1X,A12,1X,I3,A1,1X,A7,F12.6,A13,F6.4,1X)') & 
+         'Eigenvalue #',s,':','e_QP = ',eGW(s)*HaToeV,' eV and Z = ',Z(s)
+        write(*,*)'-------------------------------------------------------------'
+        write(*,'(1X,A20,1X,A20,1X,A15,1X)') &
+                  ' Conf. (p,mu)  ',' Coefficient ',' Weight ' 
+        write(*,*)'-------------------------------------------------------------'
+      
+        do p=nC+1,nO 
+          if(abs(H(p,s)) > cutoff2)                     &
+            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+            '      (',p,'    )           ',H(p,s),H(p,s)**2
+        end do
+        do p=nO+1,nOrb-nR
+          if(abs(H(p,s)) > cutoff2)                     &
+            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+            '      (',p,'    )           ',H(p,s),H(p,s)**2
+        end do
+
+        ija = 0
+        do i=nC+1,nO
+          do mu=1,nS
+            ija = ija + 1
+ 
+            if(abs(H(nOrb+ija,s)) > cutoff2)                  &
+            write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
+            '      (',i,',',mu,')           ',H(nOrb+ija,s),H(nOrb+ija,s)**2
+       
+          end do
+        end do
+       
+        iab = 0
+        do mu=1,nS
+          do b=nO+1,nOrb-nR
+            iab = iab + 1
+
+              if(abs(H(nOrb+n2h1p+iab,s)) > cutoff2)              &
+                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
+                '      (',mu,',',b,')           ',H(nOrb+n2h1p+iab,s),H(nOrb+n2h1p+iab,s)**2
+              
+          end do
+        end do
+
+        write(*,*)'-------------------------------------------------------------'
+        write(*,*)
+
+      end if
+
+    end do
+
   end if
 
 end subroutine 
