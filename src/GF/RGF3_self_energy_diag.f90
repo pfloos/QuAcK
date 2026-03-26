@@ -88,7 +88,6 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
       end do
     end do
   end do
-
 !--------------------------------------------------------!
 ! Compute third-order frequency-independent contribution !
 !                          3h2p                          !  
@@ -159,15 +158,15 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
            do k=nC+1,nO
               do l=nC+1,nO
                  do a=nO+1,nBas-nR
-                    
+                  
                     eps1 = e(p) + e(a) - e(i) - e(j)
                     eps2 = e(p) + e(a) - e(k) - e(l)
                     num = - (2d0*ERI(p,a,k,l) - ERI(p,a,l,k)) * ERI(k,l,i,j) * ERI(p,a,i,j)
-                    
+                  
                     Cpp(p,6)  = Cpp(p,6)  + num / (eps1*eps2)
                     ZCpp(p,6) = ZCpp(p,6) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
                     ZCpp(p,6) = ZCpp(p,6) - num*(eps2**2 - eta**2)/(eps2**2 + eta**2)**2/eps1
-                    
+                  
                  end do
               end do
            end do
@@ -192,7 +191,7 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
                    Cpp(p,1)  = Cpp(p,1)  + num / (eps1*eps2)
                    ZCpp(p,1) = ZCpp(p,1) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
                    ZCpp(p,1) = ZCpp(p,1) - num*(eps2**2 - eta**2)/(eps2**2 + eta**2)**2/eps1
-                   
+                 
                 end do
              end do
           end do
@@ -209,14 +208,14 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
            do k=nC+1,nO
               do a=nO+1,nBas-nR
                  do b=nO+1,nBas-nR
-                    
+                  
                     eps1 = e(p) + e(i) - e(a) - e(b)
                     eps2 = e(j) + e(k) - e(a) - e(b)
                     num = + (2d0*ERI(p,i,a,b) - ERI(p,i,b,a)) * ERI(a,b,j,k) * ERI(p,i,j,k)
-                    
+                  
                     Cpp(p,2)  = Cpp(p,2)  + num / (eps1*eps2)
                     ZCpp(p,2) = ZCpp(p,2) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
-                    
+                  
                  end do
               end do
            end do
@@ -235,14 +234,14 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
           do a=nO+1,nBas-nR
              do b=nO+1,nBas-nR
                 do c=nO+1,nBas-nR
-                   
+                 
                    eps1 = e(p) + e(a) - e(i) - e(j)
                    eps2 = e(i) + e(j) - e(b) - e(c)
                    num = + (2d0*ERI(p,a,i,j) - ERI(p,a,j,i)) * ERI(i,j,b,c) * ERI(p,a,b,c)
-                   
+                 
                    Cpp(p,4)  = Cpp(p,4)  + num / (eps1*eps2)
                    ZCpp(p,4) = ZCpp(p,4) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
-                   
+                 
                 end do
              end do
           end do
@@ -266,29 +265,29 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
                     eps2 = e(p) + e(b) - e(j) - e(k)
                     num = - ERI(p,a,k,i) * ( ERI(i,b,a,j)*(4d0*ERI(p,b,k,j) - 2d0*ERI(p,b,j,k)) &
                                            + ERI(i,b,j,a) * (    ERI(p,b,j,k) - 2d0*ERI(p,b,k,j)) )
-                    
+                  
                     Dpp(p,6)  = Dpp(p,6)  + num / (eps1*eps2)
                     ZDpp(p,6) = ZDpp(p,6) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
                     ZDpp(p,6) = ZDpp(p,6) - num*(eps2**2 - eta**2)/(eps2**2 + eta**2)**2/eps1
 
                     num = - ERI(p,a,i,k) * ( ERI(i,b,a,j)*(    ERI(p,b,j,k) - 2d0*ERI(p,b,k,j)) &
                                            + ERI(i,b,j,a)*(    ERI(p,b,k,j) - 2d0*ERI(p,b,j,k)) )
-                    
+                  
                     Dpp(p,6)  = Dpp(p,6)  + num / (eps1*eps2)
                     ZDpp(p,6) = ZDpp(p,6) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
                     ZDpp(p,6) = ZDpp(p,6) - num*(eps2**2 - eta**2)/(eps2**2 + eta**2)**2/eps1
-                    
+                  
                     eps1 = e(p) + e(a) - e(j) - e(k)
                     eps2 = e(i) + e(j) - e(a) - e(b)
                     num = + ERI(p,a,k,j) * ( ERI(j,i,a,b)*(4d0*ERI(p,i,k,b) - 2d0*ERI(p,i,b,k)) &
                                            + ERI(j,i,b,a)*(    ERI(p,i,b,k) - 2d0*ERI(p,i,k,b)) )
-                    
+                  
                     Dpp(p,4)  = Dpp(p,4)  + num / (eps1*eps2)
                     ZDpp(p,4) = ZDpp(p,4) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
 
                     num = + ERI(p,a,j,k) * ( ERI(j,i,a,b)*(    ERI(p,i,b,k) - 2d0*ERI(p,i,k,b)) &
                                            + ERI(j,i,b,a)*(    ERI(p,i,k,b) - 2d0*ERI(p,i,b,k)) )
-                    
+                  
                     Dpp(p,4)  = Dpp(p,4)  + num / (eps1*eps2)
                     ZDpp(p,4) = ZDpp(p,4) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
 
@@ -310,37 +309,37 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
            do a=nO+1,nBas-nR
               do b=nO+1,nBas-nR
                  do c=nO+1,nBas-nR
-                    
+                  
                     eps1 = e(p) + e(i) - e(a) - e(b)
                     eps2 = e(p) + e(j) - e(b) - e(c)
                     num = + ERI(p,i,a,b) * ( ERI(a,j,i,c)*(    ERI(p,j,c,b) - 2d0*ERI(p,j,b,c)) &
                                            + ERI(a,j,c,i)*(    ERI(p,j,b,c) - 2d0*ERI(p,j,c,b)) )
-                    
+                  
                     Dpp(p,1)  = Dpp(p,1)  + num / (eps1*eps2)
                     ZDpp(p,1) = ZDpp(p,1) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
                     ZDpp(p,1) = ZDpp(p,1) - num*(eps2**2 - eta**2)/(eps2**2 + eta**2)**2/eps1
-                    
+                  
                     num = + ERI(p,i,b,a) * ( ERI(a,j,i,c)*(4d0*ERI(p,j,b,c) - 2d0*ERI(p,j,c,b)) &
                                            + ERI(a,j,c,i)*(    ERI(p,j,c,b) - 2d0*ERI(p,j,b,c)) )
-                    
+                  
                     Dpp(p,1)  = Dpp(p,1)  + num / (eps1*eps2)
                     ZDpp(p,1) = ZDpp(p,1) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
                     ZDpp(p,1) = ZDpp(p,1) - num*(eps2**2 - eta**2)/(eps2**2 + eta**2)**2/eps1
-                    
+                  
                     eps1 = e(p) + e(i) - e(a) - e(c)
                     eps2 = e(i) + e(j) - e(a) - e(b)
                     num = + ERI(p,i,c,a) * ( ERI(a,b,i,j)*(4d0*ERI(p,b,c,j) - 2d0*ERI(p,b,j,c)) &
                                            + ERI(a,b,j,i)*(    ERI(p,b,j,c) - 2d0*ERI(p,b,c,j)) )
-                    
+                  
                     Dpp(p,2)  = Dpp(p,2)  + num / (eps1*eps2)
                     ZDpp(p,2) = ZDpp(p,2) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
-                    
+                  
                     num = + ERI(p,i,a,c) * ( ERI(a,b,i,j)*(    ERI(p,b,j,c) - 2d0*ERI(p,b,c,j)) &
                                            + ERI(a,b,j,i)*(    ERI(p,b,c,j) - 2d0*ERI(p,b,j,c)) )
 
                     Dpp(p,2)  = Dpp(p,2)  + num / (eps1*eps2)
                     ZDpp(p,2) = ZDpp(p,2) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
-                    
+                  
                  end do
               end do
            end do

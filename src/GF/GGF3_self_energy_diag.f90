@@ -18,18 +18,35 @@ subroutine GGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Local variables
 
-  integer                       :: i,j,a,b
-  integer                       :: p
-  double precision              :: eps
+  integer                       :: i,j,k,l,a,b,c,d
+  integer                       :: p,q
+  double precision              :: eps,eps1,eps2
   double precision              :: num
+  double precision,allocatable  :: SigInf(:)
+  double precision,allocatable  :: App(:,:),Cpp(:,:),Dpp(:,:)
+  double precision,allocatable  :: ZCpp(:,:),ZDpp(:,:)
 
 ! Output variables
 
   double precision,intent(out)  :: SigC(nBas)
   double precision,intent(out)  :: Z(nBas)
 
+! Allocate
+
+  allocate(SigInf(nBas),App(nBas,6),Cpp(nBas,6),Dpp(nBas,6))
+  allocate(ZCpp(nBas,6),ZDpp(nBas,6))
+  
 ! Initialize 
 
+  SigInf(:) = 0d0
+
+  App(:,:) = 0d0
+  Cpp(:,:) = 0d0
+  Dpp(:,:) = 0d0
+
+  ZCpp(:,:) = 0d0
+  ZDpp(:,:) = 0d0
+  
   SigC(:) = 0d0
   Z(:)    = 0d0
 
@@ -71,7 +88,87 @@ subroutine GGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
       end do
     end do
   end do
+!--------------------------------------------------------!
+! Compute third-order frequency-independent contribution !
+!                          3h2p                          !  
+!--------------------------------------------------------!
+  do p=nC+1,nBas-nR
+     do i=nC+1,nO
+        do j=nC+1,nO
+           do k=nC+1,nO
+              do a=nO+1,nBas-nR
+                 do b=nO+1,nBas-nR
 
+                    eps1 = e(j) + e(i) - e(a) - e(b)
+                    eps2 = e(k) + e(i) - e(a) - e(b)
+                    num = - 0.5d0 * (ERI(p,k,p,j) - ERI(p,k,j,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(a,b,k,i) - ERI(a,b,i,k))
+
+                    App(p,1) = App(p,1) + num / (eps1*eps2) 
+                    
+                    eps1 = e(j) + e(i) - e(a) - e(b)
+                    eps2 = e(k)        - e(b)
+                    num  = - 0.5d0 * (ERI(p,b,p,k) - ERI(p,b,k,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(i,j,k,a) - ERI(i,j,a,k))
+                    
+                    App(p,5) = App(p,5) + num / (eps1*eps2)
+                    
+                 end do
+              end do
+           end do
+        end do
+     end do
+  end do
+  App(:,6) = App(:,5)
+!--------------------------------------------------------!
+! Compute third-order frequency-independent contribution !
+!                          3p2h                          !  
+!--------------------------------------------------------!
+  do p=nC+1,nBas-nR
+     do i=nC+1,nO
+        do j=nC+1,nO
+           do a=nO+1,nBas-nR
+              do b=nO+1,nBas-nR
+                 do c=nO+1,nBas-nR
+
+                    eps1 = e(j) + e(i) - e(a) - e(b)
+                    eps2 = e(j) + e(i) - e(a) - e(c)
+                    num = - 0.5d0 * (ERI(p,c,p,b) - ERI(p,c,b,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(j,i,c,a) - ERI(j,i,a,c))
+
+                    App(p,2) = App(p,2) + num / (eps1*eps2)
+                    
+                    ! eps1 = e(j) + e(i) - e(a) - e(b)
+                    ! eps2 = e(j)        - e(c)
+                    ! num = + 0.5d0 * (ERI(p,c,p,j) - ERI(p,c,j,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(a,b,c,i) - ERI(a,b,i,c))
+
+                    ! App(p,3) = App(p,3) + num / (eps1*eps2) 
+                    
+                 end do
+              end do
+           end do
+        end do
+     end do
+  end do
+  App(:,4) = App(:,3)
+
+!------------------------------!
+! Collecting self-energy terms !  
+!------------------------------!
+  
+  SigInf(:) = App(:,1) + App(:,2) + App(:,3) + App(:,4) + App(:,5) + App(:,6)
+
+  SigC(:) = SigC(:) + SigInf(:)
+
+  SigC(:) = SigC(:) + Cpp(:,1) + Cpp(:,2) + Cpp(:,3) + Cpp(:,4) + Cpp(:,5) + Cpp(:,6)
+  
+  SigC(:) = SigC(:) + Dpp(:,1) + Dpp(:,2) + Dpp(:,3) + Dpp(:,4) + Dpp(:,5) + Dpp(:,6)
+
+!----------------------------------!
+! Collecting renormalization terms !  
+!----------------------------------!
+  
+  Z(:) = Z(:) + ZCpp(:,1) + ZCpp(:,2) + ZCpp(:,3) + ZCpp(:,4) + ZCpp(:,5) + ZCpp(:,6)
+  
+  Z(:) = Z(:) + ZDpp(:,1) + ZDpp(:,2) + ZDpp(:,3) + ZDpp(:,4) + ZDpp(:,5) + ZDpp(:,6)
+  
   Z(:) = 1d0/(1d0 - Z(:))
 
 end subroutine 
