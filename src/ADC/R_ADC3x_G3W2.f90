@@ -531,9 +531,6 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
                 reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
                 reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
     
-                H(p          ,nOrb+n2h1p+iab) = H(p          ,nOrb+n2h1p+iab) + 0.5d0*num*reg1*reg2
-                H(nOrb+n2h1p+iab,p          ) = H(nOrb+n2h1p+iab,p          ) + 0.5d0*num*reg1*reg2
-    
               end do
             end do
           end do
