@@ -80,7 +80,7 @@ subroutine R_ADC(dotest,                                               &
 
   logical                       :: do_hierarchy_GW = .false.
   logical                       :: do_1h1p,do_1h,do_diag
-  logical                       :: do_full_freq,do_half_half, do_pure_stat
+  logical                       :: do_full_freq,do_half_half,do_pure_stat
 
 ! Output variables
   
