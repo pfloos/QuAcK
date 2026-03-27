@@ -56,8 +56,8 @@ subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 ! We use their nomenclature for the different terms  
 
 ! There are some typos in these paper though that we debugged through comparison with GHF
-! 
-! A2 wrong in 1977 and correct in 1984
+! For example A2 wrong in 1977 and correct in 1984
+  
   
 !---------------------------!
 ! Second-order contribution !
