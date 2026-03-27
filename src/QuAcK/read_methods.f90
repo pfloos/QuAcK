@@ -173,6 +173,7 @@ subroutine read_methods(working_dir,                                            
       doqsGF2   = .false.
       doG0F3    = .false.
       doevGF3   = .false.
+      dopsdG0F3 = .false.
       doscGF2   = .false.
       
       read(1,*) 
