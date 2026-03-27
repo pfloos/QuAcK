@@ -105,7 +105,7 @@ double precision function RGF3_SigC(p,w,eta,nBas,nC,nO,nV,nR,e,ERI)
                  
                  eps1 = e(j) + e(i) - e(a) - e(b)
                  eps2 = e(j) + e(i) - e(a) - e(c)
-                 num = + (2d0*ERI(p,c,p,b) - ERI(p,c,b,p)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(j,i,c,a)
+                 num = + (2d0*ERI(p,c,p,b) - ERI(p,c,b,p)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(i,j,c,a)
                  
                  App(2) = App(2) + num / (eps1*eps2)
                  
@@ -293,9 +293,9 @@ double precision function RGF3_SigC(p,w,eta,nBas,nC,nO,nV,nR,e,ERI)
 ! Collecting self-energy terms !  
 !------------------------------!
   
-  ! SigInf = App(1) + App(2) + App(3) + App(4) + App(5) + App(6)
+  SigInf = App(1) + App(2) + App(3) + App(4) + App(5) + App(6)
 
-  ! SigC = SigC + SigInf
+  RGF3_SigC = RGF3_SigC + SigInf
 
   RGF3_SigC = RGF3_SigC + Cpp(1) + Cpp(2) + Cpp(3) + Cpp(4) + Cpp(5) + Cpp(6)
   

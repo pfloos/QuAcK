@@ -252,6 +252,78 @@ subroutine GGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   end do
   Cpp(:,5)  = Cpp(:,4)
   ZCpp(:,5) = ZCpp(:,4)
+!------------------------------------------------------!
+! Compute third-order frequency-dependent contribution !
+!                     3h2p D terms                     !  
+!------------------------------------------------------!
+  do p=nC+1,nBas-nR
+     do i=nC+1,nO
+        do j=nC+1,nO
+           do k=nC+1,nO
+              do a=nO+1,nBas-nR
+                 do b=nO+1,nBas-nR
+
+                    eps1 = e(p) + e(a) - e(i) - e(k)
+                    eps2 = e(p) + e(b) - e(j) - e(k)
+                    num = - (ERI(p,a,k,i) - ERI(p,a,i,k)) * (ERI(i,b,a,j) - ERI(i,b,j,a)) * (ERI(p,b,k,j) - ERI(p,b,j,k))
+                  
+                    Dpp(p,6)  = Dpp(p,6)  + num / (eps1*eps2)
+                    ZDpp(p,6) = ZDpp(p,6) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
+                    ZDpp(p,6) = ZDpp(p,6) - num*(eps2**2 - eta**2)/(eps2**2 + eta**2)**2/eps1
+
+                  
+                    eps1 = e(p) + e(a) - e(j) - e(k)
+                    eps2 = e(i) + e(j) - e(a) - e(b)
+                    num = + (ERI(p,a,k,j) - ERI(p,a,j,k)) * (ERI(j,i,a,b) - ERI(j,i,b,a))*(ERI(p,i,k,b) - ERI(p,i,b,k))
+                  
+                    Dpp(p,4)  = Dpp(p,4)  + num / (eps1*eps2)
+                    ZDpp(p,4) = ZDpp(p,4) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
+
+                 end do
+              end do
+           end do
+        end do
+     end do
+  end do
+  Dpp(:,5)  = Dpp(:,4)
+  ZDpp(:,5) = ZDpp(:,4)
+!------------------------------------------------------!
+! Compute third-order frequency-dependent contribution !
+!                     3p2h D terms                     !  
+!------------------------------------------------------!
+  do p=nC+1,nBas-nR
+     do i=nC+1,nO
+        do j=nC+1,nO
+           do a=nO+1,nBas-nR
+              do b=nO+1,nBas-nR
+                 do c=nO+1,nBas-nR
+                  
+                    eps1 = e(p) + e(i) - e(a) - e(b)
+                    eps2 = e(p) + e(j) - e(b) - e(c)
+                    num = + (ERI(p,i,a,b) - ERI(p,i,b,a)) * (ERI(a,j,i,c) - ERI(a,j,c,i)) * (ERI(p,j,c,b) - ERI(p,j,b,c))
+                  
+                    Dpp(p,1)  = Dpp(p,1)  + num / (eps1*eps2)
+                    ZDpp(p,1) = ZDpp(p,1) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
+                    ZDpp(p,1) = ZDpp(p,1) - num*(eps2**2 - eta**2)/(eps2**2 + eta**2)**2/eps1
+                  
+                  
+                    eps1 = e(p) + e(i) - e(a) - e(c)
+                    eps2 = e(i) + e(j) - e(a) - e(b)
+                    num = + (ERI(p,i,c,a) - ERI(p,i,a,c)) * (ERI(a,b,i,j) - ERI(a,b,j,i)) * (ERI(p,b,c,j) - ERI(p,b,j,c))
+                  
+                    Dpp(p,2)  = Dpp(p,2)  + num / (eps1*eps2)
+                    ZDpp(p,2) = ZDpp(p,2) - num*(eps1**2 - eta**2)/(eps1**2 + eta**2)**2/eps2
+                  
+                  
+                 end do
+              end do
+           end do
+        end do
+     end do
+  end do
+  Dpp(:,3)  = Dpp(:,2)
+  ZDpp(:,3) = ZDpp(:,2)
+  
 !------------------------------!
 ! Collecting self-energy terms !  
 !------------------------------!
