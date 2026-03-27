@@ -7,7 +7,7 @@ subroutine read_methods(working_dir,                                            
                         dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA,                      &
                         doOORPA,                                                      &
                         doG0F2,doevGF2,doqsGF2,                                       &
-                        doG0F3,doevGF3,                                               & 
+                        doG0F3,doevGF3,dopsdG0F3,                                     & 
                         doG0W0,doevGW,doqsGW,                                         &
                         doscGW,doscGF2,                                               & 
                         doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                        &
@@ -36,7 +36,7 @@ subroutine read_methods(working_dir,                                            
   logical,intent(out)           :: doCIS,doCIS_D,doCID,doCISD,doFCI
   logical,intent(out)           :: dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA
   logical,intent(out)           :: doOORPA
-  logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,doscGF2
+  logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doscGF2
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doscGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
@@ -176,12 +176,13 @@ subroutine read_methods(working_dir,                                            
       doscGF2   = .false.
       
       read(1,*) 
-      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6
+      read(1,*) ans1,ans2,ans3,ans4,ans5,ans6,ans7
       if(ans1 == 'T') doG0F2    = .true.
       if(ans2 == 'T') doevGF2   = .true.
       if(ans3 == 'T') doqsGF2   = .true.
       if(ans4 == 'T') doG0F3    = .true.
       if(ans5 == 'T') doevGF3   = .true.
+      if(ans5 == 'T') dopsdG0F3 = .true.
       if(ans6 == 'T') doscGF2   = .true.
       
       ! Read GW methods
