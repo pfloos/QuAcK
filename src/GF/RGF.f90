@@ -1,4 +1,4 @@
-subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,              &
+subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,renorm,maxSCF,    &
                thresh,max_diis,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize, &
                eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,             &
                S,X,T,V,Hc,ERI_AO,ERI_MO,CAP,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
@@ -17,6 +17,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,      
   logical,intent(in)            :: doqsGF2
   logical,intent(in)            :: doG0F3
   logical,intent(in)            :: doevGF3
+  logical,intent(in)            :: dopsdG0F3
 
   integer                       :: renorm
   integer,intent(in)            :: maxSCF
@@ -131,7 +132,7 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,      
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF2 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G0F3 = ',t_GF,' seconds'
     write(*,*)
 
   end if
@@ -147,9 +148,25 @@ subroutine RGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,renorm,maxSCF,      
     call wall_time(end_GF)
 
     t_GF = end_GF - start_GF
-    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for GF3 = ',t_GF,' seconds'
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for evGF3 = ',t_GF,' seconds'
     write(*,*)
 
   end if
 
+!------------------------------------------------------------------------
+! Compute psdG0F3 electronic binding energies
+!------------------------------------------------------------------------
+
+  if(dopsdG0F3) then
+
+    call wall_time(start_GF)
+    call RpsdG0F3(dotest,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+    call wall_time(end_GF)
+
+    t_GF = end_GF - start_GF
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for psdG0F3 = ',t_GF,' seconds'
+    write(*,*)
+
+  end if
+  
 end subroutine
