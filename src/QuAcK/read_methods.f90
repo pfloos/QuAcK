@@ -182,8 +182,8 @@ subroutine read_methods(working_dir,                                            
       if(ans3 == 'T') doqsGF2   = .true.
       if(ans4 == 'T') doG0F3    = .true.
       if(ans5 == 'T') doevGF3   = .true.
-      if(ans5 == 'T') dopsdG0F3 = .true.
-      if(ans6 == 'T') doscGF2   = .true.
+      if(ans6 == 'T') dopsdG0F3 = .true.
+      if(ans7 == 'T') doscGF2   = .true.
       
       ! Read GW methods
       
