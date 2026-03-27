@@ -32,6 +32,8 @@ subroutine GpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   double precision,allocatable  :: K_2p1h(:,:),dK_2p1h(:,:)
   double precision,allocatable  :: U1_2h1p(:,:),U2_2h1p(:,:)
   double precision,allocatable  :: U1_2p1h(:,:),U2_2p1h(:,:)
+
+  double precision,external     :: Kronecker_delta
   
 ! Output variables
 
@@ -112,11 +114,10 @@ subroutine GpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
                     !---------------------------!
                     !  First-order contribution !
                     !---------------------------!
-
-                    !---------------------------!
-                    ! Second-order contribution !
-                    !---------------------------!
-
+                    C1_2h1p(ija,klc) = - Kronecker_Delta(a,c) * (ERI(i,j,k,l) - ERI(i,j,l,k)) / 2d0  &
+                                       + Kronecker_Delta(i,k) * (ERI(c,j,a,l) - ERI(c,j,l,a)) / 2d0 + Kronecker_Delta(j,l) * (ERI(c,i,a,k) - ERI(c,i,k,a)) / 2d0 &
+                                       - Kronecker_Delta(i,l) * (ERI(c,j,a,k) - ERI(c,j,k,a)) / 2d0 - Kronecker_Delta(j,k) * (ERI(c,i,a,l) - ERI(c,i,l,a)) / 2d0
+                    
                  end do
               end do
            end do
@@ -151,7 +152,7 @@ subroutine GpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
   do i=nC+1,nO
      do a=nO+1,nBas-nR
         do b=nO+1,nBas-nR
-           iab = 0
+           iab = iab + 1
            
            kcd = 0
            do k=nC+1,nO
@@ -161,10 +162,9 @@ subroutine GpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
                     !---------------------------!
                     !  First-order contribution !
                     !---------------------------!
-
-                    !---------------------------!
-                    ! Second-order contribution !
-                    !---------------------------!
+                    C1_2p1h(iab,kcd) = + Kronecker_Delta(i,k) * (ERI(a,b,c,d) - ERI(a,b,d,c)) / 2d0 &
+                                       - Kronecker_Delta(a,c) * (ERI(k,b,i,d) - ERI(k,b,d,i)) / 2d0 - Kronecker_Delta(b,d) * (ERI(k,a,i,c) - ERI(k,a,c,i)) / 2d0 &
+                                       + Kronecker_Delta(a,d) * (ERI(k,b,i,c) - ERI(k,b,c,i)) / 2d0 + Kronecker_Delta(b,c) * (ERI(k,a,i,d) - ERI(k,a,d,i)) / 2d0
            
                  end do
               end do
@@ -186,7 +186,20 @@ subroutine GpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
               !  First-order contribution !
               !---------------------------!
               U1_2h1p(p,ija) = sqrt(0.5d0) * (ERI(p,a,i,j) - ERI(p,a,j,i))
-
+              !---------------------------!
+              ! Second-order contribution !
+              !---------------------------!
+              do c=nO+1,nBas-nR
+                 do d=nO+1,nBas-nR
+                    U2_2h1p(p,ija) = U2_2h1p(p,ija) - 0.25d0 * (ERI(i,j,c,d) - ERI(i,j,d,c)) * (ERI(c,d,p,a) - ERI(c,d,a,p)) / (e(c) + e(d) - e(i) - e(j)) / sqrt(0.5d0)
+                 end do
+              end do
+              do k=nC+1,nO
+                 do c=nO+1,nBas-nR   
+                    U2_2h1p(p,ija) = U2_2h1p(p,ija) - (ERI(i,k,c,a) - ERI(i,k,a,c)) * (ERI(c,j,p,k) - ERI(c,j,k,p)) / (e(i) + e(k) - e(a) - e(c)) / sqrt(0.5d0)
+                 end do
+              end do
+              
         end do
       end do
     end do
@@ -204,7 +217,19 @@ subroutine GpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
               !  First-order contribution !
               !---------------------------!
               U1_2p1h(p,iab) = sqrt(0.5d0) * (ERI(p,i,a,b) - ERI(p,i,b,a))
-
+              !---------------------------!
+              ! Second-order contribution !
+              !---------------------------!
+              do k=nC+1,nO
+                 do l=nC+1,nO
+                    U2_2p1h(p,iab) = U2_2p1h(p,iab) + 0.25d0 * (ERI(a,b,k,l) - ERI(a,b,l,k)) * (ERI(k,l,p,i) - ERI(k,l,i,p)) / (e(k) + e(l) - e(a) - e(b)) / sqrt(0.5d0)
+                 end do
+              end do
+              do k=nC+1,nO
+                 do c=nO+1,nBas-nR   
+                    U2_2p1h(p,iab) = U2_2p1h(p,iab) + (ERI(a,c,k,i) - ERI(a,c,i,k)) * (ERI(k,b,p,c) - ERI(k,b,c,p)) / (e(a) + e(c) - e(i) - e(k)) / sqrt(0.5d0)
+                 end do
+              end do
         end do
       end do
     end do
@@ -222,6 +247,26 @@ subroutine GpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
               
               SigC(p) = SigC(p) + U1_2h1p(p,ija) *  K_2h1p(p,ija) * U1_2h1p(p,ija)
               Z(p)    = Z(p)    + U1_2h1p(p,ija) * dK_2h1p(p,ija) * U1_2h1p(p,ija)
+
+              SigC(p) = SigC(p) + U2_2h1p(p,ija) *  K_2h1p(p,ija) * U1_2h1p(p,ija)
+              Z(p)    = Z(p)    + U2_2h1p(p,ija) * dK_2h1p(p,ija) * U1_2h1p(p,ija)
+
+              SigC(p) = SigC(p) + U1_2h1p(p,ija) *  K_2h1p(p,ija) * U2_2h1p(p,ija)
+              Z(p)    = Z(p)    + U1_2h1p(p,ija) * dK_2h1p(p,ija) * U2_2h1p(p,ija)
+
+              klc = 0
+              do k=nC+1,nO
+                 do l=nC+1,nO
+                    do c=nO+1,nBas-nR
+                       klc = klc + 1
+              
+                       SigC(p) = SigC(p) + U1_2h1p(p,ija) *  K_2h1p(p,ija) * C1_2h1p(ija,klc) *  K_2h1p(p,klc) * U1_2h1p(p,klc)
+                       Z(p)    = Z(p)    + U1_2h1p(p,ija) * dK_2h1p(p,ija) * C1_2h1p(ija,klc) *  K_2h1p(p,klc) * U1_2h1p(p,klc)
+                       Z(p)    = Z(p)    + U1_2h1p(p,ija) *  K_2h1p(p,ija) * C1_2h1p(ija,klc) * dK_2h1p(p,klc) * U1_2h1p(p,klc)
+
+                    end do
+                 end do
+              end do
               
            end do
         end do
@@ -234,7 +279,27 @@ subroutine GpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
               
               SigC(p) = SigC(p) + U1_2p1h(p,iab) *  K_2p1h(p,iab) * U1_2p1h(p,iab)
               Z(p)    = Z(p)    + U1_2p1h(p,iab) * dK_2p1h(p,iab) * U1_2p1h(p,iab)
-              
+
+              SigC(p) = SigC(p) + U2_2p1h(p,iab) *  K_2p1h(p,iab) * U1_2p1h(p,iab)
+              Z(p)    = Z(p)    + U2_2p1h(p,iab) * dK_2p1h(p,iab) * U1_2p1h(p,iab)
+
+              SigC(p) = SigC(p) + U1_2p1h(p,iab) *  K_2p1h(p,iab) * U2_2p1h(p,iab)
+              Z(p)    = Z(p)    + U1_2p1h(p,iab) * dK_2p1h(p,iab) * U2_2p1h(p,iab)
+
+              kcd = 0
+              do k=nC+1,nO
+                 do c=nO+1,nBas-nR
+                    do d=nO+1,nBas-nR
+                       kcd = kcd + 1
+
+                       SigC(p) = SigC(p) + U1_2p1h(p,iab) *  K_2p1h(p,iab) * C1_2p1h(iab,kcd) *  K_2p1h(p,kcd) * U1_2p1h(p,kcd)
+                       Z(p)    = Z(p)    + U1_2p1h(p,iab) * dK_2p1h(p,iab) * C1_2p1h(iab,kcd) *  K_2p1h(p,kcd) * U1_2p1h(p,kcd)
+                       Z(p)    = Z(p)    + U1_2p1h(p,iab) *  K_2p1h(p,iab) * C1_2p1h(iab,kcd) * dK_2p1h(p,kcd) * U1_2p1h(p,kcd)
+                       
+                    end do
+                 end do
+              end do
+                       
            end do
         end do
      end do
