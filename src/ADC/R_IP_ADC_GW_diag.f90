@@ -250,7 +250,7 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A31,I3,A8)')'| IP-ADC-GW energies for orbital',p,'|'
+    write(*,'(1X,A32,I3,A8)')'| IP-ADC-GW energies for orbital',p,'|'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP (eV)','|','Z','|'

@@ -29,6 +29,7 @@ subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   integer                       :: a,b,c,d
   integer                       :: jb,kc,ia,ja
   integer                       :: klc,kcd,ija,ijb,iab,jab
+  double precision              :: num1,num2,dem1,dem2
 
   integer                       :: n2h1p,nH
   double precision,external     :: Kronecker_delta
@@ -103,7 +104,12 @@ subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
         do a=nO+1,nOrb-nR
           do b=nO+1,nOrb-nR
      
-            H(k,l) = H(k,l) - (2d0*ERI(a,b,k,i) - ERI(a,b,i,k))*ERI(l,i,a,b)/(eHF(a) + eHF(b) - 0.5d0*eHF(k) - 0.5d0*eHF(l))
+            num1 = (2d0*ERI(a,b,k,i) - ERI(a,b,i,k))*ERI(l,i,a,b)
+            num2 = (2d0*ERI(a,b,l,i) - ERI(a,b,i,l))*ERI(k,i,a,b)
+            dem1 = eHF(a) + eHF(b) - eHF(i) - eHF(k)
+            dem2 = eHF(a) + eHF(b) - eHF(i) - eHF(l)
+
+            H(k,l) = H(k,l) - 0.5d0*(num1/dem1 + num2/dem2)
      
           end do
         end do
@@ -175,8 +181,11 @@ subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   ! Compute weights !
   !-----------------!
  
+  Z(:) = 0d0
   do s=1,nH
-    Z(s) = Reigv(1,s)**2
+    do i=nC+1,nO
+      Z(s) = Z(s) + Reigv(i,s)**2
+    end do
   end do
 
   !--------------!
@@ -184,15 +193,15 @@ subroutine R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
  
   write(*,*)'-------------------------------------------'
-  write(*,'(1X,A37,I3,A3)')'| IP-ADC(2) energies (eV) for orbital',p,'  |'
+  write(*,'(1X,A43)')'| IPEA-ADC(2) energies for all orbitals   |'
   write(*,*)'-------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP','|','Z','|'
   write(*,*)'-------------------------------------------'
   
   do s=1,nH
-    if(eGF(s) < eF .and. eGF(s) > eF - window) then
-    ! if(Z(s) > cutoff1) then
+!   if(eGF(s) < eF .and. eGF(s) > eF - window) then
+    if(Z(s) > cutoff1) then
       write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X)') &
       '|',s,'|',eGF(s)*HaToeV,'|',Z(s),'|'
     end if

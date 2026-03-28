@@ -80,7 +80,7 @@ subroutine R_ADC(dotest,                                               &
 
   logical                       :: do_hierarchy_GW = .false.
   logical                       :: do_1h1p,do_1h,do_diag
-  logical                       :: do_full_freq,do_half_half, do_pure_stat
+  logical                       :: do_full_freq,do_half_half,do_pure_stat
 
 ! Output variables
   
@@ -121,10 +121,8 @@ subroutine R_ADC(dotest,                                               &
       else
 
         if(diag_approx) then
-          print*, 'Diagonal version of IP-ADC(2) not yet debugged'
           call R_IP_ADC2_diag(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          print*, 'Full version of IP-ADC(2) not yet debugged'
           call R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
    

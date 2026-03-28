@@ -1,4 +1,4 @@
-subroutine RGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
+subroutine RpsdGF3_self_energy_diag(eta,nBas,nC,nO,nV,nR,e,ERI,SigC,Z)
 
 ! Compute diagonal part of the GF3 self-energy and its renormalization factor
 
