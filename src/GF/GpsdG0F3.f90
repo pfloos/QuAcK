@@ -85,7 +85,7 @@ subroutine GpsdG0F3(dotest,linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    call GGF3_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
+    call GpsdGF3_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
 
   end if
 

@@ -66,62 +66,62 @@ double precision function GGF3_SigC(p,w,eta,nBas,nC,nO,nV,nR,e,ERI)
       end do
     end do
   end do
-!--------------------------------------------------------!
-! Compute third-order frequency-independent contribution !
-!                          3h2p                          !  
-!--------------------------------------------------------!
-  do i=nC+1,nO
-     do j=nC+1,nO
-        do k=nC+1,nO
-           do a=nO+1,nBas-nR
-              do b=nO+1,nBas-nR
+! !--------------------------------------------------------!
+! ! Compute third-order frequency-independent contribution !
+! !                          3h2p                          !  
+! !--------------------------------------------------------!
+!   do i=nC+1,nO
+!      do j=nC+1,nO
+!         do k=nC+1,nO
+!            do a=nO+1,nBas-nR
+!               do b=nO+1,nBas-nR
                  
-                    eps1 = e(j) + e(i) - e(a) - e(b)
-                    eps2 = e(k) + e(i) - e(a) - e(b)
-                    num = - 0.5d0 * (ERI(p,k,p,j) - ERI(p,k,j,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(a,b,k,i) - ERI(a,b,i,k))
+!                     eps1 = e(j) + e(i) - e(a) - e(b)
+!                     eps2 = e(k) + e(i) - e(a) - e(b)
+!                     num = - 0.5d0 * (ERI(p,k,p,j) - ERI(p,k,j,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(a,b,k,i) - ERI(a,b,i,k))
 
-                    App(1) = App(1) + num / (eps1*eps2) 
+!                     App(1) = App(1) + num / (eps1*eps2) 
                     
-                    eps1 = e(j) + e(i) - e(a) - e(b)
-                    eps2 = e(k)        - e(b)
-                    num  = - 0.5d0 * (ERI(p,b,p,k) - ERI(p,b,k,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(i,j,k,a) - ERI(i,j,a,k))
+!                     eps1 = e(j) + e(i) - e(a) - e(b)
+!                     eps2 = e(k)        - e(b)
+!                     num  = - 0.5d0 * (ERI(p,b,p,k) - ERI(p,b,k,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(i,j,k,a) - ERI(i,j,a,k))
                     
-                    App(5) = App(5) + num / (eps1*eps2)
+!                     App(5) = App(5) + num / (eps1*eps2)
                     
-                 end do
-              end do
-           end do
-        end do
-     end do
-  App(6) = App(5)
-!--------------------------------------------------------!
-! Compute third-order frequency-independent contribution !
-!                          3p2h                          !  
-!--------------------------------------------------------!
-  do i=nC+1,nO
-     do j=nC+1,nO
-        do a=nO+1,nBas-nR
-           do b=nO+1,nBas-nR
-              do c=nO+1,nBas-nR
+!                  end do
+!               end do
+!            end do
+!         end do
+!      end do
+!   App(6) = App(5)
+! !--------------------------------------------------------!
+! ! Compute third-order frequency-independent contribution !
+! !                          3p2h                          !  
+! !--------------------------------------------------------!
+!   do i=nC+1,nO
+!      do j=nC+1,nO
+!         do a=nO+1,nBas-nR
+!            do b=nO+1,nBas-nR
+!               do c=nO+1,nBas-nR
                  
-                 eps1 = e(j) + e(i) - e(a) - e(b)
-                 eps2 = e(j) + e(i) - e(a) - e(c)
-                 num = + 0.5d0 * (ERI(p,c,p,b) - ERI(p,c,b,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(i,j,c,a) - ERI(i,j,a,c))
+!                  eps1 = e(j) + e(i) - e(a) - e(b)
+!                  eps2 = e(j) + e(i) - e(a) - e(c)
+!                  num = + 0.5d0 * (ERI(p,c,p,b) - ERI(p,c,b,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(i,j,c,a) - ERI(i,j,a,c))
                  
-                 App(2) = App(2) + num / (eps1*eps2)
+!                  App(2) = App(2) + num / (eps1*eps2)
                  
-                 eps1 = e(j) + e(i) - e(a) - e(b)
-                 eps2 = e(j)        - e(c)
-                 num = + 0.5d0 * (ERI(p,c,p,j) - ERI(p,c,j,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(a,b,c,i) - ERI(a,b,i,c))
+!                  eps1 = e(j) + e(i) - e(a) - e(b)
+!                  eps2 = e(j)        - e(c)
+!                  num = + 0.5d0 * (ERI(p,c,p,j) - ERI(p,c,j,p)) * (ERI(j,i,a,b) - ERI(j,i,b,a)) * (ERI(a,b,c,i) - ERI(a,b,i,c))
 
-                 App(3) = App(3) + num / (eps1*eps2) 
+!                  App(3) = App(3) + num / (eps1*eps2) 
                     
-              end do
-           end do
-        end do
-     end do
-  end do
-  App(4) = App(3)
+!               end do
+!            end do
+!         end do
+!      end do
+!   end do
+!   App(4) = App(3)
 !------------------------------------------------------!
 ! Compute third-order frequency-dependent contribution !
 !                     4h1p C terms                     !  
