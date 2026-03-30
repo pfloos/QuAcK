@@ -520,7 +520,7 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
                 reg = SRG_reg2(dem1,dem2,flow)
 
                 H(p          ,nOrb+n2h1p+iab) = H(p          ,nOrb+n2h1p+iab) + 0.5d0*num*reg
-                H(nOrb+n2h1p+iab,p          ) = H(nOrb+n2h1p+iab,p          ) + 0.5d0*num*reg
+                H(nOrb+n2h1p+iab,p    )       = H(nOrb+n2h1p+iab,p          ) + 0.5d0*num*reg
     
               end do
             end do
