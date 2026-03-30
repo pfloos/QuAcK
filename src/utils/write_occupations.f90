@@ -7,7 +7,7 @@ subroutine write_occupations(nOa,nOb,occupationsa,occupationsb,fpath)
   integer,intent(in)            :: nOa,nOb
   integer,intent(in)            :: occupationsa(nOa),occupationsb(nOb)
   character(len=*),intent(in)   :: fpath
-  integer                       :: unit,ios,i
+  integer                       :: unit,ios
 
   unit = 69
 
