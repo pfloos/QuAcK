@@ -548,10 +548,24 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
                   dem1 = eHF(b) - eHF(c) + Om(mu)
                   dem2 = eHF(a) - eHF(b) - Om(nu)
 
-                  reg = SRG_reg2(dem1,dem2,flow)
+                  reg = SRG_reg2(dem1+dem2,dem1,flow)
 
                   H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + 0.5d0*num*reg
                   H(1+n2h1p+iab,1    )       = H(1+n2h1p+iab,1          ) + 0.5d0*num*reg
+
+                  reg = SRG_reg2(dem1+dem2,dem2,flow)
+
+                  H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + 0.5d0*num*reg
+                  H(1+n2h1p+iab,1    )       = H(1+n2h1p+iab,1          ) + 0.5d0*num*reg
+
+!                 num = 2d0*sqrt(2d0)*rho(b,c,mu)*rho(b,a,nu)*rho(c,p,nu)
+!                 dem1 = eHF(b) - eHF(c) + Om(mu)
+!                 dem2 = eHF(a) - eHF(b) - Om(nu)
+
+!                 reg = SRG_reg2(dem1,dem2,flow)
+
+!                 H(1          ,1+n2h1p+iab) = H(1          ,1+n2h1p+iab) + 0.5d0*num*reg
+!                 H(1+n2h1p+iab,1    )       = H(1+n2h1p+iab,1          ) + 0.5d0*num*reg
  
                 end do
               end do

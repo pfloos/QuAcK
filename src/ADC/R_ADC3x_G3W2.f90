@@ -142,10 +142,6 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   call phRLR_B(ispin,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-  
-  ! Small shift to avoid hard zeros in amplitudes
-
-  Om(:) = Om(:) + 1d-12
 
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
@@ -325,6 +321,20 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
             do k=nC+1,nO
               do nu=1,nS
     
+!               num = 2d0*sqrt(2d0)*rho(k,j,mu)*rho(i,j,nu)*rho(p,k,nu)
+!               dem1 = eHF(k) - eHF(j) + Om(mu)
+!               dem2 = eHF(j) - eHF(i) - Om(nu)
+    
+!               reg = SRG_reg2(dem1+dem2,dem1,flow)
+
+!               H(p    ,nOrb+ija) = H(p    ,nOrb+ija) + 0.5d0*num*reg
+!               H(nOrb+ija,p    ) = H(nOrb+ija,p    ) + 0.5d0*num*reg
+
+!               reg = SRG_reg2(dem1+dem2,dem2,flow)
+
+!               H(p    ,nOrb+ija) = H(p    ,nOrb+ija) + 0.5d0*num*reg
+!               H(nOrb+ija,p    ) = H(nOrb+ija,p    ) + 0.5d0*num*reg
+
                 num = 2d0*sqrt(2d0)*rho(k,j,mu)*rho(i,j,nu)*rho(p,k,nu)
                 dem1 = eHF(k) - eHF(j) + Om(mu)
                 dem2 = eHF(j) - eHF(i) - Om(nu)
@@ -517,10 +527,24 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
                 dem1 = eHF(b) - eHF(c) + Om(mu)
                 dem2 = eHF(a) - eHF(b) - Om(nu)
 
-                reg = SRG_reg2(dem1,dem2,flow)
+                reg = SRG_reg2(dem1+dem2,dem1,flow)
 
                 H(p          ,nOrb+n2h1p+iab) = H(p          ,nOrb+n2h1p+iab) + 0.5d0*num*reg
                 H(nOrb+n2h1p+iab,p    )       = H(nOrb+n2h1p+iab,p          ) + 0.5d0*num*reg
+    
+                reg = SRG_reg2(dem1+dem2,dem2,flow)
+
+                H(p          ,nOrb+n2h1p+iab) = H(p          ,nOrb+n2h1p+iab) + 0.5d0*num*reg
+                H(nOrb+n2h1p+iab,p    )       = H(nOrb+n2h1p+iab,p          ) + 0.5d0*num*reg
+    
+!               num = 2d0*sqrt(2d0)*rho(b,c,mu)*rho(b,a,nu)*rho(c,p,nu)
+!               dem1 = eHF(b) - eHF(c) + Om(mu)
+!               dem2 = eHF(a) - eHF(b) - Om(nu)
+
+!               reg = SRG_reg2(dem1,dem2,flow)
+
+!               H(p          ,nOrb+n2h1p+iab) = H(p          ,nOrb+n2h1p+iab) + 0.5d0*num*reg
+!               H(nOrb+n2h1p+iab,p    )       = H(nOrb+n2h1p+iab,p          ) + 0.5d0*num*reg
     
               end do
             end do
