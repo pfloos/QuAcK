@@ -175,7 +175,7 @@ subroutine R_ADC(dotest,                                               &
   ! Perform MCDE calculation !
   !--------------------------!
 
-    do_MCDE = .false.
+    do_MCDE = .true.
 
     if(do_MCDE) then
 
