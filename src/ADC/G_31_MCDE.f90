@@ -1,6 +1,6 @@
-subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
+subroutine G_31_MCDE(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
-! Dyson version of ADC(3)
+! (3,1) multichannel Dyson Equation
 
   implicit none
   include 'parameters.h'
@@ -49,14 +49,13 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'****************************************'
-  write(*,*)'* Generalized IP/EA-ADC(3) Calculation *'
-  write(*,*)'****************************************'
+  write(*,*)'**************************************'
+  write(*,*)'* Generalized (3,1)-MCDE Calculation *'
+  write(*,*)'**************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
-! Note that ADC(3) is implemented using i<j and a<b restriction while ADC(2) is not.
   n2h1p = nO*(nO-1)*nV/2
   n2p1h = nV*(nV-1)*nO/2
   nH = nOrb + n2h1p + n2p1h
@@ -107,21 +106,6 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
               H(p,ija) = ERI(i,j,p,a) - ERI(i,j,a,p)
 
-              ! Second-order contribution        
-
-              do c=nO+1,nOrb-nR
-                 do d=nO+1,nOrb-nR
-                    H(p,ija) = H(p,ija) + 0.5d0*(ERI(c,d,p,a) - ERI(c,d,a,p))*(ERI(i,j,c,d) - ERI(i,j,d,c))/(eHF(i) + eHF(j) - eHF(c) - eHF(d))
-                 end do
-              end do
-              
-              do k=nC+1,nO
-                 do c=nO+1,nOrb-nR
-                    H(p,ija) = H(p,ija) - (ERI(c,j,p,k) - ERI(c,j,k,p))*(ERI(i,k,c,a) - ERI(i,k,a,c))/(eHF(i) + eHF(k) - eHF(c) - eHF(a))
-                    H(p,ija) = H(p,ija) + (ERI(c,i,p,k) - ERI(c,i,k,p))*(ERI(j,k,c,a) - ERI(j,k,a,c))/(eHF(j) + eHF(k) - eHF(c) - eHF(a))
-                 end do
-              end do
-              
               ! Symmetrize
 
               H(ija,p) = H(p,ija)
@@ -146,21 +130,6 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
               ! First-order contribution
 
               H(p,iab) = ERI(a,b,p,i) - ERI(a,b,i,p)
-
-              ! Second-order contribution
-
-              do k=nC+1,nO
-                 do l=nC+1,nO
-                    H(p,iab) = H(p,iab) - 0.5d0*(ERI(k,l,p,i) - ERI(k,l,i,p))*(ERI(a,b,k,l) - ERI(a,b,l,k))/(eHF(a) + eHF(b) - eHF(k) - eHF(l))
-                 end do
-              end do
-              
-              do k=nC+1,nO
-                 do c=nO+1,nOrb-nR
-                    H(p,iab) = H(p,iab) + (ERI(k,b,p,c) - ERI(k,b,c,p))*(ERI(a,c,k,i) - ERI(a,c,i,k))/(eHF(a) + eHF(c) - eHF(k) - eHF(i))
-                    H(p,iab) = H(p,iab) - (ERI(k,a,p,c) - ERI(k,a,c,p))*(ERI(b,c,k,i) - ERI(b,c,i,k))/(eHF(b) + eHF(c) - eHF(k) - eHF(i))
-                 end do
-              end do
 
               ! Symmetrize
 
@@ -288,7 +257,6 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
    write(*,*)
 
-
    !-----------------!
    ! Compute weights !
    !-----------------!
@@ -305,7 +273,7 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    !--------------!
    
    write(*,*)'-------------------------------------------'
-   write(*,'(1X,A43)')'| IPEA-ADC(3) energies for all orbitals   |'
+   write(*,'(1X,A43)')'| (3,1)-MCDE energies for all orbitals    |'
    write(*,*)'-------------------------------------------'
    write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
         '|','#','|','e_QP (eV)','|','Z','|'

@@ -5,7 +5,7 @@ subroutine G_ADC(dotest,                                               &
                  do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,              &
                  TDA_W,TDA,linearize,eta,doSRG,                        &
                  do_dyson,diag_approx,sig_inf,                         & 
-                 nNuc,ZNuc,rNuc,ENuc,nBas,nBas2,nC,nO,nV,nR,nS,        &
+                 nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,        &
                  S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, &
                  EGHF,PHF,FHF,cHF,eHF)
 
@@ -47,7 +47,7 @@ subroutine G_ADC(dotest,                                               &
   double precision,intent(in)   :: ENuc
 
   integer,intent(in)            :: nBas
-  integer,intent(in)            :: nBas2
+  integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
   integer,intent(in)            :: nV
@@ -60,20 +60,22 @@ subroutine G_ADC(dotest,                                               &
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
-  double precision,intent(in)   :: ERI_MO(nBas2,nBas2,nBas2,nBas2)
+  double precision,intent(in)   :: ERI_MO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
-  double precision,intent(in)   :: dipole_int_MO(nBas2,nBas2,ncart)
+  double precision,intent(in)   :: dipole_int_MO(nOrb,nOrb,ncart)
 
   double precision,intent(in)   :: EGHF
-  double precision,intent(in)   :: eHF(nBas2)
-  double precision,intent(in)   :: cHF(nBas2,nBas2)
-  double precision,intent(in)   :: PHF(nBas2,nBas2)
-  double precision,intent(in)   :: FHF(nBas2,nBas2)
+  double precision,intent(in)   :: eHF(nOrb)
+  double precision,intent(in)   :: cHF(nOrb,nOrb)
+  double precision,intent(in)   :: PHF(nOrb,nOrb)
+  double precision,intent(in)   :: FHF(nOrb,nOrb)
 
 ! Local variables
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
+
+  logical                       :: do_MCDE
 
 ! Output variables
   
@@ -101,9 +103,9 @@ subroutine G_ADC(dotest,                                               &
       if(do_dyson) then
 
          if(diag_approx) then
-            call G_IPEA_ADC2_diag(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+            call G_IPEA_ADC2_diag(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
          else
-            call G_IPEA_ADC2(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+            call G_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
          end if
 
       else
@@ -134,7 +136,7 @@ subroutine G_ADC(dotest,                                               &
          if(diag_approx) then
             print*, 'Diagonal version of non-Dyson IP-ADC(3) not yet implemented in GHF branch'
          else
-            call G_IPEA_ADC3(dotest,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+            call G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
          end if
 
       else
@@ -152,6 +154,41 @@ subroutine G_ADC(dotest,                                               &
       write(*,*)
       
    end if
+
+  !--------------------------!
+  ! Perform MCDE calculation !
+  !--------------------------!
+
+    do_MCDE = .true.
+
+    if(do_MCDE) then
+
+      call wall_time(start_ADC)
+      if(do_dyson) then
+
+        if(diag_approx) then
+          print*, 'Diagonal version of (3,1)-MCDE not yet implemented'
+        else
+          call G_31_MCDE(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+          call G_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+        end if
+
+      else
+
+        if(diag_approx) then
+          print*, 'Diagonal version of (3,1)-MCDE not yet implemented'
+        else
+          print*, 'Full version of (3,1)-MCDE not yet implemented'
+        end if
+
+      end if
+      call wall_time(end_ADC)
+
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for (3,1)-MCDE = ',t_ADC,' seconds'
+      write(*,*)
+
+    end if
 
   !----------------------------!
   ! Perform SOSEX calculation !
@@ -225,7 +262,7 @@ subroutine G_ADC(dotest,                                               &
       
         call wall_time(start_ADC)
         if(diag_approx) then
-          call G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+          call G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
         else
         end if
         call wall_time(end_ADC)
@@ -244,7 +281,7 @@ subroutine G_ADC(dotest,                                               &
       
         call wall_time(start_ADC)
         if(diag_approx) then
-          call G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nBas2,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+          call G_ADC3_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
         else
         end if
         call wall_time(end_ADC)
