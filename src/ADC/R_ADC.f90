@@ -82,6 +82,8 @@ subroutine R_ADC(dotest,                                               &
   logical                       :: do_1h1p,do_1h,do_diag
   logical                       :: do_full_freq,do_half_half,do_pure_stat
 
+  logical                       :: do_MCDE
+
 ! Output variables
   
   ! None
@@ -165,6 +167,41 @@ subroutine R_ADC(dotest,                                               &
 
       t_ADC = end_ADC - start_ADC
       write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(3) = ',t_ADC,' seconds'
+      write(*,*)
+
+    end if
+
+  !--------------------------!
+  ! Perform MCDE calculation !
+  !--------------------------!
+
+    do_MCDE = .true.
+
+    if(do_MCDE) then
+
+      call wall_time(start_ADC)
+      if(do_dyson) then
+
+        if(diag_approx) then
+          print*, 'Diagonal version of (3,1)-MCDE not yet implemented'
+        else
+          call R_31_MCDE(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+        end if
+
+      else
+
+        if(diag_approx) then
+          print*, 'Diagonal version of (3,1)-MCDE not yet implemented'
+        else
+          print*, 'Full version of (3,1)-MCDE not yet implemented'
+        end if
+
+      end if
+      call wall_time(end_ADC)
+
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for (3,1)-MCDE = ',t_ADC,' seconds'
       write(*,*)
 
     end if

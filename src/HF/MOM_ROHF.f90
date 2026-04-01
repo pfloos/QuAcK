@@ -288,6 +288,7 @@ subroutine MOM_ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,wri
     call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
     call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
     call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
+    call write_occupations(nO(1),nO(2),occupations(1,:),occupations(2,:),'occupations.dat')
   endif
 
 ! Print test values

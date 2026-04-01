@@ -217,6 +217,16 @@ subroutine MOM_cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMO
 
   end if
 
+  call complex_Hartree_matrix_AO_basis(nBas,P,ERI,J)
+  call complex_exchange_matrix_AO_basis(nBas,P,ERI,K)
+  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+  Fp = matmul(transpose(X),matmul(F,X))
+  cp(:,:) = Fp(:,:)
+  call complex_diagonalize_matrix(nBas,cp,eHF)
+  call complex_orthogonalize_matrix(nBas,cp)
+  c = matmul(X,cp)
+  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+  
   call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EW,EJ,EK,ERHF)
 
 ! Write MOs
@@ -225,6 +235,7 @@ subroutine MOM_cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMO
         call write_matout(nBas,nBas,aimag(c),'imag_MOs_alpha.dat')
         call write_matout(nBas,nBas,real(c),'real_MOs_beta.dat')
         call write_matout(nBas,nBas,aimag(c),'imag_MOs_beta.dat')
+        call write_occupations(nO,nO,occupations,occupations,'occupations.dat')
   endif
 
   ! Testing zone

@@ -1,6 +1,6 @@
-subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
+subroutine G_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
-! Dyson version of ADC(3)
+! (3,1) screened multichannel Dyson Equation
 
   implicit none
   include 'parameters.h'
@@ -9,6 +9,7 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
   logical,intent(in)            :: dotest
 
+  logical,intent(in)            :: TDA_W
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
@@ -30,11 +31,23 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
   integer                       :: jb,kc,ia,ja
   integer                       :: klc,kcd,ija,ijb,iab,jab
 
+  logical                       :: print_W = .false.
+  logical                       :: dRPA = .true.
+  double precision              :: EcRPA
+
   integer                       :: n2h1p,n2p1h,nH
   double precision,external     :: Kronecker_delta
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: Z(:)
+
+  double precision,allocatable  :: Aph(:,:)
+  double precision,allocatable  :: Bph(:,:)
+  double precision,allocatable  :: Om(:)
+  double precision,allocatable  :: XpY(:,:)
+  double precision,allocatable  :: XmY(:,:)
+  double precision,allocatable  :: rho(:,:,:)
+  double precision,allocatable  :: W(:,:,:,:)
 
   logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
@@ -49,17 +62,39 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 ! Hello world
 
   write(*,*)
-  write(*,*)'****************************************'
-  write(*,*)'* Generalized IP/EA-ADC(3) Calculation *'
-  write(*,*)'****************************************'
+  write(*,*)'***************************************'
+  write(*,*)'* Generalized (3,1)-SMCDE Calculation *'
+  write(*,*)'***************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
-! Note that ADC(3) is implemented using i<j and a<b restriction while ADC(2) is not.
   n2h1p = nO*(nO-1)*nV/2
   n2p1h = nV*(nV-1)*nO/2
   nH = nOrb + n2h1p + n2p1h
+
+!-------------------!
+! Compute screening !
+!-------------------!
+
+  ! Memory allocation
+
+  allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
+
+  call phGLR_A(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+  if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
+
+  call GGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+
+  deallocate(Aph,Bph,XpY,XmY)
+
+  allocate(W(nOrb,nOrb,nOrb,nOrb))
+
+  call GGW_phBSE_static_kernel(nOrb,nC,nO,nV,nR,nS,1d0,ERI,Om,rho,W)
 
 ! Memory allocation
 
@@ -107,21 +142,6 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
               H(p,ija) = ERI(i,j,p,a) - ERI(i,j,a,p)
 
-              ! Second-order contribution        
-
-              do c=nO+1,nOrb-nR
-                 do d=nO+1,nOrb-nR
-                    H(p,ija) = H(p,ija) + 0.5d0*(ERI(c,d,p,a) - ERI(c,d,a,p))*(ERI(i,j,c,d) - ERI(i,j,d,c))/(eHF(i) + eHF(j) - eHF(c) - eHF(d))
-                 end do
-              end do
-              
-              do k=nC+1,nO
-                 do c=nO+1,nOrb-nR
-                    H(p,ija) = H(p,ija) - (ERI(c,j,p,k) - ERI(c,j,k,p))*(ERI(i,k,c,a) - ERI(i,k,a,c))/(eHF(i) + eHF(k) - eHF(c) - eHF(a))
-                    H(p,ija) = H(p,ija) + (ERI(c,i,p,k) - ERI(c,i,k,p))*(ERI(j,k,c,a) - ERI(j,k,a,c))/(eHF(j) + eHF(k) - eHF(c) - eHF(a))
-                 end do
-              end do
-              
               ! Symmetrize
 
               H(ija,p) = H(p,ija)
@@ -146,21 +166,6 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
               ! First-order contribution
 
               H(p,iab) = ERI(a,b,p,i) - ERI(a,b,i,p)
-
-              ! Second-order contribution
-
-              do k=nC+1,nO
-                 do l=nC+1,nO
-                    H(p,iab) = H(p,iab) - 0.5d0*(ERI(k,l,p,i) - ERI(k,l,i,p))*(ERI(a,b,k,l) - ERI(a,b,l,k))/(eHF(a) + eHF(b) - eHF(k) - eHF(l))
-                 end do
-              end do
-              
-              do k=nC+1,nO
-                 do c=nO+1,nOrb-nR
-                    H(p,iab) = H(p,iab) + (ERI(k,b,p,c) - ERI(k,b,c,p))*(ERI(a,c,k,i) - ERI(a,c,i,k))/(eHF(a) + eHF(c) - eHF(k) - eHF(i))
-                    H(p,iab) = H(p,iab) - (ERI(k,a,p,c) - ERI(k,a,c,p))*(ERI(b,c,k,i) - ERI(b,c,i,k))/(eHF(b) + eHF(c) - eHF(k) - eHF(i))
-                 end do
-              end do
 
               ! Symmetrize
 
@@ -227,6 +232,13 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
                                 - kronecker_delta(i,l) * (ERI(c,j,a,k) - ERI(c,j,k,a)) &
                                 - kronecker_delta(j,k) * (ERI(c,i,a,l) - ERI(c,i,l,a))
 
+                     H(ija,klc) = H(ija,klc) &
+                                - kronecker_delta(a,c) * (W(i,j,k,l) - W(i,j,l,k)) &
+                                + kronecker_delta(i,k) * (           - W(c,j,l,a)) &
+                                + kronecker_delta(j,l) * (           - W(c,i,k,a)) &
+                                - kronecker_delta(i,l) * (           - W(c,j,k,a)) &
+                                - kronecker_delta(j,k) * (           - W(c,i,l,a))
+
                   end do
                end do
             end do
@@ -257,6 +269,13 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
                                   - kronecker_delta(b,d) * (ERI(k,a,i,c) - ERI(k,a,c,i)) &
                                   + kronecker_delta(a,d) * (ERI(k,b,i,c) - ERI(k,b,c,i)) &
                                   + kronecker_delta(b,c) * (ERI(k,a,i,d) - ERI(k,a,d,i))
+         
+                       H(iab,kcd) = H(iab,kcd) &
+                                  + kronecker_delta(i,k) * (W(a,b,c,d) - W(a,b,d,c)) &
+                                  - kronecker_delta(a,c) * (           - W(k,b,d,i)) &
+                                  - kronecker_delta(b,d) * (           - W(k,a,c,i)) &
+                                  + kronecker_delta(a,d) * (           - W(k,b,c,i)) &
+                                  + kronecker_delta(b,c) * (           - W(k,a,d,i))
 
                     end do
                  end do
@@ -288,7 +307,6 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
    write(*,*)
 
-
    !-----------------!
    ! Compute weights !
    !-----------------!
@@ -305,7 +323,7 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    !--------------!
    
    write(*,*)'-------------------------------------------'
-   write(*,'(1X,A43)')'| IPEA-ADC(3) energies for all orbitals   |'
+   write(*,'(1X,A43)')'| (3,1)-SMCDE energies for all orbitals   |'
    write(*,*)'-------------------------------------------'
    write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
         '|','#','|','e_QP (eV)','|','Z','|'

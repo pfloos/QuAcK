@@ -298,6 +298,7 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,wri
     call write_matout(nBas,nBas,real(c(:,:,2)),'real_MOs_beta.dat')
     call write_matout(nBas,nBas,aimag(c(:,:,1)),'imag_MOs_alpha.dat')
     call write_matout(nBas,nBas,aimag(c(:,:,2)),'imag_MOs_beta.dat')
+    call write_occupations(nO(1),nO(2),occupations(1,:),occupations(2,:),'occupations.dat')
   endif
 
 ! Print test values

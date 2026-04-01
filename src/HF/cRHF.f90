@@ -204,6 +204,16 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
 
   end if
 
+  call complex_Hartree_matrix_AO_basis(nBas,P,ERI,J)
+  call complex_exchange_matrix_AO_basis(nBas,P,ERI,K)
+  F(:,:) = Hc(:,:) + J(:,:) + 0.5d0*K(:,:)
+  Fp = matmul(transpose(X),matmul(F,X))
+  cp(:,:) = Fp(:,:)
+  call complex_diagonalize_matrix(nBas,cp,eHF)
+  call complex_orthogonalize_matrix(nBas,cp)
+  c = matmul(X,cp)
+  P(:,:) = 2d0*matmul(c(:,1:nO),transpose(c(:,1:nO)))
+
   call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EW,EJ,EK,ERHF)
   
   if(writeMOs) then
