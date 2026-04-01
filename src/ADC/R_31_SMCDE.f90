@@ -40,7 +40,7 @@ subroutine R_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,allocatable  :: Z(:)
 
   logical                       :: print_W = .false.
-  logical                       :: dRPA
+  logical                       :: dRPA = .true.
   integer                       :: ispin
   double precision              :: EcRPA
 
