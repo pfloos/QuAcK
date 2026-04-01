@@ -35,10 +35,10 @@ subroutine RGW_phBSE_static_kernel_fullmat(nBas,nC,nO,nV,nR,nS,lambda,ERI,Om,rho
 ! Compute static screening (physicist's notation)
 !------------------------------------------------
 
-  do p=1,nBas
-    do q=1,nBas
-      do r=1,nBas
-        do s=1,nBas
+  do p=nC+1,nBas-nR
+    do q=nC+1,nBas-nR
+      do r=nC+1,nBas-nR
+        do s=nC+1,nBas-nR
 
           chi = 0d0
           do m=1,nS

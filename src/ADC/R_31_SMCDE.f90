@@ -554,7 +554,7 @@ subroutine R_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
                        - 0.5d0*sqrt(2d0)*kronecker_delta(i,l)*ERI(c,i,k,a)  
        
             H(klc,ija) = H(klc,ija) &
-!                      - sqrt(2d0)*kronecker_delta(a,c)*ERI(i,i,k,l) &
+                       - sqrt(2d0)*kronecker_delta(a,c)*W(i,i,k,l) &
 !                      + sqrt(2d0)*kronecker_delta(i,k)*ERI(c,i,a,l) &
                        - 0.5d0*sqrt(2d0)*kronecker_delta(i,k)*W(c,i,l,a) &
 !                      + sqrt(2d0)*kronecker_delta(i,l)*ERI(c,i,a,k) &
@@ -781,6 +781,14 @@ subroutine R_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
                        + sqrt(1.5d0)*kronecker_delta(a,c)*ERI(k,a,d,i) &
                        - sqrt(1.5d0)*kronecker_delta(a,d)*ERI(k,a,c,i) 
       
+            H(iab,kcd) = H(iab,kcd) &
+                       + sqrt(1.5d0)*kronecker_delta(a,c)*W(k,a,d,i) &
+                       - sqrt(1.5d0)*kronecker_delta(a,d)*W(k,a,c,i) 
+      
+            H(kcd,iab) = H(kcd,iab) &
+                       + sqrt(1.5d0)*kronecker_delta(a,c)*ERI(k,a,d,i) &
+                       - sqrt(1.5d0)*kronecker_delta(a,d)*ERI(k,a,c,i) 
+
             H(kcd,iab) = H(kcd,iab) &
                        + sqrt(1.5d0)*kronecker_delta(a,c)*W(k,a,d,i) &
                        - sqrt(1.5d0)*kronecker_delta(a,d)*W(k,a,c,i) 
@@ -808,6 +816,20 @@ subroutine R_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
             kcd = kcd + 1
       
             H(iab,kcd) = H(iab,kcd) &
+                       + sqrt(2d0)*kronecker_delta(i,k)*ERI(a,a,c,d) &
+                       - sqrt(2d0)*kronecker_delta(a,c)*ERI(k,a,i,d) &
+                       + 0.5d0*sqrt(2d0)*kronecker_delta(a,c)*ERI(k,a,d,i) &
+                       - sqrt(2d0)*kronecker_delta(a,d)*ERI(k,a,i,c) &
+                       + 0.5d0*sqrt(2d0)*kronecker_delta(a,d)*ERI(k,a,c,i)  
+
+            H(iab,kcd) = H(iab,kcd) &
+                       + sqrt(2d0)*kronecker_delta(i,k)*W(a,a,c,d) &
+!                      - sqrt(2d0)*kronecker_delta(a,c)*ERI(k,a,i,d) &
+                       + 0.5d0*sqrt(2d0)*kronecker_delta(a,c)*W(k,a,d,i) &
+!                      - sqrt(2d0)*kronecker_delta(a,d)*ERI(k,a,i,c) &
+                       + 0.5d0*sqrt(2d0)*kronecker_delta(a,d)*W(k,a,c,i)  
+
+            H(kcd,iab) = H(kcd,iab) &
                        + sqrt(2d0)*kronecker_delta(i,k)*ERI(a,a,c,d) &
                        - sqrt(2d0)*kronecker_delta(a,c)*ERI(k,a,i,d) &
                        + 0.5d0*sqrt(2d0)*kronecker_delta(a,c)*ERI(k,a,d,i) &
@@ -938,7 +960,7 @@ subroutine R_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   !--------------!
 
   write(*,*)'-------------------------------------------'
-  write(*,'(1X,A43)')'| (3,1)-MCDE energies for all orbitals    |'
+  write(*,'(1X,A43)')'| (3,1)-SMCDE energies for all orbitals   |'
   write(*,*)'-------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'

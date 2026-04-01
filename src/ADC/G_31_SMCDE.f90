@@ -323,7 +323,7 @@ subroutine G_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
    !--------------!
    
    write(*,*)'-------------------------------------------'
-   write(*,'(1X,A43)')'| (3,1)-MCDE energies for all orbitals    |'
+   write(*,'(1X,A43)')'| (3,1)-SMCDE energies for all orbitals   |'
    write(*,*)'-------------------------------------------'
    write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
         '|','#','|','e_QP (eV)','|','Z','|'
