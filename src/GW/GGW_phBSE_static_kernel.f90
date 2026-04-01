@@ -39,7 +39,7 @@ subroutine GGW_phBSE_static_kernel(nOrb,nC,nO,nV,nR,nS,lambda,ERI,Om,rho,W)
             chi = chi + rho(p,q,m)*rho(r,s,m)/Om(m)
           end do
 
-          W(p,s,q,r) = 2d0*lambda*chi
+          W(p,s,q,r) = - 2d0*lambda*chi
 
         end do
       end do
