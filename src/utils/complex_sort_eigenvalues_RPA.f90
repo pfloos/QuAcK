@@ -152,18 +152,5 @@ end do
        end if
      end do
   end do
- ! print *,"OmOmminus"
- ! call complex_vecout(n,evals)
- ! print *,'eta norm of omomminus'
- ! do i=1,n
- !   print *,i,sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2)
- !   call complex_vecout(n,evecs(:,i))
- ! end do
- ! print *, "max (XTY - YTX) != 0"
- ! print *, maxval(abs(matmul(transpose(evecs(1:nhalf,1:nhalf)),evecs(nhalf+1:n,1:nhalf))&
- !                                         -matmul(transpose(evecs(nhalf+1:n,1:nhalf)),evecs(1:nhalf,1:nhalf)))) 
- ! print *, 'XtX - YtY != 1'
- ! call complex_matout(nhalf,nhalf,matmul(transpose(conjg(evecs(1:nhalf,1:nhalf))),evecs(1:nhalf,1:nhalf))&
- !                                        -matmul(transpose(conjg(evecs(nhalf+1:n,1:nhalf))),evecs(nhalf+1:n,1:nhalf))) 
 
 end subroutine
