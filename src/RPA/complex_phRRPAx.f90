@@ -124,7 +124,7 @@ subroutine complex_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nB
 
     call complex_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call complex_print_excitation_energies('phRPAx@RHF','singlet',nSCVS,Om)
-    call complex_phLR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,&
+    call complex_phLR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nSCVS,&
                 nCVS,nFC,occupations_fc,virtuals,Om,XpY,XmY)
 
   end if
@@ -140,7 +140,7 @@ subroutine complex_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nB
 
     call complex_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call complex_print_excitation_energies('phRPAx@RHF','triplet',nSCVS,Om)
-    call complex_phLR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,&
+    call complex_phLR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nSCVS,&
                 nCVS,nFC,occupations_fc,virtuals,Om,XpY,XmY)
 
   end if
