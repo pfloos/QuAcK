@@ -1,4 +1,4 @@
-subroutine print_MOM_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF,occupations)
+subroutine print_MOM_cUHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF,occupations)
 
 ! Print one- and two-electron energies and other stuff for UHF calculation
 
@@ -18,6 +18,7 @@ subroutine print_MOM_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF,occupations)
   complex*16,intent(in)              :: Ex(nspin)
   complex*16,intent(in)              :: EW(nspin)
   complex*16,intent(in)              :: EUHF
+  double precision,intent(in)        :: S(nBas,nBas)
   integer,intent(in)                 :: occupations(maxval(nO),nspin)
 
 ! Local variables
@@ -25,8 +26,19 @@ subroutine print_MOM_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF,occupations)
   logical                            :: dump_orb = .false.
   integer,allocatable                :: unoccupied(:,:)
   integer                            :: ispin
+  double precision                   :: Sz, Sx2, Sy2, Sz2
 
 allocate(unoccupied(nBas - minval(nO),nspin))
+
+
+  Sz =  0.5d0*dble(nO(1) - nO(2))
+  Sx2 = real(0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - &
+        0.5d0*sum(matmul(transpose(conjg(c(:,occupations(1:nO(1),1),1))),&
+                  matmul(S,c(:,occupations(1:nO(2),2),2)))**2))
+  Sy2 = real(0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - &
+        0.5d0*sum(matmul(transpose(conjg(c(:,occupations(1:nO(1),1),1))),&
+                  matmul(S,c(:,occupations(1:nO(2),2),2)))**2))
+  Sz2 = 0.25d0*dble(nO(1) - nO(2))**2
 
   do ispin=1,nspin
     call non_occupied(nO(ispin),nBas,occupations(1:nO(ispin),ispin),unoccupied(1:nBas - nO(ispin),ispin))
@@ -67,6 +79,9 @@ allocate(unoccupied(nBas - minval(nO),nspin))
   write(*,'(A40,1X,F16.10,18X,A3)') ' Nuclear   repulsion = ',ENuc,' au'
   write(*,'(A40,1X,F16.10,1X,A1,F16.10,A1,A3)') ' cUHF         energy = ',real(EUHF + ENuc),'+',aimag(EUHF+ENuc),'i',' au'
   write(*,'(A79)')              '---------------------------------------------------------------------------------'
+  write(*,'(A40,1X,F10.6)')     ' <Sz>                   = ',Sz
+  write(*,'(A40,1X,F10.6)')     ' <S^2>                  = ',Sx2+Sy2+Sz2
+  write(*,'(A60)')              '---------------------------------------------'
   write(*,*)
 
 ! Print results
