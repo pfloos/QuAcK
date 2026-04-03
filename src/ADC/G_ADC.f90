@@ -159,7 +159,7 @@ subroutine G_ADC(dotest,                                               &
   ! Perform MCDE calculation !
   !--------------------------!
 
-    do_MCDE = .true.
+    do_MCDE = .false.
 
     if(do_MCDE) then
 
