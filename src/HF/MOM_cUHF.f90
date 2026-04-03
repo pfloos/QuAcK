@@ -291,7 +291,7 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,wri
 
 ! Compute final UHF energy
 
-  call print_MOM_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,EK,EW,EUHF,occupations)
+  call print_MOM_cUHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,EK,EW,EUHF,occupations)
  
   if(writeMOs) then
     call write_matout(nBas,nBas,real(c(:,:,1)),'real_MOs_alpha.dat')
