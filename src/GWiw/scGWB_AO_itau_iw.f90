@@ -976,7 +976,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   enddo
   Chi0_ao_iw(:,:,:) = Real(Chi0_ao_iw(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
   ! Compute Ec RPA
-  EcRPA=0d0;
+  EcRPA=0d0; EcdMP2=0d0;
   do ifreq=1,nfreqs
    trace1=0d0; trace2=0d0; trace3=0d0;
    Chi0v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
