@@ -280,7 +280,7 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMO
 
 ! Compute final UHF energy
 
-  call print_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,EK,EW,EUHF)
+  call print_cUHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,EK,EW,EUHF)
 
 
   if(writeMOs) then
