@@ -1,6 +1,6 @@
-subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC2x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! ADC version of GW 
+! ADC(2x) version of G3W2
 
   implicit none
   include 'parameters.h'
@@ -29,8 +29,9 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
-  integer                       :: mu
+  integer                       :: mu,nu
   integer                       :: klc,kcd,ija,iab
+  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -52,6 +53,7 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   double precision,allocatable  :: Vh(:,:)
   double precision,allocatable  :: Vx(:,:)
   double precision,allocatable  :: DM(:,:)
+  double precision,allocatable  :: w(:,:,:)
 
   logical,parameter             :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
@@ -66,9 +68,9 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted ADC-GW Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'***************************************'
+  write(*,*)'* Restricted ADC(2x)-G3W2 Calculation *'
+  write(*,*)'***************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -105,6 +107,10 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
+  ! Small shift to avoid hard zeros in amplitudes
+
+  Om(:) = Om(:) + 1d-12
+
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
   !--------------------------!
@@ -113,7 +119,7 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
-  deallocate(Aph,Bph,XpY,XmY)
+  deallocate(Aph,Bph)
 
   !-------------------!
   ! Compute Sigma(oo) !
@@ -124,15 +130,16 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
   if(sig_inf) then
 
-    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
- 
-    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb),w(nOrb,nOrb,nS))
+
+    ! call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call R_linDM_2SOSEX(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
     call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
     call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
  
     F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
  
-    deallocate(Vh,Vx,DM)
+    deallocate(Vh,Vx,DM,w,XpY,XmY)
 
   end if
 
@@ -141,7 +148,7 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   H(:,:) = 0d0
 
   !--------------------------------------!
-  !     Compute ADC-GW matrix            !
+  !     Compute ADC-2SOSEX matrix        !
   !--------------------------------------!
   !                                      !
   !     | F      U_2h1p     U_2p1h     | ! 
@@ -174,13 +181,33 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
   do p=nC+1,nOrb-nR
 
-    ija = 0
+    ija = nOrb
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
 
-        H(p       ,nOrb+ija) = sqrt(2d0)*rho(p,i,mu)
-        H(nOrb+ija,p       ) = sqrt(2d0)*rho(p,i,mu)
+        H(p ,ija) = sqrt(2d0)*rho(p,i,mu)
+        H(ija,p ) = sqrt(2d0)*rho(p,i,mu)
+
+        do k=nC+1,nO
+          do c=nO+1,nOrb-nR
+
+            num = sqrt(2d0)*ERI(i,c,k,p)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+            H(p  ,ija) = H(p  ,ija) + num*reg
+            H(ija,p  ) = H(ija,p  ) + num*reg
+
+            num = sqrt(2d0)*ERI(i,k,c,p)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+            H(p  ,ija) = H(p  ,ija) + num*reg
+            H(ija,p  ) = H(ija,p  ) + num*reg
+
+          end do
+        end do
 
       end do
     end do
@@ -193,13 +220,33 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 
   do p=nC+1,nOrb-nR
 
-    iab = 0
+    iab = nOrb + n2h1p
     do a=nO+1,nOrb-nR
       do mu=1,nS
         iab = iab + 1
 
-        H(p             ,nOrb+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
-        H(nOrb+n2h1p+iab,p             ) = sqrt(2d0)*rho(p,a,mu)
+        H(p  ,iab) = sqrt(2d0)*rho(p,a,mu)
+        H(iab,p  ) = sqrt(2d0)*rho(p,a,mu)
+
+        do k=nC+1,nO
+          do c=nO+1,nOrb-nR
+
+            num = sqrt(2d0)*ERI(a,k,c,p)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+            H(p  ,iab) = H(p  ,iab) + num*reg
+            H(iab,p  ) = H(iab,p  ) + num*reg
+
+            num = sqrt(2d0)*ERI(a,c,k,p)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+            H(p  ,iab) = H(p  ,iab) + num*reg
+            H(iab,p  ) = H(iab,p  ) + num*reg
+
+          end do
+        end do
 
       end do
     end do
@@ -210,12 +257,12 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   ! Block (K+C)_2h1p !
   !------------------!
 
-  ija = 0
+  ija = nOrb
   do i=nC+1,nO
     do mu=1,nS
       ija = ija + 1
 
-      H(nOrb+ija,nOrb+ija) = eHF(i) - Om(mu) 
+      H(ija,ija) = eHF(i) - Om(mu) 
 
     end do
   end do
@@ -224,12 +271,12 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
   ! Block (K+C)_2p1h !
   !------------------!
 
-  iab = 0
+  iab = nOrb + n2h1p
   do a=nO+1,nOrb-nR
     do mu=1,nS
       iab = iab + 1
 
-      H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(a) + Om(mu)
+      H(iab,iab) = eHF(a) + Om(mu)
 
     end do
   end do
@@ -272,7 +319,7 @@ subroutine R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| ADC-GW energies for all orbitals          |'
+  write(*,'(1X,A45)')'| ADC(2x)-G3W2 energies for all orbitals      |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
