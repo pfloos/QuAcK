@@ -1,6 +1,6 @@
-subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_IP_ADC2_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson version of ADC-2SOSEX for IPs
+! Non-Dyson ADC(2) version of G3W2 
 
   implicit none
   include 'parameters.h'
@@ -29,10 +29,11 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   integer                       :: p,q,r,s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
-  integer                       :: mu,nu
+  integer                       :: mu
   integer                       :: klc,kcd,ija,iab
   double precision              :: num,dem,reg
-  double precision              :: omega
+  double precision              :: dem1,reg1
+  double precision              :: dem2,reg2
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -54,10 +55,6 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   double precision,allocatable  :: Vh(:,:)
   double precision,allocatable  :: Vx(:,:)
   double precision,allocatable  :: DM(:,:)
-  double precision,allocatable  :: w(:,:,:)
-
-  double precision,allocatable  :: U_2p1h(:,:)
-  double precision,allocatable  :: K_2p1h(:,:)
 
   logical,parameter             :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
@@ -72,21 +69,19 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 ! Hello world
 
   write(*,*)
-  write(*,*)'****************************************'
-  write(*,*)'* Restricted IP-ADC-2SOSEX Calculation *'
-  write(*,*)'****************************************'
+  write(*,*)'*****************************************'
+  write(*,*)'* Restricted IP-ADC(2)-G3W2 Calculation *'
+  write(*,*)'*****************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
-  n2p1h = nV*nV*nO
-  nH = nO + n2h1p
+  nH = nO + n2h1p 
 
 ! Memory allocation
 
   allocate(H(nH,nH),eGW(nH),Z(nH))
-  allocate(U_2p1h(n2p1h,nO),K_2p1h(n2p1h,n2p1h))
 
 ! Initialization
 
@@ -112,10 +107,6 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  ! Small shift to avoid hard zeros in amplitudes
-
-  Om(:) = Om(:) + 1d-12
-
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
   !--------------------------!
@@ -124,27 +115,26 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
-  deallocate(Aph,Bph)
+  deallocate(Aph,Bph,XpY,XmY)
 
   !-------------------!
   ! Compute Sigma(oo) !
   !-------------------!
 
-! allocate(F(nOrb,nOrb))
-! F(:,:) = 0d0
+  allocate(F(nOrb,nOrb))
+  F(:,:) = 0d0
 
   if(sig_inf) then
 
-!   allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb),w(nOrb,nOrb,nS))
-
-!   ! call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
-!   call R_linDM_2SOSEX(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
-!   call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
-!   call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
-!
-!   F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
-!
-!   deallocate(Vh,Vx,DM,w,XpY,XmY)
+    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
+ 
+    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
+    call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
+ 
+    F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
+ 
+    deallocate(Vh,Vx,DM)
 
   end if
 
@@ -152,15 +142,17 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 
   H(:,:) = 0d0
 
-  !------------------------------!
-  ! Compute IP-ADC-2SOSEX matrix !
-  !------------------------------!
-  !                              !
-  !     | F      U_2h1p     |    ! 
-  ! H = |                   |    ! 
-  !     | U_2h1p (K+C)_2h1p |    ! 
-  !                              !
-  !------------------------------!
+  !--------------------------------------!
+  !     Compute ADC-GW matrix            !
+  !--------------------------------------!
+  !                                      !
+  !     | F      U_2h1p     U_2p1h     | ! 
+  !     |                              | ! 
+  ! H = | U_2h1p (K+C)_2h1p 0          | ! 
+  !     |                              | ! 
+  !     | U_2p1h 0          (K+C)_2p1h | ! 
+  !                                      !
+  !--------------------------------------!
 
   call wall_time(start_timing)
 
@@ -172,66 +164,32 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 
     H(i,i) = eHF(i)
 
+    do j=nC+1,nO
+      H(i,j) = H(i,j) + F(i,j)
+    end do
+
   end do
 
-  !--------------!
-  ! Block U_2p1h !
-  !--------------!
-  
-  do j=nC+1,nO
-  
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
-  
-        U_2p1h(iab,j) = sqrt(2d0)*rho(j,a,mu)
-  
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-  
-            num = sqrt(2d0)*ERI(j,k,c,a)*rho(c,k,mu)
-            dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-  
-            U_2p1h(iab,j) = U_2p1h(iab,j) + num*reg
-  
-            num = sqrt(2d0)*ERI(j,c,k,a)*rho(k,c,mu)
-            dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-  
-            U_2p1h(iab,j) = U_2p1h(iab,j) + num*reg
-  
-          end do
-        end do
-  
-      end do
-    end do
-  
-  end do
-  
-  !------------------!
-  ! Block (K+C)_2p1h !
-  !------------------!
+  !-------------------!
+  ! Block static 2p1h !
+  !-------------------!
 
   do i=nC+1,nO
     do j=nC+1,nO
 
-      omega = 0.5d0*(eHF(i) + eHF(j))
-  
-      K_2p1h(:,:) = 0d0
-  
-      iab = 0
-      do a=nO+1,nOrb-nR
-        do mu=1,nS
-          iab = iab + 1
-  
-          K_2p1h(iab,iab) = 1d0/(omega - eHF(a) - Om(mu))
-  
+      do mu=1,nS
+        do a=nO+1,nOrb-nR
+
+          num = 2d0*rho(i,a,mu)*rho(j,a,mu)
+          dem1 = eHF(i) - eHF(a) - Om(mu)
+          dem2 = eHF(j) - eHF(a) - Om(mu)
+          reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+          reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+
+          H(i,j) = H(i,j) + num*0.5d0*(reg1 + reg2)
+
         end do
       end do
-
-      H(i,j) = H(i,j) + dot_product(U_2p1h(:,i),matmul(K_2p1h,U_2p1h(:,j)))
 
     end do
   end do
@@ -240,35 +198,15 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
   ! Block U_2h1p !
   !--------------!
 
-  do j=nC+1,nO
+  do k=nC+1,nO
 
     ija = 0
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
 
-        H(j     ,nO+ija) = sqrt(2d0)*rho(j,i,mu)
-        H(nO+ija,j     ) = sqrt(2d0)*rho(j,i,mu)
-
-        do k=nC+1,nO
-          do c=nO+1,nO
-
-            num = sqrt(2d0)*ERI(j,c,k,i)*rho(k,c,mu)
-            dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(j     ,nO+ija) = H(j     ,nO+ija) + num*reg
-            H(nO+ija,j     ) = H(nO+ija,j     ) + num*reg
-
-            num = sqrt(2d0)*ERI(j,k,c,i)*rho(c,k,mu)
-            dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(j     ,nO+ija) = H(j     ,nO+ija) + num*reg
-            H(nO+ija,j     ) = H(nO+ija,j     ) + num*reg
-
-          end do
-        end do
+        H(k     ,nO+ija) = sqrt(2d0)*rho(k,i,mu)
+        H(nO+ija,k     ) = sqrt(2d0)*rho(k,i,mu)
 
       end do
     end do
@@ -327,7 +265,7 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| ADC-2SOSEX energies for all orbitals      |'
+  write(*,'(1X,A45)')'| IP-ADC-GW energies for all orbitals       |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
@@ -363,19 +301,36 @@ subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
             write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
             '      (',p,'    )           ',H(p,s),H(p,s)**2
         end do
+        do p=nO+1,nOrb-nR
+          if(abs(H(p,s)) > cutoff2)                     &
+            write(*,'(1X,A7,I3,A16,1X,F15.6,1X,F15.6)') &
+            '      (',p,'    )           ',H(p,s),H(p,s)**2
+        end do
 
         ija = 0
         do i=nC+1,nO
           do mu=1,nS
             ija = ija + 1
  
-            if(abs(H(nO+ija,s)) > cutoff2)                  &
+            if(abs(H(nOrb+ija,s)) > cutoff2)                  &
             write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
-            '      (',i,',',mu,')           ',H(nO+ija,s),H(nO+ija,s)**2
+            '      (',i,',',mu,')           ',H(nOrb+ija,s),H(nOrb+ija,s)**2
        
           end do
         end do
        
+        iab = 0
+        do mu=1,nS
+          do b=nO+1,nOrb-nR
+            iab = iab + 1
+
+              if(abs(H(nOrb+n2h1p+iab,s)) > cutoff2)              &
+                write(*,'(1X,A7,I3,A1,I3,A12,1X,F15.6,1X,F15.6)') &
+                '      (',mu,',',b,')           ',H(nOrb+n2h1p+iab,s),H(nOrb+n2h1p+iab,s)**2
+              
+          end do
+        end do
+
         write(*,*)'-------------------------------------------------------------'
         write(*,*)
 

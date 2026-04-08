@@ -15,7 +15,7 @@ subroutine read_methods(working_dir,                                            
                         doevParquet,doqsParquet,                                      &
                         do_IPEA_ADC2,do_IPEA_ADC3,                                    &
                         do_SOSEX,do_2SOSEX,do_G3W2,                                   &
-                        do_ADC_GW,do_ADC_2SOSEX,                                      &
+                        do_ADC2_G3W2,do_ADC2x_G3W2,                                   &
                         do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                      &
                         doRtest,doUtest,doGtest)
 
@@ -43,7 +43,7 @@ subroutine read_methods(working_dir,                                            
   logical,intent(out)           :: doevParquet,doqsParquet
   logical,intent(out)           :: do_IPEA_ADC2,do_IPEA_ADC3
   logical,intent(out)           :: do_SOSEX,do_2SOSEX,do_G3W2
-  logical,intent(out)           :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
+  logical,intent(out)           :: do_ADC2_G3W2,do_ADC2x_G3W2,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
 
   logical,intent(out)           :: doRtest,doUtest,doGtest
 
@@ -66,26 +66,26 @@ subroutine read_methods(working_dir,                                            
 
       ! Read mean-field methods
       
-      doRHF  = .false.
-      doUHF  = .false.
-      doGHF  = .false.
-      doROHF = .false.
-      doRHFB = .false.
-      docRHF = .false.
-      docUHF = .false.
-      doeRHF = .false.
+      doRHF   = .false.
+      doUHF   = .false.
+      doGHF   = .false.
+      doROHF  = .false.
+      doRHFB  = .false.
+      docRHF  = .false.
+      docUHF  = .false.
+      doeRHF  = .false.
       doscGHF = .false.
       
       read(1,*) 
       read(1,*) ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
-      if(ans1 == 'T') doRHF  = .true.
-      if(ans2 == 'T') doUHF  = .true.
-      if(ans3 == 'T') doGHF  = .true.
-      if(ans4 == 'T') doROHF = .true.
-      if(ans5 == 'T') doRHFB = .true.
-      if(ans6 == 'T') docRHF = .true.
-      if(ans7 == 'T') docUHF = .true.
-      if(ans8 == 'T') doeRHF = .true.
+      if(ans1 == 'T') doRHF   = .true.
+      if(ans2 == 'T') doUHF   = .true.
+      if(ans3 == 'T') doGHF   = .true.
+      if(ans4 == 'T') doROHF  = .true.
+      if(ans5 == 'T') doRHFB  = .true.
+      if(ans6 == 'T') docRHF  = .true.
+      if(ans7 == 'T') docUHF  = .true.
+      if(ans8 == 'T') doeRHF  = .true.
       if(ans9 == 'T') doscGHF = .true.
 
       ! Read MPn methods
@@ -143,7 +143,7 @@ subroutine read_methods(working_dir,                                            
       if(ans3 == 'T') doCID   = .true.
       if(ans4 == 'T') doCISD  = .true.
       if(ans5 == 'T') doFCI   = .true.
-      if(doCIS_D)        doCIS   = .true.
+      if(doCIS_D)     doCIS   = .true.
       
       ! Read RPA methods
       
@@ -255,16 +255,16 @@ subroutine read_methods(working_dir,                                            
 
       ! Read ADC methods
      
-      do_ADC_GW     = .false. 
-      do_ADC_2SOSEX = .false.
+      do_ADC2_G3W2  = .false. 
+      do_ADC2x_G3W2 = .false.
       do_ADC3_G3W2  = .false.
       do_ADC3x_G3W2 = .false.
       do_ADC4_G3W2  = .false.
 
       read(1,*)
       read(1,*) ans1,ans2,ans3,ans4,ans5
-      if(ans1 == 'T') do_ADC_GW     = .true.
-      if(ans2 == 'T') do_ADC_2SOSEX = .true.
+      if(ans1 == 'T') do_ADC2_G3W2  = .true.
+      if(ans2 == 'T') do_ADC2x_G3W2 = .true.
       if(ans3 == 'T') do_ADC3_G3W2  = .true.
       if(ans4 == 'T') do_ADC3x_G3W2 = .true.
       if(ans5 == 'T') do_ADC4_G3W2  = .true.

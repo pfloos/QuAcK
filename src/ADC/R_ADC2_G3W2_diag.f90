@@ -1,6 +1,6 @@
-subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC2_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson ADC version of GW within the diagonal approximation
+! ADC(2) version of G3W2 within the diagonal approximation
 
   implicit none
   include 'parameters.h'
@@ -33,7 +33,6 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
   integer                       :: jb,kc,ia,ja
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,ijb,iab,jab
-  double precision              :: num,dem,reg
 
   logical                       :: print_W = .false.
   logical                       :: dRPA = .true.
@@ -69,9 +68,9 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 ! Hello world
 
   write(*,*)
-  write(*,*)'************************************'
-  write(*,*)'* Restricted IP-ADC-GW Calculation *'
-  write(*,*)'************************************'
+  write(*,*)'**************************************'
+  write(*,*)'* Restricted ADC(2)-G3W2 Calculation *'
+  write(*,*)'**************************************'
   write(*,*)
 
 ! Diagonal approximation
@@ -82,7 +81,8 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
-  nH = 1 + n2h1p 
+  n2p1h = nV*nV*nO
+  nH = 1 + n2h1p + n2p1h
 
 ! Memory allocation
 
@@ -170,22 +170,6 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 
     H(1,1) = eHF(p) + F(p,p)
 
-    !-------------------!
-    ! Block static 2p1h !
-    !-------------------!
- 
-    do mu=1,nS
-      do a=nO+1,nOrb-nR
- 
-        num = 2d0*rho(p,a,mu)*rho(p,a,mu)
-        dem = eHF(p) - eHF(a) - Om(mu)
-        reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
- 
-        H(1,1) = H(1,1) + num*reg
- 
-      end do
-    end do
-
     !-------------!
     ! Block U2h1p !
     !-------------!
@@ -201,6 +185,21 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
       end do
     end do
  
+    !-------------!
+    ! Block U2p1h !
+    !-------------!
+ 
+    iab = 0
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
+        iab = iab + 1
+ 
+        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
+        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,a,mu)
+ 
+      end do
+    end do
+
     !------------------!
     ! Block C2h1p-2h1p !
     !------------------!
@@ -215,6 +214,20 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
       end do
     end do
 
+    !------------------!
+    ! Block C2p1h-2p1h !
+    !------------------!
+ 
+    iab = 0
+    do a=nO+1,nOrb-nR
+      do mu=1,nS
+        iab = iab + 1
+ 
+        H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)
+
+      end do
+    end do
+ 
     call wall_time(end_timing)
 
     timing = end_timing - start_timing
@@ -250,7 +263,7 @@ subroutine R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A32,I3,A8)')'| IP-ADC-GW energies for orbital',p,'|'
+    write(*,'(1X,A29,I3,A11)')'| ADC-GW energies for orbital',p,'|'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP (eV)','|','Z','|'

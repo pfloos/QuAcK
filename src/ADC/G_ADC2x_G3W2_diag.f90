@@ -1,6 +1,6 @@
-subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
+subroutine G_ADC2x_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
-! Generalized ADC version of 2SOSEX within the diagonal approximation
+! Generalized ADC(2x) version of G3W2 within the diagonal approximation
 
   implicit none
   include 'parameters.h'
@@ -63,9 +63,9 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'* Generalized ADC-2SOSEX Calculation *'
-  write(*,*)'**************************************'
+  write(*,*)'****************************************'
+  write(*,*)'* Generalized ADC(2x)-G3W2 Calculation *'
+  write(*,*)'****************************************'
   write(*,*)
 
 ! Diagonal approximation
