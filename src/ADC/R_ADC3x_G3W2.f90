@@ -280,18 +280,9 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
             do c=nO+1,nOrb-nR
               do nu=1,nS
     
-                num = 2d0*sqrt(2d0)*rho(c,k,mu)*rho(i,k,nu)*rho(p,c,nu)
-                dem1 = eHF(c) - eHF(k) + Om(mu)
-                dem2 = eHF(k) - eHF(i) - Om(nu)
-    
-                reg = SRG_reg2(dem1,dem2,flow)
-    
-                H(p  ,ija) = H(p  ,ija) + num*reg
-                H(ija,p  ) = H(ija,p    ) + num*reg
-    
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(c,i,nu)*rho(k,p,nu)
-                dem1 = eHF(k) - eHF(c) + Om(mu)
-                dem2 = eHF(i) - eHF(c) - Om(nu)
+                dem1 = eHF(c) - eHF(k) - Om(mu)
+                dem2 = eHF(c) - eHF(i) + Om(nu)
     
                 reg = SRG_reg2(dem1,dem2,flow)
     
@@ -299,45 +290,23 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
                 H(ija,p  ) = H(ija,p  ) - num*reg
     
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(i,c,nu)*rho(p,k,nu)
-                dem1 = eHF(k) - eHF(c) + Om(mu)
+                dem1 = eHF(c) - eHF(k) - Om(mu)
                 dem2 = eHF(c) - eHF(i) - Om(nu)
- 
+    
                 reg = SRG_reg2(dem1,dem2,flow)
- 
-                H(p  ,ija) = H(p  ,ija) - 0.5d0*num*reg
-                H(ija,p  ) = H(ija,p  ) - 0.5d0*num*reg
-
+    
+                H(p  ,ija) = H(p  ,ija) + 0.5d0*num*reg
+                H(ija,p  ) = H(ija,p  ) + 0.5d0*num*reg
+    
                 num = 2d0*sqrt(2d0)*rho(k,i,nu)*rho(c,k,mu)*rho(c,p,nu)
-                dem1 = eHF(i) - eHF(c) - Om(nu) - Om(mu)
+                dem1 = eHF(c) - eHF(i) + Om(mu) + Om(nu)
                 dem2 = eHF(c) - eHF(k) + Om(mu)
     
                 reg = SRG_reg2(dem1,dem2,flow)
-
-                H(p  ,ija) = H(p  ,ija) + num*reg
-                H(ija,p  ) = H(ija,p  ) + num*reg
- 
-              end do
-            end do
-          end do
     
-          do j=nC+1,nO
-            do k=nC+1,nO
-              do nu=1,nS
+                H(p  ,ija) = H(p  ,ija) - num*reg
+                H(ija,p  ) = H(ija,p  ) - num*reg
     
-                num = 2d0*sqrt(2d0)*rho(k,j,mu)*rho(i,j,nu)*rho(p,k,nu)
-                dem1 = eHF(k) - eHF(j) + Om(mu)
-                dem2 = eHF(j) - eHF(i) - Om(nu)
-    
-                reg = SRG_reg2(dem1+dem2,dem1,flow)
-
-                H(p  ,ija) = H(p  ,ija) + 0.5d0*num*reg
-                H(ija,p  ) = H(ija,p  ) + 0.5d0*num*reg
-
-                reg = SRG_reg2(dem1+dem2,dem2,flow)
-
-                H(p  ,ija) = H(p  ,ija) + 0.5d0*num*reg
-                H(ija,p  ) = H(ija,p  ) + 0.5d0*num*reg
- 
               end do
             end do
           end do
@@ -347,8 +316,8 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
               do nu=1,nS
     
                 num = 2d0*sqrt(2d0)*rho(a,i,nu)*rho(b,a,mu)*rho(b,p,nu)
-                dem1 = eHF(i) - eHF(b) - Om(nu) - Om(mu)
-                dem2 = eHF(i) - eHF(a) - Om(nu)
+                dem1 = eHF(b) - eHF(i) + Om(mu) + Om(nu)
+                dem2 = eHF(a) - eHF(i) + Om(nu)
 
                 reg = SRG_reg2(dem1,dem2,flow)
 
@@ -473,18 +442,9 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
             do c=nO+1,nOrb-nR
               do nu=1,nS
     
-                num = 2d0*sqrt(2d0)*rho(c,k,mu)*rho(c,a,nu)*rho(k,p,nu)
-                dem1 = eHF(c) - eHF(k) + Om(mu)
-                dem2 = eHF(a) - eHF(c) - Om(nu)
-
-                reg = SRG_reg2(dem1,dem2,flow)
-    
-                H(p  ,iab) = H(p  ,iab) + num*reg
-                H(iab,p  ) = H(iab,p  ) + num*reg
-    
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(a,k,nu)*rho(p,c,nu)
-                dem1 = eHF(k) - eHF(c) + Om(mu)
-                dem2 = eHF(k) - eHF(a) - Om(nu)
+                dem1 = eHF(c) - eHF(k) - Om(mu)
+                dem2 = eHF(a) - eHF(k) + Om(nu)
 
                 reg = SRG_reg2(dem1,dem2,flow)
  
@@ -492,55 +452,33 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
                 H(iab,p  ) = H(iab,p  ) - num*reg
     
                 num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(k,a,nu)*rho(c,p,nu)
-                dem1 = eHF(k) - eHF(c) + Om(mu)
+                dem1 = eHF(c) - eHF(k) - Om(mu)
                 dem2 = eHF(a) - eHF(k) - Om(nu)
 
                 reg = SRG_reg2(dem1,dem2,flow)
     
-                H(p  ,iab) = H(p  ,iab) - 0.5d0*num*reg
-                H(iab,p  ) = H(iab,p  ) - 0.5d0*num*reg
+                H(p  ,iab) = H(p  ,iab) + 0.5d0*num*reg
+                H(iab,p  ) = H(iab,p  ) + 0.5d0*num*reg
     
                 num = 2d0*sqrt(2d0)*rho(a,c,nu)*rho(c,k,mu)*rho(p,k,nu)
-                dem1 = eHF(a) - eHF(k) + Om(nu) + Om(mu)
-                dem2 = eHF(k) - eHF(c) - Om(mu)
+                dem1 = eHF(a) - eHF(k) + Om(mu) + Om(nu)
+                dem2 = eHF(c) - eHF(k) + Om(mu)
     
                 reg = SRG_reg2(dem1,dem2,flow)
 
-                H(p  ,iab) = H(p  ,iab) + num*reg
-                H(iab,p  ) = H(iab,p  ) + num*reg
+                H(p  ,iab) = H(p  ,iab) - num*reg
+                H(iab,p  ) = H(iab,p  ) - num*reg
     
               end do
             end do
           end do
     
-          do b=nO+1,nOrb-nR
-            do c=nO+1,nOrb-nR
-              do nu=1,nS
-    
-                num = 2d0*sqrt(2d0)*rho(b,c,mu)*rho(b,a,nu)*rho(c,p,nu)
-                dem1 = eHF(b) - eHF(c) + Om(mu)
-                dem2 = eHF(a) - eHF(b) - Om(nu)
-
-                reg = SRG_reg2(dem1+dem2,dem1,flow)
-
-                H(p  ,iab) = H(p  ,iab) + 0.5d0*num*reg
-                H(iab,p  ) = H(iab,p  ) + 0.5d0*num*reg
-    
-                reg = SRG_reg2(dem1+dem2,dem2,flow)
-
-                H(p  ,iab) = H(p  ,iab) + 0.5d0*num*reg
-                H(iab,p  ) = H(iab,p  ) + 0.5d0*num*reg
-    
-              end do
-            end do
-          end do
-
           do i=nC+1,nO
             do j=nC+1,nO
               do nu=1,nS
     
                 num = 2d0*sqrt(2d0)*rho(a,j,nu)*rho(j,i,mu)*rho(p,i,nu)
-                dem1 = eHF(a) - eHF(i) + Om(nu) + Om(mu)
+                dem1 = eHF(a) - eHF(i) + Om(mu) + Om(nu)
                 dem2 = eHF(a) - eHF(j) + Om(nu)
 
                 reg = SRG_reg2(dem1,dem2,flow)
