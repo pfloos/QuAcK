@@ -635,7 +635,6 @@ subroutine R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
   end if
 
-
   call wall_time(end_time)
 
   time = end_time - start_time
