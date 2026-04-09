@@ -32,7 +32,7 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   integer                       :: mu,nu,la
   integer                       :: bra,ket
   double precision              :: num,num1,num2
-  double precision              :: dem,dem1,dem2,dem3
+  double precision              :: dem,dem1,dem2
   double precision              :: reg,reg1,reg2
 
   logical                       :: print_W = .false.
@@ -110,11 +110,11 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   add_C1_2h1p_3h2p  = .true.
   add_C1_2p1h_3p2h  = .true.
 
-  add_K_3h2p = .true.
-  add_K_3p2h = .true.
-
   add_U1_3h2p = .true.
   add_U1_3p2h = .true.
+
+  add_K_3h2p  = .true.
+  add_K_3p2h  = .true.
 
 ! ADC(3x)-G3W2
 
@@ -210,7 +210,9 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   !---------!
  
   do p=nC+1,nOrb-nR
+
     H(p,p) = eHF(p)
+
   end do
  
   !--------------!
@@ -882,8 +884,8 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
             do la=1,nS
               ket = ket + 1
 
-              H(bra,ket) = sqrt(2d0)*rho(a,c,nu)*Kronecker_delta(mu,la)
-              H(ket,bra) = sqrt(2d0)*rho(a,c,nu)*Kronecker_delta(mu,la)
+              H(bra,ket) = sqrt(2d0)*rho(c,a,nu)*Kronecker_delta(mu,la)
+              H(ket,bra) = sqrt(2d0)*rho(c,a,nu)*Kronecker_delta(mu,la)
 
             end do
           end do
