@@ -76,7 +76,7 @@ subroutine R_ADC(dotest,                                               &
 
   double precision              :: start_ADC,end_ADC,t_ADC
   logical                       :: do_IPEA,do_EE
-  double precision,parameter    :: flow = 500d0
+  double precision,parameter    :: flow = 1d6
 
   logical                       :: do_hierarchy_GW = .false.
   logical                       :: do_1h1p,do_1h,do_diag
@@ -368,7 +368,8 @@ subroutine R_ADC(dotest,                                               &
       if(do_dyson) then
 
         if(diag_approx) then
-          call R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         has to be updated with new expressions
+!         call R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
           call R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
@@ -400,7 +401,8 @@ subroutine R_ADC(dotest,                                               &
       if(do_dyson) then
 
         if(diag_approx) then
-          call R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         has to be updated with new expressions
+!         call R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
           call R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
@@ -432,8 +434,9 @@ subroutine R_ADC(dotest,                                               &
       if(do_dyson) then
 
         if(diag_approx) then
-          call R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-          ! call R_ADC4_G3W2_diag_fullmat(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         has to be updated with new expressions
+ !        call R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+ !        call R_ADC4_G3W2_diag_fullmat(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
           call R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
