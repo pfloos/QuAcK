@@ -203,10 +203,6 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   call wall_time(start_timing)
 
-  write(*,*)'--------------------------------------------------------'
-  write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A10,1X,A1,1X)')'|','It.','|','e_QP (eV)','|','Z','|'
-  write(*,*)'--------------------------------------------------------'
-
   call wall_time(start_time)
   
   !---------!
@@ -939,9 +935,6 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
       Z(s) = Z(s) + H(p,s)**2
     end do
   end do          
-
-  write(*,*)'--------------------------------------------------------'
-  write(*,*)
 
 !--------------!
 ! Dump results !
