@@ -132,7 +132,7 @@ subroutine R_IP_ADC2_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,n
 
     allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
 
-    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call R_linDM_GW(flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
     call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
     call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
 

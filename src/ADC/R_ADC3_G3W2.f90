@@ -164,9 +164,9 @@ subroutine R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
     allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
 
-    ! call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
-    call R_linDM_2SOSEX(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
-    call R_linDM_ADC3(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
+    ! call R_linDM_GW(flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call R_linDM_2SOSEX(flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
+    call R_linDM_ADC3(flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
     call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
     call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
  

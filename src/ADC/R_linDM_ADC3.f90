@@ -1,4 +1,4 @@
-subroutine R_linDM_ADC3(nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,eta,linDM)
+subroutine R_linDM_ADC3(flow,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,eta,linDM)
   
 ! Compute the linearized GW density matrix
 
@@ -8,6 +8,7 @@ include 'parameters.h'
 
 ! Input variables
 
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -54,7 +55,7 @@ include 'parameters.h'
 ! Initialization
   
   linDM(:,:) = 0d0
-  s = 500d0
+  s = flow
   
 ! Memory allocation  
   allocate(U1_2h1p(n2h1p,nOrb))
@@ -505,4 +506,4 @@ include 'parameters.h'
 
   deallocate(U1_2h1p,U2_2h1p,U1_2p1h,U2_2p1h)
   
-end subroutine R_linDM_ADC3
+end subroutine

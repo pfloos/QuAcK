@@ -73,6 +73,15 @@ subroutine R_ADC2x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   write(*,*)'***************************************'
   write(*,*)
 
+! Static self-energy contribution
+
+  if(sig_inf) then
+
+    write(*,*)' Static self-energy contribution activated! '
+    write(*,*)
+
+  end if
+
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
@@ -132,8 +141,8 @@ subroutine R_ADC2x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
     allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb),w(nOrb,nOrb,nS))
 
-    ! call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
-    call R_linDM_2SOSEX(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
+    ! call R_linDM_GW(flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call R_linDM_2SOSEX(flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,0d0,DM)
     call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
     call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
  
