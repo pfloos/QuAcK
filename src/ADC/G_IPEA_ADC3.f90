@@ -384,4 +384,4 @@ subroutine G_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
        
     end if ! If verbose
   
-end subroutine G_IPEA_ADC3
+end subroutine 

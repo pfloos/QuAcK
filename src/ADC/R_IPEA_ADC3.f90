@@ -23,12 +23,14 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! Local variables
 
-  integer                       :: p
+  integer                       :: p,q
   integer                       :: s
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: jb,kc,ia,ja
   integer                       :: klc,kcd,ija,ijb,iab,jab
+  double precision              :: eps,eps1,eps2
+  double precision              :: num
 
   integer                       :: nI_2h1p,nII_2h1p,nIII_2h1p
   integer                       :: nI_2p1h,nII_2p1h,nIII_2p1h
@@ -37,6 +39,8 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: Z(:)
+  double precision              :: tmp_eig,tmp_Z
+  integer                       :: min_idx
 
   logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
@@ -101,7 +105,70 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   do p=1,nOrb
     H(p,p) = eHF(p)
-  end do   
+  end do
+
+!--------------------------------------------------------!
+! Compute third-order frequency-independent contribution !
+!                          3h2p                          !  
+!--------------------------------------------------------!
+  do p=nC+1,nBas-nR
+     do q=nC+1,nBas-nR
+        do i=nC+1,nO
+           do j=nC+1,nO
+              do k=nC+1,nO
+                 do a=nO+1,nBas-nR
+                    do b=nO+1,nBas-nR
+
+                       eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
+                       eps2 = eHF(k) + eHF(i) - eHF(a) - eHF(b)
+                       num = - (2d0*ERI(p,k,q,j) - ERI(p,k,j,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(a,b,k,i)
+                       
+                       H(p,q) = H(p,q) + num / (eps1*eps2) 
+                       
+                       eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
+                       eps2 = eHF(k)          - eHF(b)
+                       num  = - (2d0*ERI(p,b,q,k) - ERI(p,b,k,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(i,j,k,a)
+                       
+                       H(p,q) = H(p,q) + 2d0 * num / (eps1*eps2)
+                    
+                    end do
+                 end do
+              end do
+           end do
+        end do
+     end do
+  end do
+!--------------------------------------------------------!
+! Compute third-order frequency-independent contribution !
+!                          3p2h                          !  
+!--------------------------------------------------------!
+  do p=nC+1,nBas-nR
+     do q=nC+1,nBas-nR
+        do i=nC+1,nO
+           do j=nC+1,nO
+              do a=nO+1,nBas-nR
+                 do b=nO+1,nBas-nR
+                    do c=nO+1,nBas-nR
+
+                       eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
+                       eps2 = eHF(j) + eHF(i) - eHF(a) - eHF(c)
+                       num = + (2d0*ERI(p,c,q,b) - ERI(p,c,b,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(i,j,c,a)
+                       
+                       H(p,q) = H(p,q) + num / (eps1*eps2)
+                       
+                       eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
+                       eps2 = eHF(j)          - eHF(c)
+                       num = + (2d0*ERI(p,c,q,j) - ERI(p,c,j,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(a,b,c,i)
+                       
+                       H(p,q) = H(p,q) + 2d0 * num / (eps1*eps2) 
+                    
+                    end do
+                 end do
+              end do
+           end do
+        end do
+     end do
+  end do
 
   !----------------------!
   ! Block U_2h1p: Part I !
@@ -968,6 +1035,24 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     end do
   end do
 
+  ! Selection sort (ascending)
+  do i = 1, nH-1
+     min_idx = i
+     do j = i+1, nH
+        if (eGF(j) < eGF(min_idx)) then
+           min_idx = j
+        end if
+     end do
+     ! Swap eigenvalues
+     tmp_eig = eGF(i)
+     eGF(i) = eGF(min_idx)
+     eGF(min_idx) = tmp_eig
+     ! Swap corresponding weights
+     tmp_Z = Z(i)
+     Z(i) = Z(min_idx)
+     Z(min_idx) = tmp_Z
+  end do
+  
   !--------------!
   ! Dump results !
   !--------------!

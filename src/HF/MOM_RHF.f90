@@ -260,6 +260,7 @@ subroutine MOM_RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,
     call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
     call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
     call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
+    call write_occupations(nO,nO,occupations,occupations,'occupations.dat')
   endif
 
 ! Testing zone

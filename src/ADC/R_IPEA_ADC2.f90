@@ -35,6 +35,8 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: eGF(:)
   double precision,allocatable  :: Z(:)
+  double precision              :: tmp_eig,tmp_Z
+  integer                       :: min_idx
 
   logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.1d0
@@ -205,12 +207,32 @@ subroutine R_IPEA_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     end do
   end do
 
+
+  ! Selection sort (ascending)
+  do i = 1, nH-1
+     min_idx = i
+     do j = i+1, nH
+        if (eGF(j) < eGF(min_idx)) then
+           min_idx = j
+        end if
+     end do
+     ! Swap eigenvalues
+     tmp_eig = eGF(i)
+     eGF(i) = eGF(min_idx)
+     eGF(min_idx) = tmp_eig
+     ! Swap corresponding weights
+     tmp_Z = Z(i)
+     Z(i) = Z(min_idx)
+     Z(min_idx) = tmp_Z
+  end do
+
+  
   !--------------!
   ! Dump results !
   !--------------!
 
   write(*,*)'-------------------------------------------'
-  write(*,'(1X,A43)')'| IPEA-ADC(2) energies for all orbitals   |'
+  write(*,'(1X,A43)')'| IP-ADC(2) energies for all orbitals     |'
   write(*,*)'-------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'

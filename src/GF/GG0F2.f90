@@ -26,9 +26,9 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: EGHF
-  double precision,intent(in)   :: eHF(nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  double precision,intent(in)   :: eHF(nBas)
 
 ! Local variables
 
@@ -51,7 +51,11 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
 ! Memory allocation
 
   allocate(SigC(nBas),Z(nBas),eGFlin(nBas),eGF(nBas))
-
+  SigC(:) = 0d0
+  Z(:) = 0d0
+  eGFlin(:) = 0d0
+  eGF(:) = 0d0
+  
 ! Frequency-dependent second-order contribution
 
   if(regularize) then 
@@ -83,7 +87,7 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
 
   ! Print results
 
-  call GMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EHF,eGF,Ec)
+  call GMP2(.false.,regularize,nBas,nC,nO,nV,nR,ERI,ENuc,EGHF,eGF,Ec)
   call print_GG0F2(nBas,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,EGHF,Ec)
 
 ! Perform BSE@GF2 calculation
@@ -95,7 +99,7 @@ subroutine GG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,linearize,eta,regularize, 
     write(*,*)
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@GG0F2  correlation energy          =',EcBSE,' au'
-    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@GG0F2  total energy                =',ENuc + EHF + EcBSE,' au'
+    write(*,'(2X,A50,F20.10,A3)') 'Tr@phBSE@GG0F2  total energy                =',ENuc + EGHF + EcBSE,' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
 

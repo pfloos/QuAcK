@@ -1,7 +1,7 @@
 subroutine R_ADC(dotest,                                               & 
                  do_IPEA_ADC2,do_IPEA_ADC3,                            &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
-                 do_ADC_GW,do_ADC_2SOSEX,                              &
+                 do_ADC2_G3W2,do_ADC2x_G3W2,                           &
                  do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,              &
                  TDA_W,TDA,singlet,triplet,linearize,eta,doSRG,        &
                  do_dyson,diag_approx,sig_inf,                         & 
@@ -25,8 +25,8 @@ subroutine R_ADC(dotest,                                               &
   logical,intent(in)            :: do_2SOSEX
   logical,intent(in)            :: do_G3W2
 
-  logical,intent(in)            :: do_ADC_GW
-  logical,intent(in)            :: do_ADC_2SOSEX
+  logical,intent(in)            :: do_ADC2_G3W2
+  logical,intent(in)            :: do_ADC2x_G3W2
   logical,intent(in)            :: do_ADC3_G3W2
   logical,intent(in)            :: do_ADC3x_G3W2
   logical,intent(in)            :: do_ADC4_G3W2
@@ -80,7 +80,9 @@ subroutine R_ADC(dotest,                                               &
 
   logical                       :: do_hierarchy_GW = .false.
   logical                       :: do_1h1p,do_1h,do_diag
-  logical                       :: do_full_freq,do_half_half, do_pure_stat
+  logical                       :: do_full_freq,do_half_half,do_pure_stat
+
+  logical                       :: do_MCDE
 
 ! Output variables
   
@@ -88,7 +90,9 @@ subroutine R_ADC(dotest,                                               &
 
   do_IPEA = do_IPEA_ADC2 .or. do_IPEA_ADC3 .or.       &  
             do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or. &
-            do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
+            do_ADC2_G3W2 .or. do_ADC2x_G3W2 .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
+
+  do_IPEA = do_IPEA .or. do_hierarchy_GW 
 
   do_EE   = .false.
 
@@ -119,10 +123,8 @@ subroutine R_ADC(dotest,                                               &
       else
 
         if(diag_approx) then
-          print*, 'Diagonal version of IP-ADC(2) not yet debugged'
           call R_IP_ADC2_diag(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          print*, 'Full version of IP-ADC(2) not yet debugged'
           call R_IP_ADC2(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
    
@@ -165,6 +167,41 @@ subroutine R_ADC(dotest,                                               &
 
       t_ADC = end_ADC - start_ADC
       write(*,'(A65,1X,F9.3,A8)') 'Total wall time for IP/EA-ADC(3) = ',t_ADC,' seconds'
+      write(*,*)
+
+    end if
+
+  !--------------------------!
+  ! Perform MCDE calculation !
+  !--------------------------!
+
+    do_MCDE = .false.
+
+    if(do_MCDE) then
+
+      call wall_time(start_ADC)
+      if(do_dyson) then
+
+        if(diag_approx) then
+          print*, 'Diagonal version of (3,1)-MCDE not yet implemented'
+        else
+          call R_31_MCDE(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+        end if
+
+      else
+
+        if(diag_approx) then
+          print*, 'Diagonal version of (3,1)-MCDE not yet implemented'
+        else
+          print*, 'Full version of (3,1)-MCDE not yet implemented'
+        end if
+
+      end if
+      call wall_time(end_ADC)
+
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for (3,1)-MCDE = ',t_ADC,' seconds'
       write(*,*)
 
     end if
@@ -217,24 +254,23 @@ subroutine R_ADC(dotest,                                               &
  
     end if
   
-  !----------------------------!
-  ! Perform ADC-GW calculation !
-  !----------------------------!
+  !-------------------------------!
+  ! Perform hierarchy calculation !
+  !-------------------------------!
 
-    do_1h1p = .true.
-    do_1h   = .true.
-    do_diag = .true.
+    do_1h1p = .false.
+    do_1h   = .false.
+    do_diag = .false.
 
     do_full_freq = .false.
-    do_half_half = .true.
-    do_pure_stat = .true.
+    do_half_half = .false.
+    do_pure_stat = .false.
 
     if(do_hierarchy_GW) then 
       
-
       call wall_time(start_ADC)
       if(do_1h1p) then
-          if(do_full_freq) call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          if(do_full_freq) call R_ADC2_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
           if(do_half_half) call R_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
           if(do_pure_stat) call R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
       end if
@@ -246,78 +282,78 @@ subroutine R_ADC(dotest,                                               &
       end if
 
       if(do_diag) then
-          if(do_full_freq) call R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          if(do_full_freq) call R_ADC2_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
           if(do_half_half) call R_diag_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
           if(do_pure_stat) call R_diag_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
       end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-GW = ',t_ADC,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for hierarchy GW = ',t_ADC,' seconds'
       write(*,*)
  
     end if
   
-  !----------------------------!
-  ! Perform ADC-GW calculation !
-  !----------------------------!
+  !-------------------------------!
+  ! Perform ADC2-G3W2 calculation !
+  !-------------------------------!
 
-    if(do_ADC_GW) then 
+    if(do_ADC2_G3W2) then 
       
       call wall_time(start_ADC)
       if(do_dyson) then
 
         if(diag_approx) then
-          call R_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_ADC2_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          call R_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_ADC2_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       else
 
         if(diag_approx) then
-!         call R_IP_ADC_GW_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_IP_ADC2_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-!         call R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_IP_ADC2_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-GW = ',t_ADC,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC(2)-G3W2 = ',t_ADC,' seconds'
       write(*,*)
  
     end if
   
-  !--------------------------------!
-  ! Perform ADC-2SOSEX calculation !
-  !--------------------------------!
+  !----------------------------------!
+  ! Perform ADC(2x)-G3W2 calculation !
+  !----------------------------------!
 
-    if(do_ADC_2SOSEX) then 
+    if(do_ADC2x_G3W2) then 
       
       call wall_time(start_ADC)
       if(do_dyson) then
 
         if(diag_approx) then
-          call R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_ADC2x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
-          call R_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_ADC2x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       else
 
         if(diag_approx) then
-          print*, 'Diagonal version of IP-ADC-2SOSEX not yet implemented'
+          print*, 'Diagonal version of IP-ADC(2x)-G3W2 not yet implemented'
         else
-          call R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+          call R_IP_ADC2x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
 
       end if
       call wall_time(end_ADC)
     
       t_ADC = end_ADC - start_ADC
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-2SOSEX = ',t_ADC,' seconds'
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC(2x)-G3W2 = ',t_ADC,' seconds'
       write(*,*)
  
     end if
@@ -332,7 +368,8 @@ subroutine R_ADC(dotest,                                               &
       if(do_dyson) then
 
         if(diag_approx) then
-          call R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         has to be updated with new expressions
+!         call R_ADC3_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
           call R_ADC3_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
@@ -364,7 +401,8 @@ subroutine R_ADC(dotest,                                               &
       if(do_dyson) then
 
         if(diag_approx) then
-          call R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         has to be updated with new expressions
+!         call R_ADC3x_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
           call R_ADC3x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if
@@ -396,8 +434,9 @@ subroutine R_ADC(dotest,                                               &
       if(do_dyson) then
 
         if(diag_approx) then
-          call R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
-          ! call R_ADC4_G3W2_diag_fullmat(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+!         has to be updated with new expressions
+ !        call R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
+ !        call R_ADC4_G3W2_diag_fullmat(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         else
           call R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI_MO,eHF)
         end if

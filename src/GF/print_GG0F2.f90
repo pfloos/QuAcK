@@ -1,4 +1,4 @@
-subroutine print_GG0F2(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+subroutine print_GG0F2(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,EGHF,Ec)
 
 ! Print one-electron energies and other stuff for G0F2
 
@@ -15,7 +15,7 @@ subroutine print_GG0F2(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
   double precision,intent(in)   :: eGF(nOrb)
   double precision,intent(in)   :: Z(nOrb)
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: Ec
 
   integer                       :: i,a
@@ -60,7 +60,7 @@ subroutine print_GG0F2(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
   write(*,'(2X,A60,F15.6,A3)') 'G0F2  LUMO      energy =',eLUMO*HaToeV,' eV'
   write(*,'(2X,A60,F15.6,A3)') 'G0F2  HOMO-LUMO gap    =',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'G0F2 total energy       =',ENuc + ERHF + Ec,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'G0F2 total energy       =',ENuc + EGHF + Ec,' au'
   write(*,'(2X,A60,F15.6,A3)') 'G0F2 correlation energy =',Ec,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)

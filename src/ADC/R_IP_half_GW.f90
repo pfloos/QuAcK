@@ -32,6 +32,8 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   integer                       :: mu
   integer                       :: klc,kcd,ija,iab
   double precision              :: num,dem,reg
+  double precision              :: dem1,reg1
+  double precision              :: dem2,reg2
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -184,6 +186,14 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
           H(i,j) = H(i,j) + num*reg
 
+!         num = 2d0*rho(i,a,mu)*rho(j,a,mu)
+!         dem1 = eHF(i) - eHF(a) - Om(mu)
+!         dem2 = eHF(j) - eHF(a) - Om(mu)
+!         reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+!         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+
+!         H(i,j) = H(i,j) + num*0.5d0*(reg1 + reg2)
+
         end do
       end do
 
@@ -254,16 +264,6 @@ subroutine R_IP_half_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
     do i=nC+1,nO
 
       Z(s) = Z(s) + H(i,s)**2
-
-      do mu=1,nS
-        do a=nO+1,nOrb-nR
-
-          num = sqrt(2d0)*rho(i,a,mu)*H(i,s)
-          dem = eHF(i) - eHF(a) - Om(mu)
-          Z(s) = Z(s) + (num/dem)**2
-
-        end do
-      end do
 
     end do
   end do

@@ -1,33 +1,5 @@
 
 !------------------------------------------------------------------------
-function SRG_reg(s,x) result(val)
-
-! SRG regulization scheme
-
-  implicit none
-
-! Input variables
-
-  double precision,intent(in)   :: s
-  double precision,intent(in)   :: x
-
-! Local variables
-
-  double precision,parameter    :: thres = 1d-15
-
-! Output variables
-
-  double precision              :: val
-
-  if(abs(x) < thres) then
-    val = 0d0
-  else
-    val = (1d0 - exp(-2d0*s*x*x))/x
-  end if
-
-end function 
-
-!------------------------------------------------------------------------
 function Heaviside_step(x) result(val)
 
 ! Kronecker Delta
@@ -253,6 +225,24 @@ subroutine matout(m,n,A)
       end do
       write(*,'(I7,10F15.8)') i,(B(j),j=1,num)
     end do
+  end do
+
+end subroutine 
+!------------------------------------------------------------------------
+subroutine matdiagout(m,n,A)
+
+! Print the diagonal of a MxN matrix A
+
+  implicit none
+
+  double precision,parameter    :: small = 1d-10
+  integer,intent(in)            :: m,n
+  double precision,intent(in)   :: A(m,n)
+
+  integer                       :: i
+  
+  do i=1,max(n,m)
+      write(*,'(I7,X,I7,10F15.8)') i,i,A(i,i)
   end do
 
 end subroutine 

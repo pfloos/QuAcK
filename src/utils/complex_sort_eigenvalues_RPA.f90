@@ -11,12 +11,13 @@ subroutine complex_sort_eigenvalues_RPA(n, evals, evecs)
 
   ! -------------------------------
   ! Step 1: initial bubble sort
-  ! Sort in descending order by real part, if two real parts are the same than first the one with lower imag part
+  ! Sort in descending order by real part if they are not the same, otherwise by descending imaginary part
   ! -------------------------------
   do i = 1, n-1
    do j = i+1, n
 
       if (abs(real(evals(i)) - real(evals(j))) > threshold) then
+
          ! Primary sort: real part ascending
          if (real(evals(i)) < real(evals(j))) then
             ! swap
@@ -49,12 +50,10 @@ end do
   ! Step 2: classify first half
   !  - eta-norm > 0  -> excitation
   !  - eta-norm < 0  -> swap
-  !  - if Re(omega) = 0 -> use imaginary part (this criteria has to be checked)
+  !  - if abs(eta-norm) < threshold -> use negative imaginary part for excitation (this criteria has to be checked)
   ! -------------------------------
   nhalf = n/2
   counter = 0
- ! print *,"OmOmminus"
- ! call complex_vecout(n,evals)
 
   do i = 1, nhalf
 
@@ -65,6 +64,16 @@ end do
        print *, 'Mode with vanishing eta-norm has been found !'
        print *, 'Omega:', evals(i)
        print *, 'eta-norm', etanorm
+       j = n + 1 - i
+       if(aimag(evals(i))>0d0) then
+         temp_val = evals(i)
+         evals(i) = evals(j)
+         evals(j) = temp_val
+
+         temp_vec = evecs(:, i)
+         evecs(:, i) = evecs(:, j)
+         evecs(:, j) = temp_vec
+       end if
      end if
 
      ! normal case: classify by eta-norm
@@ -81,7 +90,6 @@ end do
         evecs(:, j) = temp_vec
 
         counter = counter + 1
-
      end if
 
   end do
@@ -144,18 +152,5 @@ end do
        end if
      end do
   end do
- ! print *,"OmOmminus"
- ! call complex_vecout(n,evals)
- ! print *,'eta norm of omomminus'
- ! do i=1,n
- !   print *,i,sum(abs(evecs(1:nhalf,i))**2) - sum(abs(evecs(nhalf+1:n,i))**2)
- !   call complex_vecout(n,evecs(:,i))
- ! end do
- ! print *, "max (XTY - YTX) != 0"
- ! print *, maxval(abs(matmul(transpose(evecs(1:nhalf,1:nhalf)),evecs(nhalf+1:n,1:nhalf))&
- !                                         -matmul(transpose(evecs(nhalf+1:n,1:nhalf)),evecs(1:nhalf,1:nhalf)))) 
- ! print *, 'XtX - YtY != 1'
- ! call complex_matout(nhalf,nhalf,matmul(transpose(conjg(evecs(1:nhalf,1:nhalf))),evecs(1:nhalf,1:nhalf))&
- !                                        -matmul(transpose(conjg(evecs(nhalf+1:n,1:nhalf))),evecs(nhalf+1:n,1:nhalf))) 
 
 end subroutine

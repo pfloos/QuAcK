@@ -12,8 +12,8 @@
   F     F      F     F     F   
 # OORPA
   F
-# G0F2 evGF2 qsGF2 G0F3 evGF3 scGF2
-  F    F     F     F    F     F
+# G0F2 evGF2 qsGF2 G0F3 evGF3 psdG0F3 scGF2
+  F    F     F     F    F     F     F
 # G0W0 evGW qsGW scGW
   F    F    F    F
 # G0T0pp evGTpp qsGTpp ufG0T0pp
@@ -24,7 +24,7 @@
   F         F
 # IPEA-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2
   F         F         F     F      F
-# ADC-GW ADC-2SOSEX ADC3-G3W2 ADC3x-G3W2 ADC4-G3W2
-  F      F          F         F          F
+# ADC(2)-G3W2 ADC(2x)-G3W2 ADC(3)-G3W2 ADC(3x)-G3W2 ADC(4)-G3W2
+  F           F            F             F          F
 # Rtest Utest Gtest
   F     F     F

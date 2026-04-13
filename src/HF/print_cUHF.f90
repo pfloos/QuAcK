@@ -1,4 +1,4 @@
-subroutine print_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF)
+subroutine print_cUHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF)
 
 ! Print one- and two-electron energies and other stuff for UHF calculation
 
@@ -18,12 +18,23 @@ subroutine print_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF)
   complex*16,intent(in)              :: Ex(nspin)
   complex*16,intent(in)              :: EW(nspin)
   complex*16,intent(in)              :: EUHF
+  double precision,intent(in)        :: S(nBas,nBas)
 
 ! Local variables
 
   logical                            :: dump_orb = .false.
+  double precision                   :: Sz, Sx2, Sy2, Sz2
 
 ! Dump results
+  
+  Sz =  0.5d0*dble(nO(1) - nO(2))
+  Sx2 = real(0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - &
+        0.5d0*sum(matmul(transpose(conjg(c(:,1:nO(1),1))),&
+                  matmul(S,c(:,1:nO(2),2)))**2))
+  Sy2 = real(0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - &
+        0.5d0*sum(matmul(transpose(conjg(c(:,1:nO(1),1))),&
+                  matmul(S,c(:,1:nO(2),2)))**2))
+  Sz2 = 0.25d0*dble(nO(1) - nO(2))**2
 
   write(*,*)
   write(*,'(A79)')              '---------------------------------------------------------------------------------'
@@ -58,6 +69,9 @@ subroutine print_cUHF(nBas,nO,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF)
   write(*,'(A40,1X,F16.10,19X,A3)') ' Nuclear   repulsion = ',ENuc,' au'
   write(*,'(A40,1X,F16.10,1X,A1,F16.10,A1,A3)') ' cUHF         energy = ',real(EUHF + ENuc),'+',aimag(EUHF+ENuc),'i',' au'
   write(*,'(A79)')              '---------------------------------------------------------------------------------'
+  write(*,'(A40,1X,F10.6)')     ' <Sz>                   = ',Sz
+  write(*,'(A40,1X,F10.6)')     ' <S^2>                  = ',Sx2+Sy2+Sz2
+  write(*,'(A60)')              '---------------------------------------------'
   write(*,*)
 
 ! Print results

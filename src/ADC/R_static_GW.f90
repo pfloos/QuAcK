@@ -32,6 +32,8 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   integer                       :: mu
   integer                       :: klc,kcd,ija,iab
   double precision              :: num,dem,reg
+  double precision              :: dem1,reg1
+  double precision              :: dem2,reg2
 
   logical                       :: print_W = .false.
   logical                       :: dRPA
@@ -183,6 +185,14 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
           H(p,q) = H(p,q) + num*reg
 
+!         num = 2d0*rho(p,k,mu)*rho(q,k,mu)
+!         dem1 = eHF(p) - eHF(k) + Om(mu)
+!         dem2 = eHF(q) - eHF(k) + Om(mu)
+!         reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+!         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+
+!         H(p,q) = H(p,q) + num*0.5d0*(reg1 + reg2)
+
         end do
       end do
 
@@ -204,6 +214,14 @@ subroutine R_static_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
           reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
           H(p,q) = H(p,q) + num*reg
+
+!         num = 2d0*rho(p,a,mu)*rho(q,a,mu)
+!         dem1 = eHF(p) - eHF(a) - Om(mu)
+!         dem2 = eHF(q) - eHF(a) - Om(mu)
+!         reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+!         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+
+!         H(p,q) = H(p,q) + num*0.5d0*(reg1 + reg2)
 
         end do
       end do

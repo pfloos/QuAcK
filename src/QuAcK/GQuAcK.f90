@@ -1,8 +1,9 @@
 subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,       &
                   dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                                      &
-                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,  & 
+                  doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0F3,dopsdG0F3,                                             &
+                  doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                                              & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                                     & 
-                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
+                  do_ADC2_G3W2,do_ADC2x_G3W2,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                       &
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                                            &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                                        &
                   maxSCF_CC,max_diis_CC,thresh_CC,                                                                          &
@@ -32,7 +33,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
   logical,intent(in)            :: dodrCCD,dorCCD,docrCCD,dolCCD
   logical,intent(in)            :: dophRPA,dophRPAx,docrRPA,doppRPA
   logical,intent(in)            :: doOO
-  logical,intent(in)            :: doG0F2,doevGF2,doqsGF2
+  logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doG0F3,dopsdG0F3
   logical,intent(inout)         :: doG0W0
   logical,intent(in)            :: doevGW,doqsGW
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp
@@ -40,7 +41,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
   logical,intent(in)            :: doevParquet,doqsParquet
   logical,intent(in)            :: do_IPEA_ADC2,do_IPEA_ADC3
   logical,intent(in)            :: do_SOSEX,do_2SOSEX,do_G3W2
-  logical,intent(in)            :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
+  logical,intent(in)            :: do_ADC2_G3W2,do_ADC2x_G3W2,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
 
   integer,intent(in)            :: nNuc,nBas
   integer,intent(in)            :: nC
@@ -369,12 +370,12 @@ end if
 ! Green's function module !
 !-------------------------!
 
-  doGF = doG0F2 .or. doevGF2 .or. doqsGF2
+  doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. dopsdG0F3
 
   if(doGF) then
 
     call wall_time(start_GF)
-    call GGF(dotest,doG0F2,doevGF2,doqsGF2,maxSCF_GF,thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,lin_GF,eta_GF,reg_GF, &
+    call GGF(dotest,doG0F2,doevGF2,doqsGF2,doG0F3,dopsdG0F3,maxSCF_GF,thresh_GF,max_diis_GF,dophBSE,doppBSE,TDA,dBSE,dTDA,lin_GF,eta_GF,reg_GF, &
              nNuc,ZNuc,rNuc,ENuc,nBas2,nC,nO,nV,nR,nS,EGHF,S,X,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,PHF,cHF,eHF)
     call wall_time(end_GF)
 
@@ -432,7 +433,7 @@ end if
 
   doADC = do_IPEA_ADC2 .or. do_IPEA_ADC3 .or.       &
           do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or. &
-          do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
+          do_ADC2_G3W2 .or. do_ADC2x_G3W2 .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
 
   if(doADC) then
 
@@ -440,7 +441,7 @@ end if
     call G_ADC(dotest,                                               &
                do_IPEA_ADC2,do_IPEA_ADC3,                            & 
                do_SOSEX,do_2SOSEX,do_G3W2,                           & 
-               do_ADC_GW,do_ADC_2SOSEX,                              &
+               do_ADC2_G3W2,do_ADC2x_G3W2,                           &
                do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,              &
                TDA_W,TDA,lin_ADC,eta_ADC,reg_ADC,                    &
                do_dyson,diag_approx,sig_inf,                         &

@@ -1,6 +1,6 @@
-subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
+subroutine R_IP_ADC2_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Generalized ADC version of 2SOSEX within the diagonal approximation
+! Non-Dyson ADC(2) version of G3W2 within the diagonal approximation
 
   implicit none
   include 'parameters.h'
@@ -9,7 +9,9 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
 
   logical,intent(in)            :: dotest
 
+  logical,intent(in)            :: sig_inf
   logical,intent(in)            :: TDA_W
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
@@ -18,7 +20,7 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: EGHF
+  double precision,intent(in)   :: ERHF
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eHF(nOrb)
 
@@ -49,12 +51,16 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
-  logical                       :: verbose = .false.
+  double precision,allocatable  :: F(:,:)
+  double precision,allocatable  :: Vh(:,:)
+  double precision,allocatable  :: Vx(:,:)
+  double precision,allocatable  :: DM(:,:)
+
+  logical,parameter             :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
-  double precision,parameter    :: eta = 1d-5
 
   double precision              :: start_timing,end_timing,timing
 
@@ -63,9 +69,9 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'* Generalized ADC-2SOSEX Calculation *'
-  write(*,*)'**************************************'
+  write(*,*)'*****************************************'
+  write(*,*)'* Restricted IP-ADC(2)-G3W2 Calculation *'
+  write(*,*)'*****************************************'
   write(*,*)
 
 ! Diagonal approximation
@@ -76,8 +82,7 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
-  n2p1h = nV*nV*nO
-  nH = 1 + n2h1p + n2p1h
+  nH = 1 + n2h1p 
 
 ! Memory allocation
 
@@ -93,44 +98,69 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
 ! Compute screening !
 !-------------------!
 
+  ! Spin manifold 
+ 
+  isp_W = 1
+
   ! Memory allocation
 
   allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
  
-  call phGLR_A(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  call phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
-  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
+  if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
  
   !--------------------------!
   ! Compute spectral weights !
   !--------------------------!
  
-  call GGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
   deallocate(Aph,Bph,XpY,XmY)
+
+  !-------------------!
+  ! Compute Sigma(oo) !
+  !-------------------!
+
+  allocate(F(nOrb,nOrb))
+  F(:,:) = 0d0
+
+  if(sig_inf) then
+
+    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb))
+
+    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,0d0,DM)
+    call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
+    call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
+
+    F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
+
+    deallocate(Vh,Vx,DM)
+
+  end if
 
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nO,nO
+  do p=nC+1,nO
 
     H(:,:) = 0d0
-
-    !--------------------------------------!
-    !     Compute ADC-2SOSEX matrix        !
-    !--------------------------------------!
-    !                                      !
-    !     | F      U_2h1p     U_2p1h     | ! 
-    !     |                              | ! 
-    ! H = | U_2h1p (K+C)_2h1p 0          | ! 
-    !     |                              | ! 
-    !     | U_2p1h 0          (K+C)_2p1h | ! 
-    !                                      !
-    !--------------------------------------!
+ 
+    !------------------------------!
+    !    Compute ADC-GW matrix     !
+    !------------------------------!
+    !                              !
+    !     | F      U_2h1p U_2p1h | ! 
+    !     |                      | ! 
+    ! H = | U_2h1p C_2h1p 0      | ! 
+    !     |                      | ! 
+    !     | U_2p1h 0      C_2p1h | ! 
+    !                              !
+    !------------------------------!
 
     call wall_time(start_timing)
 
@@ -138,80 +168,41 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
     ! Block F !
     !---------!
 
-    H(1,1) = eHF(p)
+    H(1,1) = eHF(p) + F(p,p)
 
-    !--------------!
-    ! Block U_2h1p !
-    !--------------!
+    !-------------------!
+    ! Block static 2p1h !
+    !-------------------!
+ 
+    do mu=1,nS
+      do a=nO+1,nOrb-nR
+ 
+        num = 2d0*rho(p,a,mu)*rho(p,a,mu)
+        dem = eHF(p) - eHF(a) - Om(mu)
+        reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+ 
+        H(1,1) = H(1,1) + num*reg
+ 
+      end do
+    end do
+
+    !-------------!
+    ! Block U2h1p !
+    !-------------!
  
     ija = 0
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
  
-        H(1    ,1+ija) = rho(p,i,mu)
-        H(1+ija,1    ) = rho(p,i,mu)
-
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-
-            num = ERI(p,c,k,i)*rho(k,c,mu)
-            dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
-
-            H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
-            H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
-
-            num = ERI(p,k,c,i)*rho(c,k,mu)
-            dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
-
-            H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
-            H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
-
-          end do
-        end do
- 
-      end do
-    end do
- 
-    !--------------!
-    ! Block U_2p1h !
-    !--------------!
- 
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
- 
-        H(1          ,1+n2h1p+iab) = rho(p,a,mu)
-        H(1+n2h1p+iab,1          ) = rho(p,a,mu)
- 
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-
-            num = ERI(p,k,c,a)*rho(c,k,mu)
-            dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
-
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
-
-            num = ERI(p,c,k,a)*rho(k,c,mu)
-            dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*eta*dem**2))
-
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
-
-          end do
-        end do
+        H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
+        H(1+ija,1    ) = sqrt(2d0)*rho(p,i,mu)
 
       end do
     end do
-
+ 
     !------------------!
-    ! Block (K+C)_2h1p !
+    ! Block C2h1p-2h1p !
     !------------------!
  
     ija = 0
@@ -220,24 +211,10 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
         ija = ija + 1
  
         H(1+ija,1+ija) = eHF(i) - Om(mu) 
-
+       
       end do
     end do
 
-    !------------------!
-    ! Block (K+C)_2p1h !
-    !------------------!
- 
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
- 
-        H(1+n2h1p+iab,1+n2h1p+iab) = eHF(a) + Om(mu)
-
-      end do
-    end do
- 
     call wall_time(end_timing)
 
     timing = end_timing - start_timing
@@ -259,7 +236,7 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
   write(*,*)
   write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for diagonalization of supermatrix = ',timing,' seconds'
   write(*,*)
-
+ 
   !-----------------!
   ! Compute weights !
   !-----------------!
@@ -273,10 +250,10 @@ subroutine G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A38,I3,A2)')'| ADC-2SOSEX energies (eV) for orbital',p,' |'
+    write(*,'(1X,A32,I3,A8)')'| IP-ADC-GW energies for orbital',p,'|'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-              '|','#','|','e_QP','|','Z','|'
+              '|','#','|','e_QP (eV)','|','Z','|'
     write(*,*)'-------------------------------------------'
  
     do s=1,nH

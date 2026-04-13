@@ -32,6 +32,10 @@ subroutine diagonalize_general_matrix_LR(N,A,WR,VL,VR)
   allocate(work(lwork))
 
   call dgeev('V','V',N,A,N,WR,WI,VL,N,VR,N,work,lwork,info)
+  
+  if(any(abs(WI)>1d-8)) then
+    print*, 'Found eigenvalue with imaginary part > 1e-8 (dgeev)!!'
+  end if
 
   do i=1,N
     tmp = dot_product(vl(:,i),vr(:,i))
