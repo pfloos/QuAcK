@@ -30,6 +30,7 @@ subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
   double precision              :: Ekkprime
   double precision              :: trace_1rdm
   double precision              :: trace_matrix
+  double precision              :: fact_asym
 
   double precision,allocatable  :: Om(:)
   double precision,allocatable  :: eQP_sw(:)
@@ -141,28 +142,29 @@ subroutine BRPAx(nBas,nOrb,TDA,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcRPAx)
   allocate(H40(nOrb2,nOrb2,nOrb2,nOrb2))
   allocate(H22(nOrb2,nOrb2,nOrb2,nOrb2))
   H40=0d0;  H22=0d0;
-  call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,Ua,Va,H40)
+  fact_asym=1d0
+  call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,H40)
   if(.not. ring_shuck) then ! Using Omega40
    write(*,*)
    write(*,*) ' Building Omega40 and Omega22'
    write(*,*)
-   call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,Ua,Va,H40)
-   call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,Ua,Va,H40)
-   call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,Ua,Va,H40)
-   call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,Ua,Va,H40)
-   call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,Ua,Va,H40)
+   call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,H40)
+   call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,H40)
+   call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,H40)
+   call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,H40)
+   call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,H40)
   else  ! Using H40
    write(*,*)
    write(*,*) ' Building H40 and H22'
    write(*,*)
    H40=0.25d0*H40
   endif
-  call ERI_MO2QP_H22(nOrb2,ERI_MO_sw,U,Ua,H22)
-  call ERI_MO2QP_H22_2(nOrb2,ERI_MO_sw,V,Va,H22)
-  call ERI_MO2QP_H22_3(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
-  call ERI_MO2QP_H22_4(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
-  call ERI_MO2QP_H22_5(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
-  call ERI_MO2QP_H22_6(nOrb2,ERI_MO_sw,U,Ua,V,Va,H22)
+  call ERI_MO2QP_H22(nOrb2,ERI_MO_sw,fact_asym,U,Ua,H22)
+  call ERI_MO2QP_H22_2(nOrb2,ERI_MO_sw,fact_asym,V,Va,H22)
+  call ERI_MO2QP_H22_3(nOrb2,ERI_MO_sw,fact_asym,U,Ua,V,Va,H22)
+  call ERI_MO2QP_H22_4(nOrb2,ERI_MO_sw,fact_asym,U,Ua,V,Va,H22)
+  call ERI_MO2QP_H22_5(nOrb2,ERI_MO_sw,fact_asym,U,Ua,V,Va,H22)
+  call ERI_MO2QP_H22_6(nOrb2,ERI_MO_sw,fact_asym,U,Ua,V,Va,H22)
   deallocate(ERI_MO_sw)
   deallocate(Ua,Va,U,V)
 

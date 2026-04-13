@@ -33,7 +33,14 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   double precision,allocatable  :: ERI_MO_sw(:,:,:,:)
   double precision,allocatable  :: Omega40(:,:,:,:)
   double precision,allocatable  :: Omega04(:,:,:,:)
+  double precision,allocatable  :: Omega40d(:,:,:,:)
+  double precision,allocatable  :: Omega04d(:,:,:,:)
   double precision,allocatable  :: Ua(:,:),Va(:,:),U(:,:),V(:,:)
+
+! Local variables
+
+  double precision              :: fact_asym
+  double precision              :: dEcMP2
 
 ! Output variables
 
@@ -134,23 +141,24 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
   U(1:nOrb2,1:nOrb2)  = -Va(1:nOrb2,1:nOrb2)
   V(1:nOrb2,1:nOrb2)  =  Ua(1:nOrb2,1:nOrb2)
 
-! Build Omega40 and Omega04
+! Build Omega40 and Omega04 with antisymmetrized integrals
   allocate(Omega40(nOrb2,nOrb2,nOrb2,nOrb2))
   allocate(Omega04(nOrb2,nOrb2,nOrb2,nOrb2))
   Omega40=0d0
   Omega04=0d0
-  call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
-  call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
-  call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
-  call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
-  call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
-  call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,Ua,Va,Omega40)
-  call ERI_MO2QP_H04(nOrb2,ERI_MO_sw,U,V,Omega04)
-  call ERI_MO2QP_H04_2(nOrb2,ERI_MO_sw,U,V,Omega04)
-  call ERI_MO2QP_H04_3(nOrb2,ERI_MO_sw,U,V,Omega04)
-  call ERI_MO2QP_H04_4(nOrb2,ERI_MO_sw,U,V,Omega04)
-  call ERI_MO2QP_H04_5(nOrb2,ERI_MO_sw,U,V,Omega04)
-  call ERI_MO2QP_H04_6(nOrb2,ERI_MO_sw,U,V,Omega04)
+  fact_asym=1d0
+  call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40)
+  call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40)
+  call ERI_MO2QP_H04(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04)
+  call ERI_MO2QP_H04_2(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04)
+  call ERI_MO2QP_H04_3(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04)
+  call ERI_MO2QP_H04_4(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04)
+  call ERI_MO2QP_H04_5(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04)
+  call ERI_MO2QP_H04_6(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04)
 
 ! Compute EcMP2
   EcMP2=0d0
@@ -164,21 +172,55 @@ subroutine BMP2(nBas,nOrb,cHFB,Hc,S,ERI,chem_pot,sigma,U_QP,ERHFB,EcMP2)
     enddo 
    enddo 
   enddo
-  EcMP2=-EcMP2/2.4d1 
+  EcMP2=-EcMP2/2.4d1
+
+! Build Omega40 and Omega04 with normal integrals
+  allocate(Omega40d(nOrb2,nOrb2,nOrb2,nOrb2))
+  allocate(Omega04d(nOrb2,nOrb2,nOrb2,nOrb2))
+  Omega40d=0d0
+  Omega04d=0d0
+  fact_asym=0d0
+  call ERI_MO2QP_H40(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40d)
+  call ERI_MO2QP_H40_2(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40d)
+  call ERI_MO2QP_H40_3(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40d)
+  call ERI_MO2QP_H40_4(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40d)
+  call ERI_MO2QP_H40_5(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40d)
+  call ERI_MO2QP_H40_6(nOrb2,ERI_MO_sw,fact_asym,Ua,Va,Omega40d)
+  call ERI_MO2QP_H04(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04d)
+  call ERI_MO2QP_H04_2(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04d)
+  call ERI_MO2QP_H04_3(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04d)
+  call ERI_MO2QP_H04_4(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04d)
+  call ERI_MO2QP_H04_5(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04d)
+  call ERI_MO2QP_H04_6(nOrb2,ERI_MO_sw,fact_asym,U,V,Omega04d)
+
+! Compute direct EcMP2
+  dEcMP2=0d0
+  do k1=1,nOrb2
+   do k2=1,nOrb2
+    do k3=1,nOrb2
+     do k4=1,nOrb2
+      Ek1k2k3k4=-(eQP_sw(k1)+eQP_sw(k2)+eQP_sw(k3)+eQP_sw(k4))        ! Using negative energies as positive with a minus
+      dEcMP2=dEcMP2+Omega40d(k1,k2,k3,k4) *Omega04d(k3,k4,k1,k2) / Ek1k2k3k4
+     enddo 
+    enddo 
+   enddo 
+  enddo
+  dEcMP2=-dEcMP2/2.4d1
 
   write(*,*)
   write(*,'(A32)')           '---------------------------'
   write(*,'(A32)')           ' BMP2 calculation          '
   write(*,'(A32)')           '---------------------------'
   write(*,'(A32,1X,F16.10)') ' BMP2 correlation energy = ',EcMP2
-!  write(*,'(A32,1X,F16.10)') ' Direct part            = ',2d0*E2d
-!  write(*,'(A32,1X,F16.10)') ' Exchange part          = ',-E2x
+  write(*,'(A32,1X,F16.10)') ' Direct part             = ',dEcMP2 
+  write(*,'(A32,1X,F16.10)') ' Exchange part           = ',EcMP2 - dEcMP2
   write(*,'(A32)')           '---------------------------'
   write(*,'(A32,1X,F16.10)') ' BMP2 total       energy = ',ERHFB + EcMP2
   write(*,'(A32)')           '---------------------------'
 
   deallocate(Ua,Va,U,V)
   deallocate(Omega40,Omega04)
+  deallocate(Omega40d,Omega04d)
   deallocate(ERI_MO_sw)
   deallocate(U_QP_sw)
   deallocate(eQP_sw)

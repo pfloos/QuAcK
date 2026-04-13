@@ -449,7 +449,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
      EcGM_itau=EcGM_itau+tweight(itau)*Mat_ao_tmp(ibas,ibas)
     enddo
   enddo
-  EcGM=-0.5d0*real(EcGM_itau) ! EcGM = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
+  EcGM=-real(EcGM_itau) ! EcGM = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt for restricted calcs.
 
   ! Check the error in Sigma_c(i w) at iter=1 [ if this is calc. is not with restart ]
   if(iter==1 .and. .not.restart_scGF2) then
@@ -479,9 +479,9 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    write(*,'(a,f20.8,a,2f20.8,a)') ' Max CAE   ',max_error_sigma,' is in the frequency ',0d0,wcoord(imax_error_sigma),'i'
    write(*,'(a,*(f20.8))') ' MAE       ',sum(error_transf_mo)/(nfreqs*nBas*nBas)
    write(*,'(a)')         ' Using EcGM = - \int Tr[ Sigma_c_up(-it) G_up(it) ] dt ' 
-   write(*,'(a,f17.8,a)') ' EcGM analytic',err_EcGM,' a.u.'
+   write(*,'(a,f17.8,a)') ' EcGM analytic',2d0*err_EcGM,' a.u.'
    write(*,'(a,f18.8,a)') ' EcGM numeric',EcGM,' a.u.'
-   write(*,'(a,f20.8,a)') ' EcGM error',abs(err_EcGM-EcGM),' a.u.'
+   write(*,'(a,f20.8,a)') ' EcGM error',abs(2d0*err_EcGM-EcGM),' a.u.'
    deallocate(error_transf_mo,Sigma_c_w_mo)
   endif
 
