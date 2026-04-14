@@ -1,4 +1,4 @@
-subroutine R_linDM_GW(nOrb,nC,nO,nV,nR,nS,e,Om,rho,eta,linDM)
+subroutine R_linDM_GW(flow,nOrb,nC,nO,nV,nR,nS,e,Om,rho,eta,linDM)
   
 ! Compute the linearized GW density matrix
 
@@ -8,6 +8,7 @@ include 'parameters.h'
 
 ! Input variables
 
+  double precision,intent(in)   :: flow
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
   integer,intent(in)            :: nO
@@ -32,7 +33,7 @@ include 'parameters.h'
   double precision,intent(inout)  :: linDM(nOrb,nOrb)
 
   linDM(:,:) = 0d0
-  s = 500d0
+  s = flow
 
 ! OccOcc block of the density matrix
   

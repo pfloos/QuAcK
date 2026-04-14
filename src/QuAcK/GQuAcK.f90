@@ -3,7 +3,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
                   doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0F3,dopsdG0F3,                                             &
                   doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                                              & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,                                                     & 
-                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                          &
+                  do_ADC2_G3W2,do_ADC2x_G3W2,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                       &
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                                            &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                                        &
                   maxSCF_CC,max_diis_CC,thresh_CC,                                                                          &
@@ -41,7 +41,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
   logical,intent(in)            :: doevParquet,doqsParquet
   logical,intent(in)            :: do_IPEA_ADC2,do_IPEA_ADC3
   logical,intent(in)            :: do_SOSEX,do_2SOSEX,do_G3W2
-  logical,intent(in)            :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
+  logical,intent(in)            :: do_ADC2_G3W2,do_ADC2x_G3W2,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
 
   integer,intent(in)            :: nNuc,nBas
   integer,intent(in)            :: nC
@@ -433,7 +433,7 @@ end if
 
   doADC = do_IPEA_ADC2 .or. do_IPEA_ADC3 .or.       &
           do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or. &
-          do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
+          do_ADC2_G3W2 .or. do_ADC2x_G3W2 .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
 
   if(doADC) then
 
@@ -441,7 +441,7 @@ end if
     call G_ADC(dotest,                                               &
                do_IPEA_ADC2,do_IPEA_ADC3,                            & 
                do_SOSEX,do_2SOSEX,do_G3W2,                           & 
-               do_ADC_GW,do_ADC_2SOSEX,                              &
+               do_ADC2_G3W2,do_ADC2x_G3W2,                           &
                do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,              &
                TDA_W,TDA,lin_ADC,eta_ADC,reg_ADC,                    &
                do_dyson,diag_approx,sig_inf,                         &

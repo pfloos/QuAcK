@@ -69,7 +69,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
-  double precision              :: EcGM,EcGM2,EcRPA,Ehfbl,Ecore,Eh,Ex,Epair
+  double precision              :: EcGM,EcGM2,EcRPA,EcdMP2,Ehfbl,Ecore,Eh,Ex,Epair
   double precision              :: trace1,trace2,trace3
   double precision              :: trace_1_rdm
   double precision,external     :: trace_matrix
@@ -976,18 +976,21 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   enddo
   Chi0_ao_iw(:,:,:) = Real(Chi0_ao_iw(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
   ! Compute Ec RPA
-  EcRPA=0d0;
+  EcRPA=0d0; EcdMP2=0d0;
   do ifreq=1,nfreqs
-   trace1=0d0; trace2=0d0;
+   trace1=0d0; trace2=0d0; trace3=0d0;
    Chi0v(:,:)=matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
+   Wp_ao_iw(:,:)=matmul(Chi0v(:,:),Chi0v(:,:)) ! NOTE Using Wp_ao_iw to store (Xo v)^2 
    do ibas=1,nBasSq
     trace1=trace1+Chi0v(ibas,ibas)
+    trace3=trace3+Wp_ao_iw(ibas,ibas)
    enddo
    call diagonalize_general_matrix(nBasSq,Chi0v,Eigval_Xov,Chi0v)
    do ibas=1,nBasSq
     trace2=trace2+Log(abs(1d0-Eigval_Xov(ibas)))
    enddo
    EcRPA=EcRPA+wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcRPA
+   EcdMP2=EcdMP2-wweight(ifreq)*trace3/(4d0*pi)        ! iw contribution to EcdMP2
   enddo
 
   write(*,*)
@@ -1000,6 +1003,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   write(*,'(a,f15.8)')        ' Exchange      ',Ex
   write(*,'(a,f15.8)')        ' Epairing      ',Epair
   write(*,'(a,f15.8)')        ' Ehfbl         ',Ehfbl
+  write(*,'(a,f15.8)')        ' EcdMP2        ',EcdMP2
   write(*,'(a,f15.8)')        ' EcRPA         ',EcRPA
   write(*,'(a,f15.8)')        ' Eelec         ',Ehfbl+EcRPA
   write(*,'(a,f15.8)')        ' BRPA Energy   ',Ehfbl+EcRPA+ENuc

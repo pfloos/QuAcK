@@ -1,7 +1,7 @@
 subroutine G_ADC(dotest,                                               & 
                  do_IPEA_ADC2,do_IPEA_ADC3,                            &
                  do_SOSEX,do_2SOSEX,do_G3W2,                           &
-                 do_ADC_GW,do_ADC_2SOSEX,                              &
+                 do_ADC2_G3W2,do_ADC2x_G3W2,                           &
                  do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,              &
                  TDA_W,TDA,linearize,eta,doSRG,                        &
                  do_dyson,diag_approx,sig_inf,                         & 
@@ -25,8 +25,8 @@ subroutine G_ADC(dotest,                                               &
   logical,intent(in)            :: do_2SOSEX
   logical,intent(in)            :: do_G3W2
 
-  logical,intent(in)            :: do_ADC_GW
-  logical,intent(in)            :: do_ADC_2SOSEX
+  logical,intent(in)            :: do_ADC2_G3W2
+  logical,intent(in)            :: do_ADC2x_G3W2
   logical,intent(in)            :: do_ADC3_G3W2
   logical,intent(in)            :: do_ADC3x_G3W2
   logical,intent(in)            :: do_ADC4_G3W2
@@ -83,7 +83,7 @@ subroutine G_ADC(dotest,                                               &
 
   do_IPEA = do_IPEA_ADC2 .or. do_IPEA_ADC3 .or.       & 
             do_SOSEX .or. do_2SOSEX .or. do_G3W2 .or. &
-            do_ADC_GW .or. do_ADC_2SOSEX .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
+            do_ADC2_G3W2 .or. do_ADC2x_G3W2 .or. do_ADC3_G3W2 .or. do_ADC3x_G3W2 .or. do_ADC4_G3W2
 
   do_EE   = .false.
 
@@ -159,7 +159,7 @@ subroutine G_ADC(dotest,                                               &
   ! Perform MCDE calculation !
   !--------------------------!
 
-    do_MCDE = .true.
+    do_MCDE = .false.
 
     if(do_MCDE) then
 
@@ -242,10 +242,10 @@ subroutine G_ADC(dotest,                                               &
   ! Perform ADC-GW calculation !
   !----------------------------!
 
-    if(do_ADC_GW) then 
+    if(do_ADC2_G3W2) then 
       
       ! call wall_time(start_ADC)
-      ! call G_ADC_GW(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+      ! call G_ADC2_G3W2(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
       ! call wall_time(end_ADC)
     
       ! t_ADC = end_ADC - start_ADC
@@ -255,20 +255,20 @@ subroutine G_ADC(dotest,                                               &
     end if
   
   !--------------------------------!
-  ! Perform ADC-2SOSEX calculation !
+  ! Perform ADC(2x)-G3W2 calculation !
   !--------------------------------!
 
-    if(do_ADC_2SOSEX) then 
+    if(do_ADC2x_G3W2) then 
       
         call wall_time(start_ADC)
         if(diag_approx) then
-          call G_ADC_2SOSEX_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
+          call G_ADC2x_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,eHF)
         else
         end if
         call wall_time(end_ADC)
     
         t_ADC = end_ADC - start_ADC
-        write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC-2SOSEX = ',t_ADC,' seconds'
+        write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ADC(2x)-G3W2 = ',t_ADC,' seconds'
         write(*,*)
  
     end if

@@ -133,7 +133,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   allocate(linDM(nOrb,nOrb),eHFlinDM(nOrb))
   linDM(:,:) = 0d0
   if(do_linDM_GW) then
-     call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eta,linDM)
+     call R_linDM_GW(flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eta,linDM)
 
      allocate(J(nOrb,nOrb))
      allocate(K(nOrb,nOrb))

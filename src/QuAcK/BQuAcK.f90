@@ -258,7 +258,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   endif
 
   ! Compute EcRPAx for RHFB
-  if(dophRPAx) then
+  if(dophRPAx .and. .false.) then
    call wall_time(start_Ecorr)
    call BRPAx(nBas,nOrb,TDA,MOCoef,Hc,S,ERI_AO,chem_pot,sigma,U_QP,Eelec+ENuc,EcRPAx)
    call wall_time(end_Ecorr)

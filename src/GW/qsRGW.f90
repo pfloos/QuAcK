@@ -226,7 +226,7 @@ subroutine qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dop
     allocate(linDM(nOrb,nOrb),eHFlinDM(nOrb))
     linDM(:,:) = 0d0
     if(do_linDM_GW) then
-       call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eta,linDM)
+       call R_linDM_GW(flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eta,linDM)
 
        allocate(JlinDM(nOrb,nOrb))
        allocate(KlinDM(nOrb,nOrb))

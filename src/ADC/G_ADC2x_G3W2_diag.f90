@@ -1,6 +1,6 @@
-subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine G_ADC2x_G3W2_diag(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,eHF)
 
-! ADC version of 2SOSEX within the diagonal approximation
+! Generalized ADC(2x) version of G3W2 within the diagonal approximation
 
   implicit none
   include 'parameters.h'
@@ -9,9 +9,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 
   logical,intent(in)            :: dotest
 
-  logical,intent(in)            :: sig_inf
   logical,intent(in)            :: TDA_W
-  double precision,intent(in)   :: flow
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
   integer,intent(in)            :: nC
@@ -20,7 +18,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: eHF(nOrb)
 
@@ -51,17 +49,12 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
   double precision,allocatable  :: XmY(:,:)
   double precision,allocatable  :: rho(:,:,:)
 
-  double precision,allocatable  :: F(:,:)
-  double precision,allocatable  :: Vh(:,:)
-  double precision,allocatable  :: Vx(:,:)
-  double precision,allocatable  :: DM(:,:)
-  double precision,allocatable  :: w(:,:,:)
-
-  logical,parameter             :: verbose = .false.
+  logical                       :: verbose = .false.
   double precision,parameter    :: cutoff1 = 0.01d0
   double precision,parameter    :: cutoff2 = 0.01d0
   double precision              :: eF
   double precision,parameter    :: window = 2.5d0
+  double precision,parameter    :: eta = 1d-5
 
   double precision              :: start_timing,end_timing,timing
 
@@ -70,9 +63,9 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 ! Hello world
 
   write(*,*)
-  write(*,*)'*************************************'
-  write(*,*)'* Restricted ADC-2SOSEX Calculation *'
-  write(*,*)'*************************************'
+  write(*,*)'****************************************'
+  write(*,*)'* Generalized ADC(2x)-G3W2 Calculation *'
+  write(*,*)'****************************************'
   write(*,*)
 
 ! Diagonal approximation
@@ -100,60 +93,30 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
 ! Compute screening !
 !-------------------!
 
-  ! Spin manifold 
- 
-  isp_W = 1
-
   ! Memory allocation
 
   allocate(Om(nS),Aph(nS,nS),Bph(nS,nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS))
  
-  call phRLR_A(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  call phRLR_B(isp_W,dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phGLR_A(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call phGLR_B(dRPA,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
  
-  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-  
-  ! Small shift to avoid hard zeros in amplitudes
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  Om(:) = Om(:) + 1d-12
-
-  if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+  if(print_W) call print_excitation_energies('phRPA@GHF','generalized',nS,Om)
  
   !--------------------------!
   ! Compute spectral weights !
   !--------------------------!
  
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+  call GGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
-  deallocate(Aph,Bph)
-
-  !-------------------!
-  ! Compute Sigma(oo) !
-  !-------------------!
-
-  allocate(F(nOrb,nOrb))
-  F(:,:) = 0d0
-
-  if(sig_inf) then
-
-    allocate(DM(nOrb,nOrb),Vh(nOrb,nOrb),Vx(nOrb,nOrb),w(nOrb,nOrb,nS))
-
-    call R_2SOSEX_excitation_density(flow,nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,w)
-    call R_linDM_GW(nOrb,nC,nO,nV,nR,nS,eHF,Om,w,0d0,DM)
-    call Hartree_matrix_AO_basis(nOrb,DM,ERI,Vh)
-    call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
-
-    F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
-
-    deallocate(Vh,Vx,DM,w,XpY,XmY)
-
-  end if
+  deallocate(Aph,Bph,XpY,XmY)
 
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
 
-  do p=nC+1,nO
+  do p=nO,nO
 
     H(:,:) = 0d0
 
@@ -175,7 +138,7 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
     ! Block F !
     !---------!
 
-    H(1,1) = eHF(p) + F(p,p)
+    H(1,1) = eHF(p)
 
     !--------------!
     ! Block U_2h1p !
@@ -186,25 +149,25 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
       do mu=1,nS
         ija = ija + 1
  
-        H(1    ,1+ija) = sqrt(2d0)*rho(p,i,mu)
-        H(1+ija,1    ) = sqrt(2d0)*rho(p,i,mu)
+        H(1    ,1+ija) = rho(p,i,mu)
+        H(1+ija,1    ) = rho(p,i,mu)
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
 
-            num = sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)
+            num = ERI(p,c,k,i)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(1    ,1+ija) = H(1    ,1+ija) + num*reg
-            H(1+ija,1    ) = H(1+ija,1    ) + num*reg
+            H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
+            H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
 
-            num = sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)
+            num = ERI(p,k,c,i)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(1    ,1+ija) = H(1    ,1+ija) + num*reg
-            H(1+ija,1    ) = H(1+ija,1    ) + num*reg
+            H(1    ,1+ija) = H(1    ,1+ija) + num*reg/dem
+            H(1+ija,1    ) = H(1+ija,1    ) + num*reg/dem
 
           end do
         end do
@@ -221,25 +184,25 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
       do mu=1,nS
         iab = iab + 1
  
-        H(1          ,1+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
-        H(1+n2h1p+iab,1          ) = sqrt(2d0)*rho(p,a,mu)
+        H(1          ,1+n2h1p+iab) = rho(p,a,mu)
+        H(1+n2h1p+iab,1          ) = rho(p,a,mu)
  
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
 
-            num = sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)
+            num = ERI(p,k,c,a)*rho(c,k,mu)
             dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
 
-            num = sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)
+            num = ERI(p,c,k,a)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+            reg = (1d0 - exp(-2d0*eta*dem**2))
 
-            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg
-            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg
+            H(1    ,1+n2h1p+iab) = H(1    ,1+n2h1p+iab) + num*reg/dem
+            H(1+n2h1p+iab,1    ) = H(1+n2h1p+iab,1    ) + num*reg/dem
 
           end do
         end do
@@ -310,10 +273,10 @@ subroutine R_ADC_2SOSEX_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A33,I3,A7)')'| ADC-2SOSEX energies for orbital',p,'|'
+    write(*,'(1X,A38,I3,A2)')'| ADC-2SOSEX energies (eV) for orbital',p,' |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
-              '|','#','|','e_QP (eV)','|','Z','|'
+              '|','#','|','e_QP','|','Z','|'
     write(*,*)'-------------------------------------------'
  
     do s=1,nH
