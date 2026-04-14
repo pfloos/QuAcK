@@ -481,7 +481,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
   nS = (nO - nC)*(nV - nR)
 
-  if(dostab) then
+  if(dostab .and. .not. doMOM) then
 
     call wall_time(start_stab)
     call RHF_stability(nOrb,nC,nO,nV,nR,nS,eHF,ERI_MO)
@@ -493,12 +493,38 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
   end if
 
-  if(dosearch) then
+  if(dostab .and. doMOM) then
+
+    call wall_time(start_stab)
+    call MOM_RHF_stability(nOrb,nC,nO,nV,nR,nS,nCVS(1),FC(1),eHF,ERI_MO,mom_occupations(:,1))
+    call wall_time(end_stab)
+
+    t_stab = end_stab - start_stab
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for stability analysis = ',t_stab,' seconds'
+    write(*,*)
+
+  end if
+  
+  if(dosearch .and. .not. doMOM) then
 
     call wall_time(start_stab)
     call RHF_search(maxSCF_HF,doaordm,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
                     nBas,nOrb,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X, & 
                     ERHF,eHF,cHF,PHF,FHF)
+    call wall_time(end_stab)
+
+    t_stab = end_stab - start_stab
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for stability analysis = ',t_stab,' seconds'
+    write(*,*)
+
+  end if
+
+  if(dosearch .and. doMOM) then
+
+    call wall_time(start_stab)
+    call MOM_RHF_search(maxSCF_HF,doaordm,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+                    nBas,nOrb,nC,nO,nV,nR,nCVS(1),FC(1),S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X, & 
+                    ERHF,eHF,cHF,PHF,FHF,mom_occupations(:,1))
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
