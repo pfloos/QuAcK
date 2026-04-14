@@ -18,6 +18,8 @@ subroutine CVS_phRLR(TDA,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   double precision,allocatable  :: ApB(:,:)
   double precision,allocatable  :: Aphtilde(:,:)
   double precision,allocatable  :: AmB(:,:)
+  double precision,allocatable  :: XpYTDA(:,:)
+  double precision,allocatable  :: OmTDA(:)
   complex*16,allocatable        :: complex_Om(:)
   double precision              :: eF
   integer                       :: i
@@ -43,6 +45,9 @@ subroutine CVS_phRLR(TDA,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
     XpY(:,:) = transpose(XpY(:,:))
     XmY(:,:) = XpY(:,:)
 
+    ! Compute the RPA correlation energy
+    EcRPA = 0.5d0*(sum(Om) - trace_matrix(nSt,Aph))
+  
   else
      
     ! Build (\tilde{A} +B ) (\tilde{A} - B ) - 4*eF*\tilde{A} 
@@ -60,6 +65,7 @@ subroutine CVS_phRLR(TDA,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     ! Diagonalize linear response matrix
     call diagonalize_general_matrix(nSt,ApB,Om,XmY)
+    
     ! Deal with complex eigenvalue and then stop program
     if(any(Om < 0d0)) then
       print*,"Found complex eigenvalue in Linear Response ! Use complex code !"
@@ -71,43 +77,61 @@ subroutine CVS_phRLR(TDA,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
       EcRPA      = 0.5d0*(sum(real(complex_Om)) - trace_matrix(nSt,Aph))
       print*, " Re(EcRPA)  = ", EcRPA 
       print*, "|Im(EcRPA)| = ", 0.5d0*sum(aimag(complex_Om))
-      deallocate(complex_Om)
+      !print *, "Discard imaginary eigenvalue"
+      !Om    = real(complex_Om)
+      !Om(1) = 0d0
+      !
+      !allocate(OmTDA(nSt),XpYTDA(nSt,nSt))
+    
+      !! Compute TDA
+      !OmTDA = 0d0
+      !XpYTDA(:,:) = Aph(:,:)
+      !call diagonalize_matrix(nSt,XpYTDA,OmTDA)
+      !print *, "Discarded TDA eigenvalue:", OmTDA(1)
+      !OmTDA(1) = 0d0
+      !EcRPA = 0.5d0 * (sum(Om) - sum(OmTDA))
+      !deallocate(OmTDA,XpYTDA,complex_Om)
+      !print *, "Attention: Transition vectors are not computed !"
       stop
-    end if
+    
+    else
+      
+      Om = sqrt(Om)
+      
+      ! Get XpY via (X+Y) =(\tilde{A}-B - 2*eF*Id)(X-Y)Omega^-1
+      XpY = matmul(AmB,XmY) - 2*eF*XmY
+      call AD(nSt,XpY,1/Om)
+       
+      ! Compute Overlap and assign ex-/deexcitations
+      ApB = matmul(transpose(XmY),XpY)
+      do i=1,nSt
+        if(ApB(i,i)<0d0) then
+          Om(i)    = - Om(i)
+          ! Correct column for right sign of Om 
+          XpY(:,i) = - XpY(:,i)
+        end if
+      enddo
+      
+      
+      call sort_eigenvalues_vec_vec(nSt,Om,XmY,XpY)
+      
+      ! Orthonormalize
+      ApB = matmul(transpose(XmY),XpY)
+      call orthogonalize_matrix(1,nSt,ApB,AmB)
+      XmY = matmul(XmY,AmB)
+      XpY = matmul(XpY,AmB)
+      
+      ! Transpose XmY and XpY because Quack wants this
+      XmY = transpose(XmY) 
+      XpY = transpose(XpY)
+      
+      ! Compute the RPA correlation energy
 
-    Om = sqrt(Om)
-    
-    ! Get XpY via (X+Y) =(\tilde{A}-B - 2*eF*Id)(X-Y)Omega^-1
-    XpY = matmul(AmB,XmY) - 2*eF*XmY
-    call AD(nSt,XpY,1/Om)
-     
-    ! Compute Overlap and assign ex-/deexcitations
-    ApB = matmul(transpose(XmY),XpY)
-    do i=1,nSt
-      if(ApB(i,i)<0d0) then
-        Om(i)    = - Om(i)
-        ! Correct column for right sign of Om 
-        XpY(:,i) = - XpY(:,i)
-      end if
-    enddo
-    
-    call sort_eigenvalues_vec_vec(nSt,Om,XmY,XpY)
-    
-    ! Orthonormalize
-    ApB = matmul(transpose(XmY),XpY)
-    call orthogonalize_matrix(1,nSt,ApB,AmB)
-    XmY = matmul(XmY,AmB)
-    XpY = matmul(XpY,AmB)
-    
-    ! Transpose XmY and XpY because Quack wants this
-    XmY = transpose(XmY) 
-    XpY = transpose(XpY)
-    
+      EcRPA = 0.5d0*(sum(Om) - trace_matrix(nSt,Aph))
+
+    end if  
   end if
 
-! Compute the RPA correlation energy
-
-  EcRPA = 0.5d0*(sum(Om) - trace_matrix(nSt,Aph))
   
   deallocate(ApB,AmB,Aphtilde)
 
