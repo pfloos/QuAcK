@@ -1,4 +1,4 @@
-subroutine R_linDM_GW(flow,nOrb,nC,nO,nV,nR,nS,e,Om,rho,eta,linDM)
+subroutine R_linDM_GW(flow,nOrb,nC,nO,nV,nR,nS,e,Om,rho,eta,DM)
   
 ! Compute the linearized GW density matrix
 
@@ -30,12 +30,14 @@ include 'parameters.h'
   
 ! Output variables
 
-  double precision,intent(inout)  :: linDM(nOrb,nOrb)
+  double precision,intent(inout)  :: DM(nOrb,nOrb)
 
-  linDM(:,:) = 0d0
+! Initialization
+
+  DM(:,:) = 0d0
   s = flow
 
-! OccOcc block of the density matrix
+! Occupied-occupied block of the density matrix
   
   do i=nC+1,nO
      do j=nC+1,nO
@@ -49,15 +51,15 @@ include 'parameters.h'
               reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
               reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
 
-              ! linDM(i,j) = linDM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-              linDM(i,j) = linDM(i,j) + num*reg1*reg2
+!             DM(i,j) = DM(i,j) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              DM(i,j) = DM(i,j) + num*reg1*reg2
               
            end do
         end do
      end do
   end do
 
-  ! VirVir block of the density matrix
+  ! Virtual-virtual block of the density matrix
   
   do a=nO+1,nOrb-nR
      do b=nO+1,nOrb-nR
@@ -71,15 +73,15 @@ include 'parameters.h'
               reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
               reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
 
-              ! linDM(a,b) = linDM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-              linDM(a,b) = linDM(a,b) + num*reg1*reg2
+!             DM(a,b) = DM(a,b) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              DM(a,b) = DM(a,b) + num*reg1*reg2
               
            end do
         end do
      end do
   end do
 
-  ! OccVir block of the density matrix
+  ! Occupied-virtual and virtual-occupied block of the density matrix
   
   do i=nC+1,nO
      do a=nO+1,nOrb-nR
@@ -94,9 +96,10 @@ include 'parameters.h'
               reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
               reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
 
-              ! linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-              linDM(i,a) = linDM(i,a) + num*reg1*reg2
-              linDM(a,i) = linDM(a,i) + num*reg1*reg2
+!             DM(i,a) = DM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+!             DM(a,i) = DM(a,i) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              DM(i,a) = DM(i,a) + num*reg1*reg2
+              DM(a,i) = DM(a,i) + num*reg1*reg2
               
            end do
         end do
@@ -111,14 +114,17 @@ include 'parameters.h'
               reg1 = (1d0 - exp(-2d0*s*dem1*dem1))/dem1
               reg2 = (1d0 - exp(-2d0*s*dem2*dem2))/dem2
 
-              ! linDM(i,a) = linDM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
-              linDM(i,a) = linDM(i,a) + num*reg1*reg2
-              linDM(a,i) = linDM(a,i) + num*reg1*reg2
+!             DM(i,a) = DM(i,a) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+!             DM(a,i) = DM(a,i) + num*(dem1*dem2 - eta**2)/(dem1**2 + eta**2)/(dem2**2 + eta**2)
+              DM(i,a) = DM(i,a) + num*reg1*reg2
+              DM(a,i) = DM(a,i) + num*reg1*reg2
               
            end do
         end do
         
      end do
   end do
+
+! call matout(nOrb,nOrb,DM)
   
 end subroutine
