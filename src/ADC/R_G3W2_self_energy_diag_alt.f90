@@ -1,4 +1,4 @@
-subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,Sig,Z)
+subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
 ! Alternative form of the G3W2 self-energy
 
@@ -26,6 +26,7 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: jb,kc,ia,ja
+  integer                       :: inu,jmu,anu,bmu
   integer                       :: n2h1p,n2p1h
   integer                       :: mu,nu
   integer                       :: klc,kcd,ija,ijb,iab,jab
@@ -34,32 +35,25 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
   double precision              :: dem,dem1,dem2,dem3
   double precision              :: reg,reg1,reg2,reg3
 
-  double precision,allocatable  :: C1_2h1p_2h1p(:,:)
-  double precision,allocatable  :: C1_2p1h_2p1h(:,:)
-  double precision,allocatable  :: C1_2h1p_2p1h(:,:)
-  double precision,allocatable  :: K_2h1p_2h1p(:,:)
-  double precision,allocatable  :: K_2p1h_2p1h(:,:)
-  double precision,allocatable  :: dK_2h1p_2h1p(:,:)
-  double precision,allocatable  :: dK_2p1h_2p1h(:,:)
+  double precision,allocatable  :: C1_2h1p(:,:)
+  double precision,allocatable  :: C1_2p1h(:,:)
+  double precision,allocatable  :: K_2h1p(:)
+  double precision,allocatable  :: K_2p1h(:)
+  double precision,allocatable  :: dK_2h1p(:)
+  double precision,allocatable  :: dK_2p1h(:)
   double precision,allocatable  :: U1_2h1p(:)
   double precision,allocatable  :: U1_2p1h(:)
   double precision,allocatable  :: U2_2h1p(:)
   double precision,allocatable  :: U2_2p1h(:)
-  double precision,allocatable  :: KxU1_2h1p(:)
-  double precision,allocatable  :: KxU1_2p1h(:)
-  double precision,allocatable  :: dKxU1_2h1p(:)
-  double precision,allocatable  :: dKxU1_2p1h(:)
-  double precision,allocatable  :: U1xK_2h1p(:)
-  double precision,allocatable  :: U1xK_2p1h(:)
-  double precision,allocatable  :: U1xdK_2h1p(:)
-  double precision,allocatable  :: U1xdK_2p1h(:)
+  double precision,allocatable  :: U3_2h1p(:)
+  double precision,allocatable  :: U3_2p1h(:)
 
 
-  double precision              :: flow = 1d6
+  double precision              :: flow = 1d5
 
 ! Output variables
 
-  double precision,intent(out)  :: Sig(nOrb)
+  double precision,intent(out)  :: SigC(nOrb)
   double precision,intent(out)  :: Z(nOrb)
   double precision,intent(out)  :: EcGM
 
@@ -70,142 +64,99 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
 
 ! Initialization
 
-  Sig(:) = 0d0
+  SigC(:) = 0d0
   Z(:)   = 0d0
 
 ! Memory allocation
 
-  allocate(C1_2h1p_2h1p(n2h1p,n2h1p))
-  allocate(C1_2p1h_2p1h(n2p1h,n2p1h))
-  allocate(C1_2h1p_2p1h(n2h1p,n2p1h))
+  allocate(C1_2h1p(n2h1p,n2h1p))
+  allocate(C1_2p1h(n2p1h,n2p1h))
   
-  allocate(K_2h1p_2h1p(n2h1p,n2h1p))
-  allocate(K_2p1h_2p1h(n2p1h,n2p1h))
+  allocate(K_2h1p(n2h1p))
+  allocate(K_2p1h(n2p1h))
   
-  allocate(dK_2h1p_2h1p(n2h1p,n2h1p))
-  allocate(dK_2p1h_2p1h(n2p1h,n2p1h))
+  allocate(dK_2h1p(n2h1p))
+  allocate(dK_2p1h(n2p1h))
   
   allocate(U1_2h1p(n2h1p))
   allocate(U1_2p1h(n2p1h))
   allocate(U2_2h1p(n2h1p))
   allocate(U2_2p1h(n2p1h))
+  allocate(U3_2h1p(n2h1p))
+  allocate(U3_2p1h(n2p1h))
   
-!--------------------!
-! Block C1_2h1p-2h1p !
-!--------------------!
+!---------------!
+! Block C1_2h1p !
+!---------------!
   
-  C1_2h1p_2h1p(:,:) = 0d0
+  C1_2h1p(:,:) = 0d0
 
-  ija = 0
+  inu = 0
   do i=nC+1,nO
-    do mu=1,nS
-      ija = ija + 1
+    do nu=1,nS
+      inu = inu + 1
   
       ! First-order terms
  
-      klc = 0
-      do k=nC+1,nO
-        do nu=1,nS
-          klc = klc + 1
-     
-          do r=nC+1,nOrb-nR
-
-            num = rho(k,r,mu)*rho(i,r,nu)
-            dem = eHF(i) - eHF(r) + Om(nu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-           
-            C1_2h1p_2h1p(ija,klc) = C1_2h1p_2h1p(ija,klc) + num*reg
-           
-            num = rho(k,r,mu)*rho(i,r,nu)
-            dem = eHF(k) - eHF(r) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-           
-            C1_2h1p_2h1p(ija,klc) = C1_2h1p_2h1p(ija,klc) + num*reg
-
-          end do
-  
-        end do
-      end do
-  
-    end do
-  end do
- 
-!--------------------!
-! Block C1_2p1h-2p1h !
-!--------------------!
-
-  C1_2p1h_2p1h(:,:) = 0d0
-
-  iab = 0
-  do a=nO+1,nOrb-nR
-    do mu=1,nS
-      iab = iab + 1
- 
-      ! First-order terms
- 
-      kcd = 0
-      do c=nO+1,nOrb-nR
-        do nu=1,nS
-          kcd = kcd + 1
-     
-          do r=nC+1,nOrb-nR
-
-            num = rho(r,c,mu)*rho(r,a,nu)
-            dem = eHF(c) - eHF(r) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-           
-            C1_2p1h_2p1h(iab,kcd) = C1_2p1h_2p1h(iab,kcd) + num*reg
-           
-            num = rho(r,c,mu)*rho(r,a,nu)
-            dem = eHF(a) - eHF(r) - Om(nu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-           
-            C1_2p1h_2p1h(iab,kcd) = C1_2p1h_2p1h(iab,kcd) + num*reg
-
-          end do
-  
-        end do
-      end do
-  
-    end do
-  end do
-  
-!--------------------!
-! Block C1_2h1p-2p1h !
-!--------------------!
-
-  C1_2h1p_2p1h(:,:) = 0d0
-
-  ija = 0
-  do i=nC+1,nO
-    do mu=1,nS
-      ija = ija + 1
- 
-      kcd = 0
-      do a=nO+1,nOrb-nR
-        do nu=1,nS
-          kcd = kcd + 1
-  
-          ! First-order terms
-    
+      jmu = 0
+      do j=nC+1,nO
+        do mu=1,nS
+          jmu = jmu + 1
+   
           do k=nC+1,nO
 
-            num = 2d0*rho(k,i,mu)*rho(a,k,nu)
-            dem = eHF(a) - eHF(k) + Om(nu)
+            num = rho(i,k,mu)*rho(j,k,nu)
+            dem = eHF(i) - eHF(k) + Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-           
-            C1_2h1p_2p1h(ija,kcd) = C1_2h1p_2p1h(ija,kcd) + num*reg
+         
+            C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg
+         
+            num = rho(i,k,mu)*rho(j,k,nu)
+            dem = eHF(j) - eHF(k) + Om(nu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+         
+            C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg
 
           end do
-         
+  
+        end do
+      end do
+  
+    end do
+  end do
+ 
+!---------------!
+! Block C1_2p1h !
+!---------------!
+
+  C1_2p1h(:,:) = 0d0
+
+  anu = 0
+  do a=nO+1,nOrb-nR
+    do nu=1,nS
+      anu = anu + 1
+ 
+      ! First-order terms
+ 
+      bmu = 0
+      do b=nO+1,nOrb-nR
+        do mu=1,nS
+          bmu = bmu + 1
+   
           do c=nO+1,nOrb-nR
 
-            num = 2d0*rho(c,i,mu)*rho(a,c,nu)
-            dem = eHF(i) - eHF(c) - Om(mu)
+            num = rho(c,a,mu)*rho(c,b,nu)
+            dem = eHF(a) - eHF(c) - Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-          
-            C1_2h1p_2p1h(ija,kcd) = C1_2h1p_2p1h(ija,kcd) + num*reg
          
+            C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg
+         
+            num = rho(c,a,mu)*rho(c,b,nu)
+            dem = eHF(b) - eHF(c) - Om(nu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+         
+            C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg
+
           end do
   
         end do
@@ -225,378 +176,369 @@ subroutine R_G3W2_self_energy_diag_alt(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,E
     ! Downfolding the 3h2p configurations
 
     do i=nC+1,nO
-      do mu=1,nS
-      do nu=1,nS
-          do r=nC+1,nOrb-nR
-          do s=nC+1,nOrb-nR
-
-            num1 = 2d0*rho(r,i,mu)*rho(p,r,nu)
-            num2 = 2d0*rho(s,i,mu)*rho(p,s,nu)
-            dem1 = eHF(r) - eHF(i) + Om(mu)
-            dem2 = w - eHF(i) + Om(nu) + Om(mu)
-            dem3 = eHF(s) - eHF(i) + Om(mu)
-
-            reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-            reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-            reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
-
-            Sig(p) = Sig(p) + num1*num2*reg1*reg2*reg3
-            Z(p)   = Z(p)   - num1*num2*reg1*reg2*reg3/dem2
-
-         end do
-         end do
+       do mu=1,nS
+          do nu=1,nS
+             do c=nO+1,nOrb-nR
+                do d=nO+1,nOrb-nR
+                   
+                   num1 = 2d0*rho(c,i,mu)*rho(p,c,nu)
+                   num2 = 2d0*rho(d,i,mu)*rho(p,d,nu)
+                   dem1 = eHF(c) - eHF(i) + Om(mu)
+                   dem2 = w - eHF(i) + Om(nu) + Om(mu)
+                   dem3 = eHF(d) - eHF(i) + Om(mu)
+                   
+                   reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                   reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                   reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
+                   
+                   SigC(p) = SigC(p) + num1*num2*reg1*reg2*reg3
+                   Z(p)   = Z(p)   - num1*num2*reg1*reg2*reg3/dem2
+                   
+                end do
+             end do
+          end do
        end do
-       end do
-     end do
+    end do
 
     ! Downfolding the 3p2h configurations
 
     do a=nO+1,nOrb-nR
-      do mu=1,nS
-      do nu=1,nS
-          do r=nC+1,nOrb-nR
-          do s=nC+1,nOrb-nR
+       do mu=1,nS
+          do nu=1,nS
+             do i=nC+1,nO
+                do j=nC+1,nO
 
-            num1 = 2d0*rho(a,r,mu)*rho(r,p,nu)
-            num2 = 2d0*rho(a,s,mu)*rho(s,p,nu)
-            dem1 = eHF(r) - eHF(a) - Om(mu)
-            dem2 = w - eHF(a) - Om(nu) - Om(mu)
-            dem3 = eHF(s) - eHF(a) - Om(mu)
+                   num1 = 2d0*rho(a,i,mu)*rho(i,p,nu)
+                   num2 = 2d0*rho(a,j,mu)*rho(j,p,nu)
+                   dem1 = eHF(i) - eHF(a) - Om(mu)
+                   dem2 = w - eHF(a) - Om(nu) - Om(mu)
+                   dem3 = eHF(j) - eHF(a) - Om(mu)
 
-            reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-            reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-            reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
+                   reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                   reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                   reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))/dem3
+                   
+                   SigC(p) = SigC(p) + num1*num2*reg1*reg2*reg3
+                   Z(p)   = Z(p)   - num1*num2*reg1*reg2*reg3/dem2
 
-            Sig(p) = Sig(p) + num1*num2*reg1*reg2*reg3
-            Z(p)   = Z(p)   - num1*num2*reg1*reg2*reg3/dem2
-
-         end do
-         end do
-       end do
+                end do
+             end do
+          end do
        end do
      end do
-
-    !---------------!
-    ! Blocks U_2h1p !
-    !---------------!
-
-     U2_2h1p(:) = 0d0
+     
+     !---------------!
+     ! Blocks U_2h1p !
+     !---------------!
+     
      U1_2h1p(:) = 0d0
+     U2_2h1p(:) = 0d0
+     U3_2h1p(:) = 0d0
+     
+     inu = 0
+     do i=nC+1,nO
+        do nu=1,nS
+           inu = inu + 1
+           
+           ! First-order terms
+           
+           U1_2h1p(inu) = sqrt(2d0)*rho(p,i,nu)
 
-    ija = 0
-    do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
+           ! Second-order terms
 
-        ! First-order terms
+           do k=nC+1,nO
+              do c=nO+1,nOrb-nR
+                 
+                 num = sqrt(2d0)*rho(k,c,nu)*ERI(i,k,c,p)
+                 dem = eHF(c) - eHF(k) - Om(nu)
+                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                 
+                 U2_2h1p(inu) = U2_2h1p(inu) + num*reg
+          
+                 num = sqrt(2d0)*rho(c,k,nu)*ERI(i,c,k,p)
+                 dem = eHF(c) - eHF(k) + Om(nu)
+                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
-        U1_2h1p(ija) = sqrt(2d0)*rho(p,i,mu)
+                 U2_2h1p(inu) = U2_2h1p(inu) + num*reg
+                 
+              end do
+           end do
 
-        ! Second-order terms
+           ! Third-order terms
 
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
+           do k=nC+1,nO
+              do c=nO+1,nOrb-nR
+                 do mu=1,nS
 
-          num = sqrt(2d0)*rho(k,c,mu)*ERI(i,k,c,p)
-          dem = eHF(c) - eHF(k) - Om(mu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                    num = 2d0*sqrt(2d0)*rho(k,c,nu)*rho(c,i,mu)*rho(k,p,mu)
+                    dem1 = eHF(c) - eHF(k) - Om(nu)
+                    dem2 = eHF(c) - eHF(i) + Om(mu)
 
-          U2_2h1p(ija) = U2_2h1p(ija) + num*reg
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
 
-          num = sqrt(2d0)*rho(c,k,mu)*ERI(i,c,k,p)
-          dem = eHF(c) - eHF(k) + Om(mu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                    U3_2h1p(inu) = U3_2h1p(inu) - num*reg1*reg2
 
-          U2_2h1p(ija) = U2_2h1p(ija) + num*reg
+                    num = 2d0*sqrt(2d0)*rho(k,c,nu)*rho(i,c,mu)*rho(p,k,mu)
+                    dem1 = eHF(c) - eHF(k) - Om(nu)
+                    dem2 = eHF(c) - eHF(i) - Om(mu)
 
-          end do
-        end do
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
 
-        ! Third-order terms
+                    U3_2h1p(inu) = U3_2h1p(inu) + 0.5d0*num*reg1*reg2
 
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-            do nu=1,nS
+                    num = 2d0*sqrt(2d0)*rho(k,i,mu)*rho(c,k,nu)*rho(c,p,mu)
+                    dem1 = eHF(c) - eHF(i) + Om(mu) + Om(nu)
+                    dem2 = eHF(c) - eHF(k) + Om(nu)
 
-              num = 2d0*sqrt(2d0)*rho(c,k,mu)*rho(i,k,nu)*rho(p,c,nu)
-              dem1 = eHF(c) - eHF(k) + Om(mu)
-              dem2 = eHF(k) - eHF(i) - Om(nu)
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                  
+                    U3_2h1p(inu) = U3_2h1p(inu) - num*reg1*reg2
 
-              reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-              reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                 end do
+              end do
+           end do
 
-              U2_2h1p(ija) = U2_2h1p(ija) + num*reg1*reg2
+           do a=nO+1,nOrb-nR
+            do b=nO+1,nOrb-nR
+              do mu=1,nS
+    
+                num = 2d0*sqrt(2d0)*rho(a,i,mu)*rho(b,a,nu)*rho(b,p,mu)
+                dem1 = eHF(b) - eHF(i) + Om(mu) + Om(nu)
+                dem2 = eHF(a) - eHF(i) + Om(mu)
 
-              num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(c,i,nu)*rho(k,p,nu)
-              dem1 = eHF(k) - eHF(c) + Om(mu)
-              dem2 = eHF(i) - eHF(c) - Om(nu)
+                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                  
+                U3_2h1p(inu) = U3_2h1p(inu) + num*reg1*reg2
 
-              reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-              reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-
-              U2_2h1p(ija) = U2_2h1p(ija) - num*reg1*reg2
-
-              num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(i,c,nu)*rho(p,k,nu)
-              dem1 = eHF(k) - eHF(c) + Om(mu)
-              dem2 = eHF(c) - eHF(i) - Om(nu)
-
-              reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-              reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-
-              U2_2h1p(ija) = U2_2h1p(ija) - 0.5d0*num*reg1*reg2
-
+ 
+              end do
             end do
           end do
+
         end do
+     end do
 
-        do j=nC+1,nO
-          do k=nC+1,nO
-            do nu=1,nS
+     !---------------!
+     ! Blocks U_2p1h !
+     !---------------!
 
-              num = 2d0*sqrt(2d0)*rho(k,j,mu)*rho(i,j,nu)*rho(p,k,nu)
-              dem1 = eHF(k) - eHF(j) + Om(mu)
-              dem2 = eHF(j) - eHF(i) - Om(nu)
+     U1_2p1h(:) = 0d0
+     U2_2p1h(:) = 0d0
+     U3_2p1h(:) = 0d0
 
-              reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-              reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+     anu = 0
+     do a=nO+1,nOrb-nR
+        do nu=1,nS
+           anu = anu + 1
 
-              U2_2h1p(ija) = U2_2h1p(ija) + 0.5d0*num*reg1*reg2
+           ! First-order terms
 
-            end do
-          end do
-        end do
+           U1_2p1h(anu) = sqrt(2d0)*rho(a,p,nu)
 
-      end do
-    end do
+           ! Second-order terms
 
-    !---------------!
-    ! Blocks U_2p1h !
-    !---------------!
+           do k=nC+1,nO
+              do c=nO+1,nOrb-nR
 
-    U2_2p1h(:) = 0d0
-    U1_2p1h(:) = 0d0
+                 num = sqrt(2d0)*rho(k,c,nu)*ERI(a,c,k,p)
+                 dem = eHF(c) - eHF(k) - Om(nu)
+                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
+                 U2_2p1h(anu) = U2_2p1h(anu) + num*reg
 
-        ! First-order terms
+                 num = sqrt(2d0)*rho(c,k,nu)*ERI(a,k,c,p)
+                 dem = eHF(c) - eHF(k) + Om(nu)
+                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
-        U1_2p1h(iab) = sqrt(2d0)*rho(a,p,mu)
+                 U2_2p1h(anu) = U2_2p1h(anu) + num*reg
 
-        ! Second-order terms
+              end do
+           end do
 
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
+           ! Third-order terms
+           
+           do k=nC+1,nO
+              do c=nO+1,nOrb-nR
+                 do mu=1,nS
 
-          num = sqrt(2d0)*rho(k,c,mu)*ERI(a,c,k,p)
-          dem = eHF(c) - eHF(k) - Om(mu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                    num = 2d0*sqrt(2d0)*rho(k,c,nu)*rho(a,k,mu)*rho(p,c,mu)
+                    dem1 = eHF(c) - eHF(k) - Om(nu)
+                    dem2 = eHF(a) - eHF(k) + Om(mu)
 
-          U2_2p1h(iab) = U2_2p1h(iab) + num*reg
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
 
-          num = sqrt(2d0)*rho(c,k,mu)*ERI(a,k,c,p)
-          dem = eHF(c) - eHF(k) + Om(mu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                    U3_2p1h(anu) = U3_2p1h(anu) - num*reg1*reg2
+                  
+                    num = 2d0*sqrt(2d0)*rho(k,c,nu)*rho(k,a,mu)*rho(c,p,mu)
+                    dem1 = eHF(c) - eHF(k) - Om(nu)
+                    dem2 = eHF(a) - eHF(k) - Om(mu)
 
-          U2_2p1h(iab) = U2_2p1h(iab) + num*reg
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
 
-          end do
-        end do
+                    U3_2p1h(anu) = U3_2p1h(anu) + 0.5d0*num*reg1*reg2
 
-        ! Third-order terms
+                    num = 2d0*sqrt(2d0)*rho(a,c,mu)*rho(c,k,nu)*rho(p,k,mu)
+                    dem1 = eHF(a) - eHF(k) + Om(mu) + Om(nu)
+                    dem2 = eHF(c) - eHF(k) + Om(nu)
 
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-            do nu=1,nS
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
 
-              num = 2d0*sqrt(2d0)*rho(c,k,mu)*rho(c,a,nu)*rho(k,p,nu)
-              dem1 = eHF(c) - eHF(k) + Om(mu)
-              dem2 = eHF(a) - eHF(c) - Om(nu)
+                    U3_2p1h(anu) = U3_2p1h(anu) - num*reg1*reg2
 
-              reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-              reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
+                 end do
+              end do
+           end do
 
-              U2_2p1h(iab) = U2_2p1h(iab) + num*reg1*reg2
+           do i=nC+1,nO
+              do j=nC+1,nO
+                 do mu=1,nS
+                    
+                    num = 2d0*sqrt(2d0)*rho(a,j,mu)*rho(j,i,nu)*rho(p,i,mu)
+                    dem1 = eHF(a) - eHF(i) + Om(mu) + Om(nu)
+                    dem2 = eHF(a) - eHF(j) + Om(mu)
 
-              num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(a,k,nu)*rho(p,c,nu)
-              dem1 = eHF(k) - eHF(c) + Om(mu)
-              dem2 = eHF(k) - eHF(a) - Om(nu)
-
-              reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-              reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-
-              U2_2p1h(iab) = U2_2p1h(iab) - num*reg1*reg2
-
-              num = 2d0*sqrt(2d0)*rho(k,c,mu)*rho(k,a,nu)*rho(c,p,nu)
-              dem1 = eHF(k) - eHF(c) + Om(mu)
-              dem2 = eHF(a) - eHF(k) - Om(nu)
-
-              reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-              reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-
-              U2_2p1h(iab) = U2_2p1h(iab) - 0.5d0*num*reg1*reg2
-
-            end do
-          end do
-        end do
-
-        do b=nO+1,nOrb-nR
-          do c=nO+1,nOrb-nR
-            do nu=1,nS
-
-              num = 2d0*sqrt(2d0)*rho(b,c,mu)*rho(b,a,nu)*rho(c,p,nu)
-              dem1 = eHF(b) - eHF(c) + Om(mu)
-              dem2 = eHF(a) - eHF(b) - Om(nu)
-
-              reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
-              reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
-
-              U2_2p1h(iab) = U2_2p1h(iab) + 0.5d0*num*reg1*reg2
-
-            end do
-          end do
-        end do
-
-      end do
-    end do
-
-    !-------------------!
-    ! Block K_2h1p-2h1p !
-    !-------------------!
-
-    K_2h1p_2h1p(:,:) = 0d0
-
-    ija = 0
-    do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
-
-        ! Zeroth-order terms
-   
-        K_2h1p_2h1p(ija,ija) = 1d0/(w - eHF(i) + Om(mu))
-
-      end do
-    end do
-
-    !-------------------!
-    ! Block K_2p1h-2p1h !
-    !-------------------!
-
-    K_2p1h_2p1h(:,:) = 0d0
-
-    iab = 0
-    do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
-
-        ! Zeroth-order terms
-
-        K_2p1h_2p1h(iab,iab) = 1d0/(w - eHF(a) - Om(mu))
-
-      end do
-    end do
-
-    allocate(U1xK_2h1p(n2h1p),U1xK_2p1h(n2p1h),KxU1_2h1p(n2h1p),KxU1_2p1h(n2p1h))
-
-    U1xK_2h1p = matmul(U1_2h1p,K_2h1p_2h1p)
-    U1xK_2p1h = matmul(U1_2p1h,K_2p1h_2p1h)
-    KxU1_2h1p = matmul(K_2h1p_2h1p,U1_2h1p)
-    KxU1_2p1h = matmul(K_2p1h_2p1h,U1_2p1h)
-
-    Sig(p) = Sig(p) &
- 
-           + dot_product(U1xK_2h1p,U1_2h1p) &
-           + dot_product(U1xK_2p1h,U1_2p1h) &
- 
-           + dot_product(U1xK_2h1p,U2_2h1p) &
-           + dot_product(U1xK_2p1h,U2_2p1h) &
- 
-           + dot_product(U2_2h1p,KxU1_2h1p) &
-           + dot_product(U2_2p1h,KxU1_2p1h) &
- 
-           + dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
-           + dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))/dem2
             
-           + dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
-           + dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p))
+                    U3_2p1h(anu) = U3_2p1h(anu) + num*reg1*reg2
 
-    !-------------------!
-    ! Block K_2h1p-2h1p !
-    !-------------------!
+                 end do
+              end do
+           end do
 
-    dK_2h1p_2h1p(:,:) = 0d0
+        end do
+    end do
+
+    !--------------!
+    ! Block K_2h1p !
+    !--------------!
+
+    K_2h1p(:) = 0d0
+    dK_2h1p(:) = 0d0
 
     ija = 0
     do i=nC+1,nO
-      do mu=1,nS
-        ija = ija + 1
-
-        ! Zeroth-order terms
-   
-        dK_2h1p_2h1p(ija,ija) = - 1d0/(w - eHF(i) + Om(mu))**2
+       do mu=1,nS
+          ija = ija + 1
+          
+          ! Zeroth-order terms
+          K_2h1p(ija)  =   1d0/(w - eHF(i) + Om(mu))
+          dK_2h1p(ija) = - 1d0/(w - eHF(i) + Om(mu))**2
 
       end do
     end do
 
-    !-------------------!
-    ! Block K_2p1h-2p1h !
-    !-------------------!
+    !--------------!
+    ! Block K_2p1h !
+    !--------------!
 
-    dK_2p1h_2p1h(:,:) = 0d0
+    K_2p1h(:)  = 0d0
+    dK_2p1h(:) = 0d0
 
     iab = 0
     do a=nO+1,nOrb-nR
-      do mu=1,nS
-        iab = iab + 1
+       do mu=1,nS
+          iab = iab + 1
+          
+          ! Zeroth-order terms
+          K_2p1h(iab)  =   1d0/(w - eHF(a) - Om(mu))
+          dK_2p1h(iab) = - 1d0/(w - eHF(a) - Om(mu))**2
 
-        ! Zeroth-order terms
-
-        dK_2p1h_2p1h(iab,iab) = - 1d0/(w - eHF(a) - Om(mu))**2
-
-      end do
+       end do
     end do
 
-    allocate(U1xdK_2h1p(n2h1p),U1xdK_2p1h(n2p1h),dKxU1_2h1p(n2h1p),dKxU1_2p1h(n2p1h))
+!----------------------------!
+!    Building self-energy    !
+!----------------------------!
+    ija = 0
+    do i=nC+1,nO
+       do j=nC+1,nO
+          do a=nO+1,nBas-nR
+             ija = ija + 1
+             
+             SigC(p) = SigC(p) + U1_2h1p(ija) *  K_2h1p(ija) * U1_2h1p(ija)
+             Z(p)    = Z(p)    + U1_2h1p(ija) * dK_2h1p(ija) * U1_2h1p(ija)
+             
+             SigC(p) = SigC(p) + U2_2h1p(ija) *  K_2h1p(ija) * U1_2h1p(ija)
+             Z(p)    = Z(p)    + U2_2h1p(ija) * dK_2h1p(ija) * U1_2h1p(ija)
+             
+             SigC(p) = SigC(p) + U1_2h1p(ija) *  K_2h1p(ija) * U2_2h1p(ija)
+             Z(p)    = Z(p)    + U1_2h1p(ija) * dK_2h1p(ija) * U2_2h1p(ija)
+             
+             SigC(p) = SigC(p) + U3_2h1p(ija) *  K_2h1p(ija) * U1_2h1p(ija)
+             Z(p)    = Z(p)    + U3_2h1p(ija) * dK_2h1p(ija) * U1_2h1p(ija)
+             
+             SigC(p) = SigC(p) + U1_2h1p(ija) *  K_2h1p(ija) * U3_2h1p(ija)
+             Z(p)    = Z(p)    + U1_2h1p(ija) * dK_2h1p(ija) * U3_2h1p(ija)
 
-    U1xdK_2h1p = matmul(U1_2h1p,dK_2h1p_2h1p)
-    U1xdK_2p1h = matmul(U1_2p1h,dK_2p1h_2p1h)
-    dKxU1_2h1p = matmul(dK_2h1p_2h1p,U1_2h1p)
-    dKxU1_2p1h = matmul(dK_2p1h_2p1h,U1_2p1h)
+             klc = 0
+             do k=nC+1,nO
+                do l=nC+1,nO
+                   do c=nO+1,nBas-nR
+                      klc = klc + 1
+             
+                      SigC(p) = SigC(p) + U1_2h1p(ija) *  K_2h1p(ija) * C1_2h1p(ija,klc) *  K_2h1p(klc) * U1_2h1p(klc)
+                      Z(p)    = Z(p)    + U1_2h1p(ija) * dK_2h1p(ija) * C1_2h1p(ija,klc) *  K_2h1p(klc) * U1_2h1p(klc)
+                      Z(p)    = Z(p)    + U1_2h1p(ija) *  K_2h1p(ija) * C1_2h1p(ija,klc) * dK_2h1p(klc) * U1_2h1p(klc)
 
-    Z(p) = Z(p) &
+                   end do
+                end do
+             end do
+              
+          end do
+       end do
+    end do
+    iab = 0
+    do i=nC+1,nO
+       do a=nO+1,nBas-nR
+          do b=nO+1,nBas-nR
+             iab = iab + 1
+             
+             SigC(p) = SigC(p) + U1_2p1h(iab) *  K_2p1h(iab) * U1_2p1h(iab)
+             Z(p)    = Z(p)    + U1_2p1h(iab) * dK_2p1h(iab) * U1_2p1h(iab)
+
+             SigC(p) = SigC(p) + U2_2p1h(iab) *  K_2p1h(iab) * U1_2p1h(iab)
+             Z(p)    = Z(p)    + U2_2p1h(iab) * dK_2p1h(iab) * U1_2p1h(iab)
+
+             SigC(p) = SigC(p) + U1_2p1h(iab) *  K_2p1h(iab) * U2_2p1h(iab)
+             Z(p)    = Z(p)    + U1_2p1h(iab) * dK_2p1h(iab) * U2_2p1h(iab)
+
+             SigC(p) = SigC(p) + U3_2p1h(iab) *  K_2p1h(iab) * U1_2p1h(iab)
+             Z(p)    = Z(p)    + U3_2p1h(iab) * dK_2p1h(iab) * U1_2p1h(iab)
+
+             SigC(p) = SigC(p) + U1_2p1h(iab) *  K_2p1h(iab) * U3_2p1h(iab)
+             Z(p)    = Z(p)    + U1_2p1h(iab) * dK_2p1h(iab) * U3_2p1h(iab)
+
+             kcd = 0
+             do k=nC+1,nO
+                do c=nO+1,nBas-nR
+                   do d=nO+1,nBas-nR
+                      kcd = kcd + 1
+                      
+                      SigC(p) = SigC(p) + U1_2p1h(iab) *  K_2p1h(iab) * C1_2p1h(iab,kcd) *  K_2p1h(kcd) * U1_2p1h(kcd)
+                      Z(p)    = Z(p)    + U1_2p1h(iab) * dK_2p1h(iab) * C1_2p1h(iab,kcd) *  K_2p1h(kcd) * U1_2p1h(kcd)
+                      Z(p)    = Z(p)    + U1_2p1h(iab) *  K_2p1h(iab) * C1_2p1h(iab,kcd) * dK_2p1h(kcd) * U1_2p1h(kcd)
+                      
+                   end do
+                end do
+             end do
+             
+          end do
+       end do
+    end do
+
+ end do
  
-         + dot_product(U1xdK_2h1p,U1_2h1p) &
-         + dot_product(U1xdK_2p1h,U1_2p1h) &
+
+ print*,'Alternative form of the self-energy'
  
-         + dot_product(U1xdK_2h1p,U2_2h1p) &
-         + dot_product(U1xdK_2p1h,U2_2p1h) &
- 
-         + dot_product(U2_2h1p,dKxU1_2h1p) &
-         + dot_product(U2_2p1h,dKxU1_2p1h) &
-         
-         + dot_product(U1xdK_2p1h,matmul(C1_2p1h_2p1h,KxU1_2p1h)) &
-         + dot_product(U1xdK_2h1p,matmul(C1_2h1p_2h1p,KxU1_2h1p)) &
-          
-         + dot_product(U1xdK_2h1p,matmul(C1_2h1p_2p1h,KxU1_2p1h)) &
-         + dot_product(U1xdK_2p1h,matmul(transpose(C1_2h1p_2p1h),KxU1_2h1p)) &
-
-         + dot_product(U1xK_2p1h,matmul(C1_2p1h_2p1h,dKxU1_2p1h)) &
-         + dot_product(U1xK_2h1p,matmul(C1_2h1p_2h1p,dKxU1_2h1p)) &
-          
-         + dot_product(U1xK_2h1p,matmul(C1_2h1p_2p1h,dKxU1_2p1h)) &
-         + dot_product(U1xK_2p1h,matmul(transpose(C1_2h1p_2p1h),dKxU1_2h1p))
-
-    deallocate(U1xK_2h1p,U1xK_2p1h,KxU1_2h1p,KxU1_2p1h)
-    deallocate(U1xdK_2h1p,U1xdK_2p1h,dKxU1_2h1p,dKxU1_2p1h)
- 
-  end do
-
-  print*,'Alternative form of the self-energy'
-  call vecout(nOrb,Sig)
-
-  Z(:) = 1d0/(1d0 - Z(:))
-  call vecout(nOrb,Z)
+ Z(:) = 1d0/(1d0 - Z(:))
 
 end subroutine 

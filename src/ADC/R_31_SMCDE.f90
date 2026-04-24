@@ -121,7 +121,7 @@ subroutine R_31_SMCDE(dotest,TDA_W,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
   allocate(W(nOrb,nOrb,nOrb,nOrb))
 
-  call RGW_phBSE_static_kernel_fullmat(nOrb,nC,nO,nV,nR,nS,ERI,Om,rho,W)
+  call RGW_phBSE_static_kernel_fullmat(nOrb,nC,nO,nV,nR,nS,ERI,eHF,Om,rho,W)
 
   H(:,:) = 0d0
   Reigv(:,:) = 0d0

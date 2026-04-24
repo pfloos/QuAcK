@@ -140,7 +140,7 @@ subroutine R_ADC2_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
     call exchange_matrix_AO_basis(nOrb,DM,ERI,Vx)
  
     F(:,:) = Vh(:,:) + 0.5d0*Vx(:,:)
- 
+
     deallocate(Vh,Vx,DM)
 
   end if
@@ -172,7 +172,9 @@ subroutine R_ADC2_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
     H(p,p) = eHF(p)
 
     do q=nC+1,nOrb-nR
+
       H(p,q) = H(p,q) + F(p,q)
+
     end do
 
   end do

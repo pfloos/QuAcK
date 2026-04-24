@@ -699,8 +699,8 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
               dem1 = eHF(a) - eHF(i) + Om(nu)
               reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
               
-              H(p  ,bra) = H(p  ,bra) + num*reg1
-              H(bra,p  ) = H(bra,p  ) + num*reg1
+              H(p  ,bra) = H(p  ,bra) - num*reg1
+              H(bra,p  ) = H(bra,p  ) - num*reg1
 
              end do
            
@@ -742,8 +742,8 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
               dem1 = eHF(a) - eHF(i) + Om(nu)
               reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))/dem1
               
-              H(p  ,bra) = H(p  ,bra) - num*reg1
-              H(bra,p  ) = H(bra,p  ) - num*reg1
+              H(p  ,bra) = H(p  ,bra) + num*reg1
+              H(bra,p  ) = H(bra,p  ) + num*reg1
 
             end do
               
