@@ -42,6 +42,7 @@ subroutine complex_complex_orthogonalize_matrix(N, vectors)
   vectors = matmul(vectors,transpose(conjg(Linv)))
   deallocate(L,Linv,tmp)
 end subroutine
+
 subroutine complex_orthonormalize(N,vectors,A)
  
   ! Orthonormalize vectors matrix, such that vectors^T A vectors = Identity
@@ -65,6 +66,42 @@ subroutine complex_orthonormalize(N,vectors,A)
   vectors = matmul(vectors,transpose(Linv))
   deallocate(L,Linv,tmp)
 end subroutine
+
+subroutine complex_complex_bi_orthonormalize(N,Lvectors,Rvectors)
+ 
+  ! Orthonormalize vectors matrix, such that Lvectors^t Rvectors = Identity
+  ! A and vectors are assumed quadratic NxN matrices
+
+  ! Input variables
+  implicit none
+
+  integer, intent(in)       :: N
+  
+  complex*16, intent(inout) :: Lvectors(N, N)
+  complex*16, intent(inout) :: Rvectors(N, N)
+
+  ! Local variables
+  complex*16,allocatable :: L(:,:),Linv(:,:),U(:,:),Uinv(:,:),S(:,:)
+
+  allocate(L(N,N),Linv(N,N),U(N,N),Uinv(N,N),S(N,N))
+  
+  S = matmul(transpose(conjg(Lvectors)),Rvectors) 
+  
+  call complex_LU(N,S,L,U)
+  call complex_matout(N,N,S)
+  call complex_inverse_matrix(N,L,Linv)
+  call complex_inverse_matrix(N,U,Uinv)
+  Rvectors = matmul(Rvectors,Uinv)
+  Lvectors = matmul(Lvectors,S)
+  Lvectors = matmul(Lvectors,conjg(transpose(Linv)))
+  
+  S = matmul(transpose(conjg(Lvectors)),Rvectors) 
+  print*,"Overlap"
+  call complex_matout(N,N,S)
+
+  deallocate(L,Linv,U,Uinv,S)
+end subroutine
+
 subroutine complex_normalize_RPA(nS,XYYX)
  
   ! Orthonormalize vectors matrix, such that RPA^T (1 0; 0 -1) RPA = Identity
@@ -87,6 +124,7 @@ subroutine complex_normalize_RPA(nS,XYYX)
   call complex_orthonormalize(2*nS,XYYX,A)
   deallocate(A)
 end subroutine
+
 subroutine complex_gram_schmidt(N, vectors)
   
   ! Input variables

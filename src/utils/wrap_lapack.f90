@@ -345,6 +345,51 @@ subroutine svd(N,A,U,D,Vt)
 
 end
 
+subroutine complex_svd(N,A,U,D,Vt)
+
+  ! Compute A = U.D.Vt
+  ! Dimension of A is NxN
+
+  implicit none
+
+  integer, intent(in)             :: N
+  complex*16,intent(in)           :: A(N,N)
+  complex*16,intent(out)          :: U(N,N)
+  complex*16,intent(out)          :: Vt(N,N)
+  double precision,intent(out)    :: D(N)
+  double precision,allocatable    :: work(:)
+  double precision,allocatable    :: rwork(:)
+  integer                         :: info,lwork
+
+  complex*16,allocatable          :: scr(:,:)
+
+  allocate (scr(N,N))
+
+  scr(:,:) = A(:,:)
+
+  ! Find optimal size for temporary arrays
+
+  allocate(work(1),rwork(5*N))
+
+  lwork = -1
+  call zgesvd('A','A',N,N,scr,N,D,U,N,Vt,N,work,lwork,rwork,info)
+  lwork = int(work(1))
+
+  deallocate(work)
+
+  allocate(work(lwork))
+
+  call zgesvd('A','A',N,N,scr,N,D,U,N,Vt,N,work,lwork,rwork,info)
+
+  deallocate(work,scr)
+
+  if (info /= 0) then
+    print *,  info, ': SVD failed'
+    stop
+  end if
+
+end
+
 subroutine inverse_matrix(N,A,B)
 
 ! Returns the inverse of the square matrix A in B
@@ -593,6 +638,61 @@ subroutine complex_linear_solve(N,A,b,x,rcond)
 ! end if
 deallocate(work,ipiv,rwork,AF)
 end subroutine 
+
+subroutine complex_LU(N,S,L,U)
+
+  ! Decomposition of matrix S = P * L * U (in C^NxN) where L is lower triangle matrix with unit diagonal and U is upper triangle matrix and P
+  ! is a Permutation matrix with 0 and 1 entries and P^T = P^-1. On the output P is written in S.
+
+  implicit none
+
+  ! Input
+  integer,intent(in)             :: N
+  
+  ! Output/Input
+  complex*16,intent(inout)       :: S(N,N)
+  complex*16,intent(out)         :: L(N,N),U(N,N)
+  
+  ! Local
+  integer                        :: info,i,j
+  integer,allocatable            :: ipiv(:)
+  complex*16,allocatable         :: tmp(:)
+  
+  allocate(ipiv(N),tmp(N))
+
+  call zgetrf(N,N,S,N,ipiv,info)
+  
+  if(info<0) then
+    print*, "LU decomposition failed"
+    print*, "Illegal value"
+  endif
+
+  if(info>0) then
+    print*, "LU decomposition failed"
+    print*, "U(i,i) with i=",info,"is zero. Thus, U is singular."
+  endif
+  
+  L = S
+  U = S
+  
+  do i=1,N
+    do j=i,N
+      if(i .eq. j) then
+        L(i,j) = cmplx(1d0,0d0,kind=8)
+      else
+        L(i,j) = cmplx(0d0,0d0,kind=8)
+      endif
+    enddo
+  enddo
+  
+  call complex_identity_matrix(N,S)
+  do i=1,N
+    call complex_swap_rows(N,i,ipiv(i),S) 
+  enddo
+  call vecout(N,ipiv*1d0)
+  deallocate(ipiv,tmp)
+
+end subroutine
 
 subroutine easy_linear_solve(N,A,b,x)
 

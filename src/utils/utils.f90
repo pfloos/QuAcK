@@ -86,6 +86,41 @@ subroutine diagonal_matrix(N,D,A)
   end do
 
 end subroutine
+subroutine complex_diagonal_matrix(N,D,A)
+
+! Construct diagonal matrix A from vector D
+
+  implicit none
+
+  integer,intent(in)            :: N
+  double precision,intent(in)   :: D(N)
+  complex*16,intent(out)        :: A(N,N)
+
+  integer                       :: i
+
+  A(:,:) = 0d0
+  do i=1,N
+    A(i,i) = D(i)
+  end do
+
+end subroutine
+subroutine complex_identity_matrix(N,A)
+
+! Set A to identity
+
+  implicit none
+
+  integer,intent(in)            :: N
+  complex*16,intent(out)        :: A(N,N)
+
+  integer                       :: i
+
+  A(:,:) = cmplx(0d0,0d0,kind=8)
+  do i=1,N
+    A(i,i) = cmplx(1d0,0d0,kind=8)
+  end do
+
+end subroutine
 !------------------------------------------------------------------------
 subroutine add_diagonal_matrix(N,D,A)
 
@@ -396,6 +431,27 @@ subroutine complex_DA(N,D,A)
       A(i,j) = D(i)*A(i,j)
     end do
   end do
+
+end subroutine
+subroutine complex_swap_rows(N,i,j,A)
+
+! Swap rows i and j of matrix A
+
+  implicit none
+
+  integer,intent(in)            :: N
+  integer,intent(in)            :: i,j
+  complex*16,intent(inout)      :: A(N,N)
+  
+  complex*16,allocatable        :: tmp(:)
+
+  allocate(tmp(N))
+  
+  tmp(:) = A(i,:)
+  A(i,:) = A(j,:)
+  A(j,:) = tmp
+
+  deallocate(tmp)
 
 end subroutine
 
