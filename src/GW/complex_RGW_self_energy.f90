@@ -162,21 +162,4 @@ subroutine complex_RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
 
   deallocate(Re_DS,Im_DS,Re_Z,Im_Z,Re_Sig,Im_Sig)
 
-!!-------------------------------------!
-!! Galitskii-Migdal correlation energy !
-!!-------------------------------------!
-!
-  EcGM = 0d0
-!  do m=1,nS
-!    do a=nO+1,nOrb-nR
-!      do i=nC+1,nO
-!
-!        eps = e(a) - e(i) + Om(m)
-!        num = 4d0*rho(a,i,m)*rho(a,i,m)
-!        EcGM = EcGM - num*eps/(eps**2 + eta**2)
-!
-!      end do
-!    end do
-!  end do
-!
 end subroutine 

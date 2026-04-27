@@ -14,9 +14,11 @@ subroutine complex_print_excitation_energies(method,manifold,nS,Om)
 
 ! Local variables
 
-  integer,parameter                  :: maxS = 50
+  integer                            :: maxS
   integer                            :: m
-
+  
+  maxS = nS
+  
   write(*,*)
   write(*,*)'-------------------------------------------------------------------------'
   write(*,'(1X,A15,A15,A15,A9)') trim(method),' calculation: ',trim(manifold),' manifold'

@@ -114,7 +114,7 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
 
   call complex_phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  !if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+  if(print_W) call complex_print_excitation_energies('phRPA@cRHF','singlet',nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !

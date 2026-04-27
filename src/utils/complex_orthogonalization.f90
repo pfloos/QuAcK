@@ -125,6 +125,31 @@ subroutine complex_normalize_RPA(nS,XYYX)
   deallocate(A)
 end subroutine
 
+subroutine complex_complex_biorthonormalize_RPA(nS, RPA_matrix)
+  
+  ! Builds left RPA eigenvectors from right RPA eigenvectors and bioorthonormalizes the right and left eigenvectors, returns the
+  ! normalized right eigenvectors.
+  
+  implicit none
+  integer, intent(in)            :: nS
+  complex(kind=8), intent(inout) :: RPA_matrix(2*nS,2*nS)
+
+  complex(kind=8), allocatable :: left_RPA_vectors(:,:)
+
+  allocate(left_RPA_vectors(2*nS,2*nS))
+
+  ! Build left eigenvectors in symplectic form
+  left_RPA_vectors(1:nS,1:nS)           =  RPA_matrix(1:nS,1:nS)
+  left_RPA_vectors(1:nS,nS+1:2*nS)      = -RPA_matrix(1:nS,nS+1:2*nS)
+  left_RPA_vectors(nS+1:2*nS,1:nS)      = -RPA_matrix(nS+1:2*nS,1:nS)
+  left_RPA_vectors(nS+1:2*nS,nS+1:2*nS) =  RPA_matrix(nS+1:2*nS,nS+1:2*nS)
+
+  call complex_complex_bi_orthonormalize(2*nS, left_RPA_vectors, RPA_matrix)
+
+  deallocate(left_RPA_vectors)
+
+end subroutine
+
 subroutine complex_gram_schmidt(N, vectors)
   
   ! Input variables

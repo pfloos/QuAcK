@@ -27,8 +27,6 @@ subroutine complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   complex*16,intent(out)        :: XpY(nSt,nSt)
   complex*16,intent(out)        :: XmY(nSt,nSt)
 
-
-
 ! Tamm-Dancoff approximation
 
   if(TDA) then
@@ -42,22 +40,27 @@ subroutine complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
   else
 
     allocate(RPA_matrix(2*nSt,2*nSt),OmOmminus(2*nSt))
-    RPA_matrix(1:nSt,1:nSt) = Aph(:,:)
-    RPA_matrix(1:nSt,nSt+1:2*nSt) = Bph(:,:)
-    RPA_matrix(nSt+1:2*nSt,1:nSt) = -Bph(:,:)
+    
+    RPA_matrix(1:nSt,1:nSt)             =  Aph(:,:)
+    RPA_matrix(1:nSt,nSt+1:2*nSt)       =  Bph(:,:)
+    RPA_matrix(nSt+1:2*nSt,1:nSt)       = -Bph(:,:)
     RPA_matrix(nSt+1:2*nSt,nSt+1:2*nSt) = -Aph(:,:)
+    
     call complex_diagonalize_matrix_without_sort(2*nSt,RPA_matrix,OmOmminus)
     call complex_sort_eigenvalues_RPA(2*nSt,OmOmminus,RPA_matrix)
     call complex_normalize_RPA(nSt,RPA_matrix)
     Om(:) = OmOmminus(1:nSt)
+    
     if(maxval(abs(OmOmminus(1:nSt)+OmOmminus(nSt+1:2*nSt))) > 1e-12) then
       call print_warning('We dont find a Om and -Om structure as solution of the RPA. There might be a problem somewhere.')
       write(*,*) "Maximal difference :", maxval(abs(OmOmminus(1:nSt)+OmOmminus(nSt+1:2*nSt)))
     end if
     if(minval(real(Om(:))) < 0d0) &
       call print_warning('You may have instabilities in linear response: A-B is not positive definite!!')
+    
     XpY(:,:) = transpose(RPA_matrix(1:nSt,1:nSt) + RPA_matrix(nSt+1:2*nSt,1:nSt)) 
     XmY(:,:) = transpose(RPA_matrix(1:nSt,1:nSt) - RPA_matrix(nSt+1:2*nSt,1:nSt))
+    
     deallocate(RPA_matrix,OmOmminus) 
 
   end if

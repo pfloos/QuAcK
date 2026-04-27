@@ -338,7 +338,7 @@ subroutine CVS_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
     end do
 
     ! Compute density matrix 
-
+    print*, "Here be cautious no real MOM applied to get the density matrix !"
     do is=1,nspin
       P(:,:,is) = matmul(c(:,occupations(1:nO(is),is),is),transpose(c(:,occupations(1:nO(is),is),is)))
     end do
@@ -406,7 +406,6 @@ subroutine CVS_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
 
   deallocate(cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,rho,err,err_diis,F_diis)
 
-! BSE not yet implemented
 ! Perform BSE calculation
 
   if(dophBSE) then
@@ -423,24 +422,6 @@ subroutine CVS_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
     write(*,'(2X,A50,F20.10,A3)') 'Tr@BSE@qsGW@UHF total       energy                  = ',ENuc + EqsGW + sum(EcBSE),' au'
     write(*,*)'-------------------------------------------------------------------------------'
     write(*,*)
-
-!   Compute the BSE correlation energy via the adiabatic connection 
-!
-!    if(doACFDT) then
-!
-!      call CVS_UGW_phACFDT(exchange_kernel,doXBS,.true.,TDA_W,TDA,dophBSE,spin_conserved,spin_flip, &
-!                       eta,nBas,nC,nO,nV,nR,nS,ERI_aaaa,ERI_aabb,ERI_bbbb,eGW,eGW,EcRPA)
-!
-!      write(*,*)
-!      write(*,*)'-------------------------------------------------------------------------------'
-!      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@qsGW@UHF correlation energy (spin-conserved) = ',EcRPA(1),' au'
-!      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@qsGW@UHF correlation energy (spin-flip)      = ',EcRPA(2),' au'
-!      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@qsGW@UHF correlation energy                  = ',sum(EcRPA),' au'
-!      write(*,'(2X,A50,F20.10,A3)') 'AC@BSE@qsGW@UHF total       energy                  = ',ENuc + EqsGW + sum(EcRPA),' au'
-!      write(*,*)'-------------------------------------------------------------------------------'
-!      write(*,*)
-!
-!    end if
 
   end if
 
