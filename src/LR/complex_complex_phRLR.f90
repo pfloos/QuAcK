@@ -47,7 +47,7 @@ subroutine complex_complex_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     call complex_diagonalize_matrix_without_sort(2*nS,RPA_matrix,OmOmminus)
     call complex_sort_eigenvalues_RPA(2*nS,OmOmminus,RPA_matrix)
-    call complex_complex_bi_orthonormalize_RPA(nS,RPA_matrix)
+    call complex_complex_biorthonormalize_RPA(nS,RPA_matrix)
     Om(:) = OmOmminus(1:nS)
     
     if(maxval(abs(OmOmminus(1:nS)+OmOmminus(nS+1:2*nS))) > 1e-12) then

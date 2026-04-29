@@ -19,11 +19,6 @@ subroutine complex_sort_LR_eigenvalues(N, eigvals, eigvecsL,eigvecsR)
         temp_eigval = eigvals(j)
         eigvals(j) = eigvals(j+1)
         eigvals(j+1) = temp_eigval
-
-        ! Swap corresponding eigenvectors
-!        temp_vec = eigvecsL(j,:)
-!        eigvecsL(j,:) = eigvecsL(j+1,:)
-!        eigvecsL(j+1,:) = temp_vec
         
         temp_vec = eigvecsR(:,j)
         eigvecsR(:,j) = eigvecsR(:,j+1)
