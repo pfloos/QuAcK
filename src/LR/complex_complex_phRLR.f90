@@ -60,6 +60,7 @@ subroutine complex_complex_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
     
     XpY(:,:) = transpose(RPA_matrix(1:nS,1:nS) + RPA_matrix(nS+1:2*nS,1:nS)) 
     XmY(:,:) = transpose(RPA_matrix(1:nS,1:nS) - RPA_matrix(nS+1:2*nS,1:nS))
+
     deallocate(RPA_matrix,OmOmminus)
   
   end if
