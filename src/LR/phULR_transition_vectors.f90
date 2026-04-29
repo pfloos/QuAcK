@@ -29,7 +29,7 @@ subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole
 
   integer                       :: ia,jb,j,b
   integer                       :: maxS = 10
-  double precision,parameter    :: thres_vec = 0.1d0
+  double precision              :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
   double precision,allocatable  :: os(:)
@@ -38,6 +38,7 @@ subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole
 ! Memory allocation
 
   maxS = min(nSt,maxS)
+  thres_vec = thres_vec / sqrt(2d0)
   allocate(X(nSt),Y(nSt),os(maxS),S2(maxS))
 
 ! Compute oscillator strengths
@@ -56,8 +57,8 @@ subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole
 
     do ia=1,maxS
 
-      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))/sqrt(2d0)
+      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))/sqrt(2d0)
 
       print*,'-------------------------------------------------------------'
       write(*,'(A15,I3,A2,F10.6,A3,A6,F6.4,A11,F6.4)') & 
@@ -111,8 +112,8 @@ subroutine phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,dipole
 
     do ia=1,maxS
 
-      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))/sqrt(2d0)
+      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))/sqrt(2d0)
 
 
       print*,'-------------------------------------------------------------'

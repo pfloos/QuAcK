@@ -27,12 +27,13 @@ subroutine complex_phLR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,&
 
   integer                       :: ia,jb,j,b
   integer                       :: maxS = 10
-  double precision,parameter    :: thres_vec = 0.1d0
+  double precision              :: thres_vec = 0.1d0
   complex*16,allocatable        :: X(:)
   complex*16,allocatable        :: Y(:)
 
 ! Memory allocation
   maxS = min(nS,maxS)
+  thres_vec = thres_vec / sqrt(2d0)
   allocate(X(nS),Y(nS))
 
 ! Not implemented for complex yet
@@ -51,8 +52,8 @@ subroutine complex_phLR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,&
 
   do ia=1,maxS
 
-    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))/sqrt(2d0)
+    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))/sqrt(2d0)
 
     print*,'-------------------------------------------------------------'
     write(*,'(A15,I3,A2,F15.6,A5,F15.6,A3)') & 

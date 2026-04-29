@@ -26,7 +26,7 @@ subroutine CVS_phLR_transition_vectors(spin_allowed,nOrb,nC,nO,nV,nR,nS,nCVS,nFC
   integer                       :: ia,jb,j,b
   integer                       :: maxS = 10
   double precision              :: S2
-  double precision,parameter    :: thres_vec = 0.1d0
+  double precision              :: thres_vec = 0.1d0
   double precision,allocatable  :: X(:)
   double precision,allocatable  :: Y(:)
   double precision,allocatable  :: os(:)
@@ -34,6 +34,7 @@ subroutine CVS_phLR_transition_vectors(spin_allowed,nOrb,nC,nO,nV,nR,nS,nCVS,nFC
 ! Memory allocation
 
   maxS = min(nS,maxS)
+  thres_vec = thres_vec / sqrt(2d0)
   allocate(X(nS),Y(nS),os(maxS))
 
 ! Compute oscillator strengths
@@ -45,8 +46,8 @@ subroutine CVS_phLR_transition_vectors(spin_allowed,nOrb,nC,nO,nV,nR,nS,nCVS,nFC
 
   do ia=1,maxS
 
-    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+    X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))/sqrt(2d0)
+    Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))/sqrt(2d0)
 
     ! <S**2> values
 

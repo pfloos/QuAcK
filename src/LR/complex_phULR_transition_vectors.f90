@@ -34,7 +34,7 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
 
   integer                       :: ia,jb,j,b
   integer                       :: maxS = 10
-  double precision,parameter    :: thres_vec = 0.1d0
+  double precision              :: thres_vec = 0.1d0
   complex*16,allocatable        :: X(:)
   complex*16,allocatable        :: Y(:)
   complex*16,allocatable        :: os(:)
@@ -42,6 +42,7 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
 
 ! Memory allocation
   maxS = min(nSt,maxS)
+  thres_vec = thres_vec / sqrt(2d0)
   allocate(X(nSt),Y(nSt),os(maxS),S2(maxS))
 
 ! Not implemented for complex yet
@@ -61,8 +62,8 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
 
     do ia=1,maxS
 
-      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))/sqrt(2d0)
+      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))/sqrt(2d0)
 
       print*,'-------------------------------------------------------------'
       write(*,'(A15,I3,A2,F15.6,A5,F15.6,A3)') & 
@@ -120,8 +121,8 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
 
     do ia=1,maxS
 
-      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))
-      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))
+      X(:) = 0.5d0*(XpY(ia,:) + XmY(ia,:))/sqrt(2d0)
+      Y(:) = 0.5d0*(XpY(ia,:) - XmY(ia,:))/sqrt(2d0)
 
 
 !      print*,'-------------------------------------------------------------'
@@ -161,7 +162,7 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
         do b=nCVS(1)+1,nBas-nO(1)
           jb = jb + 1
           if(abs(X(nSa + jb)) > thres_vec) write(*,'(I3,A5,I3,A4,F15.6,A5,F15.6)') occupations(j,2),'A -> ',virtuals(b,1),&
-          'B = ',real(Y(jb)),' + i ', aimag(Y(jb))
+          'B = ',real(X(nSa+jb)),' + i ', aimag(X(nSa+jb))
         end do
       end do
    
@@ -174,14 +175,9 @@ subroutine complex_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nS
         end do
       end do
      write(*,*)
-
-    end do
+    
+     end do
 
   end if
-
-! Thomas-Reiche-Kuhn sum rule
-!
-!  write(*,'(A30,F10.6)') 'Thomas-Reiche-Kuhn sum rule = ',sum(os(:))
-!  write(*,*)
 
 end subroutine 
