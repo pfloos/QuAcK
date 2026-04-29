@@ -695,7 +695,7 @@ subroutine complex_LU(N,S,L,U)
   do i=1,N
     call complex_swap_rows(N,i,ipiv(i),S) 
   enddo
-  call vecout(N,ipiv*1d0)
+  
   deallocate(ipiv,tmp)
 
 end subroutine
