@@ -22,13 +22,13 @@ subroutine R_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ER
 
 ! Local variables
 
-  integer                       :: p,r,s
+  integer                       :: p,r
   integer                       :: i,j,k,l
   integer                       :: a,b,c,d
   integer                       :: jb,kc,ia,ja
   integer                       :: inu,jmu,anu,bmu
   integer                       :: n2h1p,n2p1h
-  integer                       :: mu,nu
+  integer                       :: mu,nu,s,t
   integer                       :: klc,kcd,ija,ijb,iab,jab
   double precision              :: w
   double precision              :: num,num1,num2,num3
@@ -67,6 +67,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ER
 
   SigC(:) = 0d0
   Z(:)   = 0d0
+  EcGM = 0d0
 
 ! Memory allocation
 
@@ -179,40 +180,74 @@ subroutine R_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ER
     do i=nC+1,nO
        do nu=1,nS
           do mu=1,nS
-
-             tmpA = 0d0
-             tmpB = 0d0
-             tmpBZ = 0d0
-             do c=nO+1,nOrb-nR
-                   
-                num1 = 2d0*rho(c,i,mu)*rho(p,c,nu)
-                dem1 = eHF(i) - eHF(c) - Om(mu)
-                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
-
-                tmpA = tmpA + num1*reg1/dem1
-
-             end do
                    
              do j=nC+1,nO
-                
-                num3 = 2d0*rho(j,i,mu)*rho(p,j,nu)
-                dem3 = w - eHF(j) + Om(nu)
-                reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
+                do k=nC+1,nO
 
-                tmpB  = tmpB  + num3*reg3/dem3
-                tmpBZ = tmpBZ + num3*reg3/dem3/dem3
+                   num1 = 2d0*rho(k,i,nu)*rho(p,k,mu)
+                   dem1 = w - eHF(k) + Om(mu)
+                   reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                   
+                   dem2 = w - eHF(i) + Om(nu) + Om(mu)
+                   reg2 = (1d0 - exp(-2d0*flow*dem2*dem2)) 
                 
+                   num3 = 2d0*rho(j,i,mu)*rho(p,j,nu)
+                   dem3 = w - eHF(j) + Om(nu)
+                   reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
+                   
+                   SigC(p) = SigC(p) + num1*num3*reg1*reg2*reg3/dem1/dem2/dem3
+                   
+                   Z(p)    = Z(p)    - num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem1
+                   Z(p)    = Z(p)    - num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem2
+                   Z(p)    = Z(p)    - num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem3  
+                   
+                end do
              end do
 
-             dem2 = w - eHF(i) + Om(nu) + Om(mu)
-             reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))    
+             do k=nC+1,nO
+                do a=nO+1,nOrb-nR
+
+                   num1 = 2d0*rho(k,i,nu)*rho(p,k,mu)
+                   dem1 = w - eHF(k) + Om(mu)
+                   reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
                    
-             SigC(p) = SigC(p) + (tmpA+tmpB)*(tmpA+tmpB)*reg2/dem2
-             Z(p)    = Z(p)    - tmpA*tmpA*reg2/dem2/dem2
-             Z(p)    = Z(p)    - 2d0*tmpA*tmpB*reg2/dem2/dem2
-             Z(p)    = Z(p)    - 2d0*tmpA*tmpBZ*reg2/dem2
-             Z(p)    = Z(p)    - 2d0*tmpB*tmpBZ*reg2/dem2
-             Z(p)    = Z(p)    - tmpB*tmpB*reg2/dem2/dem2                   
+                   dem2 = w - eHF(i) + Om(nu) + Om(mu)
+                   reg2 = (1d0 - exp(-2d0*flow*dem2*dem2)) 
+                
+                   num3 = 2d0*rho(a,i,mu)*rho(p,a,nu)
+                   dem3 = eHF(i) - eHF(a) - Om(mu)
+                   reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
+                   
+                   SigC(p) = SigC(p) + 2d0*num1*num3*reg1*reg2*reg3/dem1/dem2/dem3
+                   
+                   Z(p)    = Z(p)    - 2d0*num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem1
+                   Z(p)    = Z(p)    - 2d0*num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem2
+                   
+                end do
+             end do
+
+             do b=nO+1,nOrb-nR
+                do a=nO+1,nOrb-nR
+
+                   num1 = 2d0*rho(b,i,nu)*rho(p,b,mu)
+                   dem1 = eHF(i) - eHF(b) - Om(nu)
+                   reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                   
+                   dem2 = w - eHF(i) + Om(nu) + Om(mu)
+                   reg2 = (1d0 - exp(-2d0*flow*dem2*dem2)) 
+                
+                   num3 = 2d0*rho(a,i,mu)*rho(p,a,nu)
+                   dem3 = eHF(i) - eHF(a) - Om(mu)
+                   reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
+                   
+                   SigC(p) = SigC(p) + num1*num3*reg1*reg2*reg3/dem1/dem2/dem3
+
+                   Z(p)    = Z(p)    - num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem2
+                   
+                end do
+             end do
+
+                
           end do
        end do
     end do
@@ -222,44 +257,80 @@ subroutine R_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ER
     do a=nO+1,nOrb-nR
        do nu=1,nS
           do mu=1,nS
+             
+             do b=nO+1,nOrb-nR
+                do c=nO+1,nOrb-nR
+                   
+                   num1 = 2d0*rho(a,c,nu)*rho(c,p,mu)
+                   dem1 = w - eHF(c) - Om(mu)
+                   reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                   
+                   dem2 = w - eHF(a) - Om(nu) - Om(mu)
+                   reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))  
+                   
+                   num3 = 2d0*rho(a,b,mu)*rho(b,p,nu)
+                   dem3 = w - eHF(b) - Om(nu)
+                   reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
-             tmpA = 0d0
-             tmpB = 0d0
-             tmpBZ = 0d0
-             do i=nC+1,nO
 
-                num1 = 2d0*rho(a,i,mu)*rho(i,p,nu)
-                dem1 = eHF(a) - eHF(i) + Om(mu)
-                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
-                
-                tmpA = tmpA + num1*reg1/dem1
-                                
+                   SigC(p) = SigC(p) + num1*num3*reg1*reg2*reg3/dem1/dem2/dem3
+                   
+                   Z(p)    = Z(p)    - num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem1
+                   Z(p)    = Z(p)    - num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem2
+                   Z(p)    = Z(p)    - num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem3
+                   
+                end do
              end do
 
-             do b=nO+1,nOrb-nR
-                
-                num3 = 2d0*rho(a,b,mu)*rho(b,p,nu)
-                dem3 = w - eHF(b) - Om(mu)
-                reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
+             do c=nO+1,nOrb-nR
+                do i=nC+1,nO
+                   
+                   num1 = 2d0*rho(a,c,nu)*rho(c,p,mu)
+                   dem1 = w - eHF(c) - Om(mu)
+                   reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                   
+                   dem2 = w - eHF(a) - Om(nu) - Om(mu)
+                   reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))  
+                   
+                   num3 = 2d0*rho(a,i,mu)*rho(i,p,nu)
+                   dem3 = eHF(a) - eHF(i) + Om(mu)
+                   reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
-                tmpB  = tmpB  + num3*reg3/dem3
-                tmpBZ = tmpBZ + num3*reg3/dem3/dem3
-                
+
+                   SigC(p) = SigC(p) + 2d0*num1*num3*reg1*reg2*reg3/dem1/dem2/dem3
+                   
+                   Z(p)    = Z(p)    - 2d0*num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem1
+                   Z(p)    = Z(p)    - 2d0*num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem2
+                   
+                end do
+             end do
+
+             do j=nC+1,nO
+                do i=nC+1,nO
+                   
+                   num1 = 2d0*rho(a,j,nu)*rho(j,p,mu)
+                   dem1 = eHF(a) - eHF(j) + Om(nu)
+                   reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                   
+                   dem2 = w - eHF(a) - Om(nu) - Om(mu)
+                   reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))  
+                   
+                   num3 = 2d0*rho(a,i,mu)*rho(i,p,nu)
+                   dem3 = eHF(a) - eHF(i) + Om(mu)
+                   reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
+
+
+                   SigC(p) = SigC(p) + num1*num3*reg1*reg2*reg3/dem1/dem2/dem3
+                   
+                   Z(p)    = Z(p)    - num1*num3*reg1*reg2*reg3/dem1/dem2/dem3/dem2
+                   
+                end do
              end do
              
-             dem2 = w - eHF(a) - Om(nu) - Om(mu)
-             reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))      
-                   
-             SigC(p) = SigC(p) + (tmpA+tmpB)*(tmpA+tmpB)*reg2/dem2
-             Z(p)    = Z(p)    - tmpA*tmpA*reg2/dem2/dem2
-             Z(p)    = Z(p)    - 2d0*tmpA*tmpB*reg2/dem2/dem2
-             Z(p)    = Z(p)    - 2d0*tmpA*tmpBZ*reg2/dem2
-             Z(p)    = Z(p)    - 2d0*tmpB*tmpBZ*reg2/dem2
-             Z(p)    = Z(p)    - tmpB*tmpB*reg2/dem2/dem2 
-
+             
           end do
        end do
-     end do
+    end do
      
      !---------------!
      ! Blocks U_2h1p !
@@ -520,9 +591,9 @@ subroutine R_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ER
                 do mu=1,nS
                    jmu = jmu + 1
              
-                   SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
+                   ! SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
+                   ! Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
+                   ! Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
 
                 end do
              end do
@@ -555,9 +626,9 @@ subroutine R_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ER
              do mu=1,nS
                 bmu = bmu + 1
                 
-                SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
+                ! SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
+                ! Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
+                ! Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
                 
              end do
           end do
