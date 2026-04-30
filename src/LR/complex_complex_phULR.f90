@@ -1,4 +1,4 @@
-subroutine complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
+subroutine complex_complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 ! Compute linear response for complex unrestricted formalism using the c-product
 
@@ -41,14 +41,14 @@ subroutine complex_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     allocate(RPA_matrix(2*nSt,2*nSt),OmOmminus(2*nSt))
     
-    RPA_matrix(1:nSt,1:nSt)             =  Aph(:,:)
-    RPA_matrix(1:nSt,nSt+1:2*nSt)       =  Bph(:,:)
-    RPA_matrix(nSt+1:2*nSt,1:nSt)       = -Bph(:,:)
-    RPA_matrix(nSt+1:2*nSt,nSt+1:2*nSt) = -Aph(:,:)
+    RPA_matrix(1:nSt,1:nSt)              =  Aph(:,:)
+    RPA_matrix(1:nSt,nSt+1:2*nSt)        =  Bph(:,:)
+    RPA_matrix(nSt+1:2*nSt,1:nSt)        = -Bph(:,:)
+    RPA_matrix(nSt+1:2*nSt,nSt+1:2*nSt)  = -Aph(:,:)
     
     call complex_diagonalize_matrix_without_sort(2*nSt,RPA_matrix,OmOmminus)
     call complex_sort_eigenvalues_RPA(2*nSt,OmOmminus,RPA_matrix)
-    call complex_normalize_RPA(nSt,RPA_matrix)
+    call complex_complex_biorthonormalize_RPA(nSt,RPA_matrix)
     Om(:) = OmOmminus(1:nSt)
     
     if(maxval(abs(OmOmminus(1:nSt)+OmOmminus(nSt+1:2*nSt))) > 1e-12) then

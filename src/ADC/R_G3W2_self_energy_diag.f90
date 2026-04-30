@@ -331,11 +331,11 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcG
                        reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
                        reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
  
-                       Sig(p) = Sig(p) + num*reg1*reg2/(dem1*dem2*dem3)
+                       Sig(p) = Sig(p) + num*reg1*reg2*reg3/(dem1*dem2*dem3)
  
-                       Z(p) = Z(p) - num*reg1*reg2/(dem1*dem1*dem2*dem3) &
-                                   - num*reg1*reg2/(dem1*dem2*dem2*dem3) &
-                                   - num*reg1*reg2/(dem1*dem2*dem3*dem3)  
+                       Z(p) = Z(p) - num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
+                                   - num*reg1*reg2*reg3/(dem1*dem2*dem2*dem3) &
+                                   - num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)  
  
  
                     end do

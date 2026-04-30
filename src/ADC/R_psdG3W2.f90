@@ -1,4 +1,4 @@
-subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform single-shot G3W2 calculation
 
@@ -58,9 +58,9 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 ! Hello world
 
   write(*,*)
-  write(*,*)'*******************************'
-  write(*,*)'* Restricted G3W2 Calculation *'
-  write(*,*)'*******************************'
+  write(*,*)'**********************************'
+  write(*,*)'* Restricted psdG3W2 Calculation *'
+  write(*,*)'**********************************'
   write(*,*)
 
 ! Spin manifold and TDA for dynamical screening
@@ -74,7 +74,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 
   if(doSRG) then
 
-    write(*,*) '*** SRG regularized G3W2 scheme ***'
+    write(*,*) '*** SRG regularized psdG3W2 scheme ***'
     write(*,*)
 
   end if
@@ -115,7 +115,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,
 
   else
 
-     call R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
+     call R_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
   end if
   

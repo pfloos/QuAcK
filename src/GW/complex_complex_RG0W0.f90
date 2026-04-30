@@ -1,4 +1,4 @@
-subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
+subroutine complex_complex_RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
                  linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,CAP,dipole_int,eHF)
 
 ! Perform a fully complex G0W0 calculation with CAP 
@@ -112,9 +112,9 @@ subroutine complex_cRG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,
                  call complex_phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
   if(.not.TDA_W) call complex_phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call complex_phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call complex_complex_phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call complex_print_excitation_energies('phRPA@cRHF','singlet',nS,Om)
+  if(print_W) call complex_print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !
@@ -157,22 +157,7 @@ end if
 ! Plot self-energy, renormalization factor, and spectral function
 !
   if(plot_self) call complex_RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,Re_eHF,Im_eHF,Re_eGW,Im_eGW,Om,rho)
-!
-!! Cumulant expansion 
-!
-!! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
-!
-!! Compute the RPA correlation energy
-!
-!                 call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,Re_eGW,ERI,Aph)
-!  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-!
-!  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
-!
-!!--------------!
-!! Dump results !
-!!--------------!
-!
+  
   call print_complex_cRG0W0(nOrb,nO,Re_eHF,Im_eHF,ENuc,ERHF,Re_SigC,Im_SigC,Re_Z,Im_Z,Re_eGW,Im_eGW,EcRPA,EcGM)
 !!---------------------------!
 !! Perform phBSE calculation !
