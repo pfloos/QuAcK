@@ -67,7 +67,7 @@ subroutine CVS_phRLR(TDA,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
     call diagonalize_general_matrix(nSt,ApB,Om,XmY)
     
     ! Deal with complex eigenvalue and then stop program
-    if(any(Om < 0d0)) then
+    if(any(Om < -1d-8)) then
       print*,"Found complex eigenvalue in Linear Response ! Use complex code !"
       allocate(complex_Om(nSt))
       complex_Om = cmplx(Om,0d0,kind=8)
@@ -77,21 +77,6 @@ subroutine CVS_phRLR(TDA,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
       EcRPA      = 0.5d0*(sum(real(complex_Om)) - trace_matrix(nSt,Aph))
       print*, " Re(EcRPA)  = ", EcRPA 
       print*, "|Im(EcRPA)| = ", 0.5d0*sum(aimag(complex_Om))
-      !print *, "Discard imaginary eigenvalue"
-      !Om    = real(complex_Om)
-      !Om(1) = 0d0
-      !
-      !allocate(OmTDA(nSt),XpYTDA(nSt,nSt))
-    
-      !! Compute TDA
-      !OmTDA = 0d0
-      !XpYTDA(:,:) = Aph(:,:)
-      !call diagonalize_matrix(nSt,XpYTDA,OmTDA)
-      !print *, "Discarded TDA eigenvalue:", OmTDA(1)
-      !OmTDA(1) = 0d0
-      !EcRPA = 0.5d0 * (sum(Om) - sum(OmTDA))
-      !deallocate(OmTDA,XpYTDA,complex_Om)
-      !print *, "Attention: Transition vectors are not computed !"
       stop
     
     else
