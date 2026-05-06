@@ -229,13 +229,13 @@ subroutine G_ADC(dotest,                                               &
 
     if(do_G3W2) then 
       
-      ! call wall_time(start_ADC)
-      ! call G_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,dipole_int_MO,eHF)
-      ! call wall_time(end_ADC)
+      call wall_time(start_ADC)
+      call G_G3W2(dotest,TDA_W,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,dipole_int_MO,eHF)
+      call wall_time(end_ADC)
     
-      ! t_ADC = end_ADC - start_ADC
-      ! write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G3W2 = ',t_ADC,' seconds'
-      ! write(*,*)
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G3W2 = ',t_ADC,' seconds'
+      write(*,*)
  
     end if
 
@@ -245,13 +245,13 @@ subroutine G_ADC(dotest,                                               &
 
     if(do_psdG3W2) then 
       
-      ! call wall_time(start_ADC)
-      ! call G_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,dipole_int_MO,eHF)
-      ! call wall_time(end_ADC)
+      call wall_time(start_ADC)
+      call G_psdG3W2(dotest,TDA_W,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI_MO,dipole_int_MO,eHF)
+      call wall_time(end_ADC)
     
-      ! t_ADC = end_ADC - start_ADC
-      ! write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G3W2 = ',t_ADC,' seconds'
-      ! write(*,*)
+      t_ADC = end_ADC - start_ADC
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for G3W2 = ',t_ADC,' seconds'
+      write(*,*)
  
     end if
   
