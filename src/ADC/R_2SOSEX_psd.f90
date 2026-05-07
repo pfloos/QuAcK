@@ -1,6 +1,6 @@
-subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine R_2SOSEX_psd(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
-! Perform single-shot 2SOSEX calculation
+! Perform single-shot 2SOSEX-psd calculation
 
   implicit none
   include 'parameters.h'
@@ -58,9 +58,9 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted 2SOSEX Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'*************************************'
+  write(*,*)'* Restricted 2SOSEX-psd Calculation *'
+  write(*,*)'*************************************'
   write(*,*)
 
 ! Spin manifold and TDA for dynamical screening
@@ -74,7 +74,7 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 
   if(doSRG) then
 
-    write(*,*) '*** SRG regularized 2SOSEX scheme ***'
+    write(*,*) '*** SRG regularized 2SOSEX-psd scheme ***'
     write(*,*)
 
   end if
@@ -99,7 +99,7 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Compute spectral weights !
 !--------------------------!
 
-  call R_2SOSEX_excitation_density(flow,nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rho)
+  call R_2SOSEX_psd_excitation_density(flow,nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rho)
 
 !----------------------------!
 ! Compute 2SOSEX self-energy !
@@ -155,16 +155,16 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Dump results !
 !--------------!
 
-  call print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
+  call print_R_2SOSEX_psd(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
   
   
 ! Testing zone
 
   if(dotest) then
 
-    call dump_test_value('R','2SOSEX correlation energy',EcRPA)
-    call dump_test_value('R','2SOSEX HOMO energy',eQP(nO))
-    call dump_test_value('R','2SOSEX LUMO energy',eQP(nO+1))
+    call dump_test_value('R','2SOSEX-psd correlation energy',EcRPA)
+    call dump_test_value('R','2SOSEX-psd HOMO energy',eQP(nO))
+    call dump_test_value('R','2SOSEX-psd LUMO energy',eQP(nO+1))
 
   end if
 
