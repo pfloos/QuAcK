@@ -1,4 +1,4 @@
-subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform single-shot 2SOSEX calculation
 
@@ -16,6 +16,7 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  double precision,intent(in)   :: flow
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -36,7 +37,6 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
   logical                       :: plot_self = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
-  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcGM
   double precision,allocatable  :: Aph(:,:)
@@ -70,8 +70,6 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 
 ! SRG regularization
 
-  flow = 1d+6
-
   if(doSRG) then
 
     write(*,*) '*** SRG regularized 2SOSEX scheme ***'
@@ -92,6 +90,10 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
   if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+
+  ! Small shift to avoid hard zeros in amplitudes
+
+  Om(:) = Om(:) + 1d-12
 
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
