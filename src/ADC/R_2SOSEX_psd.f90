@@ -109,7 +109,7 @@ subroutine R_2SOSEX_psd(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nB
 
   if(doSRG) then 
 
-    call RGW_SRG_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
   else
 
@@ -158,7 +158,6 @@ subroutine R_2SOSEX_psd(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nB
 !--------------!
 
   call print_R_2SOSEX_psd(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
-  
   
 ! Testing zone
 

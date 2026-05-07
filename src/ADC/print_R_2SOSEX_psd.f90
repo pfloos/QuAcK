@@ -1,5 +1,6 @@
 subroutine print_R_2SOSEX_psd(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
 
+
 ! Print one-electron energies and other stuff for 2SOSEX-psd
 
   implicit none
