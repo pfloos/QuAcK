@@ -1,4 +1,4 @@
-subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform single-shot G3W2 calculation
 
@@ -16,6 +16,7 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  double precision,intent(in)   :: flow
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -36,7 +37,6 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,
   logical                       :: plot_self = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
-  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcGM
   double precision,allocatable  :: Aph(:,:)
@@ -68,10 +68,6 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,
   isp_W = 1
   dRPA_W = .true.
 
-! SRG regularization
-
-  flow = 500d0
-
   if(doSRG) then
 
     write(*,*) '*** SRG regularized psdG3W2 scheme ***'
@@ -95,7 +91,7 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,
 
   ! Small shift to avoid hard zeros in amplitudes
 
-  Om(:) = Om(:) + 1d-12
+  Om(:) = Om(:) !+ 1d-12
 
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
@@ -115,7 +111,7 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,
 
   else
 
-     call R_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
+     call R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
   end if
   
@@ -138,10 +134,10 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,
 
   else 
 
-     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
+     write(*,*) ' *** Quasiparticle energies obtained by root search not implemented *** '
      write(*,*)
 
-     call R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
+     ! call R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
 
 
   end if
