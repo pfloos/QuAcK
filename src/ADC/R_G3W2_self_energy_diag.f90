@@ -1,4 +1,4 @@
-subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcGM,Sig,Z)
+subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcGM,Sig,Z)
 
 ! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 ! for the G3W2 approximation
@@ -20,6 +20,8 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcG
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nOrb,nOrb,nS)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
+  
+  double precision,intent(in)   :: flow 
 
 ! Local variables
 
@@ -34,8 +36,6 @@ subroutine R_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcG
   logical                       :: add_SOX
   logical                       :: add_2SOSEX
   logical                       :: add_G3W2
-  
-  double precision              :: flow = 1d6
 
 ! Output variables
 
