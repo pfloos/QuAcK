@@ -54,7 +54,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
   add_GW     = .true.
   add_SOX    = .true.
   add_2SOSEX = .true.
-  add_G3W2   = .false.
+  add_G3W2   = .true.
 
 !----------------!
 ! GW self-energy !
