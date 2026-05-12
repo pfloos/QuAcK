@@ -95,31 +95,31 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
   C1_2h1p(:,:) = 0d0
 
-  imu = 0
+  inu = 0
   do i=nC+1,nO
-    do mu=1,nS
-      imu = imu + 1
+    do nu=1,nS
+      inu = inu + 1
   
       ! First-order terms
  
-      knu = 0
-      do k=nC+1,nO
-        do nu=1,nS
-          knu = knu + 1
+      jmu = 0
+      do j=nC+1,nO
+        do mu=1,nS
+          jmu = jmu + 1
    
-          do j=nC+1,nO
+          do k=nC+1,nO
 
-            num = rho(k,j,mu)*rho(i,j,nu)
-            dem = eHF(i) - eHF(j) + Om(nu)
+            num = rho(i,k,mu)*rho(j,k,nu)
+            dem = eHF(i) - eHF(k) + Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
          
-            C1_2h1p(imu,knu) = C1_2h1p(imu,knu) + num*reg
+            C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg
          
-            num = rho(k,j,mu)*rho(i,j,nu)
-            dem = eHF(k) - eHF(j) + Om(mu)
+            num = rho(i,k,mu)*rho(j,k,nu)
+            dem = eHF(j) - eHF(k) + Om(nu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
          
-            C1_2h1p(imu,knu) = C1_2h1p(imu,knu) + num*reg
+            C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg
 
           end do
   
@@ -135,31 +135,31 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
 
   C1_2p1h(:,:) = 0d0
 
-  amu = 0
+  anu = 0
   do a=nO+1,nOrb-nR
-    do mu=1,nS
-      amu = amu + 1
+    do nu=1,nS
+      anu = anu + 1
  
       ! First-order terms
  
-      cnu = 0
-      do c=nO+1,nOrb-nR
-        do nu=1,nS
-          cnu = cnu + 1
+      bmu = 0
+      do b=nO+1,nOrb-nR
+        do mu=1,nS
+          bmu = bmu + 1
    
-          do b=nO+1,nOrb-nR
+          do c=nO+1,nOrb-nR
 
-            num = rho(b,c,mu)*rho(b,a,nu)
-            dem = eHF(c) - eHF(b) - Om(mu)
+            num = rho(c,a,mu)*rho(c,b,nu)
+            dem = eHF(a) - eHF(c) - Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
          
-            C1_2p1h(amu,cnu) = C1_2p1h(amu,cnu) + num*reg
+            C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg
          
-            num = rho(b,c,mu)*rho(b,a,nu)
-            dem = eHF(a) - eHF(b) - Om(nu)
+            num = rho(c,a,mu)*rho(c,b,nu)
+            dem = eHF(b) - eHF(c) - Om(nu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
          
-            C1_2p1h(amu,cnu) = C1_2p1h(amu,cnu) + num*reg
+            C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg
 
           end do
   
