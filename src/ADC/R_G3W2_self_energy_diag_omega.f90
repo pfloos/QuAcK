@@ -276,11 +276,11 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e
         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
         reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
-        Sig = Sig + num*reg1*reg2/(dem1*dem2*dem3)
+        Sig = Sig + num*reg1*reg2*reg3/(dem1*dem2*dem3)
 
-        Z = Z - num*reg1*reg2/(dem1*dem1*dem2*dem3) &
-              - num*reg1*reg2/(dem1*dem2*dem2*dem3) &
-              - num*reg1*reg2/(dem1*dem2*dem3*dem3)
+        Z = Z - num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
+              - num*reg1*reg2*reg3/(dem1*dem2*dem2*dem3) &
+              - num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)
 
       end do
       end do
@@ -306,11 +306,11 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e
         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
         reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
-        Sig = Sig + num*reg1*reg2/(dem1*dem2*dem3)
+        Sig = Sig + num*reg1*reg2*reg3/(dem1*dem2*dem3)
 
-        Z = Z - num*reg1*reg2/(dem1*dem1*dem2*dem3) &
-              - num*reg1*reg2/(dem1*dem2*dem2*dem3) &
-              - num*reg1*reg2/(dem1*dem2*dem3*dem3)
+        Z = Z - num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
+              - num*reg1*reg2*reg3/(dem1*dem2*dem2*dem3) &
+              - num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)
  
       end do
       end do
@@ -336,11 +336,11 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e
         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
         reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
-        Sig = Sig + 2d0*num*reg1*reg2/(dem1*dem2*dem3)
+        Sig = Sig + 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3)
 
-        Z = Z - 2d0*num*reg1*reg2/(dem1*dem1*dem2*dem3) &
-              - 2d0*num*reg1*reg2/(dem1*dem2*dem2*dem3) &
-              - 2d0*num*reg1*reg2/(dem1*dem2*dem3*dem3) 
+        Z = Z - 2d0*num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
+              - 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem2*dem3) &
+              - 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3) 
 
         dem1 = w - e(k) + Om(s)
         dem2 = Om(s) + e(a) - e(j)
@@ -350,11 +350,11 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e
         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
         reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
-        Sig = Sig - 2d0*num*reg1*reg2/(dem1*dem2*dem3)
+        Sig = Sig - 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3)
 
-        Z = Z + 2d0*num*reg1*reg2/(dem1*dem1*dem2*dem3) &
-              + 2d0*num*reg1*reg2/(dem1*dem2*dem2*dem3) &
-              + 2d0*num*reg1*reg2/(dem1*dem2*dem3*dem3)
+        Z = Z + 2d0*num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
+              + 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem2*dem3) &
+              + 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)
  
       end do
       end do
@@ -380,11 +380,11 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e
         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
         reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
-        Sig = Sig - 2d0*num*reg1*reg2/(dem1*dem2*dem3)
+        Sig = Sig - 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3)
 
-        Z = Z + 2d0*num*reg1*reg2/(dem1*dem1*dem2*dem3) &
-              + 2d0*num*reg1*reg2/(dem1*dem2*dem2*dem3) &
-              + 2d0*num*reg1*reg2/(dem1*dem2*dem3*dem3)
+        Z = Z + 2d0*num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
+              + 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem2*dem3) &
+              + 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)
 
         dem1 = w - e(c) - Om(s)
         dem2 = Om(s) - e(i) + e(b)
@@ -394,11 +394,11 @@ subroutine R_G3W2_self_energy_diag_omega(p,w,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e
         reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
         reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
-        Sig = Sig + 2d0*num*reg1*reg2/(dem1*dem2*dem3)
+        Sig = Sig + 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3)
 
-        Z = Z - 2d0*num*reg1*reg2/(dem1*dem1*dem2*dem3) &
-              - 2d0*num*reg1*reg2/(dem1*dem2*dem2*dem3) &
-              - 2d0*num*reg1*reg2/(dem1*dem2*dem3*dem3)
+        Z = Z - 2d0*num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
+              - 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem2*dem3) &
+              - 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)
 
       end do
       end do

@@ -369,7 +369,6 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                        Z(p) = Z(p) - 2d0*num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
                                    - 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)  
                       
- 
                        dem1 = e(p) - e(k) + Om(s)
                        dem2 = Om(s) + e(a) - e(j)
                        dem3 = e(p) - e(j) + Om(s) + Om(t)
