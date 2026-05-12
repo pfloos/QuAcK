@@ -525,6 +525,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
           inu = inu + 1
           
           ! Zeroth-order terms
+
           dem = w - eHF(i) + Om(nu)
           reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
           K_2h1p(inu)  =   reg
@@ -546,6 +547,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
           anu = anu + 1
           
           ! Zeroth-order terms
+
           dem = w - eHF(a) - Om(nu)
           reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
           K_2p1h(anu)  =   reg
