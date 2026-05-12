@@ -1,6 +1,6 @@
 subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
-! Perform single-shot G3W2 calculation
+! Perform single-shot G3W2-psd calculation
 
   implicit none
   include 'parameters.h'
