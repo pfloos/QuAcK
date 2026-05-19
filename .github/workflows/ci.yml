@@ -57,7 +57,7 @@ jobs:
         python generate_test_methods_and_options.py
         cp methods.test ../tests/inp/methods.RHF
         cp options.test ../tests/inp/options.RHF
-        cp -r $QUACK_ROOT/basis ../tests/work/
+        cp -r "$QUACK_ROOT/basis" ../tests/work/
         cd ../tests
         python create_database.py
         python lunch_bench.py -s light -t 1e-1
