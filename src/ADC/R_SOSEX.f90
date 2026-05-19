@@ -1,4 +1,4 @@
-subroutine R_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine R_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
 ! Perform single-shot SOSEX calculation
 
@@ -16,6 +16,7 @@ subroutine R_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
+  double precision,intent(in)   :: flow
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -36,7 +37,6 @@ subroutine R_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC
   logical                       :: plot_self = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
-  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcGM
   double precision,allocatable  :: Aph(:,:)
@@ -70,8 +70,6 @@ subroutine R_SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC
   dRPA_W = .true.
 
 ! SRG regularization
-
-  flow = 500d0
 
   if(doSRG) then
 

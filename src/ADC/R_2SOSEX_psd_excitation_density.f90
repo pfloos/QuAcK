@@ -1,4 +1,4 @@
-subroutine R_2SOSEX_excitation_density(flow,nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
+subroutine R_2SOSEX_psd_excitation_density(flow,nOrb,nC,nO,nR,nS,e,Om,ERI,XpY,rho)
 
 ! Compute excitation densities for 2SOSEX-spd
 

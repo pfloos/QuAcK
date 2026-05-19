@@ -643,7 +643,6 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
         do c=nO+1,nOrb-nR
           do nu=1,nS
             ket = ket + 1
- 
 
             do b=nO+1,nOrb-nR
 
