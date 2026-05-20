@@ -107,16 +107,16 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
         do mu=1,nS
           jmu = jmu + 1
    
-          do k=nC+1,nO
+          do c=nO+1,nOrb-nR
 
-            num = rho(i,k,mu)*rho(j,k,nu)
-            dem = eHF(i) - eHF(k) + Om(mu)
+            num = rho(i,c,mu)*rho(j,c,nu)
+            dem = eHF(i) - eHF(c) + Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
          
             C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg
          
-            num = rho(i,k,mu)*rho(j,k,nu)
-            dem = eHF(j) - eHF(k) + Om(nu)
+            num = rho(i,c,mu)*rho(j,c,nu)
+            dem = eHF(j) - eHF(c) + Om(nu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
          
             C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg
@@ -147,16 +147,16 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
         do mu=1,nS
           bmu = bmu + 1
    
-          do c=nO+1,nOrb-nR
+          do k=nC+1,nO
 
-            num = rho(c,a,mu)*rho(c,b,nu)
-            dem = eHF(a) - eHF(c) - Om(mu)
+            num = rho(k,a,mu)*rho(k,b,nu)
+            dem = eHF(a) - eHF(k) - Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
          
             C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg
          
-            num = rho(c,a,mu)*rho(c,b,nu)
-            dem = eHF(b) - eHF(c) - Om(nu)
+            num = rho(k,a,mu)*rho(k,b,nu)
+            dem = eHF(b) - eHF(k) - Om(nu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
          
             C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg

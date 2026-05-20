@@ -576,16 +576,16 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
           do nu=1,nS
             ket = ket + 1
  
-            do j=nC+1,nO
+            do b=nO+1,nOrb-nR
 
-              num = rho(k,j,mu)*rho(i,j,nu)
-              dem = eHF(i) - eHF(j) + Om(nu)
+              num = rho(k,b,mu)*rho(i,b,nu)
+              dem = eHF(i) - eHF(b) + Om(nu)
               reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
               H(bra,ket) = H(bra,ket) + num*reg
 
-              num = rho(k,j,mu)*rho(i,j,nu)
-              dem = eHF(k) - eHF(j) + Om(mu)
+              num = rho(k,b,mu)*rho(i,b,nu)
+              dem = eHF(k) - eHF(b) + Om(mu)
               reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
               H(bra,ket) = H(bra,ket) + num*reg
@@ -644,16 +644,16 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
           do nu=1,nS
             ket = ket + 1
 
-            do b=nO+1,nOrb-nR
+            do j=nC+1,nO
 
-              num = rho(b,c,mu)*rho(b,a,nu)
-              dem = eHF(c) - eHF(b) - Om(mu)
+              num = rho(j,c,mu)*rho(j,a,nu)
+              dem = eHF(c) - eHF(j) - Om(mu)
               reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
               H(bra,ket) = H(bra,ket) + num*reg
 
-              num = rho(b,c,mu)*rho(b,a,nu)
-              dem = eHF(a) - eHF(b) - Om(nu)
+              num = rho(j,c,mu)*rho(j,a,nu)
+              dem = eHF(a) - eHF(j) - Om(nu)
               reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
               H(bra,ket) = H(bra,ket) + num*reg

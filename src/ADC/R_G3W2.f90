@@ -124,8 +124,6 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
   ! Linearized or graphical solution?
 
   eQPlin(:) = eHF(:) + Z(:) * SigC(:)
-
-  call vecout(nOrb,eQPlin)
   
   if(linearize) then 
  
