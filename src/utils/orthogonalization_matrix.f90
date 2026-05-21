@@ -39,11 +39,15 @@ subroutine orthogonalization_matrix(nBas,nOrb,S,X)
     end if
   end do
 
-  write(*,'(A50)') '------------------------------------------------'
-  write(*,'(A40,1X,I5)') 'Number of basis functions     = ',nBas
-  write(*,'(A40,1X,I5)') 'Number of spatial orbitals    = ',nOrb
-  write(*,'(A40,1X,I5)') 'Number of discarded functions = ',nBas - nOrb
-  write(*,'(A50)') '------------------------------------------------'
+  write(*,*) '============================================================'
+  write(*,*) '                    Basis Set Summary                       '
+  write(*,*) '============================================================'
+  
+  write(*,'(A35,1X,I10)') ' Number of basis functions     = ', nBas
+  write(*,'(A35,1X,I10)') ' Number of spatial orbitals    = ', nOrb
+  write(*,'(A35,1X,I10)') ' Discarded functions           = ', nBas - nOrb
+  
+  write(*,*) '============================================================'
   write(*,*)
 
   j0 = nBas - nOrb

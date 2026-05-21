@@ -78,30 +78,27 @@ subroutine read_geometry(working_dir,nNuc,ZNuc,rNuc,ENuc)
     endif
 
   close(unit=3)
-      
-  ! Compute nuclear repulsion energy
-  !ENuc = 0.d0
-  !do i=1,nNuc-1
-  !  do j=i+1,nNuc
-  !    RAB = (rNuc(i,1)-rNuc(j,1))**2 + (rNuc(i,2)-rNuc(j,2))**2 + (rNuc(i,3)-rNuc(j,3))**2
-  !    ENuc = ENuc + ZNuc(i)*ZNuc(j)/(AntoBo*sqrt(RAB))
-  !  end do
-  !end do
 
+  ! Print geometry
 
-! Print geometry
-  write(*,'(A28)') '------------------'
-  write(*,'(A28)') 'Molecular geometry'
-  write(*,'(A28)') '------------------'
-  do i=1,nNuc
-    write(*,'(A28,1X,I16)') 'Atom n. ',i
-    write(*,'(A28,1X,F16.10)') 'Z = ',ZNuc(i)
-    write(*,'(A28,1X,F16.10,F16.10,F16.10)') 'Atom coordinates:',(rNuc(i,j),j=1,ncart)
+  write(*,*) '============================================================'
+  write(*,*) '                    Molecular Geometry                      '
+  write(*,*) '============================================================'
+
+  do i = 1, nNuc
+
+    write(*,*)
+    write(*,'(A,I6)') ' Atom index            : ', i
+    write(*,'(A,F12.6)') ' Nuclear charge (Z)    : ', ZNuc(i)
+    write(*,'(A)') ' Coordinates (x, y, z) : '
+    write(*,'(3F18.10)') (rNuc(i,j), j=1,ncart)
+
   end do
+
   write(*,*)
-  write(*,'(A28)') '------------------'
-  write(*,'(A28,1X,F16.10)') 'Nuclear repulsion energy = ',ENuc
-  write(*,'(A28)') '------------------'
+  write(*,*) '============================================================'
+  write(*,'(A,F20.10,A)') ' Nuclear repulsion energy = ', ENuc,' au'
+  write(*,*) '============================================================'
   write(*,*)
 
 end subroutine 

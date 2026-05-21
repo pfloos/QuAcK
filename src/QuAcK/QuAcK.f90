@@ -125,6 +125,8 @@ program QuAcK
 
   character(len=256)            :: working_dir
   character(len=100)            :: sha
+  integer                       :: ios
+  character(len=256)            :: line
 
   ! Check if the right number of arguments is provided
 
@@ -140,18 +142,43 @@ program QuAcK
 !-------------!
 
   write(*,*)
-  write(*,*) '******************************************************************************************'
-  write(*,*) '*            QuAcK                       QuAcK                         QuAcK             *'
-  write(*,*) '*   __        __        __       __        __        __       __        __        __     *'
-  write(*,*) '* <(o )___  <(o )___  <(o )___ <(o )___  <(o )___  <(o )___ <(o )___  <(o )___  <(o )___ *'
-  write(*,*) '* ( ._> /   ( ._> /   ( ._> /  ( ._> /   ( ._> /   ( ._> /  ( ._> /   ( ._> /   ( ._> /  *'
-  write(*,*) '*|--------------------------------------------------------------------------------------|*'
-  write(*,*) '******************************************************************************************'
+  write(*,*) '************************************************************'
+  write(*,*) '*                                                          *'
+  write(*,*) '*         ██████╗ ██╗   ██╗ █████╗  ██████╗██╗  ██╗        *'
+  write(*,*) '*        ██╔═══██╗██║   ██║██╔══██╗██╔════╝██║ ██╔╝        *'
+  write(*,*) '*        ██║   ██║██║   ██║███████║██║     █████╔╝         *'
+  write(*,*) '*        ██║▄▄ ██║██║   ██║██╔══██║██║     ██╔═██╗         *'
+  write(*,*) '*        ╚██████╔╝╚██████╔╝██║  ██║╚██████╗██║  ██╗        *'
+  write(*,*) '*         ╚══▀▀═╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝        *'
+  write(*,*) '*                                                          *'
+  write(*,*) '*      <(o )___     <(o )___     <(o )___     <(o )___     *'
+  write(*,*) '*       ( ._> /      ( ._> /      ( ._> /      ( ._> /     *'
+  write(*,*) '*                                                          *'
+  write(*,*) '************************************************************'
   write(*,*)
 
-  call gitversion(sha)
   write(*,*) '============================================================'
-  write(*,*) ' Code sha version: ',sha
+  write(*,*) '                    QuAcK Contributors                      '
+  write(*,*) '============================================================'
+  write(*,*) '  Pierre-Francois Loos'
+  write(*,*) '  Anthony Scemama'
+  write(*,*) '  Enzo Monino'
+  write(*,*) '  Antoine Marie'
+  write(*,*) '  Abdallah Ammar'
+  write(*,*) '  Mauricio Rodriguez-Mayorga'
+  write(*,*) '  Loris Burth'
+  write(*,*) '============================================================'
+  write(*,*) ' QuAcK repository: https://github.com/pfloos/QuAcK'
+  write(*,*) ' License: GPLv3 or later'
+  write(*,*) '============================================================'
+  write(*,*)   
+
+  call gitversion(sha)
+
+  write(*,*) '============================================================'
+  write(*,*) '                       QuAcK Build Info                     '
+  write(*,*) '============================================================'
+  write(*,*) '  Git SHA  : ', trim(sha)
   write(*,*) '============================================================'
   write(*,*)
 
@@ -185,6 +212,23 @@ program QuAcK
                     do_ADC2_G3W2,do_ADC2x_G3W2,                                   &
                     do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                      &
                     doRtest,doUtest,doGtest)
+
+  write(*,*) '============================================================'
+  write(*,*) '                     Methods File                           '
+  write(*,*) '============================================================'
+  
+  open(unit=10, file='input/methods', status='old', action='read')
+  
+  do
+    read(10,'(A)', iostat=ios) line
+    if (ios /= 0) exit
+    write(*,'(2X,A)') trim(line)
+  end do
+  
+  close(10)
+  
+  write(*,*) '============================================================'
+  write(*,*)
   
 ! Determine complex function calls  
 
@@ -215,6 +259,22 @@ program QuAcK
                     do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                     eweight,eforward)
 
+  write(*,*) '============================================================'
+  write(*,*) '                     Options File                           '
+  write(*,*) '============================================================'
+
+  open(unit=10, file='input/options', status='old', action='read')
+
+  do
+    read(10,'(A)', iostat=ios) line
+    if (ios /= 0) exit
+    write(*,'(2X,A)') trim(line)
+  end do
+
+  close(10)
+
+  write(*,*) '============================================================'
+  write(*,*)
 
 !--------------------!
 ! Prepare Quadrature !
