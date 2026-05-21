@@ -217,8 +217,8 @@ program QuAcK
   write(*,*) '                     Methods File                           '
   write(*,*) '============================================================'
   
-  open(unit=10, file='input/methods', status='old', action='read')
-  
+  open(unit=10, file=trim(working_dir) // '/input/methods', status='old', action='read')
+
   do
     read(10,'(A)', iostat=ios) line
     if (ios /= 0) exit
@@ -263,7 +263,7 @@ program QuAcK
   write(*,*) '                     Options File                           '
   write(*,*) '============================================================'
 
-  open(unit=10, file='input/options', status='old', action='read')
+  open(unit=10, file=trim(working_dir) // '/input/options', status='old', action='read')
 
   do
     read(10,'(A)', iostat=ios) line
