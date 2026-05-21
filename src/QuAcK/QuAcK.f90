@@ -240,7 +240,6 @@ program QuAcK
 ! Read options for methods !
 !--------------------------!
 
-
   call read_options(working_dir,                                                                         &
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
                     readFCIDUMP,doMOM,writeMOs,reg_MP,                                                   &
@@ -283,9 +282,9 @@ program QuAcK
   allocate(wweight(nfreqs),wcoord(nfreqs))
   call read_quadrature(nfreqs,ntimes,wcoord,wweight)
 
-!------------------!
-! Hardware         !
-!------------------!
+!----------!
+! Hardware !
+!----------!
 
   call read_hpc_flags(working_dir,switch_hpc,use_gpu)
 
@@ -456,6 +455,7 @@ program QuAcK
 !--------------------------!
 ! Generalized QuAcK branch !
 !--------------------------!
+
   if(doGQuAcK) & 
     call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                     &
@@ -478,6 +478,7 @@ program QuAcK
 !-------------------------!
 ! Bogoliubov QuAcK branch !
 !-------------------------!
+
   if(doBQuAcK) & 
     call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGW,readFCIDUMP,nNuc,nBas,  &
                 nOrb,nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,        &
