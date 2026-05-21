@@ -1,6 +1,6 @@
-subroutine R_IP_ADC2_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_IP_ADC_GW(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson ADC(2) version of G3W2 
+! Non-Dyson ADC version of GW 
 
   implicit none
   include 'parameters.h'
@@ -69,9 +69,9 @@ subroutine R_IP_ADC2_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENu
 ! Hello world
 
   write(*,*)
-  write(*,*)'*****************************************'
-  write(*,*)'* Restricted IP-ADC(2)-G3W2 Calculation *'
-  write(*,*)'*****************************************'
+  write(*,*)'************************************'
+  write(*,*)'* Restricted IP-ADC-GW Calculation *'
+  write(*,*)'************************************'
   write(*,*)
 
 ! Dimension of the supermatrix

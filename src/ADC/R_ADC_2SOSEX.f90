@@ -73,6 +73,15 @@ subroutine R_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   write(*,*)'*************************************'
   write(*,*)
 
+! Static self-energy contribution
+
+  if(sig_inf) then
+
+    write(*,*)' Static self-energy contribution activated! '
+    write(*,*)
+
+  end if
+
 ! Dimension of the supermatrix
 
   n2h1p = nO*nO*nV
@@ -181,30 +190,30 @@ subroutine R_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
   do p=nC+1,nOrb-nR
 
-    ija = 0
+    ija = nOrb
     do i=nC+1,nO
       do mu=1,nS
         ija = ija + 1
 
-        H(p       ,nOrb+ija) = sqrt(2d0)*rho(p,i,mu)
-        H(nOrb+ija,p       ) = sqrt(2d0)*rho(p,i,mu)
+        H(p ,ija) = sqrt(2d0)*rho(p,i,mu)
+        H(ija,p ) = sqrt(2d0)*rho(p,i,mu)
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
 
-            num = sqrt(2d0)*ERI(p,c,k,i)*rho(k,c,mu)
-            dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
-            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
-
-            num = sqrt(2d0)*ERI(p,k,c,i)*rho(c,k,mu)
+            num = sqrt(2d0)*ERI(i,c,k,p)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
-            H(p       ,nOrb+ija) = H(p       ,nOrb+ija) + num*reg
-            H(nOrb+ija,p       ) = H(nOrb+ija,p       ) + num*reg
+            H(p  ,ija) = H(p  ,ija) + num*reg
+            H(ija,p  ) = H(ija,p  ) + num*reg
+
+            num = sqrt(2d0)*ERI(i,k,c,p)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+            H(p  ,ija) = H(p  ,ija) + num*reg
+            H(ija,p  ) = H(ija,p  ) + num*reg
 
           end do
         end do
@@ -220,30 +229,30 @@ subroutine R_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
 
   do p=nC+1,nOrb-nR
 
-    iab = 0
+    iab = nOrb + n2h1p
     do a=nO+1,nOrb-nR
       do mu=1,nS
         iab = iab + 1
 
-        H(p             ,nOrb+n2h1p+iab) = sqrt(2d0)*rho(p,a,mu)
-        H(nOrb+n2h1p+iab,p             ) = sqrt(2d0)*rho(p,a,mu)
+        H(p  ,iab) = sqrt(2d0)*rho(p,a,mu)
+        H(iab,p  ) = sqrt(2d0)*rho(p,a,mu)
 
         do k=nC+1,nO
           do c=nO+1,nOrb-nR
 
-            num = sqrt(2d0)*ERI(p,k,c,a)*rho(c,k,mu)
-            dem = eHF(c) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-
-            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg
-            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg
-
-            num = sqrt(2d0)*ERI(p,c,k,a)*rho(k,c,mu)
+            num = sqrt(2d0)*ERI(a,k,c,p)*rho(k,c,mu)
             dem = eHF(c) - eHF(k) + Om(mu)
             reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
-            H(p             ,nOrb+n2h1p+iab) = H(p             ,nOrb+n2h1p+iab) + num*reg
-            H(nOrb+n2h1p+iab,p             ) = H(nOrb+n2h1p+iab,p             ) + num*reg
+            H(p  ,iab) = H(p  ,iab) + num*reg
+            H(iab,p  ) = H(iab,p  ) + num*reg
+
+            num = sqrt(2d0)*ERI(a,c,k,p)*rho(k,c,mu)
+            dem = eHF(c) - eHF(k) - Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+
+            H(p  ,iab) = H(p  ,iab) + num*reg
+            H(iab,p  ) = H(iab,p  ) + num*reg
 
           end do
         end do
@@ -257,12 +266,12 @@ subroutine R_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   ! Block (K+C)_2h1p !
   !------------------!
 
-  ija = 0
+  ija = nOrb
   do i=nC+1,nO
     do mu=1,nS
       ija = ija + 1
 
-      H(nOrb+ija,nOrb+ija) = eHF(i) - Om(mu) 
+      H(ija,ija) = eHF(i) - Om(mu) 
 
     end do
   end do
@@ -271,12 +280,12 @@ subroutine R_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,
   ! Block (K+C)_2p1h !
   !------------------!
 
-  iab = 0
+  iab = nOrb + n2h1p
   do a=nO+1,nOrb-nR
     do mu=1,nS
       iab = iab + 1
 
-      H(nOrb+n2h1p+iab,nOrb+n2h1p+iab) = eHF(a) + Om(mu)
+      H(iab,iab) = eHF(a) + Om(mu)
 
     end do
   end do
