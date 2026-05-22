@@ -40,11 +40,6 @@ subroutine read_basis_pyscf(working_dir,nBas,nO,nV)
 
   close(unit=3)
 
-!  write(*,'(A38)') '--------------------------------------'
-!  write(*,'(A38,1X,I16)') 'Number of basis functions (AOs)', nBas
-!  write(*,'(A38)') '--------------------------------------'
-!  write(*,*)
-
 ! Number of virtual orbitals
 
   nV(:) = nBas - nO(:)

@@ -1,6 +1,6 @@
-subroutine R_IP_ADC2x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_IP_ADC_2SOSEX(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! Non-Dyson version of ADC(2x)-G3W2 for IPs
+! Non-Dyson version of ADC-2SOSEX for IPs
 
   implicit none
   include 'parameters.h'
@@ -72,9 +72,9 @@ subroutine R_IP_ADC2x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 ! Hello world
 
   write(*,*)
-  write(*,*)'******************************************'
-  write(*,*)'* Restricted IP-ADC(2x)-G3W2 Calculation *'
-  write(*,*)'******************************************'
+  write(*,*)'****************************************'
+  write(*,*)'* Restricted IP-ADC-2SOSEX Calculation *'
+  write(*,*)'****************************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -327,7 +327,7 @@ subroutine R_IP_ADC2x_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,EN
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| ADC-2SOSEX energies for all orbitals      |'
+  write(*,'(1X,A45)')'| IP-ADC-2SOSEX energies for all orbitals   |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'
