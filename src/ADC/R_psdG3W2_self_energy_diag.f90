@@ -1,7 +1,6 @@
 subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
 ! Alternative form of the G3W2 self-energy
-
   implicit none
   include 'parameters.h'
 
@@ -70,7 +69,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   SigC(:) = 0d0
   Z(:)   = 0d0
   EcGM = 0d0
-
+  
 ! Memory allocation
 
   allocate(C1_2h1p(n2h1p,n2h1p))
@@ -95,13 +94,15 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
   C1_2h1p(:,:) = 0d0
 
-  inu = 0
+  !$OMP PARALLEL DEFAULT(NONE)                                  &
+  !$OMP          PRIVATE(i, nu, j, mu, inu, jmu, num, dem, reg) &
+  !$OMP          SHARED(nO, nOrb, nR, nS, eHF, rho, Om, flow, C1_2h1p)
+  !$OMP DO COLLAPSE(2)
   do i=nC+1,nO
     do nu=1,nS
-      inu = inu + 1
+      inu = (i - nC - 1) * nS + nu
   
       ! First-order terms
- 
       jmu = 0
       do j=nC+1,nO
         do mu=1,nS
@@ -128,6 +129,8 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
  
 !---------------!
 ! Block C1_2p1h !
@@ -135,10 +138,13 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
 
   C1_2p1h(:,:) = 0d0
 
-  anu = 0
+  !$OMP PARALLEL DEFAULT(NONE)                                  &
+  !$OMP          PRIVATE(a, nu, b, mu, anu, bmu, num, dem, reg) &
+  !$OMP          SHARED(nO, nOrb, nR, nS, eHF, rho, Om, flow, C1_2p1h)
+  !$OMP DO COLLAPSE(2)
   do a=nO+1,nOrb-nR
     do nu=1,nS
-      anu = anu + 1
+      anu = (a - nO - 1) * nS + nu
  
       ! First-order terms
  
@@ -168,6 +174,8 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
   
 !-------------------------!
 ! Main loop over orbitals !
@@ -256,8 +264,14 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
 
     ! Downfolding the 3p2h configurations
 
+    !$OMP PARALLEL DEFAULT(NONE)                                  &
+    !$OMP          PRIVATE(i,j,k,a,b,c, nu, mu, anu, num1,num2,num3, dem1,dem2,dem3, reg1,reg2,reg3) &
+    !$OMP          SHARED(nO, nOrb, nR, nS, eHF, rho, Om, flow, p, w, SicC,Z)
+    !$OMP DO COLLAPSE(2)
     do a=nO+1,nOrb-nR
        do nu=1,nS
+          anu = (a - nO - 1) * nS + nu
+          
           do mu=1,nS
              
              do b=nO+1,nOrb-nR
@@ -331,6 +345,8 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
           end do
        end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
      
      !---------------!
      ! Blocks U_2h1p !
@@ -430,10 +446,13 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
      U2_2p1h(:) = 0d0
      U3_2p1h(:) = 0d0
 
-     anu = 0
+     !$OMP PARALLEL DEFAULT(NONE)                                  &
+     !$OMP          PRIVATE(i,j,k,a,b,c, nu, mu, anu, num1,num2,num, dem1,dem2,dem, reg1,reg2,reg) &
+     !$OMP          SHARED(nO, nOrb, nR, nS, eHF, rho, Om, flow, p, w, U1_2p1h, U2_2p1h, U3_2p1h)
+     !$OMP DO COLLAPSE(2)
      do a=nO+1,nOrb-nR
         do nu=1,nS
-           anu = anu + 1
+           anu = (a - nO - 1) * nS + nu
 
            ! First-order terms
 
@@ -511,6 +530,8 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
 
         end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     !--------------!
     ! Block K_2h1p !
