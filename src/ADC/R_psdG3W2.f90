@@ -137,7 +137,7 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,
      write(*,*) ' *** Quasiparticle energies obtained by root search not implemented *** '
      write(*,*)
 
-     ! call R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
+     call R_psdG3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
 
 
   end if
