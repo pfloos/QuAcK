@@ -34,7 +34,7 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,
 ! Local variables
 
   logical                       :: print_W   = .false.
-  logical                       :: plot_self = .true.
+  logical                       :: plot_self = .false.
   logical                       :: dRPA_W
   integer                       :: isp_W
   double precision              :: EcRPA
