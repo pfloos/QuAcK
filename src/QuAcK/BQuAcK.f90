@@ -1,6 +1,6 @@
-subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGW,readFCIDUMP,nNuc,nBas,nOrb,&
-                  nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,doscGHF,thresh, &
-                  level_shift,guess_type,TDA,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,  &
+subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGF2,doscGW,readFCIDUMP,nNuc,nBas,  &
+                  nOrb,nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,doscGHF,thresh, &
+                  level_shift,guess_type,TDA,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,       &
                   chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
 
 ! Restricted branch of Bogoliubov QuAcK
@@ -25,6 +25,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   logical,intent(in)             :: doMP2
   logical,intent(in)             :: dolinGW
   logical,intent(in)             :: dosign_XoB
+  logical,intent(in)             :: doscGF2
   logical,intent(in)             :: doscGW
   logical,intent(in)             :: doscGHF
   logical,intent(in)             :: restart_scGW
@@ -255,6 +256,25 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
    write(*,*)
    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for EBMP2 = ',t_Ecorr,' seconds'
    write(*,*)
+  endif
+
+  ! scGF2 Bogoliubov
+  if(doscGW) then
+   allocate(vMAT(nBas*nBas,nBas*nBas))
+   do iorb=1,nBas
+    do jorb=1,nBas
+     do korb=1,nBas
+      do lorb=1,nBas
+       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+      enddo
+     enddo
+    enddo
+   enddo
+   no_fock=.false.
+   call scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,dophRPA,restart_scGW,verbose_scGW, &
+                          chem_pot_scG,no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,sign_XoB,nfreqs, &
+                          wcoord,wweight,U_QP,vMAT,ERI_AO)
+   deallocate(vMAT)
   endif
 
   ! Compute EcRPAx for RHFB
