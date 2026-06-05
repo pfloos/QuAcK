@@ -1,6 +1,6 @@
-subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine R_2SOSEX_psd(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
 
-! Perform single-shot G3W2 calculation
+! Perform single-shot 2SOSEX-psd calculation
 
   implicit none
   include 'parameters.h'
@@ -58,9 +58,9 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 ! Hello world
 
   write(*,*)
-  write(*,*)'*******************************'
-  write(*,*)'* Restricted G3W2 Calculation *'
-  write(*,*)'*******************************'
+  write(*,*)'*************************************'
+  write(*,*)'* Restricted 2SOSEX-psd Calculation *'
+  write(*,*)'*************************************'
   write(*,*)
 
 ! Spin manifold and TDA for dynamical screening
@@ -72,7 +72,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 
   if(doSRG) then
 
-    write(*,*) '*** SRG regularized G3W2 scheme ***'
+    write(*,*) '*** SRG regularized 2SOSEX-psd scheme ***'
     write(*,*)
 
   end if
@@ -101,19 +101,19 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 ! Compute spectral weights !
 !--------------------------!
 
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+  call R_2SOSEX_psd_excitation_density(flow,nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rho)
 
-!------------------------!
-! Compute GW self-energy !
-!------------------------!
+!----------------------------!
+! Compute 2SOSEX self-energy !
+!----------------------------!
 
   if(doSRG) then 
 
-!   call R_G3W2_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+    call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
   else
 
-     call R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
+    call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
   end if
   
@@ -123,7 +123,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 
   ! Linearized or graphical solution?
 
-  eQPlin(:) = eHF(:) + Z(:) * SigC(:)
+  eQPlin(:) = eHF(:) + Z(:)*SigC(:)
   
   if(linearize) then 
  
@@ -137,7 +137,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
      write(*,*)
 
-     call R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
+     call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eQPlin,eHF,eQP,Z)
 
 
   end if
@@ -157,15 +157,15 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 ! Dump results !
 !--------------!
 
-  call print_R_G3W2(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
+  call print_R_2SOSEX_psd(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
   
 ! Testing zone
 
   if(dotest) then
 
-    call dump_test_value('R','G3W2 correlation energy',EcRPA)
-    call dump_test_value('R','G3W2 HOMO energy',eQP(nO))
-    call dump_test_value('R','G3W2 LUMO energy',eQP(nO+1))
+    call dump_test_value('R','2SOSEX-psd correlation energy',EcRPA)
+    call dump_test_value('R','2SOSEX-psd HOMO energy',eQP(nO))
+    call dump_test_value('R','2SOSEX-psd LUMO energy',eQP(nO+1))
 
   end if
 

@@ -1,6 +1,7 @@
-subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
+subroutine G_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
 ! Alternative form of the G3W2 self-energy
+
   implicit none
   include 'parameters.h'
 
@@ -18,7 +19,6 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nOrb,nOrb,nS)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(in)   :: flow
 
 ! Local variables
 
@@ -27,7 +27,6 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   integer                       :: a,b,c,d
   integer                       :: jb,kc,ia,ja
   integer                       :: inu,jmu,anu,bmu
-  integer                       :: imu,knu,amu,cnu
   integer                       :: n2h1p,n2p1h
   integer                       :: mu,nu,s,t
   integer                       :: klc,kcd,ija,ijb,iab,jab
@@ -35,7 +34,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   double precision              :: num,num1,num2,num3
   double precision              :: dem,dem1,dem2,dem3
   double precision              :: reg,reg1,reg2,reg3
-  logical                       :: do_psd = .false.
+  double precision              :: tmpA,tmpB,tmpBZ
 
   double precision,allocatable  :: C1_2h1p(:,:)
   double precision,allocatable  :: C1_2p1h(:,:)
@@ -49,11 +48,9 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   double precision,allocatable  :: U2_2p1h(:)
   double precision,allocatable  :: U3_2h1p(:)
   double precision,allocatable  :: U3_2p1h(:)
-  double precision,allocatable  :: tmp_2h1p(:)
-  double precision,allocatable  :: tmp_2p1h(:)
 
-  double precision,external     :: SRG_reg
-  double precision,external     :: SRG_reg2
+
+  double precision              :: flow = 1d6
 
 ! Output variables
 
@@ -71,7 +68,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   SigC(:) = 0d0
   Z(:)   = 0d0
   EcGM = 0d0
-  
+
 ! Memory allocation
 
   allocate(C1_2h1p(n2h1p,n2h1p))
@@ -89,9 +86,6 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   allocate(U2_2p1h(n2p1h))
   allocate(U3_2h1p(n2h1p))
   allocate(U3_2p1h(n2p1h))
-    
-  allocate(tmp_2h1p(n2h1p))
-  allocate(tmp_2p1h(n2p1h))
   
 !---------------!
 ! Block C1_2h1p !
@@ -99,33 +93,31 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
   C1_2h1p(:,:) = 0d0
 
-  ! !$OMP PARALLEL DEFAULT(NONE)                                  &
-  ! !$OMP          PRIVATE(i, nu, j, mu, inu, jmu, num, dem, reg) &
-  ! !$OMP          SHARED(nO, nOrb, nR, nS, eHF, rho, Om, flow, C1_2h1p)
-  ! !$OMP DO COLLAPSE(2)
+  inu = 0
   do i=nC+1,nO
     do nu=1,nS
-      inu = (i - nC - 1) * nS + nu
+      inu = inu + 1
   
       ! First-order terms
+ 
       jmu = 0
       do j=nC+1,nO
         do mu=1,nS
           jmu = jmu + 1
    
-          do c=nO+1,nOrb-nR
+          do k=nC+1,nO
 
-            num = rho(i,c,mu)*rho(j,c,nu)
-            dem = eHF(i) - eHF(c) + Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+            num = rho(i,k,mu)*rho(j,k,nu)/2d0
+            dem = eHF(i) - eHF(k) + Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))
          
-            C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg
+            C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg/dem
          
-            num = rho(i,c,mu)*rho(j,c,nu)
-            dem = eHF(j) - eHF(c) + Om(nu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+            num = rho(i,k,mu)*rho(j,k,nu)/2d0
+            dem = eHF(j) - eHF(k) + Om(nu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))
          
-            C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg
+            C1_2h1p(inu,jmu) = C1_2h1p(inu,jmu) + num*reg/dem
 
           end do
   
@@ -134,8 +126,6 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
     end do
   end do
-  ! !$OMP END DO
-  ! !$OMP END PARALLEL
  
 !---------------!
 ! Block C1_2p1h !
@@ -143,13 +133,10 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
 
   C1_2p1h(:,:) = 0d0
 
-  ! !$OMP PARALLEL DEFAULT(NONE)                                  &
-  ! !$OMP          PRIVATE(a, nu, b, mu, anu, bmu, num, dem, reg) &
-  ! !$OMP          SHARED(nO, nOrb, nR, nS, eHF, rho, Om, flow, C1_2p1h)
-  ! !$OMP DO COLLAPSE(2)
+  anu = 0
   do a=nO+1,nOrb-nR
     do nu=1,nS
-      anu = (a - nO - 1) * nS + nu
+      anu = anu + 1
  
       ! First-order terms
  
@@ -158,19 +145,19 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
         do mu=1,nS
           bmu = bmu + 1
    
-          do k=nC+1,nO
+          do c=nO+1,nOrb-nR
 
-            num = rho(k,a,mu)*rho(k,b,nu)
-            dem = eHF(a) - eHF(k) - Om(mu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+            num = rho(c,a,mu)*rho(c,b,nu)/2d0
+            dem = eHF(a) - eHF(c) - Om(mu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))
          
-            C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg
+            C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg/dem
          
-            num = rho(k,a,mu)*rho(k,b,nu)
-            dem = eHF(b) - eHF(k) - Om(nu)
-            reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+            num = rho(c,a,mu)*rho(c,b,nu)/2d0
+            dem = eHF(b) - eHF(c) - Om(nu)
+            reg = (1d0 - exp(-2d0*flow*dem*dem))
          
-            C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg
+            C1_2p1h(anu,bmu) = C1_2p1h(anu,bmu) + num*reg/dem
 
           end do
   
@@ -179,17 +166,11 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
     end do
   end do
-  ! !$OMP END DO
-  ! !$OMP END PARALLEL
   
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
 
-  !$OMP PARALLEL DEFAULT(NONE)                                  &
-  !$OMP          PRIVATE(p,w, i,j,k,a,b,c, nu, mu, inu,anu,jmu,bmu, num,num1,num2,num3, dem,dem1,dem2,dem3, reg,reg1,reg2,reg3, K_2p1h,K_2h1p, dK_2p1h,dK_2h1p, U1_2p1h,U2_2p1h,U3_2p1h, U1_2h1p,U2_2h1p,U3_2h1p) &
-  !$OMP          SHARED(nC, nO, nOrb, nR, nS, eHF, rho, Om, ERI, flow, SigC,Z, C1_2p1h,C1_2h1p, do_psd)
-  !$OMP DO COLLAPSE(1)
   do p=nC+1,nOrb-nR
 
     w = eHF(p)
@@ -203,14 +184,14 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
              do j=nC+1,nO
                 do k=nC+1,nO
 
-                   num1 = 2d0*rho(k,i,nu)*rho(p,k,mu)
+                   num1 = rho(k,i,nu)*rho(p,k,mu)
                    dem1 = w - eHF(k) + Om(mu)
                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
                    
                    dem2 = w - eHF(i) + Om(nu) + Om(mu)
                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2)) 
                 
-                   num3 = 2d0*rho(j,i,mu)*rho(p,j,nu)
+                   num3 = rho(j,i,mu)*rho(p,j,nu)
                    dem3 = w - eHF(j) + Om(nu)
                    reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
                    
@@ -226,14 +207,14 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
              do k=nC+1,nO
                 do a=nO+1,nOrb-nR
 
-                   num1 = 2d0*rho(k,i,nu)*rho(p,k,mu)
+                   num1 = rho(k,i,nu)*rho(p,k,mu)
                    dem1 = w - eHF(k) + Om(mu)
                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
                    
                    dem2 = w - eHF(i) + Om(nu) + Om(mu)
                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2)) 
                 
-                   num3 = 2d0*rho(a,i,mu)*rho(p,a,nu)
+                   num3 = rho(a,i,mu)*rho(p,a,nu)
                    dem3 = eHF(i) - eHF(a) - Om(mu)
                    reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
                    
@@ -248,14 +229,14 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
              do b=nO+1,nOrb-nR
                 do a=nO+1,nOrb-nR
 
-                   num1 = 2d0*rho(b,i,nu)*rho(p,b,mu)
+                   num1 = rho(b,i,nu)*rho(p,b,mu)
                    dem1 = eHF(i) - eHF(b) - Om(nu)
                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
                    
                    dem2 = w - eHF(i) + Om(nu) + Om(mu)
                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2)) 
                 
-                   num3 = 2d0*rho(a,i,mu)*rho(p,a,nu)
+                   num3 = rho(a,i,mu)*rho(p,a,nu)
                    dem3 = eHF(i) - eHF(a) - Om(mu)
                    reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
                    
@@ -274,22 +255,23 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
     ! Downfolding the 3p2h configurations
 
     do a=nO+1,nOrb-nR
-       do nu=1,nS          
+       do nu=1,nS
           do mu=1,nS
              
              do b=nO+1,nOrb-nR
                 do c=nO+1,nOrb-nR
                    
-                   num1 = 2d0*rho(a,c,nu)*rho(c,p,mu)
+                   num1 = rho(a,c,nu)*rho(c,p,mu)
                    dem1 = w - eHF(c) - Om(mu)
                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
                    
                    dem2 = w - eHF(a) - Om(nu) - Om(mu)
                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))  
                    
-                   num3 = 2d0*rho(a,b,mu)*rho(b,p,nu)
+                   num3 = rho(a,b,mu)*rho(b,p,nu)
                    dem3 = w - eHF(b) - Om(nu)
                    reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
+
 
                    SigC(p) = SigC(p) + num1*num3*reg1*reg2*reg3/dem1/dem2/dem3
                    
@@ -303,14 +285,14 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
              do c=nO+1,nOrb-nR
                 do i=nC+1,nO
                    
-                   num1 = 2d0*rho(a,c,nu)*rho(c,p,mu)
+                   num1 = rho(a,c,nu)*rho(c,p,mu)
                    dem1 = w - eHF(c) - Om(mu)
                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
                    
                    dem2 = w - eHF(a) - Om(nu) - Om(mu)
                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))  
                    
-                   num3 = 2d0*rho(a,i,mu)*rho(i,p,nu)
+                   num3 = rho(a,i,mu)*rho(i,p,nu)
                    dem3 = eHF(a) - eHF(i) + Om(mu)
                    reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
 
@@ -326,16 +308,17 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
              do j=nC+1,nO
                 do i=nC+1,nO
                    
-                   num1 = 2d0*rho(a,j,nu)*rho(j,p,mu)
+                   num1 = rho(a,j,nu)*rho(j,p,mu)
                    dem1 = eHF(a) - eHF(j) + Om(nu)
                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
                    
                    dem2 = w - eHF(a) - Om(nu) - Om(mu)
                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))  
                    
-                   num3 = 2d0*rho(a,i,mu)*rho(i,p,nu)
+                   num3 = rho(a,i,mu)*rho(i,p,nu)
                    dem3 = eHF(a) - eHF(i) + Om(mu)
                    reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
+
 
                    SigC(p) = SigC(p) + num1*num3*reg1*reg2*reg3/dem1/dem2/dem3
                    
@@ -364,24 +347,24 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
            
            ! First-order terms
            
-           U1_2h1p(inu) = sqrt(2d0)*rho(p,i,nu)
+           U1_2h1p(inu) = rho(p,i,nu)
 
            ! Second-order terms
 
            do k=nC+1,nO
               do c=nO+1,nOrb-nR
                  
-                 num = sqrt(2d0)*rho(k,c,nu)*ERI(i,k,c,p)
+                 num = rho(k,c,nu)*ERI(i,k,c,p)
                  dem = eHF(c) - eHF(k) - Om(nu)
-                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                 reg = (1d0 - exp(-2d0*flow*dem*dem))
                  
-                 U2_2h1p(inu) = U2_2h1p(inu) + num*reg
+                 U2_2h1p(inu) = U2_2h1p(inu) + num*reg/dem
           
-                 num = sqrt(2d0)*rho(c,k,nu)*ERI(i,c,k,p)
+                 num = rho(c,k,nu)*ERI(i,c,k,p)
                  dem = eHF(c) - eHF(k) + Om(nu)
-                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                 reg = (1d0 - exp(-2d0*flow*dem*dem))
 
-                 U2_2h1p(inu) = U2_2h1p(inu) + num*reg
+                 U2_2h1p(inu) = U2_2h1p(inu) + num*reg/dem
                  
               end do
            end do
@@ -392,29 +375,32 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
               do c=nO+1,nOrb-nR
                  do mu=1,nS
 
-                    num = 2d0*sqrt(2d0)*rho(k,c,nu)*rho(c,i,mu)*rho(k,p,mu)
+                    num = rho(k,c,nu)*rho(c,i,mu)*rho(k,p,mu)
                     dem1 = eHF(c) - eHF(k) - Om(nu)
                     dem2 = eHF(c) - eHF(i) + Om(mu)
 
-                    reg = SRG_reg2(dem1,dem2,flow)
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
 
-                    U3_2h1p(inu) = U3_2h1p(inu) - num*reg
+                    U3_2h1p(inu) = U3_2h1p(inu) - num*reg1*reg2/dem1/dem2
 
-                    num = 2d0*sqrt(2d0)*rho(k,c,nu)*rho(i,c,mu)*rho(p,k,mu)
+                    num = rho(k,c,nu)*rho(i,c,mu)*rho(p,k,mu)
                     dem1 = eHF(c) - eHF(k) - Om(nu)
                     dem2 = eHF(c) - eHF(i) - Om(mu)
 
-                    reg = SRG_reg2(dem1,dem2,flow)
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
 
-                    U3_2h1p(inu) = U3_2h1p(inu) + 0.5d0*num*reg
+                    U3_2h1p(inu) = U3_2h1p(inu) + 0.5d0*num*reg1*reg2/dem1/dem2
 
-                    num = 2d0*sqrt(2d0)*rho(k,i,mu)*rho(c,k,nu)*rho(c,p,mu)
+                    num = rho(k,i,mu)*rho(c,k,nu)*rho(c,p,mu)
                     dem1 = eHF(c) - eHF(i) + Om(mu) + Om(nu)
                     dem2 = eHF(c) - eHF(k) + Om(nu)
 
-                    reg = SRG_reg2(dem1,dem2,flow)
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
                   
-                    U3_2h1p(inu) = U3_2h1p(inu) - num*reg
+                    U3_2h1p(inu) = U3_2h1p(inu) - num*reg1*reg2/dem1/dem2
 
                  end do
               end do
@@ -424,13 +410,15 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
             do b=nO+1,nOrb-nR
               do mu=1,nS
     
-                num = 2d0*sqrt(2d0)*rho(a,i,mu)*rho(b,a,nu)*rho(b,p,mu)
+                num = rho(a,i,mu)*rho(b,a,nu)*rho(b,p,mu)
                 dem1 = eHF(b) - eHF(i) + Om(mu) + Om(nu)
                 dem2 = eHF(a) - eHF(i) + Om(mu)
 
-                reg = SRG_reg2(dem1,dem2,flow)
+                reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
+                  
+                U3_2h1p(inu) = U3_2h1p(inu) + num*reg1*reg2/dem1/dem2
 
-                U3_2h1p(inu) = U3_2h1p(inu) + num*reg
  
               end do
             end do
@@ -447,30 +435,31 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
      U2_2p1h(:) = 0d0
      U3_2p1h(:) = 0d0
 
+     anu = 0
      do a=nO+1,nOrb-nR
         do nu=1,nS
-           anu = (a - nO - 1) * nS + nu
+           anu = anu + 1
 
            ! First-order terms
 
-           U1_2p1h(anu) = sqrt(2d0)*rho(a,p,nu)
+           U1_2p1h(anu) = rho(a,p,nu)
 
            ! Second-order terms
 
            do k=nC+1,nO
               do c=nO+1,nOrb-nR
 
-                 num = sqrt(2d0)*rho(k,c,nu)*ERI(a,c,k,p)
+                 num = rho(k,c,nu)*ERI(a,c,k,p)
                  dem = eHF(c) - eHF(k) - Om(nu)
-                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                 reg = (1d0 - exp(-2d0*flow*dem*dem))
 
-                 U2_2p1h(anu) = U2_2p1h(anu) + num*reg
+                 U2_2p1h(anu) = U2_2p1h(anu) + num*reg/dem
 
-                 num = sqrt(2d0)*rho(c,k,nu)*ERI(a,k,c,p)
+                 num = rho(c,k,nu)*ERI(a,k,c,p)
                  dem = eHF(c) - eHF(k) + Om(nu)
-                 reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
+                 reg = (1d0 - exp(-2d0*flow*dem*dem))
 
-                 U2_2p1h(anu) = U2_2p1h(anu) + num*reg
+                 U2_2p1h(anu) = U2_2p1h(anu) + num*reg/dem
 
               end do
            end do
@@ -481,29 +470,32 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
               do c=nO+1,nOrb-nR
                  do mu=1,nS
 
-                    num = 2d0*sqrt(2d0)*rho(k,c,nu)*rho(a,k,mu)*rho(p,c,mu)
+                    num = rho(k,c,nu)*rho(a,k,mu)*rho(p,c,mu)
                     dem1 = eHF(c) - eHF(k) - Om(nu)
                     dem2 = eHF(a) - eHF(k) + Om(mu)
 
-                    reg = SRG_reg2(dem1,dem2,flow)
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
 
-                    U3_2p1h(anu) = U3_2p1h(anu) - num*reg
+                    U3_2p1h(anu) = U3_2p1h(anu) - num*reg1*reg2/dem1/dem2
                   
-                    num = 2d0*sqrt(2d0)*rho(k,c,nu)*rho(k,a,mu)*rho(c,p,mu)
+                    num = rho(k,c,nu)*rho(k,a,mu)*rho(c,p,mu)
                     dem1 = eHF(c) - eHF(k) - Om(nu)
                     dem2 = eHF(a) - eHF(k) - Om(mu)
 
-                    reg = SRG_reg2(dem1,dem2,flow)
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
 
-                    U3_2p1h(anu) = U3_2p1h(anu) + 0.5d0*num*reg
+                    U3_2p1h(anu) = U3_2p1h(anu) + 0.5d0*num*reg1*reg2/dem1/dem2
 
-                    num = 2d0*sqrt(2d0)*rho(a,c,mu)*rho(c,k,nu)*rho(p,k,mu)
+                    num = rho(a,c,mu)*rho(c,k,nu)*rho(p,k,mu)
                     dem1 = eHF(a) - eHF(k) + Om(mu) + Om(nu)
                     dem2 = eHF(c) - eHF(k) + Om(nu)
 
-                    reg = SRG_reg2(dem1,dem2,flow)
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
 
-                    U3_2p1h(anu) = U3_2p1h(anu) - num*reg
+                    U3_2p1h(anu) = U3_2p1h(anu) - num*reg1*reg2/dem1/dem2
 
                  end do
               end do
@@ -513,13 +505,14 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
               do j=nC+1,nO
                  do mu=1,nS
                     
-                    num = 2d0*sqrt(2d0)*rho(a,j,mu)*rho(j,i,nu)*rho(p,i,mu)
+                    num = rho(a,j,mu)*rho(j,i,nu)*rho(p,i,mu)
                     dem1 = eHF(a) - eHF(i) + Om(mu) + Om(nu)
                     dem2 = eHF(a) - eHF(j) + Om(mu)
 
-                    reg = SRG_reg2(dem1,dem2,flow)
+                    reg1 = (1d0 - exp(-2d0*flow*dem1*dem1))
+                    reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
             
-                    U3_2p1h(anu) = U3_2p1h(anu) + num*reg
+                    U3_2p1h(anu) = U3_2p1h(anu) + num*reg1*reg2/dem1/dem2
 
                  end do
               end do
@@ -541,11 +534,10 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
           inu = inu + 1
           
           ! Zeroth-order terms
-
           dem = w - eHF(i) + Om(nu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-          K_2h1p(inu)  =   reg
-          dK_2h1p(inu) = - reg/dem
+          reg = (1d0 - exp(-2d0*flow*dem*dem))
+          K_2h1p(inu)  =   reg/dem
+          dK_2h1p(inu) = - reg/dem/dem
 
       end do
     end do
@@ -563,11 +555,10 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
           anu = anu + 1
           
           ! Zeroth-order terms
-
           dem = w - eHF(a) - Om(nu)
-          reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
-          K_2p1h(anu)  =   reg
-          dK_2p1h(anu) = - reg/dem
+          reg = (1d0 - exp(-2d0*flow*dem*dem))
+          K_2p1h(anu)  =   reg/dem
+          dK_2p1h(anu) = - reg/dem/dem
 
        end do
     end do
@@ -583,17 +574,17 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
              SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
              Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
              
-             SigC(p) = SigC(p) + 2d0*U2_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
-             Z(p)    = Z(p)    + 2d0*U2_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
+             SigC(p) = SigC(p) + U2_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
+             Z(p)    = Z(p)    + U2_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
              
-             ! SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U2_2h1p(inu)
-             ! Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U2_2h1p(inu)
+             SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U2_2h1p(inu)
+             Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U2_2h1p(inu)
              
-             SigC(p) = SigC(p) + 2d0*U3_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
-             Z(p)    = Z(p)    + 2d0*U3_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
+             SigC(p) = SigC(p) + U3_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
+             Z(p)    = Z(p)    + U3_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
              
-             ! SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U3_2h1p(inu)
-             ! Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U3_2h1p(inu)
+             SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U3_2h1p(inu)
+             Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U3_2h1p(inu)
 
              jmu = 0
              do j=nC+1,nO
@@ -601,8 +592,8 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
                    jmu = jmu + 1
              
                    SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + 2d0*U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   ! Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
+                   Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
+                   Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
 
                 end do
              end do
@@ -614,134 +605,42 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
     do a=nO+1,nOrb-nR
        do nu=1,nS
           anu = anu + 1
-          
+           
           SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
           Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
+
+          SigC(p) = SigC(p) + U2_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
+          Z(p)    = Z(p)    + U2_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
           
-          SigC(p) = SigC(p) + 2d0*U2_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
-          Z(p)    = Z(p)    + 2d0*U2_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
+          SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U2_2p1h(anu)
+          Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U2_2p1h(anu)
           
-          ! SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U2_2p1h(anu)
-          ! Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U2_2p1h(anu)
+          SigC(p) = SigC(p) + U3_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
+          Z(p)    = Z(p)    + U3_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
           
-          SigC(p) = SigC(p) + 2d0*U3_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
-          Z(p)    = Z(p)    + 2d0*U3_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
-          
-          ! SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U3_2p1h(anu)
-          ! Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U3_2p1h(anu)
-          
+          SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U3_2p1h(anu)
+          Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U3_2p1h(anu)
+
           bmu = 0
           do b=nO+1,nOrb-nR
              do mu=1,nS
                 bmu = bmu + 1
                 
                 SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                Z(p)    = Z(p)    + 2d0*U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                ! Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
+                Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
+                Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
                 
              end do
           end do
-          
+             
        end do
     end do
-    
-    
-    if (do_psd) then 
-       inu = 0
-       do i=nC+1,nO
-          do nu=1,nS
-             inu = inu + 1
-             
-             SigC(p) = SigC(p) + U2_2h1p(inu) *  K_2h1p(inu) * U2_2h1p(inu)
-             Z(p)    = Z(p)    + U2_2h1p(inu) * dK_2h1p(inu) * U2_2h1p(inu)
-             
-             SigC(p) = SigC(p) + U3_2h1p(inu) *  K_2h1p(inu) * U2_2h1p(inu)
-             Z(p)    = Z(p)    + U3_2h1p(inu) * dK_2h1p(inu) * U2_2h1p(inu)
-             
-             SigC(p) = SigC(p) + U2_2h1p(inu) *  K_2h1p(inu) * U3_2h1p(inu)
-             Z(p)    = Z(p)    + U2_2h1p(inu) * dK_2h1p(inu) * U3_2h1p(inu)
-             
-             SigC(p) = SigC(p) + U3_2h1p(inu) *  K_2h1p(inu) * U3_2h1p(inu)
-             Z(p)    = Z(p)    + U3_2h1p(inu) * dK_2h1p(inu) * U3_2h1p(inu)
-             
-             jmu = 0
-             do j=nC+1,nO
-                do mu=1,nS
-                   jmu = jmu + 1
-                   
-                   SigC(p) = SigC(p) + U2_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + U2_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + U2_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
 
-                   SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U2_2h1p(jmu)
-                   Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U2_2h1p(jmu)
-                   Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U2_2h1p(jmu)
-
-                   SigC(p) = SigC(p) + U3_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + U3_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + U3_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
-                   
-                   SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U3_2h1p(jmu)
-                   Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U3_2h1p(jmu)
-                   Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U3_2h1p(jmu)
-                   
-                end do
-             end do
-             
-          end do
-       end do
-
-           
-       anu = 0
-       do a=nO+1,nOrb-nR
-          do nu=1,nS
-             anu = anu + 1            
-             
-             SigC(p) = SigC(p) + U2_2p1h(anu) *  K_2p1h(anu) * U2_2p1h(anu)
-             Z(p)    = Z(p)    + U2_2p1h(anu) * dK_2p1h(anu) * U2_2p1h(anu)
-          
-             SigC(p) = SigC(p) + U3_2p1h(anu) *  K_2p1h(anu) * U2_2p1h(anu)
-             Z(p)    = Z(p)    + U3_2p1h(anu) * dK_2p1h(anu) * U2_2p1h(anu)
-             
-             SigC(p) = SigC(p) + U2_2p1h(anu) *  K_2p1h(anu) * U3_2p1h(anu)
-             Z(p)    = Z(p)    + U2_2p1h(anu) * dK_2p1h(anu) * U3_2p1h(anu)
-             
-             SigC(p) = SigC(p) + U3_2p1h(anu) *  K_2p1h(anu) * U3_2p1h(anu)
-             Z(p)    = Z(p)    + U3_2p1h(anu) * dK_2p1h(anu) * U3_2p1h(anu)
-             
-             bmu = 0
-             do b=nO+1,nOrb-nR
-                do mu=1,nS
-                   bmu = bmu + 1
-                   
-                   SigC(p) = SigC(p) + U2_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                   Z(p)    = Z(p)    + U2_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                   Z(p)    = Z(p)    + U2_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
-                   
-                   SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U2_2p1h(bmu)
-                   Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U2_2p1h(bmu)
-                   Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U2_2p1h(bmu)
-                
-                   SigC(p) = SigC(p) + U3_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                   Z(p)    = Z(p)    + U3_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                   Z(p)    = Z(p)    + U3_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
-                   
-                   SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U3_2p1h(bmu)
-                   Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U3_2p1h(bmu)
-                   Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U3_2p1h(bmu)
-                   
-                end do
-             end do
-             
-          end do
-       end do
-
-    end if
-    
  end do
- !$OMP END DO
- !$OMP END PARALLEL
+ 
+
+ print*,'Alternative form of the self-energy'
  
  Z(:) = 1d0/(1d0 - Z(:))
 
-end subroutine 
+end subroutine

@@ -52,26 +52,24 @@ subroutine read_molecule(working_dir,nNuc,nO,nC,nR)
       nC(:) = nCore/2
       nR(:) = nRyd/2
     
-      ! Print results
-    
-      write(*,'(A28)') '----------------------'
-      write(*,'(A28,1X,I16)') 'Number of atoms',nNuc
-      write(*,'(A28)') '----------------------'
-      write(*,*)
-      write(*,'(A28)') '----------------------'
-      write(*,'(A28,1X,I16)') 'Number of spin-up   electrons',nO(1)
-      write(*,'(A28,1X,I16)') 'Number of spin-down electrons',nO(2)
-      write(*,'(A28,1X,I16)') '    Total number of electrons',sum(nO(:))
-      write(*,'(A28)') '----------------------'
-      write(*,*)
-      write(*,'(A28)') '----------------------'
-      write(*,'(A28,1X,I16)') 'Number of core      electrons',sum(nC(:))
-      write(*,'(A28,1X,I16)') 'Number of Rydberg   electrons',sum(nR(:))
-      write(*,'(A28)') '----------------------'
-      write(*,*)
+     ! Print results
 
+      write(*,*) '============================================================'
+      write(*,*) '                     Molecular System                       '
+      write(*,*) '============================================================'
+      write(*,'(A35,I8)') ' Number of atoms                = ', nNuc
+      write(*,*)
+      write(*,'(A35,I8)') ' Spin-up electrons              = ', nO(1)
+      write(*,'(A35,I8)') ' Spin-down electrons            = ', nO(2)
+      write(*,'(A35,I8)') ' Total electrons                = ', sum(nO(:))
+      write(*,*)
+      write(*,'(A35,I8)') ' Core electrons                 = ', sum(nC(:))
+      write(*,'(A35,I8)') ' Rydberg electrons              = ', sum(nR(:))
+      write(*,*) '============================================================'
+      write(*,*)
+      
     endif
-
+      
   ! Close file with geometry specification
   close(unit=1)
 

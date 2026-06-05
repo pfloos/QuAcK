@@ -10,6 +10,7 @@ import numpy as np
 import subprocess
 import time
 import gc
+
 try:
     import pyopencap
     use_cap = True
@@ -89,31 +90,24 @@ for i in range(nbAt):
     pos = (float(tmp[1]), float(tmp[2]), float(tmp[3]))
     list_pos_atom.append([atom, pos])
 f.close()
+
 # Create PySCF molecule
-if use_cap:
-    atoms = list(set(atom[0] for atom in list_pos_atom))
-    if os.path.exists(input_basis):
-        basis_dict = {atom: gto.basis.parse_nwchem.load(
-            input_basis, atom) for atom in atoms}
-    else:
-        basis_dict = {atom: gto.basis.parse_nwchem.load(
-            working_dir + "/basis/" + input_basis, atom) for atom in atoms}
-    basis = basis_dict
-    mol = gto.M(
-        atom=list_pos_atom,
-        basis=basis,
-        charge=charge,
-        spin=multiplicity - 1
-        #    symmetry = True  # Enable symmetry
-    )
+atoms = list(set(atom[0] for atom in list_pos_atom))
+if os.path.exists(input_basis):
+    basis_dict = {atom: gto.basis.parse_nwchem.load(
+        input_basis, atom) for atom in atoms}
 else:
-    mol = gto.M(
-        atom=list_pos_atom,
-        basis=input_basis,
-        charge=charge,
-        spin=multiplicity - 1
-        #    symmetry = True  # Enable symmetry
-    )
+    basis_dict = {atom: gto.basis.parse_nwchem.load(
+        working_dir + "/basis/" + input_basis, atom) for atom in atoms}
+basis = basis_dict
+mol = gto.M(
+    atom=list_pos_atom,
+    basis=basis,
+    charge=charge,
+    spin=multiplicity - 1
+    #    symmetry = True  # Enable symmetry
+)
+
 # Fix the unit for the lengths
 mol.unit = unit
 #

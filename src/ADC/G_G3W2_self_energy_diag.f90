@@ -1,4 +1,4 @@
-subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcGM,Sig,Z)
+subroutine G_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ERI,EcGM,Sig,Z)
 
 ! Compute diagonal of the correlation part of the self-energy and the renormalization factor
 ! for the G3W2 approximation
@@ -20,8 +20,6 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
   double precision,intent(in)   :: Om(nS)
   double precision,intent(in)   :: rho(nOrb,nOrb,nS)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
-  
-  double precision,intent(in)   :: flow 
 
 ! Local variables
 
@@ -36,6 +34,8 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
   logical                       :: add_SOX
   logical                       :: add_2SOSEX
   logical                       :: add_G3W2
+  
+  double precision              :: flow = 1d6
 
 ! Output variables
 
@@ -68,7 +68,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
       do i=nC+1,nO
         do m=1,nS
  
-          num = 2d0*rho(p,i,m)*rho(p,i,m)
+          num = rho(p,i,m)*rho(p,i,m)
           dem = e(p) - e(i) + Om(m)
           reg = (1d0 - exp(-2d0*flow*dem*dem))
           Sig(p) = Sig(p) + num*reg/dem
@@ -84,7 +84,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
       do a=nO+1,nOrb-nR
         do m=1,nS
  
-          num = 2d0*rho(p,a,m)*rho(p,a,m)
+          num = rho(p,a,m)*rho(p,a,m)
           dem = e(p) - e(a) - Om(m)
           reg = (1d0 - exp(-2d0*flow*dem*dem))
           Sig(p) = Sig(p) + num*reg/dem
@@ -154,7 +154,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
              do k=nC+1,nO
                 do s=1,nS
  
-                   num = 4d0*ERI(p,b,i,k)*rho(p,k,s)*rho(i,b,s)
+                   num = 2d0*ERI(p,b,i,k)*rho(p,k,s)*rho(i,b,s)
                    
                    dem1 = e(p) - e(i) + e(b) - e(k)
                    dem2 = e(b) - e(i) + Om(s)
@@ -191,7 +191,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
              do c=nO+1,nOrb-nR
                 do s=1,nS
                    
-                   num = 4d0*ERI(p,j,a,c)*rho(p,c,s)*rho(a,j,s)
+                   num = 2d0*ERI(p,j,a,c)*rho(p,c,s)*rho(a,j,s)
                    
                    dem1 = e(p) - e(a) + e(j) - e(c)
                    dem2 = e(a) - e(j) + Om(s)
@@ -228,7 +228,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
              do k=nC+1,nO
                 do s=1,nS
                    
-                   num = 4d0*ERI(p,j,a,k)*rho(p,k,s)*rho(a,j,s)
+                   num = 2d0*ERI(p,j,a,k)*rho(p,k,s)*rho(a,j,s)
                    
                    dem1 = e(a) - e(j) + Om(s)
                    dem2 = e(p) - e(k) + Om(s)
@@ -254,7 +254,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
              do c=nO+1,nOrb-nR
                 do s=1,nS
                    
-                   num = 4d0*ERI(p,b,i,c)*rho(p,c,s)*rho(i,b,s)
+                   num = 2d0*ERI(p,b,i,c)*rho(p,c,s)*rho(i,b,s)
                    
                    dem1 = e(b) - e(i) + Om(s)
                    dem2 = e(p) - e(c) - Om(s)
@@ -289,7 +289,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                  do t=1,nS
                     do s=1,nS
  
-                       num = 4d0*rho(p,i,t)*rho(j,k,t)*rho(p,k,s)*rho(i,j,s)
+                       num = rho(p,i,t)*rho(j,k,t)*rho(p,k,s)*rho(i,j,s)
  
                        dem1 = e(p) - e(i) + Om(t)
                        dem2 = e(p) - e(j) + Om(t) + Om(s)
@@ -299,11 +299,11 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                        reg2 = (1d0 - exp(-2d0*flow*dem2*dem2))
                        reg3 = (1d0 - exp(-2d0*flow*dem3*dem3))
  
-                       Sig(p) = Sig(p) + num*reg1*reg2*reg3/(dem1*dem2*dem3)
+                       Sig(p) = Sig(p) + num*reg1*reg2/(dem1*dem2*dem3)
  
-                       Z(p) = Z(p) - num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
-                                   - num*reg1*reg2*reg3/(dem1*dem2*dem2*dem3) &
-                                   - num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)  
+                       Z(p) = Z(p) - num*reg1*reg2/(dem1*dem1*dem2*dem3) &
+                                   - num*reg1*reg2/(dem1*dem2*dem2*dem3) &
+                                   - num*reg1*reg2/(dem1*dem2*dem3*dem3)  
  
                     end do
                  end do
@@ -321,7 +321,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                  do t=1,nS
                     do s=1,nS
  
-                       num = 4d0*rho(p,a,t)*rho(b,c,t)*rho(p,c,s)*rho(a,b,s)
+                       num = rho(p,a,t)*rho(b,c,t)*rho(p,c,s)*rho(a,b,s)
  
                        dem1 = e(p) - e(a) - Om(t)
                        dem2 = e(p) - e(b) - Om(t) - Om(s)
@@ -354,7 +354,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                  do t=1,nS
                     do s=1,nS
  
-                       num = 4d0*rho(p,a,t)*rho(j,k,t)*rho(p,k,s)*rho(a,j,s)
+                       num = rho(p,a,t)*rho(j,k,t)*rho(p,k,s)*rho(a,j,s)
  
                        dem1 = e(p) - e(k) + Om(s)
                        dem2 = Om(s) + e(a) - e(j)
@@ -369,6 +369,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                        Z(p) = Z(p) - 2d0*num*reg1*reg2*reg3/(dem1*dem1*dem2*dem3) &
                                    - 2d0*num*reg1*reg2*reg3/(dem1*dem2*dem3*dem3)  
                       
+ 
                        dem1 = e(p) - e(k) + Om(s)
                        dem2 = Om(s) + e(a) - e(j)
                        dem3 = e(p) - e(j) + Om(s) + Om(t)
@@ -398,7 +399,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                  do t=1,nS
                     do s=1,nS
                        
-                       num = 4d0*rho(p,i,t)*rho(b,c,t)*rho(p,c,s)*rho(i,b,s)
+                       num = rho(p,i,t)*rho(b,c,t)*rho(p,c,s)*rho(i,b,s)
                        
                        dem1 = e(p) - e(c) - Om(s)
                        dem2 = Om(s) - e(i) + e(b)
@@ -442,7 +443,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                 do t=1,nS
                    do s=1,nS
  
-                      num = 4d0*rho(p,i,t)*rho(b,k,t)*rho(p,k,s)*rho(i,b,s)
+                      num = rho(p,i,t)*rho(b,k,t)*rho(p,k,s)*rho(i,b,s)
  
                       dem1 = e(p) - e(i) - e(k) + e(b)
                       dem2 = e(p) - e(b) - Om(t) - Om(s) 
@@ -502,7 +503,7 @@ subroutine R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,ER
                 do t=1,nS
                    do s=1,nS
                       
-                      num = 4d0*rho(p,a,t)*rho(j,c,t)*rho(p,c,s)*rho(a,j,s)
+                      num = rho(p,a,t)*rho(j,c,t)*rho(p,c,s)*rho(a,j,s)
  
                       dem1 = e(p) - e(a) - e(c) + e(j)
                       dem2 = e(p) - e(j) + Om(t) + Om(s) 

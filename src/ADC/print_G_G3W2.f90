@@ -1,6 +1,6 @@
-subroutine print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
+subroutine print_G_G3W2(nOrb,nC,nO,nV,nR,eHF,ENuc,EGHF,SigC,Z,eQP,EcRPA,EcGM)
 
-! Print one-electron energies and other stuff for 2SOSEX
+! Print one-electron energies and other stuff for G3W2
 
   implicit none
   include 'parameters.h'
@@ -11,7 +11,7 @@ subroutine print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: EcRPA
   double precision,intent(in)   :: EcGM
   double precision,intent(in)   :: eHF(nOrb)
@@ -31,7 +31,7 @@ subroutine print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)' 2SOSEX@RHF calculation '
+  write(*,*)' G3W2@GHF calculation '
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_QP (eV)','|','Z','|','e_QP (eV)','|'
@@ -57,14 +57,14 @@ subroutine print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
   end do
 
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') '2SOSEX@RHF HOMO      energy = ',eHOMO*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') '2SOSEX@RHF LUMO      energy = ',eLUMO*HaToeV,' eV'
-  write(*,'(2X,A60,F15.6,A3)') '2SOSEX@RHF HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G3W2@GHF HOMO      energy = ',eHOMO*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G3W2@GHF LUMO      energy = ',eLUMO*HaToeV,' eV'
+  write(*,'(2X,A60,F15.6,A3)') 'G3W2@GHF HOMO-LUMO gap    = ',Gap*HaToeV,' eV'
   write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@2SOSEX@RHF total       energy = ',ENuc + ERHF + EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') 'phRPA@2SOSEX@RHF correlation energy = ',EcRPA,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@2SOSEX@RHF total       energy = ',ENuc + ERHF + EcGM,' au'
-  write(*,'(2X,A60,F15.6,A3)') '   GM@2SOSEX@RHF correlation energy = ',EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@G3W2@GHF total       energy = ',ENuc + EGHF + EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') 'phRPA@G3W2@GHF correlation energy = ',EcRPA,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@G3W2@GHF total       energy = ',ENuc + EGHF + EcGM,' au'
+  write(*,'(2X,A60,F15.6,A3)') '   GM@G3W2@GHF correlation energy = ',EcGM,' au'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,*)
 

@@ -1,4 +1,4 @@
-subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
 ! ADC version of G3W2 up to 3h2p/3p2h within the diagonal approximation
 
@@ -89,9 +89,9 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'* Restricted ADC(4)-G3W2 Calculation *'
-  write(*,*)'**************************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Restricted ADC-G3W2 Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Diagonal approximation
@@ -107,7 +107,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
 
 ! Select matrix components
 
-! ADC(4)-G3W2
+! ADC-G3W2
 
   add_3h2p = .true.
   add_3p2h = .true.
@@ -122,7 +122,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
   add_C1_2h1p = .true.
   add_C1_2p1h = .true.
 
-! ADC-SOSEX
+! ADC-2SOSEX
 
   add_U2_2h1p = .true.
   add_U2_2p1h = .true.
@@ -776,7 +776,7 @@ subroutine R_ADC4_G3W2_diag(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,E
   !--------------!
 
     write(*,*)'-------------------------------------------'
-    write(*,'(1X,A34,I3,A6)')'| ADC(4)-G3W2 energies for orbital',p,'  |'
+    write(*,'(1X,A34,I3,A6)')'| ADC-G3W2 energies for orbital',p,'  |'
     write(*,*)'-------------------------------------------'
     write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
               '|','#','|','e_QP (eV)','|','Z','|'

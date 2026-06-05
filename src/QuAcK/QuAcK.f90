@@ -22,7 +22,7 @@ program QuAcK
   logical                       :: doevParquet,doqsParquet
   logical                       :: do_IPEA_ADC2,do_IPEA_ADC3
   logical                       :: do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2
-  logical                       :: do_ADC2_G3W2,do_ADC2x_G3W2,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2
+  logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2
 
   logical                       :: error_P
   logical                       :: verbose_scGW,verbose_scGF2
@@ -125,6 +125,8 @@ program QuAcK
 
   character(len=256)            :: working_dir
   character(len=100)            :: sha
+  integer                       :: ios
+  character(len=256)            :: line
 
   ! Check if the right number of arguments is provided
 
@@ -140,18 +142,43 @@ program QuAcK
 !-------------!
 
   write(*,*)
-  write(*,*) '******************************************************************************************'
-  write(*,*) '*            QuAcK                       QuAcK                         QuAcK             *'
-  write(*,*) '*   __        __        __       __        __        __       __        __        __     *'
-  write(*,*) '* <(o )___  <(o )___  <(o )___ <(o )___  <(o )___  <(o )___ <(o )___  <(o )___  <(o )___ *'
-  write(*,*) '* ( ._> /   ( ._> /   ( ._> /  ( ._> /   ( ._> /   ( ._> /  ( ._> /   ( ._> /   ( ._> /  *'
-  write(*,*) '*|--------------------------------------------------------------------------------------|*'
-  write(*,*) '******************************************************************************************'
+  write(*,*) '************************************************************'
+  write(*,*) '*                                                          *'
+  write(*,*) '*         ██████╗ ██╗   ██╗ █████╗  ██████╗██╗  ██╗        *'
+  write(*,*) '*        ██╔═══██╗██║   ██║██╔══██╗██╔════╝██║ ██╔╝        *'
+  write(*,*) '*        ██║   ██║██║   ██║███████║██║     █████╔╝         *'
+  write(*,*) '*        ██║▄▄ ██║██║   ██║██╔══██║██║     ██╔═██╗         *'
+  write(*,*) '*        ╚██████╔╝╚██████╔╝██║  ██║╚██████╗██║  ██╗        *'
+  write(*,*) '*         ╚══▀▀═╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝        *'
+  write(*,*) '*                                                          *'
+  write(*,*) '*      <(o )___     <(o )___     <(o )___     <(o )___     *'
+  write(*,*) '*       ( ._> /      ( ._> /      ( ._> /      ( ._> /     *'
+  write(*,*) '*                                                          *'
+  write(*,*) '************************************************************'
   write(*,*)
 
-  call gitversion(sha)
   write(*,*) '============================================================'
-  write(*,*) ' Code sha version: ',sha
+  write(*,*) '                    QuAcK Contributors                      '
+  write(*,*) '============================================================'
+  write(*,*) '  Pierre-Francois Loos'
+  write(*,*) '  Anthony Scemama'
+  write(*,*) '  Enzo Monino'
+  write(*,*) '  Antoine Marie'
+  write(*,*) '  Abdallah Ammar'
+  write(*,*) '  Mauricio Rodriguez-Mayorga'
+  write(*,*) '  Loris Burth'
+  write(*,*) '============================================================'
+  write(*,*) ' QuAcK repository: https://github.com/pfloos/QuAcK'
+  write(*,*) ' License: GPLv3 or later'
+  write(*,*) '============================================================'
+  write(*,*)   
+
+  call gitversion(sha)
+
+  write(*,*) '============================================================'
+  write(*,*) '                       QuAcK Build Info                     '
+  write(*,*) '============================================================'
+  write(*,*) '  Git SHA  : ', trim(sha)
   write(*,*) '============================================================'
   write(*,*)
 
@@ -182,9 +209,26 @@ program QuAcK
                     doevParquet,doqsParquet,                                      &
                     do_IPEA_ADC2,do_IPEA_ADC3,                                    & 
                     do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                        & 
-                    do_ADC2_G3W2,do_ADC2x_G3W2,                                   &
-                    do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                      &
+                    do_ADC_GW,do_ADC_2SOSEX,                                      &
+                    do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2,                       &
                     doRtest,doUtest,doGtest)
+
+  write(*,*) '============================================================'
+  write(*,*) '                     Methods File                           '
+  write(*,*) '============================================================'
+  
+  open(unit=10, file=trim(working_dir) // '/input/methods', status='old', action='read')
+
+  do
+    read(10,'(A)', iostat=ios) line
+    if (ios /= 0) exit
+    write(*,'(2X,A)') trim(line)
+  end do
+  
+  close(10)
+  
+  write(*,*) '============================================================'
+  write(*,*)
   
 ! Determine complex function calls  
 
@@ -195,7 +239,6 @@ program QuAcK
 !--------------------------!
 ! Read options for methods !
 !--------------------------!
-
 
   call read_options(working_dir,                                                                         &
                     maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,dostab,dosearch,doaordm,  &
@@ -215,6 +258,22 @@ program QuAcK
                     do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                     eweight,eforward)
 
+  write(*,*) '============================================================'
+  write(*,*) '                     Options File                           '
+  write(*,*) '============================================================'
+
+  open(unit=10, file=trim(working_dir) // '/input/options', status='old', action='read')
+
+  do
+    read(10,'(A)', iostat=ios) line
+    if (ios /= 0) exit
+    write(*,'(2X,A)') trim(line)
+  end do
+
+  close(10)
+
+  write(*,*) '============================================================'
+  write(*,*)
 
 !--------------------!
 ! Prepare Quadrature !
@@ -223,9 +282,9 @@ program QuAcK
   allocate(wweight(nfreqs),wcoord(nfreqs))
   call read_quadrature(nfreqs,ntimes,wcoord,wweight)
 
-!------------------!
-! Hardware         !
-!------------------!
+!----------!
+! Hardware !
+!----------!
 
   call read_hpc_flags(working_dir,switch_hpc,use_gpu)
 
@@ -360,7 +419,7 @@ program QuAcK
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          &
-                  do_ADC2_G3W2,do_ADC2x_G3W2,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                                       &
+                  do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2,                                           &
                   nNuc,nBas,nOrb,nC,nO,nV,nR,nCVS,FC,ENuc,ZNuc,rNuc,                                                        &
                   S,T,V,Hc,CAP,X,dipole_int_AO,maxSCF_HF,max_diis_HF,thresh_HF,level_shift,eweight,eforward,                &
                   mom_occupations,writeMOs,                                                                                 &
@@ -396,13 +455,14 @@ program QuAcK
 !--------------------------!
 ! Generalized QuAcK branch !
 !--------------------------!
+
   if(doGQuAcK) & 
     call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                     &
                 doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0F3,dopsdG0F3,                            &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                             & 
                 do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                         &
-                do_ADC2_G3W2,do_ADC2x_G3W2,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC4_G3W2,                      &
+                do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2,                          &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,       &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                       &
                 maxSCF_CC,max_diis_CC,thresh_CC,TDA,nfreqs,wcoord,wweight,                               &
@@ -418,6 +478,7 @@ program QuAcK
 !-------------------------!
 ! Bogoliubov QuAcK branch !
 !-------------------------!
+
   if(doBQuAcK) & 
     call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGW,readFCIDUMP,nNuc,nBas,  &
                 nOrb,nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,        &

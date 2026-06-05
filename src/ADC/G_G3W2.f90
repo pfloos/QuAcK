@@ -1,4 +1,4 @@
-subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine G_G3W2(dotest,TDA_W,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
 ! Perform single-shot G3W2 calculation
 
@@ -11,12 +11,9 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
-  double precision,intent(in)   :: flow
 
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nOrb
@@ -26,7 +23,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
   double precision,intent(in)   :: eHF(nOrb)
@@ -36,7 +33,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
   logical                       :: dRPA_W
-  integer                       :: isp_W
+  double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcGM
   double precision,allocatable  :: Aph(:,:)
@@ -58,17 +55,18 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 ! Hello world
 
   write(*,*)
-  write(*,*)'*******************************'
-  write(*,*)'* Restricted G3W2 Calculation *'
-  write(*,*)'*******************************'
+  write(*,*)'********************************'
+  write(*,*)'* Generalized G3W2 Calculation *'
+  write(*,*)'********************************'
   write(*,*)
 
-! Spin manifold and TDA for dynamical screening
+! TDA for dynamical screening
 
-  isp_W = 1
   dRPA_W = .true.
 
 ! SRG regularization
+
+  flow = 500d0
 
   if(doSRG) then
 
@@ -86,22 +84,22 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 ! Compute screening !
 !-------------------!
 
-                 call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phGLR_A(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_W) call phGLR_B(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   ! Small shift to avoid hard zeros in amplitudes
 
   Om(:) = Om(:) + 1d-12
 
-  if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+  if(print_W) call print_excitation_energies('phRPA@GHF','singlet',nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !
 !--------------------------!
 
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+  call GGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
 !------------------------!
 ! Compute GW self-energy !
@@ -113,7 +111,7 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 
   else
 
-     call R_G3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
+     call G_G3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
   end if
   
@@ -124,6 +122,8 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
   ! Linearized or graphical solution?
 
   eQPlin(:) = eHF(:) + Z(:) * SigC(:)
+
+  call vecout(nOrb,eQPlin)
   
   if(linearize) then 
  
@@ -134,10 +134,10 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
 
   else 
 
-     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
+     write(*,*) ' *** Quasiparticle energies obtained by root search *** not implemented yet'
      write(*,*)
 
-     call R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
+     ! call G_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
 
 
   end if
@@ -148,16 +148,16 @@ subroutine R_G3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,nOr
   
 ! Compute the RPA correlation energy
 
-                 call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eQP,ERI,Aph)
-  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phGLR_A(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eQP,ERI,Aph)
+  if(.not.TDA_W) call phGLR_B(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
 !--------------!
 ! Dump results !
 !--------------!
 
-  call print_R_G3W2(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
+  call print_G_G3W2(nOrb,nC,nO,nV,nR,eHF,ENuc,EGHF,SigC,Z,eQP,EcRPA,EcGM)
   
 ! Testing zone
 

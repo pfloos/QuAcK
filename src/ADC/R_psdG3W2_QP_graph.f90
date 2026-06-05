@@ -1,4 +1,4 @@
-subroutine R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eOld,eQP,Z)
+subroutine R_psdG3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eOld,eQP,Z)
 
 ! Compute the graphical solution of the QP equation
 
@@ -57,7 +57,7 @@ subroutine R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ER
     
       nIt = nIt + 1
 
-      call R_G3W2_self_energy_diag_omega(p,w,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eOld,Om,rho,ERI,SigC,dSigC)
+      call R_psdG3W2_self_energy_diag_omega(p,w,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eOld,Om,rho,ERI,SigC,dSigC)
 
       f  = w - eHF(p) - SigC
       df = 1d0/(1d0 - dSigC)

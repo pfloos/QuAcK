@@ -1,6 +1,6 @@
-subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
+subroutine R_ADC_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
 
-! ADC(4) version of G3W2
+! ADC version of G3W2
 
   implicit none
   include 'parameters.h'
@@ -90,9 +90,9 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 ! Hello world
 
   write(*,*)
-  write(*,*)'**************************************'
-  write(*,*)'* Restricted ADC(4)-G3W2 Calculation *'
-  write(*,*)'**************************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Restricted ADC-G3W2 Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Dimension of the supermatrix
@@ -105,7 +105,7 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
 ! Select matrix components
 
-! ADC(4)-G3W2
+! ADC-G3W2
 
   add_C1_2h1p_3h2p  = .true.
   add_C1_2p1h_3p2h  = .true.
@@ -126,7 +126,7 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   add_C1_2h1p = .true.
   add_C1_2p1h = .true.
 
-! ADC(2x)-G3W2
+! ADC-2SOSEX
 
   add_U2_2h1p = .true.
   add_U2_2p1h = .true.
@@ -134,7 +134,7 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   add_K_2h1p  = .true.
   add_K_2p1h  = .true.
 
-! ADC(2)-G3W2
+! ADC-GW
 
   add_U1_2h1p = .true.
   add_U1_2p1h = .true.
@@ -576,16 +576,16 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
           do nu=1,nS
             ket = ket + 1
  
-            do j=nC+1,nO
+            do b=nO+1,nOrb-nR
 
-              num = rho(k,j,mu)*rho(i,j,nu)
-              dem = eHF(i) - eHF(j) + Om(nu)
+              num = rho(k,b,mu)*rho(i,b,nu)
+              dem = eHF(i) - eHF(b) + Om(nu)
               reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
               H(bra,ket) = H(bra,ket) + num*reg
 
-              num = rho(k,j,mu)*rho(i,j,nu)
-              dem = eHF(k) - eHF(j) + Om(mu)
+              num = rho(k,b,mu)*rho(i,b,nu)
+              dem = eHF(k) - eHF(b) + Om(mu)
               reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
               H(bra,ket) = H(bra,ket) + num*reg
@@ -643,18 +643,17 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
         do c=nO+1,nOrb-nR
           do nu=1,nS
             ket = ket + 1
- 
 
-            do b=nO+1,nOrb-nR
+            do j=nC+1,nO
 
-              num = rho(b,c,mu)*rho(b,a,nu)
-              dem = eHF(c) - eHF(b) - Om(mu)
+              num = rho(j,c,mu)*rho(j,a,nu)
+              dem = eHF(c) - eHF(j) - Om(mu)
               reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
               H(bra,ket) = H(bra,ket) + num*reg
 
-              num = rho(b,c,mu)*rho(b,a,nu)
-              dem = eHF(a) - eHF(b) - Om(nu)
+              num = rho(j,c,mu)*rho(j,a,nu)
+              dem = eHF(a) - eHF(j) - Om(nu)
               reg = (1d0 - exp(-2d0*flow*dem*dem))/dem
 
               H(bra,ket) = H(bra,ket) + num*reg
@@ -943,7 +942,7 @@ subroutine R_ADC4_G3W2(dotest,sig_inf,TDA_W,flow,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 !--------------!
 
   write(*,*)'---------------------------------------------'
-  write(*,'(1X,A45)')'| ADC(4)-G3W2 energies for all orbitals     |'
+  write(*,'(1X,A45)')'| ADC-G3W2 energies for all orbitals        |'
   write(*,*)'---------------------------------------------'
   write(*,'(1X,A1,1X,A5,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X)') &
             '|','#','|','e_QP (eV)','|','Z','|'

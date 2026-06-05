@@ -1,6 +1,6 @@
-subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF)
+subroutine G_psdG3W2(dotest,TDA_W,linearize,eta,doSRG,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,EGHF,ERI,dipole_int,eHF)
 
-! Perform single-shot 2SOSEX-psd calculation
+! Perform single-shot G3W2 calculation
 
   implicit none
   include 'parameters.h'
@@ -11,8 +11,6 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
   logical,intent(in)            :: dotest
 
   logical,intent(in)            :: TDA_W
-  logical,intent(in)            :: singlet
-  logical,intent(in)            :: triplet
   logical,intent(in)            :: linearize
   double precision,intent(in)   :: eta
   logical,intent(in)            :: doSRG
@@ -25,7 +23,7 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
   integer,intent(in)            :: nR
   integer,intent(in)            :: nS
   double precision,intent(in)   :: ENuc
-  double precision,intent(in)   :: ERHF
+  double precision,intent(in)   :: EGHF
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int(nOrb,nOrb,ncart)
   double precision,intent(in)   :: eHF(nOrb)
@@ -35,7 +33,6 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
   logical                       :: print_W   = .false.
   logical                       :: plot_self = .false.
   logical                       :: dRPA_W
-  integer                       :: isp_W
   double precision              :: flow
   double precision              :: EcRPA
   double precision              :: EcGM
@@ -58,23 +55,22 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted 2SOSEX Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'***********************************'
+  write(*,*)'* Generalized psdG3W2 Calculation *'
+  write(*,*)'***********************************'
   write(*,*)
 
 ! Spin manifold and TDA for dynamical screening
 
-  isp_W = 1
   dRPA_W = .true.
 
 ! SRG regularization
 
-  flow = 1d+6
+  flow = 500d0
 
   if(doSRG) then
 
-    write(*,*) '*** SRG regularized 2SOSEX scheme ***'
+    write(*,*) '*** SRG regularized psdG3W2 scheme ***'
     write(*,*)
 
   end if
@@ -88,30 +84,34 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Compute screening !
 !-------------------!
 
-                 call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phGLR_A(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_W) call phGLR_B(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
-  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phGLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
-  if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
+  ! Small shift to avoid hard zeros in amplitudes
+
+  Om(:) = Om(:) + 1d-12
+
+  if(print_W) call print_excitation_energies('phRPA@GHF','singlet',nS,Om)
 
 !--------------------------!
 ! Compute spectral weights !
 !--------------------------!
 
-  call R_2SOSEX_excitation_density(flow,nOrb,nC,nO,nR,nS,eHF,Om,ERI,XpY,rho)
+  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
 
-!----------------------------!
-! Compute 2SOSEX self-energy !
-!----------------------------!
+!------------------------!
+! Compute GW self-energy !
+!------------------------!
 
   if(doSRG) then 
 
-    call RGW_SRG_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+!   call R_G3W2_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
   else
 
-    call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
+     call G_psdG3W2_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
   end if
   
@@ -121,7 +121,9 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 
   ! Linearized or graphical solution?
 
-  eQPlin(:) = eHF(:) + Z(:)*SigC(:)
+  eQPlin(:) = eHF(:) + Z(:) * SigC(:)
+
+  call vecout(nOrb,eQPlin)
   
   if(linearize) then 
  
@@ -132,10 +134,10 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 
   else 
 
-     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
+     write(*,*) ' *** Quasiparticle energies obtained by root search not implented *** '
      write(*,*)
 
-     call RGW_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,eQPlin,eHF,eQP,Z)
+     ! call R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
 
 
   end if
@@ -146,8 +148,8 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
   
 ! Compute the RPA correlation energy
 
-                 call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eQP,ERI,Aph)
-  if(.not.TDA_W) call phRLR_B(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+                 call phRLR_A(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eQP,ERI,Aph)
+  if(.not.TDA_W) call phRLR_B(dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
 
   call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
@@ -155,16 +157,15 @@ subroutine R_2SOSEX(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,nBas,nOrb,n
 ! Dump results !
 !--------------!
 
-  call print_R_2SOSEX(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
-  
+  call print_R_G3W2(nOrb,nC,nO,nV,nR,eHF,ENuc,EGHF,SigC,Z,eQP,EcRPA,EcGM)
   
 ! Testing zone
 
   if(dotest) then
 
-    call dump_test_value('R','2SOSEX correlation energy',EcRPA)
-    call dump_test_value('R','2SOSEX HOMO energy',eQP(nO))
-    call dump_test_value('R','2SOSEX LUMO energy',eQP(nO+1))
+    call dump_test_value('R','G3W2 correlation energy',EcRPA)
+    call dump_test_value('R','G3W2 HOMO energy',eQP(nO))
+    call dump_test_value('R','G3W2 LUMO energy',eQP(nO+1))
 
   end if
 

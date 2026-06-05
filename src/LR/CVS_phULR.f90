@@ -64,7 +64,7 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
     call diagonalize_general_matrix(nSt,ApB,Om,XmY)
     
     ! Deal with complex eigenvalue and then stop program
-    if(any(Om < 0d0)) then
+    if(any(Om < -1d-8)) then
       print*,"Found complex eigenvalue in Linear Response ! Use complex code !"
       allocate(complex_Om(nSt))
       complex_Om = cmplx(Om,0d0,kind=8)
