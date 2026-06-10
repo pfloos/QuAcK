@@ -107,68 +107,68 @@ subroutine R_IPEA_ADC3(dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,eHF)
     H(p,p) = eHF(p)
   end do
 
-!--------------------------------------------------------!
-! Compute third-order frequency-independent contribution !
-!                          3h2p                          !  
-!--------------------------------------------------------!
-  do p=nC+1,nBas-nR
-     do q=nC+1,nBas-nR
-        do i=nC+1,nO
-           do j=nC+1,nO
-              do k=nC+1,nO
-                 do a=nO+1,nBas-nR
-                    do b=nO+1,nBas-nR
+! !--------------------------------------------------------!
+! ! Compute third-order frequency-independent contribution !
+! !                          3h2p                          !  
+! !--------------------------------------------------------!
+!   do p=nC+1,nBas-nR
+!      do q=nC+1,nBas-nR
+!         do i=nC+1,nO
+!            do j=nC+1,nO
+!               do k=nC+1,nO
+!                  do a=nO+1,nBas-nR
+!                     do b=nO+1,nBas-nR
 
-                       eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
-                       eps2 = eHF(k) + eHF(i) - eHF(a) - eHF(b)
-                       num = - (2d0*ERI(p,k,q,j) - ERI(p,k,j,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(a,b,k,i)
+!                        eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
+!                        eps2 = eHF(k) + eHF(i) - eHF(a) - eHF(b)
+!                        num = - (2d0*ERI(p,k,q,j) - ERI(p,k,j,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(a,b,k,i)
                        
-                       H(p,q) = H(p,q) + num / (eps1*eps2) 
+!                        H(p,q) = H(p,q) + num / (eps1*eps2) 
                        
-                       eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
-                       eps2 = eHF(k)          - eHF(b)
-                       num  = - (2d0*ERI(p,b,q,k) - ERI(p,b,k,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(i,j,k,a)
+!                        eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
+!                        eps2 = eHF(k)          - eHF(b)
+!                        num  = - (2d0*ERI(p,b,q,k) - ERI(p,b,k,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(i,j,k,a)
                        
-                       H(p,q) = H(p,q) + 2d0 * num / (eps1*eps2)
+!                        H(p,q) = H(p,q) + 2d0 * num / (eps1*eps2)
                     
-                    end do
-                 end do
-              end do
-           end do
-        end do
-     end do
-  end do
-!--------------------------------------------------------!
-! Compute third-order frequency-independent contribution !
-!                          3p2h                          !  
-!--------------------------------------------------------!
-  do p=nC+1,nBas-nR
-     do q=nC+1,nBas-nR
-        do i=nC+1,nO
-           do j=nC+1,nO
-              do a=nO+1,nBas-nR
-                 do b=nO+1,nBas-nR
-                    do c=nO+1,nBas-nR
+!                     end do
+!                  end do
+!               end do
+!            end do
+!         end do
+!      end do
+!   end do
+! !--------------------------------------------------------!
+! ! Compute third-order frequency-independent contribution !
+! !                          3p2h                          !  
+! !--------------------------------------------------------!
+!   do p=nC+1,nBas-nR
+!      do q=nC+1,nBas-nR
+!         do i=nC+1,nO
+!            do j=nC+1,nO
+!               do a=nO+1,nBas-nR
+!                  do b=nO+1,nBas-nR
+!                     do c=nO+1,nBas-nR
 
-                       eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
-                       eps2 = eHF(j) + eHF(i) - eHF(a) - eHF(c)
-                       num = + (2d0*ERI(p,c,q,b) - ERI(p,c,b,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(i,j,c,a)
+!                        eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
+!                        eps2 = eHF(j) + eHF(i) - eHF(a) - eHF(c)
+!                        num = + (2d0*ERI(p,c,q,b) - ERI(p,c,b,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(i,j,c,a)
                        
-                       H(p,q) = H(p,q) + num / (eps1*eps2)
+!                        H(p,q) = H(p,q) + num / (eps1*eps2)
                        
-                       eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
-                       eps2 = eHF(j)          - eHF(c)
-                       num = + (2d0*ERI(p,c,q,j) - ERI(p,c,j,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(a,b,c,i)
+!                        eps1 = eHF(j) + eHF(i) - eHF(a) - eHF(b)
+!                        eps2 = eHF(j)          - eHF(c)
+!                        num = + (2d0*ERI(p,c,q,j) - ERI(p,c,j,q)) * (2d0*ERI(j,i,a,b) - ERI(j,i,b,a)) * ERI(a,b,c,i)
                        
-                       H(p,q) = H(p,q) + 2d0 * num / (eps1*eps2) 
+!                        H(p,q) = H(p,q) + 2d0 * num / (eps1*eps2) 
                     
-                    end do
-                 end do
-              end do
-           end do
-        end do
-     end do
-  end do
+!                     end do
+!                  end do
+!               end do
+!            end do
+!         end do
+!      end do
+!   end do
 
   !----------------------!
   ! Block U_2h1p: Part I !
