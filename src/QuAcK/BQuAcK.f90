@@ -259,7 +259,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   endif
 
   ! scGF2 Bogoliubov
-  if(doscGW) then
+  if(doscGF2) then
    allocate(vMAT(nBas*nBas,nBas*nBas))
    do iorb=1,nBas
     do jorb=1,nBas
@@ -271,8 +271,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
     enddo
    enddo
    no_fock=.false.
-   call scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,dophRPA,restart_scGW,verbose_scGW, &
-                          chem_pot_scG,no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,sign_XoB,nfreqs, &
+   call scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,restart_scGW,verbose_scGW, &
+                          chem_pot_scG,no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,  &
                           wcoord,wweight,U_QP,vMAT,ERI_AO)
    deallocate(vMAT)
   endif

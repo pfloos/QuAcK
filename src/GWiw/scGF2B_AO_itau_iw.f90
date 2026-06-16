@@ -1,6 +1,6 @@
-subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGF2,dophRPA,restart_scGF2B,verbose_scGF2B,     &
-                            chem_pot_scG,no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,sign_XoB,nfreqs, &
-                            wcoord,wweight,U_QP,vMAT,ERI_AO)
+subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGF2,restart_scGF2B,verbose_scGF2B,chem_pot_scG, &
+                            no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,   &
+                            U_QP,vMAT,ERI_AO)
 
 ! Restricted scGF2B
 
@@ -9,7 +9,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
 
 ! Input variables
  
-  logical,intent(in)            :: dophRPA
   logical,intent(in)            :: dolinGF2
   logical,intent(in)            :: no_h_hfb
   logical,intent(in)            :: restart_scGF2B
@@ -22,7 +21,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: maxDIIS
 
-  double precision,intent(in)   :: sign_XoB
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: thresh_in
   double precision,intent(in)   :: sigma
@@ -69,21 +67,16 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
-  double precision              :: EcGM,EcGM2,EcRPA,EcdMP2,Ehfbl,Ecore,Eh,Ex,Epair
-  double precision              :: trace1,trace2,trace3
+  double precision              :: EcGM,EcdMP2,Ehfbl,Ecore,Eh,Ex,Epair
   double precision              :: trace_1_rdm
   double precision,external     :: trace_matrix
   double precision              :: start_scGF2Bitauiw,end_scGF2Bitauiw,t_scGF2Bitauiw
   double precision,allocatable  :: Occ(:)
-  double precision,allocatable  :: Eigval_Xov(:)
   double precision,allocatable  :: cHFBinv(:,:)
   double precision,allocatable  :: cNO(:,:)
   double precision,allocatable  :: U_mo(:,:)
   double precision,allocatable  :: Mat1(:,:)
   double precision,allocatable  :: Mat2(:,:)
-  double precision,allocatable  :: Chi0v(:,:)
-  double precision,allocatable  :: Wp_ao_iw(:,:)
-  double precision,allocatable  :: Wp_ao_itau(:,:,:)
   double precision,allocatable  :: R_ao(:,:)
   double precision,allocatable  :: R_ao_iter(:,:)
   double precision,allocatable  :: R_ao_hfb(:,:)
@@ -124,8 +117,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
   complex*16,allocatable        :: G_itau_old_diis(:,:)
   complex*16,allocatable        :: G_ao_iw_hfb(:,:,:)
   complex*16,allocatable        :: DeltaG_ao_iw(:,:,:)
-  complex*16,allocatable        :: Chi0_ao_iw(:,:,:)
-  complex*16,allocatable        :: Chi0_ao_itau(:,:)
   complex*16,allocatable        :: Sigma_c_he(:,:,:)
   complex*16,allocatable        :: Sigma_c_hh(:,:,:)
   complex*16,allocatable        :: Sigma_c_ee(:,:,:)
@@ -205,17 +196,10 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
  allocate(G_ao_itau_hfb(ntimes_twice,nBas_twice,nBas_twice))
  allocate(G_ao_itau(ntimes_twice,nBas_twice,nBas_twice))
  allocate(G_ao_itau_old(ntimes_twice,nBas_twice,nBas_twice))
- allocate(Chi0_ao_itau(nBasSq,nBasSq))
- allocate(Chi0_ao_iw(nfreqs,nBasSq,nBasSq),Wp_ao_iw(nBasSq,nBasSq),Chi0v(1,1),Eigval_Xov(1))
- if(dophRPA) then
-  deallocate(Chi0v,Eigval_Xov)
-  allocate(Chi0v(nBasSq,nBasSq),Eigval_Xov(nBasSq))
- endif
- allocate(Wp_ao_itau(ntimes,nBasSq,nBasSq))
  allocate(Sigma_c_w_ao(nfreqs,nBas_twice,nBas_twice))
- allocate(Sigma_c_plus(nBas_twice,nBas_twice))
- allocate(Sigma_c_minus(nBas_twice,nBas_twice))
- allocate(Sigma_c_c(nBas_twice,nBas_twice))
+ allocate(Sigma_c_plus(nBas_twice,nBas_twice));  Sigma_c_plus=czero;
+ allocate(Sigma_c_minus(nBas_twice,nBas_twice)); Sigma_c_minus=czero;
+ allocate(Sigma_c_c(nBas_twice,nBas_twice))      
  allocate(Sigma_c_s(nBas_twice,nBas_twice))
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(sint2w_weight(nfreqs,ntimes))
@@ -385,110 +369,19 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  endif
 
-!------------!
+!-------------!
 ! scGF2B loop !
-!------------!
+!-------------!
 
  iter=0
  iter_hfb=0
  do
   iter=iter+1 
 
-  ! Build using the time grid Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + sign_Xo G_hh(i tau) G_ee(-i tau) ]
-  !  then Fourier transform Xo(i tau) -> Xo(i w)
-  Chi0_ao_iw(:,:,:)=czero
-  do itau=1,ntimes
-   ! Xo(i tau) = -2i [ G_he(i tau) G_he(-i tau) + sign_Xo G_hh(i tau) G_ee(-i tau) ]
-   do ibas=1,nBas
-    do jbas=1,nBas
-     mbas=nBas+1+(jbas-1)
-     do kbas=1,nBas
-      obas=nBas+1+(kbas-1)
-      do lbas=1,nBas
-                                   ! r1   r2'                    r2   r1'
-       product = G_ao_itau(2*itau-1,ibas,jbas)*G_ao_itau(2*itau,kbas,lbas) &
-               + sign_XoB*G_ao_itau(2*itau-1,ibas,mbas)*G_ao_itau(2*itau,obas,lbas)
-       if(abs(product)<1e-12) product=czero
-       Chi0_ao_itau(1+(lbas-1)+(ibas-1)*nBas,1+(kbas-1)+(jbas-1)*nBas) = product
-      enddo
-     enddo
-    enddo
-   enddo
-   Chi0_ao_itau=-2d0*im*Chi0_ao_itau ! The 2 factor is added to account for both spin contributions [ i.e., (up,up,up,up) and (down,down,down,down) ]
-   ! Xo(i tau) -> Xo(i w)            [ the weight already contains the cos(tau w) and a factor 2 because int_-Infty ^Infty -> 2 int_0 ^Infty ]
-   do ifreq=1,nfreqs
-    Chi0_ao_iw(ifreq,:,:) = Chi0_ao_iw(ifreq,:,:) - im*cost2w_weight(ifreq,itau)*Chi0_ao_itau(:,:)
-   enddo
-  enddo
-  ! Complete the Xo(i tau) -> Xo(i w)
-  Chi0_ao_iw(:,:,:) = Real(Chi0_ao_iw(:,:,:)) ! The factor 2 is stored in the weight [ and we just retain the real part ]
-
-  ! Build Wp(i w) and compute Ec Galitskii-Migdal 
-  !  and Wp(i w) -> Wp(i tau)
-  EcGM=0d0;EcRPA=0d0;
-  Wp_ao_itau=0d0
-  do ifreq=1,nfreqs
-   trace1=0d0; trace2=0d0; trace3=0d0;
-   ! Xo(i w) -> Wp_ao_iw(i w)
-   Wp_ao_iw(:,:)=-matmul(Real(Chi0_ao_iw(ifreq,:,:)),vMAT(:,:))
-   do ibas=1,nBasSq
-    trace1=trace1+Wp_ao_iw(ibas,ibas)
-    Wp_ao_iw(ibas,ibas)=Wp_ao_iw(ibas,ibas)+1d0
-   enddo
-   call inverse_matrix(nBasSq,Wp_ao_iw,Wp_ao_iw)
-   Wp_ao_iw(:,:)=matmul(Wp_ao_iw(:,:),Real(Chi0_ao_iw(ifreq,:,:)))
-   Wp_ao_iw(:,:)=matmul(Wp_ao_iw(:,:),vMAT(:,:))
-   do ibas=1,nBasSq
-    trace2=trace2+Wp_ao_iw(ibas,ibas)
-   enddo
-   EcGM=EcGM-wweight(ifreq)*(trace2+trace1)/(2d0*pi) ! iw contribution to EcGM
-   Wp_ao_iw(:,:)=matmul(vMAT(:,:),Wp_ao_iw(:,:))     ! Now Wp_ao_iw is on the iw grid
-   ! Wp(i w) -> Wp(i tau) [ this transformation misses that Fourier[ Wp(i tau) ] is imaginary because of the factor i / 2pi ]
-   !                      [ However, the weight contains a 2 /(2 pi) = 1 / pi factor and the cos(tau w).                    ]
-   do itau=1,ntimes
-    Wp_ao_itau(itau,:,:) = Wp_ao_itau(itau,:,:) + cosw2t_weight(itau,ifreq)*Wp_ao_iw(:,:)
-   enddo
-  enddo
-
   ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024) ]
-  EcGM2=0d0;EcGM_itau=0d0;
+  EcGM=0d0;EcGM_itau=0d0;
   Sigma_c_w_ao=czero
   do itau=1,ntimes
-   Sigma_c_plus=czero
-   Sigma_c_minus=czero
-   ! Sigma_c(i tau) = i G(i tau) Wp(i tau)
-   do ibas=1,nBas
-    mbas=nBas+1+(ibas-1)
-    do jbas=1,nBas
-     obas=nBas+1+(jbas-1)
-     do kbas=1,nBas
-      pbas=nBas+1+(kbas-1)
-      do lbas=1,nBas
-       qbas=nBas+1+(lbas-1)
-       ! Sigma_c_he(i tau) = i G_he Wp(i tau)
-       Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas)+im*G_ao_itau(2*itau-1,kbas,lbas)    &
-                               *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
-       Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+im*G_ao_itau(2*itau ,kbas,lbas)  &
-                               *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
-       ! Sigma_c_hh(i tau) = - i G_hh Wp(i tau)
-       Sigma_c_plus(ibas,obas) =Sigma_c_plus(ibas,obas)+sign_XoB*im*G_ao_itau(2*itau-1,kbas,qbas)    &
-                               *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas) ! Adding i to Wp that was missing
-       Sigma_c_minus(ibas,obas)=Sigma_c_minus(ibas,obas)+sign_XoB*im*G_ao_itau(2*itau ,kbas,qbas)  &
-                               *im*Wp_ao_itau(itau,1+(kbas-1)+(ibas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas) ! Adding i to Wp that was missing
-       ! Sigma_c_ee(i tau) = - i G_ee Wp(i tau)
-       Sigma_c_plus(mbas,jbas) =Sigma_c_plus(mbas,jbas)+sign_XoB*im*G_ao_itau(2*itau-1,pbas,lbas)    &
-                               *im*Wp_ao_itau(itau,1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
-       Sigma_c_minus(mbas,jbas)=Sigma_c_minus(mbas,jbas)+sign_XoB*im*G_ao_itau(2*itau ,pbas,lbas)  &
-                               *im*Wp_ao_itau(itau,1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas) ! Adding i to Wp that was missing
-       ! Sigma_c_eh(i tau) = i G_eh Wp(i tau)
-       Sigma_c_plus(mbas,obas) =Sigma_c_plus(mbas,obas)+im*G_ao_itau(2*itau-1,pbas,qbas)    &
-                               *im*Wp_ao_itau(itau,1+(ibas-1)+(kbas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas) ! Adding i to Wp that was missing
-       Sigma_c_minus(mbas,obas)=Sigma_c_minus(mbas,obas)+im*G_ao_itau(2*itau ,pbas,qbas)  &
-                               *im*Wp_ao_itau(itau,1+(ibas-1)+(kbas-1)*nBas,1+(lbas-1)+(jbas-1)*nBas) ! Adding i to Wp that was missing
-      enddo
-     enddo
-    enddo
-   enddo
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
@@ -512,8 +405,8 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
      EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(ibas,ibas)
     enddo
   enddo
-  EcGM2=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ]^he dt
-                         !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ]^he dt for QP. restricted calcs.
+  EcGM=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ]^he dt
+                        !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ]^he dt for QP. restricted calcs.
 
 
   ! Converge with respect to the H_HFB operator (using only good R_ao matrices -> Tr[R_ao_block S_ao]=Nelectrons )
@@ -703,8 +596,7 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
  write(*,'(a,f15.8)')        ' Exchange        ',Ex
  write(*,'(a,f15.8)')        ' Epairing        ',Epair
  write(*,'(a,f15.8)')        ' Ehfbl           ',Ehfbl
- write(*,'(a,f15.8)')        ' EcGM(Xo,i w)    ',EcGM
- write(*,'(a,f15.8)')        ' EcGM(SG,i tau)  ',EcGM2
+ write(*,'(a,f15.8)')        ' EcGM(SG,i tau)  ',EcGM
  write(*,'(a,f15.8)')        ' Eelec           ',Ehfbl+EcGM
  write(*,'(a,f15.8)')        ' scGF2B Energy   ',Ehfbl+EcGM+ENuc
  write(*,*)
@@ -753,8 +645,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
  deallocate(G_ao_itau_hfb)
  deallocate(G_ao_itau)
  deallocate(G_ao_itau_old)
- deallocate(Chi0_ao_itau)
- deallocate(Chi0_ao_iw,Wp_ao_iw,Wp_ao_itau,Chi0v,Eigval_Xov)
  deallocate(Sigma_c_w_ao)
  deallocate(Sigma_c_plus)
  deallocate(Sigma_c_minus)
