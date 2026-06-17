@@ -405,22 +405,24 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
     G_ao3(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
     Ainter=czero;Binter=czero;Cinter=czero;
     call Sigma_c_GF2B_he_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_plus(1:nBas,1:nBas)) 
-   ! Sigma_he_2primeprime
-   G_ao1(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
-   G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
-   G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
-   Ainter=czero;Binter=czero;Cinter=czero;
+    ! Sigma_he_2primeprime
+    G_ao1(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+    G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
+    G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GF2B_he_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_plus(1:nBas,1:nBas)) 
     ! Sigma_eh_2prime
     G_ao1(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
     G_ao2(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
     G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
     Ainter=czero;Binter=czero;Cinter=czero;
     call Sigma_c_GF2B_he_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_plus(nBas+1:nBas_twice,nBas+1:nBas_twice)) ! Valid for real orbitals 
-   ! Sigma_eh_2primeprime
-   G_ao1(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
-   G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
-   G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
-   Ainter=czero;Binter=czero;Cinter=czero;
+    ! Sigma_eh_2primeprime
+    G_ao1(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
+    G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
+    G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GF2B_eh_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_plus(nBas+1:nBas_twice,nBas+1:nBas_twice))
    ! Sigma_hh_2prime
    G_ao1(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
    G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
@@ -449,22 +451,24 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
     G_ao3(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
     Ainter=czero;Binter=czero;Cinter=czero;
     call Sigma_c_GF2B_he_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_minus(1:nBas,1:nBas)) 
-   ! Sigma_he_2primeprime
-   G_ao1(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
-   G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
-   G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
-   Ainter=czero;Binter=czero;Cinter=czero;
+    ! Sigma_he_2primeprime
+    G_ao1(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+    G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
+    G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GF2B_he_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_minus(1:nBas,1:nBas)) 
     ! Sigma_eh_2prime
     G_ao1(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
     G_ao2(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
     G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
     Ainter=czero;Binter=czero;Cinter=czero;
     call Sigma_c_GF2B_he_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_minus(nBas+1:nBas_twice,nBas+1:nBas_twice)) ! Valid for real orbitals 
-   ! Sigma_eh_2primeprime
-   G_ao1(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
-   G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
-   G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
-   Ainter=czero;Binter=czero;Cinter=czero;
+    ! Sigma_eh_2primeprime
+    G_ao1(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
+    G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
+    G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GF2B_eh_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_minus(nBas+1:nBas_twice,nBas+1:nBas_twice))
    ! Sigma_hh_2prime
    G_ao1(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
    G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
