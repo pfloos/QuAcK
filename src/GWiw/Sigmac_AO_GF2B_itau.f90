@@ -313,5 +313,247 @@ subroutine Sigma_c_GF2B_eh_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao
 
 end subroutine 
 
+subroutine Sigma_c_GF2B_hh_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c)
+
+! Restricted scGF2B hh prime
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+  integer,intent(in)            :: nBas
+
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+
+  complex*16,intent(in)         :: G_ao1(nBas,nBas)
+  complex*16,intent(in)         :: G_ao2(nBas,nBas)
+  complex*16,intent(in)         :: G_ao3(nBas,nBas)
+
+! Local variables
+  integer                       :: abas,bbas,cbas,dbas,gbas,ebas,fbas,hbas
+
+! Output variables
+  complex*16,intent(inout)      :: Sigma_c(nBas,nBas)
+  complex*16,intent(inout)      :: Ainter(nBas,nBas,nBas,nBas)
+  complex*16,intent(inout)      :: Binter(nBas,nBas,nBas,nBas)
+  complex*16,intent(inout)      :: Cinter(nBas,nBas,nBas,nBas)
+
+  ! Sigma_c_ab = \sum_cdefgh Gcd Gfh Gge v_hbgd (-2 v_aecf + v_aefc )
+  do cbas=1,nBas
+   do gbas=1,nBas
+    do bbas=1,nBas
+     do hbas=1,nBas
+      do dbas=1,nBas
+       Ainter(hbas,bbas,gbas,cbas)=Ainter(hbas,bbas,gbas,cbas)+G_ao1(cbas,dbas)*ERI_AO(hbas,bbas,gbas,dbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do fbas=1,nBas
+   do cbas=1,nBas
+    do gbas=1,nBas
+     do bbas=1,nBas
+      do hbas=1,nBas
+       Binter(fbas,bbas,gbas,cbas)=Binter(fbas,bbas,gbas,cbas)+G_ao2(fbas,hbas)*Ainter(hbas,bbas,gbas,cbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do fbas=1,nBas
+   do bbas=1,nBas
+    do gbas=1,nBas
+     do cbas=1,nBas
+      do ebas=1,nBas
+       Cinter(fbas,bbas,ebas,cbas)=Cinter(fbas,bbas,ebas,cbas)+G_ao3(gbas,ebas)*Binter(fbas,bbas,gbas,cbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do abas=1,nBas
+   do bbas=1,nBas
+    do fbas=1,nBas
+     do cbas=1,nBas
+      do ebas=1,nBas
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(fbas,bbas,ebas,cbas)*(-2d0*ERI_AO(abas,ebas,cbas,fbas)+ERI_AO(abas,ebas,fbas,cbas))
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+
+  Ainter=czero; Binter=czero; Cinter=czero;
+
+  ! Sigma_c_ab = \sum_cdefgh Gcd Gfh Gge v_hbdg ( v_aecf - v_aefc )
+  do cbas=1,nBas
+   do gbas=1,nBas
+    do bbas=1,nBas
+     do hbas=1,nBas
+      do dbas=1,nBas
+       Ainter(hbas,bbas,gbas,cbas)=Ainter(hbas,bbas,gbas,cbas)+G_ao1(cbas,dbas)*ERI_AO(hbas,bbas,dbas,gbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do fbas=1,nBas
+   do cbas=1,nBas
+    do gbas=1,nBas
+     do bbas=1,nBas
+      do hbas=1,nBas
+       Binter(fbas,bbas,gbas,cbas)=Binter(fbas,bbas,gbas,cbas)+G_ao2(fbas,hbas)*Ainter(hbas,bbas,gbas,cbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do fbas=1,nBas
+   do bbas=1,nBas
+    do gbas=1,nBas
+     do cbas=1,nBas
+      do ebas=1,nBas
+       Cinter(fbas,bbas,ebas,cbas)=Cinter(fbas,bbas,ebas,cbas)+G_ao3(gbas,ebas)*Binter(fbas,bbas,gbas,cbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do abas=1,nBas
+   do bbas=1,nBas
+    do fbas=1,nBas
+     do cbas=1,nBas
+      do ebas=1,nBas
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(fbas,bbas,ebas,cbas)*(ERI_AO(abas,ebas,cbas,fbas)-ERI_AO(abas,ebas,fbas,cbas))
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+
+end subroutine 
+
+subroutine Sigma_c_GF2B_ee_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c)
+
+! Restricted scGF2B ee prime
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+  integer,intent(in)            :: nBas
+
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+
+  complex*16,intent(in)         :: G_ao1(nBas,nBas)
+  complex*16,intent(in)         :: G_ao2(nBas,nBas)
+  complex*16,intent(in)         :: G_ao3(nBas,nBas)
+
+! Local variables
+  integer                       :: abas,bbas,cbas,dbas,gbas,ebas,fbas,hbas
+
+! Output variables
+  complex*16,intent(inout)      :: Sigma_c(nBas,nBas)
+  complex*16,intent(inout)      :: Ainter(nBas,nBas,nBas,nBas)
+  complex*16,intent(inout)      :: Binter(nBas,nBas,nBas,nBas)
+  complex*16,intent(inout)      :: Cinter(nBas,nBas,nBas,nBas)
+
+  ! Sigma_c_ab = \sum_cdefgh Gcd Geg Ghf v_gdhb (-2 v_cfae + v_fcae )
+  do cbas=1,nBas
+   do gbas=1,nBas
+    do bbas=1,nBas
+     do hbas=1,nBas
+      do dbas=1,nBas
+       Ainter(gbas,cbas,hbas,bbas)=Ainter(gbas,cbas,hbas,bbas)+G_ao1(cbas,dbas)*ERI_AO(gbas,dbas,hbas,bbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do ebas=1,nBas
+   do cbas=1,nBas
+    do gbas=1,nBas
+     do bbas=1,nBas
+      do hbas=1,nBas
+       Binter(ebas,cbas,hbas,bbas)=Binter(ebas,cbas,hbas,bbas)+G_ao2(ebas,gbas)*Ainter(gbas,cbas,hbas,bbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do hbas=1,nBas
+   do bbas=1,nBas
+    do fbas=1,nBas
+     do cbas=1,nBas
+      do ebas=1,nBas
+       Cinter(ebas,cbas,fbas,bbas)=Cinter(ebas,cbas,fbas,bbas)+G_ao3(hbas,fbas)*Binter(ebas,cbas,hbas,bbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do abas=1,nBas
+   do bbas=1,nBas
+    do fbas=1,nBas
+     do cbas=1,nBas
+      do ebas=1,nBas
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(ebas,cbas,fbas,bbas)*(-2d0*ERI_AO(cbas,fbas,abas,ebas)+ERI_AO(fbas,cbas,abas,ebas))
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+
+  Ainter=czero; Binter=czero; Cinter=czero;
+
+  ! Sigma_c_ab = \sum_cdefgh Gcd Geg Ghf v_dghb ( v_cfae - v_fcae )
+  do cbas=1,nBas
+   do gbas=1,nBas
+    do bbas=1,nBas
+     do hbas=1,nBas
+      do dbas=1,nBas
+       Ainter(gbas,cbas,hbas,bbas)=Ainter(gbas,cbas,hbas,bbas)+G_ao1(cbas,dbas)*ERI_AO(dbas,gbas,hbas,bbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do ebas=1,nBas
+   do cbas=1,nBas
+    do gbas=1,nBas
+     do bbas=1,nBas
+      do hbas=1,nBas
+       Binter(ebas,cbas,hbas,bbas)=Binter(ebas,cbas,hbas,bbas)+G_ao2(ebas,gbas)*Ainter(gbas,cbas,hbas,bbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do hbas=1,nBas
+   do bbas=1,nBas
+    do fbas=1,nBas
+     do cbas=1,nBas
+      do ebas=1,nBas
+       Cinter(ebas,cbas,fbas,bbas)=Cinter(ebas,cbas,fbas,bbas)+G_ao3(hbas,fbas)*Binter(ebas,cbas,hbas,bbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do abas=1,nBas
+   do bbas=1,nBas
+    do fbas=1,nBas
+     do cbas=1,nBas
+      do ebas=1,nBas
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(ebas,cbas,fbas,bbas)*(ERI_AO(cbas,fbas,abas,ebas)-ERI_AO(fbas,cbas,abas,ebas))
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+
+end subroutine 
+
 
 

@@ -43,7 +43,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   integer                       :: idiis_indexP
   integer                       :: itau,ifreq
   integer                       :: ibas,jbas,kbas,lbas,nBasSq
-  integer                       :: mbas,sbas,pbas,qbas
   integer                       :: iter,iter_fock
   integer                       :: imax_error_sigma
   integer                       :: imax_error_gw2gt
@@ -341,98 +340,12 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    Aimql=czero
    Bisql=czero
    Cispl=czero
-   do ibas=1,nBas
-    do mbas=1,nBas
-     do qbas=1,nBas
-      do lbas=1,nBas
-       do kbas=1,nBas
-        Aimql(ibas,mbas,qbas,lbas)=Aimql(ibas,mbas,qbas,lbas)+G_plus_itau(kbas,lbas)*ERI_AO(ibas,qbas,mbas,kbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do sbas=1,nBas
-     do qbas=1,nBas
-      do lbas=1,nBas
-       do mbas=1,nBas
-        Bisql(ibas,sbas,qbas,lbas)=Bisql(ibas,sbas,qbas,lbas)+G_plus_itau(mbas,sbas)*Aimql(ibas,mbas,qbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do sbas=1,nBas
-     do pbas=1,nBas
-      do lbas=1,nBas
-       do qbas=1,nBas
-        Cispl(ibas,sbas,pbas,lbas)=Cispl(ibas,sbas,pbas,lbas)+G_minus_itau(pbas,qbas)*Bisql(ibas,sbas,qbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do jbas=1,nBas
-     do sbas=1,nBas
-      do pbas=1,nBas
-       do lbas=1,nBas
-        Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas)+Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
+   call Sigma_c_GF2B_he_prime(nBas,Aimql,Bisql,Cispl,G_plus_itau,G_plus_itau,G_minus_itau,ERI_AO,Sigma_c_plus)     ! Borrowed from Bogoliubov he block 
    ! Sigma_c_ij(-i tau) =  \sum_klmspq Gkl(-i tau) Gms(-i tau) Gpq(i tau) v_iqmk (2 v_lspj - v_slpj)
    Aimql=czero
    Bisql=czero
    Cispl=czero
-   do ibas=1,nBas
-    do mbas=1,nBas
-     do qbas=1,nBas
-      do lbas=1,nBas
-       do kbas=1,nBas
-        Aimql(ibas,mbas,qbas,lbas)=Aimql(ibas,mbas,qbas,lbas)+G_minus_itau(kbas,lbas)*ERI_AO(ibas,qbas,mbas,kbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do sbas=1,nBas
-     do qbas=1,nBas
-      do lbas=1,nBas
-       do mbas=1,nBas
-        Bisql(ibas,sbas,qbas,lbas)=Bisql(ibas,sbas,qbas,lbas)+G_minus_itau(mbas,sbas)*Aimql(ibas,mbas,qbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do sbas=1,nBas
-     do pbas=1,nBas
-      do lbas=1,nBas
-       do qbas=1,nBas
-        Cispl(ibas,sbas,pbas,lbas)=Cispl(ibas,sbas,pbas,lbas)+G_plus_itau(pbas,qbas)*Bisql(ibas,sbas,qbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do jbas=1,nBas
-     do sbas=1,nBas
-      do pbas=1,nBas
-       do lbas=1,nBas
-        Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
+   call Sigma_c_GF2B_he_prime(nBas,Aimql,Bisql,Cispl,G_minus_itau,G_minus_itau,G_plus_itau,ERI_AO,Sigma_c_minus)   ! Borrowed from Bogoliubov he block
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
