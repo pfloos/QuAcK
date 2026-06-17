@@ -555,5 +555,149 @@ subroutine Sigma_c_GF2B_ee_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI
 
 end subroutine 
 
+subroutine Sigma_c_GF2B_hh_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c)
 
+! Restricted scGF2B hh prime prime
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+  integer,intent(in)            :: nBas
+
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+
+  complex*16,intent(in)         :: G_ao1(nBas,nBas)
+  complex*16,intent(in)         :: G_ao2(nBas,nBas)
+  complex*16,intent(in)         :: G_ao3(nBas,nBas)
+
+! Local variables
+  integer                       :: abas,bbas,cbas,dbas,gbas,ebas,fbas,hbas
+
+! Output variables
+  complex*16,intent(inout)      :: Sigma_c(nBas,nBas)
+  complex*16,intent(inout)      :: Ainter(nBas,nBas,nBas,nBas)
+  complex*16,intent(inout)      :: Binter(nBas,nBas,nBas,nBas)
+  complex*16,intent(inout)      :: Cinter(nBas,nBas,nBas,nBas)
+
+  ! Sigma_c_ab = \sum_cdefgh Gcd Gfg Ghe v_aecf (2 v_bhgd - v_hbdg )
+  do abas=1,nBas
+   do ebas=1,nBas
+    do cbas=1,nBas
+     do fbas=1,nBas
+      do dbas=1,nBas
+       Ainter(abas,ebas,dbas,fbas)=Ainter(abas,ebas,dbas,fbas)+G_ao1(cbas,dbas)*ERI_AO(abas,ebas,cbas,fbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do abas=1,nBas
+   do ebas=1,nBas
+    do dbas=1,nBas
+     do fbas=1,nBas
+      do gbas=1,nBas
+       Binter(abas,ebas,dbas,gbas)=Binter(abas,ebas,dbas,gbas)+G_ao2(fbas,gbas)*Ainter(abas,ebas,dbas,fbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do abas=1,nBas
+   do ebas=1,nBas
+    do dbas=1,nBas
+     do gbas=1,nBas
+      do hbas=1,nBas
+       Cinter(abas,hbas,dbas,gbas)=Cinter(abas,hbas,dbas,gbas)+G_ao3(hbas,ebas)*Binter(abas,ebas,dbas,gbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do abas=1,nBas
+   do bbas=1,nBas
+    do hbas=1,nBas
+     do dbas=1,nBas
+      do gbas=1,nBas
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(abas,hbas,dbas,gbas)*(2d0*ERI_AO(bbas,hbas,gbas,dbas)-ERI_AO(hbas,bbas,dbas,gbas))
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+
+end subroutine
+
+subroutine Sigma_c_GF2B_ee_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c)
+
+! Restricted scGF2B ee prime prime
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+  integer,intent(in)            :: nBas
+
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+
+  complex*16,intent(in)         :: G_ao1(nBas,nBas)
+  complex*16,intent(in)         :: G_ao2(nBas,nBas)
+  complex*16,intent(in)         :: G_ao3(nBas,nBas)
+
+! Local variables
+  integer                       :: abas,bbas,cbas,dbas,gbas,ebas,fbas,hbas
+
+! Output variables
+  complex*16,intent(inout)      :: Sigma_c(nBas,nBas)
+  complex*16,intent(inout)      :: Ainter(nBas,nBas,nBas,nBas)
+  complex*16,intent(inout)      :: Binter(nBas,nBas,nBas,nBas)
+  complex*16,intent(inout)      :: Cinter(nBas,nBas,nBas,nBas)
+
+  ! Sigma_c_ab = \sum_cdefgh Gcd Geh Ggf v_cfae (2 v_dgbh - v_dghb )
+  do cbas=1,nBas
+   do fbas=1,nBas
+    do abas=1,nBas
+     do ebas=1,nBas
+      do dbas=1,nBas
+       Ainter(dbas,fbas,abas,ebas)=Ainter(dbas,fbas,abas,ebas)+G_ao1(cbas,dbas)*ERI_AO(cbas,fbas,abas,ebas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do dbas=1,nBas
+   do fbas=1,nBas
+    do abas=1,nBas
+     do ebas=1,nBas
+      do hbas=1,nBas
+       Binter(dbas,fbas,abas,hbas)=Binter(dbas,fbas,abas,hbas)+G_ao2(ebas,hbas)*Ainter(dbas,fbas,abas,ebas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do dbas=1,nBas
+   do fbas=1,nBas
+    do abas=1,nBas
+     do hbas=1,nBas
+      do gbas=1,nBas
+       Cinter(dbas,gbas,abas,hbas)=Cinter(dbas,gbas,abas,hbas)+G_ao3(gbas,fbas)*Binter(dbas,fbas,abas,hbas)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  do abas=1,nBas
+   do bbas=1,nBas
+    do dbas=1,nBas
+     do gbas=1,nBas
+      do hbas=1,nBas
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(dbas,gbas,abas,hbas)*(2d0*ERI_AO(dbas,gbas,bbas,hbas)-ERI_AO(dbas,gbas,hbas,bbas))
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+
+end subroutine
 
