@@ -39,7 +39,7 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
   logical                       :: read_HFB_chkp
 
   integer                       :: ifreq,itau
-  integer                       :: ibas,jbas,kbas,lbas,mbas,obas,pbas,qbas
+  integer                       :: ibas,jbas,kbas,lbas,obas,qbas
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: iter,iter_hfb
   integer                       :: verbose
@@ -67,7 +67,7 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
-  double precision              :: EcGM,EcdMP2,Ehfbl,Ecore,Eh,Ex,Epair
+  double precision              :: EcGM,Ehfbl,Ecore,Eh,Ex,Epair
   double precision              :: trace_1_rdm
   double precision,external     :: trace_matrix
   double precision              :: start_scGF2Bitauiw,end_scGF2Bitauiw,t_scGF2Bitauiw
@@ -110,6 +110,9 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
   complex*16,allocatable        :: Mat_gorkov_tmp2(:,:)
   complex*16,allocatable        :: G_itau_extrap(:)
   complex*16,allocatable        :: err_current(:)
+  complex*16,allocatable        :: G_ao1(:,:)
+  complex*16,allocatable        :: G_ao2(:,:)
+  complex*16,allocatable        :: G_ao3(:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
   complex*16,allocatable        :: G_ao_itau_old(:,:,:)
   complex*16,allocatable        :: G_ao_itau_hfb(:,:,:)
@@ -121,6 +124,9 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
   complex*16,allocatable        :: Sigma_c_hh(:,:,:)
   complex*16,allocatable        :: Sigma_c_ee(:,:,:)
   complex*16,allocatable        :: Sigma_c_eh(:,:,:)
+  complex*16,allocatable        :: Ainter(:,:,:,:)
+  complex*16,allocatable        :: Binter(:,:,:,:)
+  complex*16,allocatable        :: Cinter(:,:,:,:)
 
 ! Output variables
   integer,intent(inout)         :: nfreqs
@@ -196,9 +202,12 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
  allocate(G_ao_itau_hfb(ntimes_twice,nBas_twice,nBas_twice))
  allocate(G_ao_itau(ntimes_twice,nBas_twice,nBas_twice))
  allocate(G_ao_itau_old(ntimes_twice,nBas_twice,nBas_twice))
+ allocate(G_ao1(nBas,nBas))
+ allocate(G_ao2(nBas,nBas))
+ allocate(G_ao3(nBas,nBas))
  allocate(Sigma_c_w_ao(nfreqs,nBas_twice,nBas_twice))
- allocate(Sigma_c_plus(nBas_twice,nBas_twice));  Sigma_c_plus=czero;
- allocate(Sigma_c_minus(nBas_twice,nBas_twice)); Sigma_c_minus=czero;
+ allocate(Sigma_c_plus(nBas_twice,nBas_twice)) 
+ allocate(Sigma_c_minus(nBas_twice,nBas_twice)) 
  allocate(Sigma_c_c(nBas_twice,nBas_twice))      
  allocate(Sigma_c_s(nBas_twice,nBas_twice))
  allocate(tweight(ntimes),tcoord(ntimes))
@@ -207,6 +216,9 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
  allocate(cosw2t_weight(ntimes,nfreqs))
  allocate(sinw2t_weight(ntimes,nfreqs))
  allocate(Mat1(nOrb,nOrb),Mat2(nOrb,nOrb))
+ allocate(Ainter(nBas,nBas,nBas,nBas))
+ allocate(Binter(nBas,nBas,nBas,nBas))
+ allocate(Cinter(nBas,nBas,nBas,nBas))
  allocate(err_currentR(1))
  allocate(err_diisR(1,1))
  allocate(R_ao_extrap(1))
@@ -376,12 +388,109 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
  iter=0
  iter_hfb=0
  do
-  iter=iter+1 
-
-  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024) ]
-  EcGM=0d0;EcGM_itau=0d0;
+  iter=iter+1
+ 
+  ! Build Sigma_c(i w) [Eqs. 12-18 in PRB, 109, 255101 (2024)]
+  ! and compute Galitskii-Migdal Ec energy using the time grid
+  EcGM_itau=czero
   Sigma_c_w_ao=czero
   do itau=1,ntimes
+   Sigma_c_plus=czero
+   Sigma_c_minus=czero
+
+   ! G(i tau) G(i tau) G(-i tau) -> Sigma_c(i tau)
+    ! Sigma_he_2prime
+    G_ao1(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+    G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+    G_ao3(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GF2B_he_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_plus(1:nBas,1:nBas)) 
+   ! Sigma_he_2primeprime
+   G_ao1(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+   G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
+   G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+    ! Sigma_eh_2prime
+    G_ao1(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
+    G_ao2(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
+    G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GF2B_he_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_plus(nBas+1:nBas_twice,nBas+1:nBas_twice)) ! Valid for real orbitals 
+   ! Sigma_eh_2primeprime
+   G_ao1(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
+   G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
+   G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+   ! Sigma_hh_2prime
+   G_ao1(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
+   G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+   G_ao3(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+   ! Sigma_hh_2primeprime
+   G_ao1(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
+   G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
+   G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+   ! Sigma_ee_2prime
+   G_ao1(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nbas)  ! ee   itau
+   G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+   G_ao3(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+   ! Sigma_ee_2primeprime
+   G_ao1(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
+   G_ao2(:,:) = G_ao_itau(2*itau-1,           1:nBas,nBas+1:nBas_twice)  ! hh   itau
+   G_ao3(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+
+   ! G(-i tau) G(-i tau) G(i tau) -> Sigma_c(-i tau)  
+    ! Sigma_he_2prime
+    G_ao1(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+    G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+    G_ao3(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GF2B_he_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_minus(1:nBas,1:nBas)) 
+   ! Sigma_he_2primeprime
+   G_ao1(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+   G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
+   G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+    ! Sigma_eh_2prime
+    G_ao1(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
+    G_ao2(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
+    G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GF2B_he_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_minus(nBas+1:nBas_twice,nBas+1:nBas_twice)) ! Valid for real orbitals 
+   ! Sigma_eh_2primeprime
+   G_ao1(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,nBas+1:nBas_twice)  ! eh  -itau
+   G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
+   G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+   ! Sigma_hh_2prime
+   G_ao1(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
+   G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+   G_ao3(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+   ! Sigma_hh_2primeprime
+   G_ao1(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
+   G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
+   G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+   ! Sigma_ee_2prime
+   G_ao1(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nbas)  ! ee  -itau
+   G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,           1:nBas)  ! he  -itau
+   G_ao3(:,:) = G_ao_itau(2*itau-1,           1:nBas,           1:nBas)  ! he   itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+   ! Sigma_ee_2primeprime
+   G_ao1(:,:) = G_ao_itau(2*itau  ,nBas+1:nBas_twice,           1:nBas)  ! ee  -itau
+   G_ao2(:,:) = G_ao_itau(2*itau  ,           1:nBas,nBas+1:nBas_twice)  ! hh  -itau
+   G_ao3(:,:) = G_ao_itau(2*itau-1,nBas+1:nBas_twice,           1:nBas)  ! ee   itau
+   Ainter=czero;Binter=czero;Cinter=czero;
+
+   ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
+   Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
+   Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
+
+
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
@@ -645,6 +754,12 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
  deallocate(G_ao_itau_hfb)
  deallocate(G_ao_itau)
  deallocate(G_ao_itau_old)
+ deallocate(G_ao1)
+ deallocate(G_ao2)
+ deallocate(G_ao3)
+ deallocate(Ainter)
+ deallocate(Binter)
+ deallocate(Cinter)
  deallocate(Sigma_c_w_ao)
  deallocate(Sigma_c_plus)
  deallocate(Sigma_c_minus)
