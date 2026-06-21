@@ -707,19 +707,21 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
  write(*,'(A50)') '     scGF2B calculation completed      '
  write(*,'(A50)') '---------------------------------------'
  write(*,*)
- write(*,'(a,f15.8,a,i5,a)') ' Trace scGF2B    ',trace_1_rdm,' after ',iter,' global iterations '
- write(*,'(a,f15.8)')        ' Change of R     ',diff_Rao
- write(*,'(a,f15.8)')        ' Chem. Pot.      ',chem_pot
- write(*,'(a,f15.8)')        ' N anomalus      ',N_anom
- write(*,'(a,f15.8)')        ' Enuc            ',ENuc
- write(*,'(a,f15.8)')        ' Ehcore          ',Ecore
- write(*,'(a,f15.8)')        ' Hartree         ',Eh
- write(*,'(a,f15.8)')        ' Exchange        ',Ex
- write(*,'(a,f15.8)')        ' Epairing        ',Epair
- write(*,'(a,f15.8)')        ' Ehfbl           ',Ehfbl
- write(*,'(a,f15.8)')        ' EcGM(SG,i tau)  ',EcGM
- write(*,'(a,f15.8)')        ' Eelec           ',Ehfbl+EcGM
- write(*,'(a,f15.8)')        ' scGF2B Energy   ',Ehfbl+EcGM+ENuc
+ write(*,'(a,f15.8,a,i5,a)') ' Trace scGF2B   ',trace_1_rdm,' after ',iter,' global iterations '
+ write(*,'(a,f15.8)')        ' Change of R    ',diff_Rao
+ write(*,'(a,f15.8)')        ' Chem. Pot.     ',chem_pot
+ write(*,'(a,f15.8)')        ' N anomalus     ',N_anom
+ write(*,'(a,f15.8)')        ' Enuc           ',ENuc
+ write(*,'(a,f15.8)')        ' Ehcore         ',Ecore
+ write(*,'(a,f15.8)')        ' Hartree        ',Eh
+ write(*,'(a,f15.8)')        ' Exchange       ',Ex
+ write(*,'(a,f15.8)')        ' Epairing       ',Epair
+ write(*,'(a,f15.8)')        ' Ehfbl          ',Ehfbl
+ write(*,'(a,f15.8)')        ' EcGM           ',EcGM
+ write(*,'(a,f15.8)')        ' Eelec          ',Ehfbl+EcGM
+ write(*,'(a,f15.8)')        ' scGF2B Energy  ',Ehfbl+EcGM+ENuc
+ write(*,*)
+ write(*,'(a,f15.8)')        ' EcPT2          ',EcGM/2d0
  write(*,*)
  write(*,*) ' Final occupation numbers'
  do ibas=1,nOrb
