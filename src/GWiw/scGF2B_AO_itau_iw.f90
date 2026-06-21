@@ -498,6 +498,8 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
     Ainter=czero;Binter=czero;Cinter=czero;
     call Sigma_c_GF2B_ee_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI_AO,Sigma_c_minus(nBas+1:nBas_twice,1:nBas))
 
+   call Sigma_c_GF2B_brut(nBas,nBas_twice,G_ao_itau(2*itau-1,:,:),G_ao_itau(2*itau,:,:),ERI_AO,Sigma_c_plus,Sigma_c_minus) 
+
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)

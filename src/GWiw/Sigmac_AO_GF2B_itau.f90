@@ -701,3 +701,31 @@ subroutine Sigma_c_GF2B_ee_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao
 
 end subroutine
 
+subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,Sigma_c_minus) 
+
+! Restricted scGF2B all block M^8
+
+  implicit none
+  include 'parameters.h'
+
+! Input variables
+  integer,intent(in)            :: nBas
+  integer,intent(in)            :: nBas_twice
+
+  double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
+
+  complex*16,intent(in)         :: G_plus(nBas_twice,nBas_twice)
+  complex*16,intent(in)         :: G_minus(nBas_twice,nBas_twice)
+
+! Local variables
+  integer                       :: abas,bbas,cbas,dbas,gbas,ebas,fbas,hbas
+
+! Output variables
+  complex*16,intent(inout)      :: Sigma_c_plus(nBas_twice,nBas_twice)
+  complex*16,intent(inout)      :: Sigma_c_minus(nBas_twice,nBas_twice)
+
+
+
+
+end subroutine
+
