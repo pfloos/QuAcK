@@ -720,12 +720,152 @@ subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,
 ! Local variables
   integer                       :: abas,bbas,cbas,dbas,gbas,ebas,fbas,hbas
 
+  complex*16                    :: Integ_val
+  complex*16,allocatable        :: G_he_plus(:,:)
+  complex*16,allocatable        :: G_hh_plus(:,:)
+  complex*16,allocatable        :: G_ee_plus(:,:)
+  complex*16,allocatable        :: G_eh_plus(:,:)
+  complex*16,allocatable        :: G_he_minus(:,:)
+  complex*16,allocatable        :: G_hh_minus(:,:)
+  complex*16,allocatable        :: G_ee_minus(:,:)
+  complex*16,allocatable        :: G_eh_minus(:,:)
+  complex*16,allocatable        :: Sigma_he_plus(:,:)
+  complex*16,allocatable        :: Sigma_hh_plus(:,:)
+  complex*16,allocatable        :: Sigma_ee_plus(:,:)
+  complex*16,allocatable        :: Sigma_eh_plus(:,:)
+  complex*16,allocatable        :: Sigma_he_minus(:,:)
+  complex*16,allocatable        :: Sigma_hh_minus(:,:)
+  complex*16,allocatable        :: Sigma_ee_minus(:,:)
+  complex*16,allocatable        :: Sigma_eh_minus(:,:)
+
 ! Output variables
   complex*16,intent(inout)      :: Sigma_c_plus(nBas_twice,nBas_twice)
   complex*16,intent(inout)      :: Sigma_c_minus(nBas_twice,nBas_twice)
 
+  ! Allocate arrays
 
+  allocate(G_he_plus(nBas,nBas))
+  allocate(G_hh_plus(nBas,nBas))
+  allocate(G_ee_plus(nBas,nBas))
+  allocate(G_eh_plus(nBas,nBas))
+  allocate(G_he_minus(nBas,nBas))
+  allocate(G_hh_minus(nBas,nBas))
+  allocate(G_ee_minus(nBas,nBas))
+  allocate(G_eh_minus(nBas,nBas))
+  allocate(Sigma_he_plus(nBas,nBas)) 
+  allocate(Sigma_hh_plus(nBas,nBas))
+  allocate(Sigma_ee_plus(nBas,nBas))
+  allocate(Sigma_eh_plus(nBas,nBas))
+  allocate(Sigma_he_minus(nBas,nBas))
+  allocate(Sigma_hh_minus(nBas,nBas))
+  allocate(Sigma_ee_minus(nBas,nBas))
+  allocate(Sigma_eh_minus(nBas,nBas))
 
+  ! Initialize 
+  
+  G_he_plus(1:nBas,1:nBas)=G_plus(           1:nBas,           1:nBas)
+  G_hh_plus(1:nBas,1:nBas)=G_plus(           1:nBas,nBas+1:nBas_twice)    
+  G_ee_plus(1:nBas,1:nBas)=G_plus(nBas+1:nBas_twice,           1:nBas)   
+  G_eh_plus(1:nBas,1:nBas)=G_plus(nBas+1:nBas_twice,nBas+1:nBas_twice)  
+  G_he_minus(1:nBas,1:nBas)=G_minus(           1:nBas,           1:nBas)
+  G_hh_minus(1:nBas,1:nBas)=G_minus(           1:nBas,nBas+1:nBas_twice)    
+  G_ee_minus(1:nBas,1:nBas)=G_minus(nBas+1:nBas_twice,           1:nBas)   
+  G_eh_minus(1:nBas,1:nBas)=G_minus(nBas+1:nBas_twice,nBas+1:nBas_twice)  
+  Sigma_he_plus=czero
+  Sigma_hh_plus=czero
+  Sigma_ee_plus=czero
+  Sigma_eh_plus=czero
+  Sigma_he_minus=czero
+  Sigma_hh_minus=czero
+  Sigma_ee_minus=czero
+  Sigma_eh_minus=czero
+
+  ! M^8 loop
+  write(*,*)
+  write(*,*) 'Computing Bog. Sigma_c (M^8)'
+  write(*,*)
+  do abas=1,nBas
+   do bbas=1,nBas
+    do cbas=1,nBas
+     do dbas=1,nBas
+      do ebas=1,nBas
+       do fbas=1,nBas
+        do gbas=1,nBas
+         do hbas=1,nBas
+           ! he 2'
+           Integ_val=ERI_AO(abas,ebas,cbas,fbas)*(2d0*ERI_AO(dbas,gbas,bbas,hbas)-ERI_AO(dbas,gbas,hbas,bbas))
+           Sigma_he_plus(abas,bbas) = Sigma_he_plus(abas,bbas)+Integ_val*G_he_plus(cbas,dbas) *G_he_plus(fbas,gbas) *G_he_minus(hbas,ebas)            
+           Sigma_he_minus(abas,bbas)=Sigma_he_minus(abas,bbas)+Integ_val*G_he_minus(cbas,dbas)*G_he_minus(fbas,gbas)*G_he_plus(hbas,ebas)            
+           ! he 2''
+           Integ_val=ERI_AO(abas,ebas,cbas,fbas)*(ERI_AO(dbas,gbas,hbas,bbas)-2d0*ERI_AO(dbas,gbas,bbas,hbas)) &
+                    +ERI_AO(abas,ebas,fbas,cbas)*(ERI_AO(dbas,gbas,bbas,hbas)-ERI_AO(dbas,gbas,hbas,bbas))
+           Sigma_he_plus(abas,bbas) = Sigma_he_plus(abas,bbas)+Integ_val*G_he_plus(cbas,dbas) *G_hh_plus(fbas,hbas) *G_ee_minus(gbas,ebas)            
+           Sigma_he_minus(abas,bbas)=Sigma_he_minus(abas,bbas)+Integ_val*G_he_minus(cbas,dbas)*G_hh_minus(fbas,hbas)*G_ee_plus(gbas,ebas) 
+           ! eh 2'
+           Integ_val=ERI_AO(cbas,fbas,abas,ebas)*(2d0*ERI_AO(bbas,hbas,dbas,gbas)-ERI_AO(bbas,hbas,gbas,dbas))
+           Sigma_eh_plus(abas,bbas) = Sigma_eh_plus(abas,bbas)+Integ_val*G_eh_plus(cbas,dbas) *G_eh_plus(fbas,gbas) *G_eh_minus(hbas,ebas)            
+           Sigma_eh_minus(abas,bbas)=Sigma_eh_minus(abas,bbas)+Integ_val*G_eh_minus(cbas,dbas)*G_eh_minus(fbas,gbas)*G_eh_plus(hbas,ebas)            
+           ! eh 2''
+           Integ_val=ERI_AO(cbas,fbas,abas,ebas)*(ERI_AO(bbas,hbas,gbas,dbas)-2d0*ERI_AO(bbas,hbas,dbas,gbas)) &
+                    +ERI_AO(cbas,fbas,ebas,abas)*(ERI_AO(bbas,hbas,dbas,gbas)-ERI_AO(bbas,hbas,gbas,dbas))
+           Sigma_eh_plus(abas,bbas) = Sigma_eh_plus(abas,bbas)+Integ_val*G_eh_plus(cbas,dbas) *G_hh_plus(ebas,gbas) *G_ee_minus(hbas,fbas)            
+           Sigma_eh_minus(abas,bbas)=Sigma_eh_minus(abas,bbas)+Integ_val*G_eh_minus(cbas,dbas)*G_hh_minus(ebas,gbas)*G_ee_plus(hbas,fbas) 
+           ! hh 2'
+           Integ_val=ERI_AO(abas,ebas,cbas,fbas)*(ERI_AO(hbas,bbas,dbas,gbas)-2d0*ERI_AO(hbas,bbas,gbas,dbas)) &
+                    +ERI_AO(abas,ebas,fbas,cbas)*(ERI_AO(hbas,bbas,gbas,dbas)-ERI_AO(hbas,bbas,dbas,gbas))
+           Sigma_hh_plus(abas,bbas) = Sigma_hh_plus(abas,bbas)+Integ_val*G_hh_plus(cbas,dbas) *G_he_plus(fbas,hbas) *G_he_minus(gbas,ebas)            
+           Sigma_hh_minus(abas,bbas)=Sigma_hh_minus(abas,bbas)+Integ_val*G_hh_minus(cbas,dbas)*G_he_minus(fbas,hbas)*G_he_plus(gbas,ebas) 
+           ! hh 2''
+           Integ_val=ERI_AO(abas,ebas,cbas,fbas)*(2d0*ERI_AO(hbas,bbas,gbas,dbas)-ERI_AO(hbas,bbas,dbas,gbas))
+           Sigma_hh_plus(abas,bbas) = Sigma_hh_plus(abas,bbas)+Integ_val*G_hh_plus(cbas,dbas) *G_hh_plus(fbas,gbas) *G_ee_minus(hbas,ebas)            
+           Sigma_hh_minus(abas,bbas)=Sigma_hh_minus(abas,bbas)+Integ_val*G_hh_minus(cbas,dbas)*G_hh_minus(fbas,gbas)*G_ee_plus(hbas,ebas)            
+           ! ee 2'
+           Integ_val=ERI_AO(cbas,fbas,abas,ebas)*(ERI_AO(gbas,dbas,bbas,hbas)-2d0*ERI_AO(gbas,dbas,hbas,bbas)) &
+                    +ERI_AO(cbas,fbas,ebas,abas)*(ERI_AO(gbas,dbas,hbas,bbas)-ERI_AO(gbas,dbas,bbas,hbas))
+           Sigma_ee_plus(abas,bbas) = Sigma_ee_plus(abas,bbas)+Integ_val*G_ee_plus(cbas,dbas) *G_he_plus(ebas,gbas) *G_he_minus(hbas,fbas)            
+           Sigma_ee_minus(abas,bbas)=Sigma_ee_minus(abas,bbas)+Integ_val*G_ee_minus(cbas,dbas)*G_he_minus(ebas,gbas)*G_he_plus(hbas,fbas) 
+           ! ee 2''
+           Integ_val=ERI_AO(cbas,fbas,abas,ebas)*(2d0*ERI_AO(gbas,dbas,hbas,bbas)-ERI_AO(gbas,dbas,bbas,hbas))
+           Sigma_ee_plus(abas,bbas) = Sigma_ee_plus(abas,bbas)+Integ_val*G_ee_plus(cbas,dbas) *G_hh_plus(ebas,hbas) *G_ee_minus(gbas,fbas)            
+           Sigma_ee_minus(abas,bbas)=Sigma_ee_minus(abas,bbas)+Integ_val*G_ee_minus(cbas,dbas)*G_hh_minus(ebas,hbas)*G_ee_plus(gbas,fbas)            
+         enddo
+        enddo
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+
+  ! Set Sigma_c Gorkov
+
+  Sigma_c_plus(           1:nBas,           1:nBas)=Sigma_he_plus(1:nBas,1:nBas)
+  Sigma_c_plus(           1:nBas,nBas+1:nBas_twice)=Sigma_hh_plus(1:nBas,1:nBas)    
+  Sigma_c_plus(nBas+1:nBas_twice,           1:nBas)=Sigma_ee_plus(1:nBas,1:nBas)   
+  Sigma_c_plus(nBas+1:nBas_twice,nBas+1:nBas_twice)=Sigma_eh_plus(1:nBas,1:nBas)  
+  Sigma_c_minus(           1:nBas,           1:nBas)=Sigma_he_minus(1:nBas,1:nBas)
+  Sigma_c_minus(           1:nBas,nBas+1:nBas_twice)=Sigma_hh_minus(1:nBas,1:nBas)    
+  Sigma_c_minus(nBas+1:nBas_twice,           1:nBas)=Sigma_ee_minus(1:nBas,1:nBas)   
+  Sigma_c_minus(nBas+1:nBas_twice,nBas+1:nBas_twice)=Sigma_eh_minus(1:nBas,1:nBas)  
+
+  ! Deallocate arrays 
+
+  deallocate(G_he_plus)
+  deallocate(G_hh_plus)
+  deallocate(G_ee_plus)
+  deallocate(G_eh_plus)
+  deallocate(G_he_minus)
+  deallocate(G_hh_minus)
+  deallocate(G_ee_minus)
+  deallocate(G_eh_minus)
+  deallocate(Sigma_he_plus) 
+  deallocate(Sigma_hh_plus)
+  deallocate(Sigma_ee_plus)
+  deallocate(Sigma_eh_plus)
+  deallocate(Sigma_he_minus)
+  deallocate(Sigma_hh_minus)
+  deallocate(Sigma_ee_minus)
+  deallocate(Sigma_eh_minus)
 
 end subroutine
 
