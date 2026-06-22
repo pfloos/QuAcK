@@ -135,7 +135,7 @@ subroutine Sigma_c_GF2B_he_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao
     do cbas=1,nBas
      do ebas=1,nBas
       do fbas=1,nBas
-       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(cbas,ebas,bbas,fbas)*(-2d0*ERI_AO(abas,ebas,cbas,fbas)+ERI_AO(abas,ebas,fbas,cbas))
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)-Cinter(cbas,ebas,bbas,fbas)*(-2d0*ERI_AO(abas,ebas,cbas,fbas)+ERI_AO(abas,ebas,fbas,cbas))
       enddo
      enddo
     enddo
@@ -183,7 +183,7 @@ subroutine Sigma_c_GF2B_he_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao
     do cbas=1,nBas
      do ebas=1,nBas
       do fbas=1,nBas
-       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(cbas,ebas,bbas,fbas)*(ERI_AO(abas,ebas,cbas,fbas)-ERI_AO(abas,ebas,fbas,cbas))
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)-Cinter(cbas,ebas,bbas,fbas)*(ERI_AO(abas,ebas,cbas,fbas)-ERI_AO(abas,ebas,fbas,cbas))
       enddo
      enddo
     enddo
@@ -256,7 +256,7 @@ subroutine Sigma_c_GF2B_eh_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao
     do fbas=1,nBas
      do cbas=1,nBas
       do ebas=1,nBas
-       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(bbas,fbas,cbas,ebas)*(-2d0*ERI_AO(cbas,fbas,abas,ebas)+ERI_AO(fbas,cbas,abas,ebas))
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)-Cinter(bbas,fbas,cbas,ebas)*(-2d0*ERI_AO(cbas,fbas,abas,ebas)+ERI_AO(fbas,cbas,abas,ebas))
       enddo
      enddo
     enddo
@@ -304,7 +304,7 @@ subroutine Sigma_c_GF2B_eh_primeprime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao
     do fbas=1,nBas
      do cbas=1,nBas
       do ebas=1,nBas
-       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(bbas,fbas,cbas,ebas)*(ERI_AO(cbas,fbas,abas,ebas)-ERI_AO(fbas,cbas,abas,ebas))
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)-Cinter(bbas,fbas,cbas,ebas)*(ERI_AO(cbas,fbas,abas,ebas)-ERI_AO(fbas,cbas,abas,ebas))
       enddo
      enddo
     enddo
@@ -377,7 +377,7 @@ subroutine Sigma_c_GF2B_hh_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI
     do fbas=1,nBas
      do cbas=1,nBas
       do ebas=1,nBas
-       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(fbas,bbas,ebas,cbas)*(-2d0*ERI_AO(abas,ebas,cbas,fbas)+ERI_AO(abas,ebas,fbas,cbas))
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)-Cinter(fbas,bbas,ebas,cbas)*(-2d0*ERI_AO(abas,ebas,cbas,fbas)+ERI_AO(abas,ebas,fbas,cbas))
       enddo
      enddo
     enddo
@@ -425,7 +425,7 @@ subroutine Sigma_c_GF2B_hh_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI
     do fbas=1,nBas
      do cbas=1,nBas
       do ebas=1,nBas
-       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(fbas,bbas,ebas,cbas)*(ERI_AO(abas,ebas,cbas,fbas)-ERI_AO(abas,ebas,fbas,cbas))
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)-Cinter(fbas,bbas,ebas,cbas)*(ERI_AO(abas,ebas,cbas,fbas)-ERI_AO(abas,ebas,fbas,cbas))
       enddo
      enddo
     enddo
@@ -498,7 +498,7 @@ subroutine Sigma_c_GF2B_ee_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI
     do fbas=1,nBas
      do cbas=1,nBas
       do ebas=1,nBas
-       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(ebas,cbas,fbas,bbas)*(-2d0*ERI_AO(cbas,fbas,abas,ebas)+ERI_AO(fbas,cbas,abas,ebas))
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)-Cinter(ebas,cbas,fbas,bbas)*(-2d0*ERI_AO(cbas,fbas,abas,ebas)+ERI_AO(fbas,cbas,abas,ebas))
       enddo
      enddo
     enddo
@@ -546,7 +546,7 @@ subroutine Sigma_c_GF2B_ee_prime(nBas,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,ERI
     do fbas=1,nBas
      do cbas=1,nBas
       do ebas=1,nBas
-       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)+Cinter(ebas,cbas,fbas,bbas)*(ERI_AO(cbas,fbas,abas,ebas)-ERI_AO(fbas,cbas,abas,ebas))
+       Sigma_c(abas,bbas) =Sigma_c(abas,bbas)-Cinter(ebas,cbas,fbas,bbas)*(ERI_AO(cbas,fbas,abas,ebas)-ERI_AO(fbas,cbas,abas,ebas))
       enddo
      enddo
     enddo
@@ -799,6 +799,7 @@ subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,
            ! he 2''
            Integ_val=ERI_AO(abas,ebas,cbas,fbas)*(ERI_AO(dbas,gbas,hbas,bbas)-2d0*ERI_AO(dbas,gbas,bbas,hbas)) &
                     +ERI_AO(abas,ebas,fbas,cbas)*(ERI_AO(dbas,gbas,bbas,hbas)-ERI_AO(dbas,gbas,hbas,bbas))
+           Integ_val=-Integ_val
            Sigma_he_plus(abas,bbas) = Sigma_he_plus(abas,bbas)+Integ_val*G_he_plus(cbas,dbas) *G_hh_plus(fbas,hbas) *G_ee_minus(gbas,ebas)            
            Sigma_he_minus(abas,bbas)=Sigma_he_minus(abas,bbas)+Integ_val*G_he_minus(cbas,dbas)*G_hh_minus(fbas,hbas)*G_ee_plus(gbas,ebas) 
            ! eh 2'
@@ -808,11 +809,13 @@ subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,
            ! eh 2''
            Integ_val=ERI_AO(cbas,fbas,abas,ebas)*(ERI_AO(bbas,hbas,gbas,dbas)-2d0*ERI_AO(bbas,hbas,dbas,gbas)) &
                     +ERI_AO(cbas,fbas,ebas,abas)*(ERI_AO(bbas,hbas,dbas,gbas)-ERI_AO(bbas,hbas,gbas,dbas))
+           Integ_val=-Integ_val
            Sigma_eh_plus(abas,bbas) = Sigma_eh_plus(abas,bbas)+Integ_val*G_eh_plus(cbas,dbas) *G_hh_plus(ebas,gbas) *G_ee_minus(hbas,fbas)            
            Sigma_eh_minus(abas,bbas)=Sigma_eh_minus(abas,bbas)+Integ_val*G_eh_minus(cbas,dbas)*G_hh_minus(ebas,gbas)*G_ee_plus(hbas,fbas) 
            ! hh 2'
            Integ_val=ERI_AO(abas,ebas,cbas,fbas)*(ERI_AO(hbas,bbas,dbas,gbas)-2d0*ERI_AO(hbas,bbas,gbas,dbas)) &
                     +ERI_AO(abas,ebas,fbas,cbas)*(ERI_AO(hbas,bbas,gbas,dbas)-ERI_AO(hbas,bbas,dbas,gbas))
+           Integ_val=-Integ_val
            Sigma_hh_plus(abas,bbas) = Sigma_hh_plus(abas,bbas)+Integ_val*G_hh_plus(cbas,dbas) *G_he_plus(fbas,hbas) *G_he_minus(gbas,ebas)            
            Sigma_hh_minus(abas,bbas)=Sigma_hh_minus(abas,bbas)+Integ_val*G_hh_minus(cbas,dbas)*G_he_minus(fbas,hbas)*G_he_plus(gbas,ebas) 
            ! hh 2''
@@ -822,6 +825,7 @@ subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,
            ! ee 2'
            Integ_val=ERI_AO(cbas,fbas,abas,ebas)*(ERI_AO(gbas,dbas,bbas,hbas)-2d0*ERI_AO(gbas,dbas,hbas,bbas)) &
                     +ERI_AO(cbas,fbas,ebas,abas)*(ERI_AO(gbas,dbas,hbas,bbas)-ERI_AO(gbas,dbas,bbas,hbas))
+           Integ_val=-Integ_val
            Sigma_ee_plus(abas,bbas) = Sigma_ee_plus(abas,bbas)+Integ_val*G_ee_plus(cbas,dbas) *G_he_plus(ebas,gbas) *G_he_minus(hbas,fbas)            
            Sigma_ee_minus(abas,bbas)=Sigma_ee_minus(abas,bbas)+Integ_val*G_ee_minus(cbas,dbas)*G_he_minus(ebas,gbas)*G_he_plus(hbas,fbas) 
            ! ee 2''
