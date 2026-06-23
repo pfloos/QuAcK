@@ -645,6 +645,7 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
   write(*,'(a,f15.8)')        ' EcGM         ',EcGM
   write(*,'(a,f15.8)')        ' Eelec        ',Ehfbl+EcGM
   write(*,'(a,f15.8)')        ' Etot         ',Ehfbl+EcGM+ENuc
+  write(*,'(a,f15.8)')        ' EcPT2        ',EcGM/2d0
   write(*,*)
 
   if(diff_Rao<=thrs_Rao) exit
