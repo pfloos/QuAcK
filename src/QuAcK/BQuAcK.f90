@@ -1,6 +1,7 @@
 subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGF2,doscGW,readFCIDUMP,nNuc,nBas,  &
                   nOrb,nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,doscGHF,thresh, &
                   level_shift,guess_type,TDA,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,       &
+                  maxSCF_GF,max_diis_GF,thresh_GF,restart_scGF2,verbose_scGF2,                                           &
                   chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
 
 ! Restricted branch of Bogoliubov QuAcK
@@ -15,6 +16,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   logical,intent(in)             :: readFCIDUMP
   logical,intent(in)             :: error_P
   logical,intent(in)             :: verbose_scGW
+  logical,intent(in)             :: verbose_scGF2
   logical,intent(in)             :: chem_pot_scG
   logical,intent(in)             :: TDA
                                  
@@ -29,6 +31,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   logical,intent(in)             :: doscGW
   logical,intent(in)             :: doscGHF
   logical,intent(in)             :: restart_scGW
+  logical,intent(in)             :: restart_scGF2
   logical,intent(in)             :: writeMOs
 
   logical,intent(in)             :: restart_hfb
@@ -57,6 +60,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   integer,intent(in)             :: guess_type
   double precision,intent(in)    :: thresh,level_shift
   double precision,intent(in)    :: thresh_GW
+  integer,intent(in)             :: maxSCF_GF,max_diis_GF
+  double precision,intent(in)    :: thresh_GF
 
 ! Local variables
 
@@ -271,7 +276,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
     enddo
    enddo
    no_fock=.false.
-   call scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GW,thresh_GW,max_diis_GW,dolinGW,restart_scGW,verbose_scGW, &
+   call scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GF,thresh_GF,max_diis_GF,restart_scGF2,verbose_scGF2,       &
                           chem_pot_scG,no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,  &
                           wcoord,wweight,U_QP,vMAT,ERI_AO)
    deallocate(vMAT)

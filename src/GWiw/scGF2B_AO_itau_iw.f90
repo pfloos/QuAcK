@@ -1,4 +1,4 @@
-subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinGF2,restart_scGF2B,verbose_scGF2B,chem_pot_scG, &
+subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,restart_scGF2B,verbose_scGF2B,chem_pot_scG, &
                             no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,   &
                             U_QP,vMAT,ERI_AO)
 
@@ -9,7 +9,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolin
 
 ! Input variables
  
-  logical,intent(in)            :: dolinGF2
   logical,intent(in)            :: no_h_hfb
   logical,intent(in)            :: restart_scGF2B
   logical,intent(in)            :: verbose_scGF2B
