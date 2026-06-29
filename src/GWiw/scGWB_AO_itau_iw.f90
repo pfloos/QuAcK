@@ -381,7 +381,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   inquire(file='read_HFB_scGWB', exist=file_exists)
   read_HFB_chkp=.false.
   if(file_exists) read_HFB_chkp=.true.
-  call read_scGWB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_hfb,G_ao_iw_hfb,G_ao_itau,G_ao_itau_hfb,read_HFB_chkp)
+  call read_scGXB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_hfb,G_ao_iw_hfb,G_ao_itau,G_ao_itau_hfb,read_HFB_chkp)
   R_ao_iter=R_ao
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  endif
@@ -814,7 +814,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,*)
 
  ! Write restart files
- call write_scGWB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
+ call write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
                          G_ao_iw_hfb,DeltaG_ao_iw)
 
  inquire(file='Print_Rao', exist=file_exists)

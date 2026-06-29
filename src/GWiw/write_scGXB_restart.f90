@@ -1,7 +1,7 @@
-subroutine write_scGWB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
+subroutine write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
                                G_ao_iw_hfb,DeltaG_ao_iw)
 
-! Read grids for scGWB
+! Read grids for scGXB
 
   implicit none
   include 'parameters.h'
