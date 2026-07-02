@@ -1,6 +1,6 @@
 subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,restart_scGF2B,verbose_scGF2B,chem_pot_scG, &
                             no_h_hfb,ENuc,Hc,S,X_in,P_in,Pan_in,cHFB,eQP_state,chem_pot,sigma,nfreqs,wcoord,wweight,   &
-                            U_QP,vMAT,ERI_AO)
+                            U_QP,ERI_AO)
 
 ! Restricted scGF2B
 
@@ -28,7 +28,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
   double precision,intent(in)   :: Pan_in(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
   double precision,intent(in)   :: X_in(nBas,nOrb)
-  double precision,intent(in)   :: vMAT(nBas*nBas,nBas*nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: U_QP(nOrb_twice,nOrb_twice)
 
@@ -94,7 +93,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
   double precision,allocatable  :: cost2w_weight(:,:)
   double precision,allocatable  :: cosw2t_weight(:,:)
   double precision,allocatable  :: sinw2t_weight(:,:)
-  double precision,allocatable  :: vMAT_mo(:,:)
   double precision,allocatable  :: ERI_MO(:,:,:,:)
 
   complex*16                    :: product
@@ -271,12 +269,12 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
    do kbas=1,nBas
     do lbas=1,nBas
      qbas=nBas+1+(lbas-1)
-     H_ao_hfb(ibas,jbas)=H_ao_hfb(ibas,jbas)+2d0*R_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
-                        -R_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
-     H_ao_hfb(ibas,obas)=H_ao_hfb(ibas,obas)+sigma*R_ao(kbas,qbas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
-     Ehfbl=Ehfbl+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
-          -R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)           &
-          +sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
+     H_ao_hfb(ibas,jbas)=H_ao_hfb(ibas,jbas)+2d0*R_ao(kbas,lbas)*ERI_AO(kbas,ibas,lbas,jbas)   &
+                        -R_ao(kbas,lbas)*ERI_AO(kbas,ibas,jbas,lbas) 
+     H_ao_hfb(ibas,obas)=H_ao_hfb(ibas,obas)+sigma*R_ao(kbas,qbas)*ERI_AO(kbas,lbas,ibas,jbas)  
+     Ehfbl=Ehfbl+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*ERI_AO(kbas,ibas,lbas,jbas)               &
+          -R_ao(kbas,lbas)*R_ao(ibas,jbas)*ERI_AO(kbas,ibas,jbas,lbas)                         &
+          +sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*ERI_AO(kbas,lbas,ibas,jbas)
     enddo
    enddo
   enddo
@@ -551,15 +549,15 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
       do kbas=1,nBas
        do lbas=1,nBas
         qbas=nBas+1+(lbas-1)
-        H_ao_hfb(ibas,jbas)=H_ao_hfb(ibas,jbas)+2d0*R_ao(kbas,lbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
-                           -R_ao(kbas,lbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)
-        H_ao_hfb(ibas,obas)=H_ao_hfb(ibas,obas)+sigma*R_ao(kbas,qbas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
-        Ehfbl=Ehfbl+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas) &
-             -R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas)           &
-             +sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
-        Eh=Eh+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(lbas-1)+(kbas-1)*nBas,1+(jbas-1)+(ibas-1)*nBas)
-        Ex=Ex-R_ao(kbas,lbas)*R_ao(ibas,jbas)*vMAT(1+(jbas-1)+(kbas-1)*nBas,1+(lbas-1)+(ibas-1)*nBas) 
-        Epair=Epair+sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*vMAT(1+(ibas-1)+(kbas-1)*nBas,1+(jbas-1)+(lbas-1)*nBas)
+        H_ao_hfb(ibas,jbas)=H_ao_hfb(ibas,jbas)+2d0*R_ao(kbas,lbas)*ERI_AO(kbas,ibas,lbas,jbas)   &
+                           -R_ao(kbas,lbas)*ERI_AO(kbas,ibas,jbas,lbas) 
+        H_ao_hfb(ibas,obas)=H_ao_hfb(ibas,obas)+sigma*R_ao(kbas,qbas)*ERI_AO(kbas,lbas,ibas,jbas) 
+        Ehfbl=Ehfbl+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*ERI_AO(kbas,ibas,lbas,jbas)               &
+             -R_ao(kbas,lbas)*R_ao(ibas,jbas)*ERI_AO(kbas,ibas,jbas,lbas)                         &
+            +sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*ERI_AO(kbas,lbas,ibas,jbas) 
+        Eh=Eh+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)*ERI_AO(kbas,ibas,lbas,jbas)  
+        Ex=Ex-R_ao(kbas,lbas)*R_ao(ibas,jbas)*ERI_AO(kbas,ibas,jbas,lbas) 
+        Epair=Epair+sigma*R_ao(kbas,qbas)*R_ao(ibas,obas)*ERI_AO(kbas,lbas,ibas,jbas) 
        enddo
       enddo
      enddo

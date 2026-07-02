@@ -1,5 +1,5 @@
 subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,verbose_scGF2,chem_pot_scG,no_fock, &
-                            ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
+                            ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,ERI_AO)
 
 ! Restricted scGF2
 
@@ -24,7 +24,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: P_in(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: vMAT(nBas*nBas,nBas*nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
 ! Local variables

@@ -265,21 +265,10 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
 
   ! scGF2 Bogoliubov
   if(doscGF2) then
-   allocate(vMAT(nBas*nBas,nBas*nBas))
-   do iorb=1,nBas
-    do jorb=1,nBas
-     do korb=1,nBas
-      do lorb=1,nBas
-       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
-      enddo
-     enddo
-    enddo
-   enddo
    no_fock=.false.
    call scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF_GF,thresh_GF,max_diis_GF,restart_scGF2,verbose_scGF2,       &
                           chem_pot_scG,no_fock,ENuc,Hc,S,X,pMAT,panomMAT,MOCoef,eQP_state,chem_pot,sigma,nfreqs,  &
-                          wcoord,wweight,U_QP,vMAT,ERI_AO)
-   deallocate(vMAT)
+                          wcoord,wweight,U_QP,ERI_AO)
   endif
 
   ! Compute EcRPAx for RHFB
