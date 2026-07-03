@@ -1,5 +1,5 @@
 ! MRM NOTE: If the call to RHF is modified, please also incorporate the changes to the call of RHF in the BQuAcK branch
-subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
+subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F)
 
 ! Perform restricted Hartree-Fock calculation
@@ -15,6 +15,7 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
+  double precision,intent(in)   :: mix 
   double precision,intent(in)   :: thresh
   double precision,intent(in)   :: level_shift
 
@@ -228,6 +229,8 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
 !   call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
 !              c(1,1), nBas, c(1,1), nBas,     &
 !              0.d0, P(1,1), nBas)
+    
+    if(nSCF == 1 .and. mix > 0d0) call RHF_mix_guess(nBas,nOrb,nO,mix,c)
 
     ! Dump results
     inquire(file='Print_Pao', exist=file_exists)
@@ -282,12 +285,15 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writ
   endif
 
 ! Write MOs
+  
 
   if(writeMOs) then
+    if(mix > 0d0) call RHF_mix_guess(nBas,nOrb,nO,mix,c)
     call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
     call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
     call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
     call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
+    if(mix > 0d0) call RHF_mix_guess(nBas,nOrb,nO,-mix,c)
   endif
 
 ! Testing zone
