@@ -91,7 +91,7 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,
 
   ! Small shift to avoid hard zeros in amplitudes
 
-  Om(:) = Om(:) !+ 1d-12
+  Om(:) = Om(:) + 1d-12
 
   if(print_W) call print_excitation_energies('phRPA@RHF','singlet',nS,Om)
 
@@ -137,7 +137,7 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,
      write(*,*) ' *** Quasiparticle energies obtained by root search not implemented *** '
      write(*,*)
 
-     ! call R_G3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
+     call R_psdG3W2_QP_graph(doSRG,eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,eQPlin,eHF,eQP,Z)
 
 
   end if
@@ -158,6 +158,8 @@ subroutine R_psdG3W2(dotest,TDA_W,singlet,triplet,linearize,eta,doSRG,flow,nBas,
 !--------------!
 
   call print_R_G3W2(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eQP,EcRPA,EcGM)
+
+  if(plot_self) call R_psdG3W2_plot_self_energy(nOrb,nC,nO,nV,nR,nS,eHF,eQP,Om,rho,ERI)
   
 ! Testing zone
 

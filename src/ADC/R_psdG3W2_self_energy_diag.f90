@@ -1,7 +1,6 @@
 subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,ERI,EcGM,SigC,Z)
 
 ! Alternative form of the G3W2 self-energy
-
   implicit none
   include 'parameters.h'
 
@@ -36,7 +35,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   double precision              :: num,num1,num2,num3
   double precision              :: dem,dem1,dem2,dem3
   double precision              :: reg,reg1,reg2,reg3
-  double precision              :: tmpA,tmpB,tmpBZ
+  logical                       :: do_psd = .false.
 
   double precision,allocatable  :: C1_2h1p(:,:)
   double precision,allocatable  :: C1_2p1h(:,:)
@@ -50,6 +49,8 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   double precision,allocatable  :: U2_2p1h(:)
   double precision,allocatable  :: U3_2h1p(:)
   double precision,allocatable  :: U3_2p1h(:)
+  double precision,allocatable  :: tmp_2h1p(:)
+  double precision,allocatable  :: tmp_2p1h(:)
 
   double precision,external     :: SRG_reg
   double precision,external     :: SRG_reg2
@@ -70,7 +71,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   SigC(:) = 0d0
   Z(:)   = 0d0
   EcGM = 0d0
-
+  
 ! Memory allocation
 
   allocate(C1_2h1p(n2h1p,n2h1p))
@@ -88,6 +89,9 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   allocate(U2_2p1h(n2p1h))
   allocate(U3_2h1p(n2h1p))
   allocate(U3_2p1h(n2p1h))
+    
+  allocate(tmp_2h1p(n2h1p))
+  allocate(tmp_2p1h(n2p1h))
   
 !---------------!
 ! Block C1_2h1p !
@@ -95,13 +99,15 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
   C1_2h1p(:,:) = 0d0
 
-  inu = 0
+  ! !$OMP PARALLEL DEFAULT(NONE)                                  &
+  ! !$OMP          PRIVATE(i, nu, j, mu, inu, jmu, num, dem, reg) &
+  ! !$OMP          SHARED(nO, nOrb, nR, nS, eHF, rho, Om, flow, C1_2h1p)
+  ! !$OMP DO COLLAPSE(2)
   do i=nC+1,nO
     do nu=1,nS
-      inu = inu + 1
+      inu = (i - nC - 1) * nS + nu
   
       ! First-order terms
- 
       jmu = 0
       do j=nC+1,nO
         do mu=1,nS
@@ -128,6 +134,8 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
     end do
   end do
+  ! !$OMP END DO
+  ! !$OMP END PARALLEL
  
 !---------------!
 ! Block C1_2p1h !
@@ -135,10 +143,13 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
 
   C1_2p1h(:,:) = 0d0
 
-  anu = 0
+  ! !$OMP PARALLEL DEFAULT(NONE)                                  &
+  ! !$OMP          PRIVATE(a, nu, b, mu, anu, bmu, num, dem, reg) &
+  ! !$OMP          SHARED(nO, nOrb, nR, nS, eHF, rho, Om, flow, C1_2p1h)
+  ! !$OMP DO COLLAPSE(2)
   do a=nO+1,nOrb-nR
     do nu=1,nS
-      anu = anu + 1
+      anu = (a - nO - 1) * nS + nu
  
       ! First-order terms
  
@@ -168,11 +179,17 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
   
     end do
   end do
+  ! !$OMP END DO
+  ! !$OMP END PARALLEL
   
 !-------------------------!
 ! Main loop over orbitals !
 !-------------------------!
 
+  !$OMP PARALLEL DEFAULT(NONE)                                  &
+  !$OMP          PRIVATE(p,w, i,j,k,a,b,c, nu, mu, inu,anu,jmu,bmu, num,num1,num2,num3, dem,dem1,dem2,dem3, reg,reg1,reg2,reg3, K_2p1h,K_2h1p, dK_2p1h,dK_2h1p, U1_2p1h,U2_2p1h,U3_2p1h, U1_2h1p,U2_2h1p,U3_2h1p) &
+  !$OMP          SHARED(nC, nO, nOrb, nR, nS, eHF, rho, Om, ERI, flow, SigC,Z, C1_2p1h,C1_2h1p, do_psd)
+  !$OMP DO COLLAPSE(1)
   do p=nC+1,nOrb-nR
 
     w = eHF(p)
@@ -257,7 +274,7 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
     ! Downfolding the 3p2h configurations
 
     do a=nO+1,nOrb-nR
-       do nu=1,nS
+       do nu=1,nS          
           do mu=1,nS
              
              do b=nO+1,nOrb-nR
@@ -430,10 +447,9 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
      U2_2p1h(:) = 0d0
      U3_2p1h(:) = 0d0
 
-     anu = 0
      do a=nO+1,nOrb-nR
         do nu=1,nS
-           anu = anu + 1
+           anu = (a - nO - 1) * nS + nu
 
            ! First-order terms
 
@@ -567,17 +583,17 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
              SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
              Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
              
-             SigC(p) = SigC(p) + U2_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
-             Z(p)    = Z(p)    + U2_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
+             SigC(p) = SigC(p) + 2d0*U2_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
+             Z(p)    = Z(p)    + 2d0*U2_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
              
-             SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U2_2h1p(inu)
-             Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U2_2h1p(inu)
+             ! SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U2_2h1p(inu)
+             ! Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U2_2h1p(inu)
              
-             SigC(p) = SigC(p) + U3_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
-             Z(p)    = Z(p)    + U3_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
+             SigC(p) = SigC(p) + 2d0*U3_2h1p(inu) *  K_2h1p(inu) * U1_2h1p(inu)
+             Z(p)    = Z(p)    + 2d0*U3_2h1p(inu) * dK_2h1p(inu) * U1_2h1p(inu)
              
-             SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U3_2h1p(inu)
-             Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U3_2h1p(inu)
+             ! SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * U3_2h1p(inu)
+             ! Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * U3_2h1p(inu)
 
              jmu = 0
              do j=nC+1,nO
@@ -585,8 +601,8 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
                    jmu = jmu + 1
              
                    SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
-                   Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
+                   Z(p)    = Z(p)    + 2d0*U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
+                   ! Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
 
                 end do
              end do
@@ -598,40 +614,133 @@ subroutine R_psdG3W2_self_energy_diag(eta,flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,r
     do a=nO+1,nOrb-nR
        do nu=1,nS
           anu = anu + 1
-           
+          
           SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
           Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
-
-          SigC(p) = SigC(p) + U2_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
-          Z(p)    = Z(p)    + U2_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
           
-          SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U2_2p1h(anu)
-          Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U2_2p1h(anu)
+          SigC(p) = SigC(p) + 2d0*U2_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
+          Z(p)    = Z(p)    + 2d0*U2_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
           
-          SigC(p) = SigC(p) + U3_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
-          Z(p)    = Z(p)    + U3_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
+          ! SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U2_2p1h(anu)
+          ! Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U2_2p1h(anu)
           
-          SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U3_2p1h(anu)
-          Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U3_2p1h(anu)
-
+          SigC(p) = SigC(p) + 2d0*U3_2p1h(anu) *  K_2p1h(anu) * U1_2p1h(anu)
+          Z(p)    = Z(p)    + 2d0*U3_2p1h(anu) * dK_2p1h(anu) * U1_2p1h(anu)
+          
+          ! SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * U3_2p1h(anu)
+          ! Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * U3_2p1h(anu)
+          
           bmu = 0
           do b=nO+1,nOrb-nR
              do mu=1,nS
                 bmu = bmu + 1
                 
                 SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
-                Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
+                Z(p)    = Z(p)    + 2d0*U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
+                ! Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
                 
              end do
           end do
-             
+          
        end do
     end do
+    
+    
+    if (do_psd) then 
+       inu = 0
+       do i=nC+1,nO
+          do nu=1,nS
+             inu = inu + 1
+             
+             SigC(p) = SigC(p) + U2_2h1p(inu) *  K_2h1p(inu) * U2_2h1p(inu)
+             Z(p)    = Z(p)    + U2_2h1p(inu) * dK_2h1p(inu) * U2_2h1p(inu)
+             
+             SigC(p) = SigC(p) + U3_2h1p(inu) *  K_2h1p(inu) * U2_2h1p(inu)
+             Z(p)    = Z(p)    + U3_2h1p(inu) * dK_2h1p(inu) * U2_2h1p(inu)
+             
+             SigC(p) = SigC(p) + U2_2h1p(inu) *  K_2h1p(inu) * U3_2h1p(inu)
+             Z(p)    = Z(p)    + U2_2h1p(inu) * dK_2h1p(inu) * U3_2h1p(inu)
+             
+             SigC(p) = SigC(p) + U3_2h1p(inu) *  K_2h1p(inu) * U3_2h1p(inu)
+             Z(p)    = Z(p)    + U3_2h1p(inu) * dK_2h1p(inu) * U3_2h1p(inu)
+             
+             jmu = 0
+             do j=nC+1,nO
+                do mu=1,nS
+                   jmu = jmu + 1
+                   
+                   SigC(p) = SigC(p) + U2_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
+                   Z(p)    = Z(p)    + U2_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
+                   Z(p)    = Z(p)    + U2_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
 
+                   SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U2_2h1p(jmu)
+                   Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U2_2h1p(jmu)
+                   Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U2_2h1p(jmu)
+
+                   SigC(p) = SigC(p) + U3_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
+                   Z(p)    = Z(p)    + U3_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U1_2h1p(jmu)
+                   Z(p)    = Z(p)    + U3_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U1_2h1p(jmu)
+                   
+                   SigC(p) = SigC(p) + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U3_2h1p(jmu)
+                   Z(p)    = Z(p)    + U1_2h1p(inu) * dK_2h1p(inu) * C1_2h1p(inu,jmu) *  K_2h1p(jmu) * U3_2h1p(jmu)
+                   Z(p)    = Z(p)    + U1_2h1p(inu) *  K_2h1p(inu) * C1_2h1p(inu,jmu) * dK_2h1p(jmu) * U3_2h1p(jmu)
+                   
+                end do
+             end do
+             
+          end do
+       end do
+
+           
+       anu = 0
+       do a=nO+1,nOrb-nR
+          do nu=1,nS
+             anu = anu + 1            
+             
+             SigC(p) = SigC(p) + U2_2p1h(anu) *  K_2p1h(anu) * U2_2p1h(anu)
+             Z(p)    = Z(p)    + U2_2p1h(anu) * dK_2p1h(anu) * U2_2p1h(anu)
+          
+             SigC(p) = SigC(p) + U3_2p1h(anu) *  K_2p1h(anu) * U2_2p1h(anu)
+             Z(p)    = Z(p)    + U3_2p1h(anu) * dK_2p1h(anu) * U2_2p1h(anu)
+             
+             SigC(p) = SigC(p) + U2_2p1h(anu) *  K_2p1h(anu) * U3_2p1h(anu)
+             Z(p)    = Z(p)    + U2_2p1h(anu) * dK_2p1h(anu) * U3_2p1h(anu)
+             
+             SigC(p) = SigC(p) + U3_2p1h(anu) *  K_2p1h(anu) * U3_2p1h(anu)
+             Z(p)    = Z(p)    + U3_2p1h(anu) * dK_2p1h(anu) * U3_2p1h(anu)
+             
+             bmu = 0
+             do b=nO+1,nOrb-nR
+                do mu=1,nS
+                   bmu = bmu + 1
+                   
+                   SigC(p) = SigC(p) + U2_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
+                   Z(p)    = Z(p)    + U2_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
+                   Z(p)    = Z(p)    + U2_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
+                   
+                   SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U2_2p1h(bmu)
+                   Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U2_2p1h(bmu)
+                   Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U2_2p1h(bmu)
+                
+                   SigC(p) = SigC(p) + U3_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
+                   Z(p)    = Z(p)    + U3_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U1_2p1h(bmu)
+                   Z(p)    = Z(p)    + U3_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U1_2p1h(bmu)
+                   
+                   SigC(p) = SigC(p) + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U3_2p1h(bmu)
+                   Z(p)    = Z(p)    + U1_2p1h(anu) * dK_2p1h(anu) * C1_2p1h(anu,bmu) *  K_2p1h(bmu) * U3_2p1h(bmu)
+                   Z(p)    = Z(p)    + U1_2p1h(anu) *  K_2p1h(anu) * C1_2p1h(anu,bmu) * dK_2p1h(bmu) * U3_2p1h(bmu)
+                   
+                end do
+             end do
+             
+          end do
+       end do
+
+    end if
+    
  end do
- 
- print*,'Alternative form of the self-energy'
+ !$OMP END DO
+ !$OMP END PARALLEL
  
  Z(:) = 1d0/(1d0 - Z(:))
 
