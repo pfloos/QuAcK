@@ -1,5 +1,5 @@
-subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxSCF,thresh_in,maxDIIS,restart_scGF2B,verbose_scGF2B, &
-                              chem_pot_scG,no_h_hfb,ENuc,Gen_Hc,Gen_S,Gen_R_in,Gen_cHFB,Gen_eQP_state,chem_pot,sigma,               &
+subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,restart_scGF2B,verbose_scGF2B,          &
+                              chem_pot_scG,no_h_hfb,ENuc,Gen_Hc,Gen_S,Gen_R_in,Gen_cHFB,Gen_eQP_state,chem_pot,sigma,  &
                               nfreqs,wcoord,wweight,Gen_U_QP,db_ERI_AO)
 
 ! Generalized scGF2B
@@ -14,21 +14,21 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
   logical,intent(in)            :: verbose_scGF2B
   logical,intent(in)            :: chem_pot_scG
 
-  integer,intent(in)            :: nBas_twice
-  integer,intent(in)            :: nBas_4times
-  integer,intent(in)            :: nOrb_twice
-  integer,intent(in)            :: nOrb_4times
+  integer,intent(in)            :: nBas2
+  integer,intent(in)            :: nBas4
+  integer,intent(in)            :: nOrb2
+  integer,intent(in)            :: nOrb4
   integer,intent(in)            :: maxSCF
   integer,intent(in)            :: maxDIIS
 
   double precision,intent(in)   :: ENuc
   double precision,intent(in)   :: thresh_in
   double precision,intent(in)   :: sigma
-  double precision,intent(in)   :: Gen_Hc(nBas_twice,nBas_twice)
-  double precision,intent(in)   :: Gen_R_in(nBas_4times,nBas_4times)
-  double precision,intent(in)   :: Gen_S(nBas_twice,nBas_twice)
-  double precision,intent(in)   :: db_ERI_AO(nBas_twice,nBas_twice,nBas_twice,nBas_twice)
-  double precision,intent(in)   :: Gen_U_QP(nOrb_4times,nOrb_4times)
+  double precision,intent(in)   :: Gen_Hc(nBas2,nBas2)
+  double precision,intent(in)   :: Gen_R_in(nBas4,nBas4)
+  double precision,intent(in)   :: Gen_S(nBas2,nBas2)
+  double precision,intent(in)   :: db_ERI_AO(nBas2,nBas2,nBas2,nBas2)
+  double precision,intent(in)   :: Gen_U_QP(nOrb4,nOrb4)
 
 ! Local variables
 
@@ -36,14 +36,14 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
   logical                       :: read_HFB_chkp
 
   integer                       :: ifreq,itau
-  integer                       :: ibas,jbas,kbas,lbas,obas,qbas
+  integer                       :: abas,bbas,cbas,dbas
+  integer                       :: pbas,qbas,rbas,sbas
   integer                       :: iorb,jorb,korb,lorb
   integer                       :: iter,iter_hfb
   integer                       :: verbose
   integer                       :: ntimes
-  integer                       :: nBas_4timesSq
+  integer                       :: nBas4Sq
   integer                       :: ntimes_twice
-  integer                       :: nfreqs_int
   integer                       :: imax_error_gw2gt
   integer                       :: imax_error_st2sw
   integer                       :: idiis_indexR,n_diisR
@@ -63,7 +63,7 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
   double precision              :: max_error_gw2gt
   double precision              :: sum_error_gw2gt
   double precision              :: max_error_st2sw
-  double precision              :: EcGM,Ehfbl,Ecore,Eh,Ex,Epair
+  double precision              :: EcGM,Ehfbl,Ecore,Ehx,Epair
   double precision              :: trace_1_rdm
   double precision,external     :: trace_matrix
   double precision              :: start_scGF2Bitauiw,end_scGF2Bitauiw,t_scGF2Bitauiw
@@ -71,19 +71,16 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
   double precision,allocatable  :: Gen_cHFBinv(:,:)
   double precision,allocatable  :: Gen_cNO(:,:)
   double precision,allocatable  :: U_mo(:,:)
-  double precision,allocatable  :: Mat1(:,:)
-  double precision,allocatable  :: Mat2(:,:)
-  double precision,allocatable  :: R_ao(:,:)
-  double precision,allocatable  :: R_ao_iter(:,:)
-  double precision,allocatable  :: R_ao_hfb(:,:)
-  double precision,allocatable  :: R_ao_old(:,:)
-  double precision,allocatable  :: H_ao_hfb(:,:)
-  double precision,allocatable  :: R_mo(:,:)
+  double precision,allocatable  :: Gen_R_ao(:,:)
+  double precision,allocatable  :: Gen_R_ao_iter(:,:)
+  double precision,allocatable  :: Gen_R_ao_hfb(:,:)
+  double precision,allocatable  :: Gen_R_ao_old(:,:)
+  double precision,allocatable  :: Gen_H_ao_hfb(:,:)
   double precision,allocatable  :: Gen_cHFB_gorkov(:,:)
   double precision,allocatable  :: err_currentR(:)
   double precision,allocatable  :: err_diisR(:,:)
-  double precision,allocatable  :: R_ao_extrap(:)
-  double precision,allocatable  :: R_ao_old_diis(:,:)
+  double precision,allocatable  :: Gen_R_ao_extrap(:)
+  double precision,allocatable  :: Gen_R_ao_old_diis(:,:)
   double precision,allocatable  :: wcoord_int(:),wweight_int(:)
   double precision,allocatable  :: tweight(:),tcoord(:)
   double precision,allocatable  :: sint2w_weight(:,:)
@@ -114,10 +111,10 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
 ! Output variables
   integer,intent(inout)         :: nfreqs
   double precision,intent(inout):: chem_pot
-  double precision,intent(inout):: Gen_eQP_state(nOrb_twice)
+  double precision,intent(inout):: Gen_eQP_state(nOrb2)
   double precision,intent(inout):: wcoord(nfreqs)
   double precision,intent(inout):: wweight(nfreqs)
-  double precision,intent(inout):: Gen_cHFB(nBas_twice,nOrb_twice)
+  double precision,intent(inout):: Gen_cHFB(nBas2,nOrb2)
   
  call wall_time(start_scGF2Bitauiw)
 
@@ -136,13 +133,13 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
  endif
  write(*,*)
 
- write(*,'(a,F15.8)') '  emin ',abs(Gen_eQP_state(nOrb_twice))
- write(*,'(a,F15.8)') '  emax ',abs(Gen_eQP_state(nOrb_twice)+Gen_eQP_state(1))
+ write(*,'(a,F15.8)') '  emin ',abs(Gen_eQP_state(nOrb2))
+ write(*,'(a,F15.8)') '  emax ',abs(Gen_eQP_state(nOrb2)+Gen_eQP_state(1))
 
  ! Initialize variables
  ntimes=nfreqs
  ntimes_twice=ntimes*2
- nBas_4timesSq=nBas_4times*nBas_4times
+ nBas4Sq=nBas4*nBas4
  verbose=0
  if(verbose_scGF2B) verbose=1     
  eta=0d0
@@ -150,70 +147,68 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
  thrs_Ngrad=1d-6
  thrs_Rao=thresh_in
  nElectrons=0d0
- do ibas=1,nBas_twice
-  do jbas=1,nBas_twice
-   nElectrons=nElectrons+Gen_R_in(ibas,jbas)*Gen_S(ibas,jbas)
+ do abas=1,nBas2
+  do bbas=1,nBas2
+   nElectrons=nElectrons+Gen_R_in(abas,bbas)*Gen_S(abas,bbas)
   enddo
  enddo
- nElectrons=nint(nElectrons) ! Here we prefer to use 1 spin-channel
+ nElectrons=nint(nElectrons) ! We use both spin channels
  chem_pot_saved=chem_pot
  alpha_mixing=0.6d0
  rcond=0d0
  n_diis=0
- nBas4Sqntimes2=nBas_4timesSq*ntimes_twice
+ nBas4Sqntimes2=nBas4Sq*ntimes_twice
 
  ! Allocate arrays
- allocate(Occ(nOrb_twice))
- allocate(Gen_cNO(nBas_twice,nOrb_twice))
- allocate(U_mo(nOrb_twice,nOrb_twice))
- allocate(Gen_cHFBinv(nOrb_twice,nBas_twice))
- allocate(Gen_cHFB_gorkov(nBas_4times,nOrb_4times))
- allocate(R_ao(nBas_4times,nBas_4times))
- allocate(R_ao_iter(nBas_4times,nBas_4times))
- allocate(R_ao_hfb(nBas_4times,nBas_4times))
- allocate(R_ao_old(nBas_4times,nBas_4times))
- allocate(R_mo(nOrb_4times,nOrb_4times))
- allocate(H_ao_hfb(nBas_4times,nBas_4times))
- allocate(G_ao_tmp(nBas_twice,nBas_twice))
- allocate(Mat_gorkov_tmp(nBas_4times,nBas_4times))
- allocate(Mat_gorkov_tmp2(nBas_4times,nBas_4times))
- allocate(G_ao_iw_hfb(nfreqs,nBas_4times,nBas_4times))
- allocate(DeltaG_ao_iw(nfreqs,nBas_4times,nBas_4times))
- allocate(G_ao_itau_hfb(ntimes_twice,nBas_4times,nBas_4times))
- allocate(G_ao_itau(ntimes_twice,nBas_4times,nBas_4times))
- allocate(G_ao_itau_old(ntimes_twice,nBas_4times,nBas_4times))
- allocate(Sigma_c_w_ao(nfreqs,nBas_4times,nBas_4times))
- allocate(Sigma_c_plus(nBas_4times,nBas_4times)) 
- allocate(Sigma_c_minus(nBas_4times,nBas_4times)) 
- allocate(Sigma_c_c(nBas_4times,nBas_4times))      
- allocate(Sigma_c_s(nBas_4times,nBas_4times))
+ allocate(Occ(nOrb2))
+ allocate(Gen_cNO(nBas2,nOrb2))
+ allocate(U_mo(nOrb2,nOrb2))
+ allocate(Gen_cHFBinv(nOrb2,nBas2))
+ allocate(Gen_cHFB_gorkov(nBas4,nOrb4))
+ allocate(Gen_R_ao(nBas4,nBas4))
+ allocate(Gen_R_ao_iter(nBas4,nBas4))
+ allocate(Gen_R_ao_hfb(nBas4,nBas4))
+ allocate(Gen_R_ao_old(nBas4,nBas4))
+ allocate(Gen_H_ao_hfb(nBas4,nBas4))
+ allocate(G_ao_tmp(nBas2,nBas2))
+ allocate(Mat_gorkov_tmp(nBas4,nBas4))
+ allocate(Mat_gorkov_tmp2(nBas4,nBas4))
+ allocate(G_ao_iw_hfb(nfreqs,nBas4,nBas4))
+ allocate(DeltaG_ao_iw(nfreqs,nBas4,nBas4))
+ allocate(G_ao_itau_hfb(ntimes_twice,nBas4,nBas4))
+ allocate(G_ao_itau(ntimes_twice,nBas4,nBas4))
+ allocate(G_ao_itau_old(ntimes_twice,nBas4,nBas4))
+ allocate(Sigma_c_w_ao(nfreqs,nBas4,nBas4))
+ allocate(Sigma_c_plus(nBas4,nBas4)) 
+ allocate(Sigma_c_minus(nBas4,nBas4)) 
+ allocate(Sigma_c_c(nBas4,nBas4))      
+ allocate(Sigma_c_s(nBas4,nBas4))
  allocate(tweight(ntimes),tcoord(ntimes))
  allocate(sint2w_weight(nfreqs,ntimes))
  allocate(cost2w_weight(nfreqs,ntimes))
  allocate(cosw2t_weight(ntimes,nfreqs))
  allocate(sinw2t_weight(ntimes,nfreqs))
- allocate(Mat1(nOrb_twice,nOrb_twice),Mat2(nOrb_twice,nOrb_twice))
  allocate(err_currentR(1))
  allocate(err_diisR(1,1))
- allocate(R_ao_extrap(1))
- allocate(R_ao_old_diis(1,1))
+ allocate(Gen_R_ao_extrap(1))
+ allocate(Gen_R_ao_old_diis(1,1))
  allocate(G_itau_extrap(1))
  allocate(err_current(1))
  allocate(err_diis(1,1))
  allocate(G_itau_old_diis(1,1))
  if(maxDIIS>0) then
   deallocate(err_currentR)
-  deallocate(R_ao_extrap)
+  deallocate(Gen_R_ao_extrap)
   deallocate(err_diisR)
-  deallocate(R_ao_old_diis)
+  deallocate(Gen_R_ao_old_diis)
   deallocate(G_itau_extrap)
   deallocate(err_current)
   deallocate(err_diis)
   deallocate(G_itau_old_diis)
-  allocate(err_currentR(nBas_4timesSq))
-  allocate(R_ao_extrap(nBas_4timesSq))
-  allocate(err_diisR(nBas_4timesSq,maxDIIS))
-  allocate(R_ao_old_diis(nBas_4timesSq,maxDIIS))
+  allocate(err_currentR(nBas4Sq))
+  allocate(Gen_R_ao_extrap(nBas4Sq))
+  allocate(err_diisR(nBas4Sq,maxDIIS))
+  allocate(Gen_R_ao_old_diis(nBas4Sq,maxDIIS))
   allocate(G_itau_extrap(nBas4Sqntimes2))
   allocate(err_current(nBas4Sqntimes2))
   allocate(err_diis(nBas4Sqntimes2,maxDIIS))
@@ -223,7 +218,45 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
  G_itau_old_diis=czero
 
  ! Initialize arrays
+ DeltaG_ao_iw(:,:,:)=czero
+ Gen_R_ao_hfb=Gen_R_in
+ Gen_R_ao=Gen_R_ao_hfb
+ Gen_R_ao_iter=Gen_R_ao_hfb
+ Gen_cHFBinv=matmul(transpose(Gen_cHFB),Gen_S)
+ Gen_H_ao_hfb=0d0
+ Gen_H_ao_hfb(1:nBas2      ,1:nBas2      ) =   Gen_Hc(1:nBas2,1:nBas2) - chem_pot*Gen_S(1:nBas2,1:nBas2)
+ Gen_H_ao_hfb(nBas2+1:nBas4,nBas2+1:nBas4) = -(Gen_Hc(1:nBas2,1:nBas2) - chem_pot*Gen_S(1:nBas2,1:nBas2))
+ do abas=1,nBas2
+  pbas=abas+nBas2
+  do bbas=1,nBas2
+   qbas=bbas+nBas2
+   do cbas=1,nBas2
+    rbas=cbas+nBas2
+    do dbas=1,nBas2
+     sbas=dbas+nBas2
+     Gen_H_ao_hfb(abas,bbas)=Gen_H_ao_hfb(abas,bbas)+Gen_R_ao(cbas,dbas)*db_ERI_AO(abas,cbas,bbas,dbas) 
+     Gen_H_ao_hfb(pbas,qbas)=Gen_H_ao_hfb(pbas,qbas)-Gen_R_ao(cbas,dbas)*db_ERI_AO(bbas,dbas,abas,cbas) 
+     Gen_H_ao_hfb(abas,qbas)=Gen_H_ao_hfb(abas,qbas)+0.5d0*sigma*Gen_R_ao(cbas,sbas)*db_ERI_AO(abas,bbas,cbas,dbas)
+     Gen_H_ao_hfb(pbas,bbas)=Gen_H_ao_hfb(pbas,bbas)+0.5d0*sigma*Gen_R_ao(rbas,dbas)*db_ERI_AO(abas,bbas,cbas,dbas)
+    enddo
+   enddo
+  enddo
+ enddo
+
+ ! Read grids 
+ call read_scGX_grids(ntimes,nfreqs,tcoord,tweight,wcoord,wweight,sint2w_weight,cost2w_weight, &
+                      cosw2t_weight,sinw2t_weight,verbose)
+
+
  ! If required, read restart files
+ if(restart_scGF2B) then
+  inquire(file='read_HFB_scGWB', exist=file_exists)
+  read_HFB_chkp=.false.
+  if(file_exists) read_HFB_chkp=.true.
+  call read_scGXB_restart(nBas4,nfreqs,ntimes_twice,chem_pot,Gen_R_ao,Gen_R_ao_hfb,G_ao_iw_hfb,G_ao_itau,G_ao_itau_hfb,read_HFB_chkp)
+  Gen_R_ao_iter=Gen_R_ao
+  G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
+ endif
 
 !-------------!
 ! scGF2B loop !
@@ -253,66 +286,96 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
     ! tau > 0
     Mat_gorkov_tmp(:,:) =G_ao_itau(2*itau-1,:,:) ! G_ao_itau (+)
     Mat_gorkov_tmp=matmul(Sigma_c_minus,Mat_gorkov_tmp)
-    do ibas=1,nBas_twice
-     EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(ibas,ibas)
+    do abas=1,nBas2
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(abas,abas)
     enddo
     ! tau < 0
     Mat_gorkov_tmp(:,:) =G_ao_itau(2*itau,:,:)   ! G_ao_itau (-)
     Mat_gorkov_tmp=matmul(Sigma_c_plus,Mat_gorkov_tmp)
-    do ibas=1,nBas_twice
-     EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(ibas,ibas)
+    do abas=1,nBas2
+     EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(abas,abas)
     enddo
   enddo
   EcGM=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ]^he dt
                         !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ]^he dt for QP. restricted calcs.
 
-  ! Converge with respect to the H_HFB operator (using only good R_ao matrices -> Tr[R_ao_block S_ao]=Nelectrons )
+  ! Converge with respect to the H_HFB operator (using only good Gen_R_ao matrices -> Tr[R_ao_block S_ao]=Nelectrons )
   if(.not.no_h_hfb) then ! Skiiping the opt w.r.t. the H_HFB operator to do later the linearized approximation on Go -> [ lin-G = Go + Go Sigma Go ]
    iter_hfb=0
    n_diisR=0
    rcondR=0d0
    err_diisR=0d0
-   R_ao_old_diis=0d0
+   Gen_R_ao_old_diis=0d0
    do
-    ! Build H_HFB
+    ! Build H_HFB and energy components
     iter_hfb=iter_hfb+1
-    H_ao_hfb=0d0
-    H_ao_hfb(1:nBas_twice,1:nBas_twice)=Gen_Hc(1:nBas_twice,1:nBas_twice)
     Ehfbl=0d0
-    Ecore=0d0; Eh=0d0; Ex=0d0; Epair=0d0;
-    do ibas=1,nBas_twice
-     do jbas=1,nBas_twice
-      obas=nBas_twice+1+(jbas-1)
-      Ehfbl=Ehfbl+2d0*R_ao(ibas,jbas)*Gen_Hc(ibas,jbas)
-      Ecore=Ecore+2d0*R_ao(ibas,jbas)*Gen_Hc(ibas,jbas)
-      do kbas=1,nBas_twice
-       do lbas=1,nBas_twice
-        qbas=nBas_twice+1+(lbas-1)
-        H_ao_hfb(ibas,jbas)=H_ao_hfb(ibas,jbas)
-        Ehfbl=Ehfbl+2d0*R_ao(kbas,lbas)*R_ao(ibas,jbas)
-        Eh=Eh
-        Ex=Ex 
-        Epair=Epair+sigma 
+    Ecore=0d0; Ehx=0d0; Epair=0d0;
+    Gen_H_ao_hfb=0d0
+    Gen_H_ao_hfb(1:nBas2      ,1:nBas2      ) =  Gen_Hc(1:nBas2,1:nBas2) 
+    Gen_H_ao_hfb(nBas2+1:nBas4,nBas2+1:nBas4) = -Gen_Hc(1:nBas2,1:nBas2) 
+    do abas=1,nBas2
+     pbas=abas+nBas2
+     do bbas=1,nBas2
+      qbas=bbas+nBas2
+      do cbas=1,nBas2
+       rbas=cbas+nBas2
+       do dbas=1,nBas2
+        sbas=dbas+nBas2
+        Gen_H_ao_hfb(abas,bbas)=Gen_H_ao_hfb(abas,bbas)+Gen_R_ao(cbas,dbas)*db_ERI_AO(abas,cbas,bbas,dbas) 
+        Gen_H_ao_hfb(pbas,qbas)=Gen_H_ao_hfb(pbas,qbas)-Gen_R_ao(cbas,dbas)*db_ERI_AO(bbas,dbas,abas,cbas) 
+        Gen_H_ao_hfb(abas,qbas)=Gen_H_ao_hfb(abas,qbas)+0.5d0*sigma*Gen_R_ao(cbas,sbas)*db_ERI_AO(abas,bbas,cbas,dbas)
+        Gen_H_ao_hfb(pbas,bbas)=Gen_H_ao_hfb(pbas,bbas)+0.5d0*sigma*Gen_R_ao(rbas,dbas)*db_ERI_AO(abas,bbas,cbas,dbas)
        enddo
       enddo
      enddo
     enddo
+     ! Core
+    Mat_gorkov_tmp=czero
+    Mat_gorkov_tmp(1:nBas2      ,1:nBas2      ) =  Gen_Hc(1:nBas2,1:nBas2) 
+    Mat_gorkov_tmp(nBas2+1:nBas4,nBas2+1:nBas4) = -Gen_Hc(1:nBas2,1:nBas2) 
+    Mat_gorkov_tmp=matmul(Mat_gorkov_tmp,Gen_R_ao)
+    do abas=1,nBas2
+     Ecore=Ecore+real(Mat_gorkov_tmp(abas,abas))
+    enddo
+     ! Hx
+    Mat_gorkov_tmp=Gen_H_ao_hfb
+    Mat_gorkov_tmp(1:nBas2      ,nBas2+1:nBas4)=czero
+    Mat_gorkov_tmp(nBas2+1:nBas4,1:nBas2      )=czero
+    Mat_gorkov_tmp(1:nBas2      ,1:nBas2      )=Mat_gorkov_tmp(1:nBas2      ,1:nBas2      ) - Gen_Hc(1:nBas2,1:nBas2) 
+    Mat_gorkov_tmp(nBas2+1:nBas4,nBas2+1:nBas4)=Mat_gorkov_tmp(nBas2+1:nBas4,nBas2+1:nBas4) + Gen_Hc(1:nBas2,1:nBas2) 
+    Mat_gorkov_tmp=matmul(Mat_gorkov_tmp,Gen_R_ao)
+    do abas=1,nBas2
+     Ehx=Ehx+real(Mat_gorkov_tmp(abas,abas))
+    enddo
+    Ehx=0.5d0*Ehx
+     ! Pair
+    Mat_gorkov_tmp=Gen_H_ao_hfb
+    Mat_gorkov_tmp(1:nBas2      ,1:nBas2      )=czero
+    Mat_gorkov_tmp(nBas2+1:nBas4,nBas2+1:nBas4)=czero
+    Mat_gorkov_tmp=matmul(Mat_gorkov_tmp,Gen_R_ao)
+    do abas=1,nBas2
+     Epair=Epair+real(Mat_gorkov_tmp(abas,abas))
+    enddo
+    Epair=0.5d0*Epair
+     ! All
+    Ehfbl=Ecore+Ehx+Epair
     ! Build G(i w) and R
-    R_ao_old=R_ao
-    call get_1rdm_scGXB(nBas_twice,nBas_4times,nfreqs,chem_pot,Gen_S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
-                        Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
+    Gen_R_ao_old=Gen_R_ao
+    call get_1rdm_scGXB(nBas2,nBas4,nfreqs,chem_pot,Gen_S,Gen_H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
+                        Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,Gen_R_ao,Gen_R_ao_hfb,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
-     call fix_chem_pot_scGXB_bisec(iter_hfb,nBas_twice,nBas_4times,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,Gen_S,H_ao_hfb,Sigma_c_w_ao,   &
-                                   wcoord,wweight,Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm,chem_pot_saved, &
-                                   verbose_scGF2B)
+     call fix_chem_pot_scGXB_bisec(iter_hfb,nBas2,nBas4,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,Gen_S,Gen_H_ao_hfb,Sigma_c_w_ao,   &
+                                   wcoord,wweight,Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,Gen_R_ao,Gen_R_ao_hfb,trace_1_rdm,            &
+                                   chem_pot_saved,verbose_scGF2B)
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. .not.chem_pot_scG) &
-     R_ao=nElectrons*R_ao/trace_1_rdm
+     Gen_R_ao=nElectrons*Gen_R_ao/trace_1_rdm
 
-    ! Check convergence of R_ao for fixed Sigma_c(i w)
+    ! Check convergence of Gen_R_ao for fixed Sigma_c(i w)
     diff_Rao=0d0
-    do ibas=1,nBas_twice
-     do jbas=1,nBas_twice
-      diff_Rao=diff_Rao+abs(R_ao(ibas,jbas)-R_ao_old(ibas,jbas))
+    do abas=1,nBas2
+     do bbas=1,nBas2
+      diff_Rao=diff_Rao+abs(Gen_R_ao(abas,bbas)-Gen_R_ao_old(abas,bbas))
      enddo
     enddo
 
@@ -320,46 +383,46 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
 
     if(iter_hfb==maxSCF) exit
 
-    ! Do mixing with previous R_ao to facilitate convergence
+    ! Do mixing with previous Gen_R_ao to facilitate convergence
     if(maxDIIS>0) then
      n_diisR=min(n_diisR+1,maxDIIS)
      err_currentR=0d0
      idiis_indexR=1
-     do ibas=1,nBas_twice
-      do jbas=1,nBas_twice
-       err_currentR(idiis_indexR)=R_ao(ibas,jbas)-R_ao_old(ibas,jbas)
+     do abas=1,nBas2
+      do bbas=1,nBas2
+       err_currentR(idiis_indexR)=Gen_R_ao(abas,bbas)-Gen_R_ao_old(abas,bbas)
        if(abs(err_currentR(idiis_indexR))<1e-12) err_currentR(idiis_indexR)=0d0
-       R_ao_extrap(idiis_indexR)=R_ao(ibas,jbas)
+       Gen_R_ao_extrap(idiis_indexR)=Gen_R_ao(abas,bbas)
        idiis_indexR=idiis_indexR+1
       enddo
      enddo
-     call DIIS_extrapolation(rcondR,nBas_4timesSq,nBas_4timesSq,n_diisR,err_diisR,R_ao_old_diis,err_currentR,R_ao_extrap)
+     call DIIS_extrapolation(rcondR,nBas4Sq,nBas4Sq,n_diisR,err_diisR,Gen_R_ao_old_diis,err_currentR,Gen_R_ao_extrap)
      idiis_indexR=1
-     do ibas=1,nBas_twice
-      do jbas=1,nBas_twice
-       R_ao(ibas,jbas)=R_ao_extrap(idiis_indexR)
+     do abas=1,nBas2
+      do bbas=1,nBas2
+       Gen_R_ao(abas,bbas)=Gen_R_ao_extrap(idiis_indexR)
        idiis_indexR=idiis_indexR+1
       enddo
      enddo
     else
-     R_ao(:,:)=alpha_mixing*R_ao(:,:)+(1d0-alpha_mixing)*R_ao_old(:,:)
+     Gen_R_ao(:,:)=alpha_mixing*Gen_R_ao(:,:)+(1d0-alpha_mixing)*Gen_R_ao_old(:,:)
     endif
 
    enddo
   endif
 
-  ! Check convergence of R_ao after a scGF2B iteration
+  ! Check convergence of Gen_R_ao after a scGF2B iteration
   diff_Rao=0d0
-  do ibas=1,nBas_twice
-   do jbas=1,nBas_twice
-    diff_Rao=diff_Rao+abs(R_ao(ibas,jbas)-R_ao_iter(ibas,jbas))
+  do abas=1,nBas2
+   do bbas=1,nBas2
+    diff_Rao=diff_Rao+abs(Gen_R_ao(abas,bbas)-Gen_R_ao_iter(abas,bbas))
    enddo 
   enddo
-  R_ao_iter=R_ao
+  Gen_R_ao_iter=Gen_R_ao
 
   ! Print iter info
-  U_mo=-2d0*matmul(matmul(Gen_cHFBinv,R_ao(1:nBas_twice,1:nBas_twice)),transpose(Gen_cHFBinv)) ! Minus to order occ numbers
-  call diagonalize_matrix(nOrb_twice,U_mo,Occ)
+  U_mo=-matmul(matmul(Gen_cHFBinv,Gen_R_ao(1:nBas2,1:nBas2)),transpose(Gen_cHFBinv)) ! Minus to order occ numbers
+  call diagonalize_matrix(nOrb2,U_mo,Occ)
   Occ=-Occ
   trace_1_rdm=sum(Occ)
   Gen_cNO=matmul(Gen_cHFB,U_mo)
@@ -369,8 +432,7 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
   write(*,'(a,f15.8)')        ' Chem. Pot.    ',chem_pot
   write(*,'(a,f15.8)')        ' Enuc          ',ENuc
   write(*,'(a,f15.8)')        ' Ehcore        ',Ecore
-  write(*,'(a,f15.8)')        ' Hartree       ',Eh
-  write(*,'(a,f15.8)')        ' Exchange      ',Ex
+  write(*,'(a,f15.8)')        ' Hx            ',Ehx
   write(*,'(a,f15.8)')        ' Epairing      ',Epair
   write(*,'(a,f15.8)')        ' Ehfbl         ',Ehfbl
   write(*,'(a,f15.8)')        ' EcGM          ',EcGM
@@ -406,11 +468,11 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
    err_current=czero
    idiis_index=1
    do itau=1,ntimes_twice
-    do ibas=1,nBas_twice
-     do jbas=1,nBas_twice
-      err_current(idiis_index)=G_ao_itau(itau,ibas,jbas)-G_ao_itau_old(itau,ibas,jbas)
+    do abas=1,nBas2
+     do bbas=1,nBas2
+      err_current(idiis_index)=G_ao_itau(itau,abas,bbas)-G_ao_itau_old(itau,abas,bbas)
       if(abs(err_current(idiis_index))<1e-12) err_current(idiis_index)=czero
-      G_itau_extrap(idiis_index)=G_ao_itau(itau,ibas,jbas)
+      G_itau_extrap(idiis_index)=G_ao_itau(itau,abas,bbas)
       idiis_index=idiis_index+1
      enddo
     enddo
@@ -418,9 +480,9 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
    call complex_DIIS_extrapolation(rcond,nBas4Sqntimes2,nBas4Sqntimes2,n_diis,err_diis,G_itau_old_diis,err_current,G_itau_extrap)
    idiis_index=1
    do itau=1,ntimes_twice
-    do ibas=1,nBas_twice
-     do jbas=1,nBas_twice
-      G_ao_itau(itau,ibas,jbas)=G_itau_extrap(idiis_index)
+    do abas=1,nBas2
+     do bbas=1,nBas2
+      G_ao_itau(itau,abas,bbas)=G_itau_extrap(idiis_index)
       idiis_index=idiis_index+1
      enddo
     enddo
@@ -431,8 +493,8 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
 
  enddo
-! N_anom = trace_matrix(nBas,matmul(transpose(R_ao(1:nBas,nBas+1:nBas_twice)), &
-!          R_ao(1:nBas,nBas+1:nBas_twice)))
+ N_anom = trace_matrix(nBas2/2,matmul(transpose(Gen_R_ao(1:nBas2/2,nBas2/2+nBas2+1:nBas4)), &
+          Gen_R_ao(1:nBas2/2,nBas2/2+nBas2+1:nBas4)))
  write(*,*)
  write(*,'(A50)') '----------------------------------------'
  write(*,'(A50)') '     scGGF2B calculation completed      '
@@ -444,8 +506,7 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
  write(*,'(a,f15.8)')        ' N anomalus      ',N_anom
  write(*,'(a,f15.8)')        ' Enuc            ',ENuc
  write(*,'(a,f15.8)')        ' Ehcore          ',Ecore
- write(*,'(a,f15.8)')        ' Hartree         ',Eh
- write(*,'(a,f15.8)')        ' Exchange        ',Ex
+ write(*,'(a,f15.8)')        ' Hartree-Exchange',Ehx
  write(*,'(a,f15.8)')        ' Epairing        ',Epair
  write(*,'(a,f15.8)')        ' Ehfbl           ',Ehfbl
  write(*,'(a,f15.8)')        ' EcGM            ',EcGM
@@ -455,26 +516,26 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
  write(*,'(a,f15.8)')        ' EcPT2           ',EcGM/2d0
  write(*,*)
  write(*,*) ' Final occupation numbers'
- do ibas=1,nOrb_twice
-  write(*,'(I7,F15.8)') ibas,Occ(ibas)
+ do abas=1,nOrb2
+  write(*,'(I7,F15.8)') abas,Occ(abas)
  enddo
  if(verbose/=0) then
   write(*,*) ' Natural orbitals (columns)'
-  do ibas=1,nBas_twice
-   write(*,'(*(f15.8))') Gen_cNO(ibas,:)
+  do abas=1,nBas2
+   write(*,'(*(f15.8))') Gen_cNO(abas,:)
   enddo
  endif
  write(*,*)
 
  ! Write restart files
- call write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
+ call write_scGXB_restart(nBas4,ntimes,ntimes_twice,nfreqs,chem_pot,Gen_R_ao,Gen_R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
                          G_ao_iw_hfb,DeltaG_ao_iw)
 
  inquire(file='Print_Rao', exist=file_exists)
  if(file_exists) then
   write(*,*) 'R_scGGF2B_ao'
-  do ibas=1,nBas_twice
-   write(*,'(*(f10.5))') R_ao(ibas,:)
+  do abas=1,nBas2
+   write(*,'(*(f10.5))') Gen_R_ao(abas,:)
   enddo
  endif
 
@@ -484,12 +545,11 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
  deallocate(Gen_cHFB_gorkov)
  deallocate(Gen_cNO)
  deallocate(U_mo)
- deallocate(R_ao)
- deallocate(R_ao_iter)
- deallocate(R_ao_hfb)
- deallocate(R_ao_old)
- deallocate(R_mo)
- deallocate(H_ao_hfb)
+ deallocate(Gen_R_ao)
+ deallocate(Gen_R_ao_iter)
+ deallocate(Gen_R_ao_hfb)
+ deallocate(Gen_R_ao_old)
+ deallocate(Gen_H_ao_hfb)
  deallocate(G_ao_tmp)
  deallocate(Mat_gorkov_tmp)
  deallocate(Mat_gorkov_tmp2)
@@ -508,11 +568,10 @@ subroutine scGGF2B_AO_itau_iw(nBas_twice,nBas_4times,nOrb_twice,nOrb_4times,maxS
  deallocate(cost2w_weight)
  deallocate(cosw2t_weight)
  deallocate(sinw2t_weight)
- deallocate(Mat1,Mat2)
  deallocate(err_currentR)
- deallocate(R_ao_extrap)
+ deallocate(Gen_R_ao_extrap)
  deallocate(err_diisR)
- deallocate(R_ao_old_diis)
+ deallocate(Gen_R_ao_old_diis)
  deallocate(G_itau_extrap)
  deallocate(err_current)
  deallocate(err_diis)

@@ -27,10 +27,10 @@ subroutine read_scGXB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_
   write(*,*)
   write(*,'(a)') ' Reading restart files'
   write(*,*)
-  inquire(file='scGWB_Gitau_bin', exist=files_exists)
+  inquire(file='scGXB_Gitau_bin', exist=files_exists)
   if(files_exists) then
-   open(unit=iunit,form='unformatted',file='scGWB_Gitau_bin',status='old')
-   write(*,'(a)') ' Reading scGWB_Gitau_bin'
+   open(unit=iunit,form='unformatted',file='scGXB_Gitau_bin',status='old')
+   write(*,'(a)') ' Reading scGXB_Gitau_bin'
    read(iunit) ibas
    read(iunit) ibas
    do itau=1,ntimes_twice
@@ -43,10 +43,10 @@ subroutine read_scGXB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_
    enddo
    close(iunit)
   endif
-  inquire(file='scGWB_Rao_bin', exist=files_exists)
+  inquire(file='scGXB_Rao_bin', exist=files_exists)
   if(files_exists) then
-   open(unit=iunit,form='unformatted',file='scGWB_Rao_bin',status='old')
-   write(*,'(a)') ' Reading scGWB_Rao_bin'
+   open(unit=iunit,form='unformatted',file='scGXB_Rao_bin',status='old')
+   write(*,'(a)') ' Reading scGXB_Rao_bin'
    read(iunit) ibas
    do ibas=1,nBas_twice
     do jbas=1,nBas_twice
@@ -56,10 +56,10 @@ subroutine read_scGXB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_
    enddo
    close(iunit)
   endif
-  inquire(file='scGWB_chem_pot_bin', exist=files_exists)
+  inquire(file='scGXB_chem_pot_bin', exist=files_exists)
   if(files_exists) then
-   open(unit=iunit,form='unformatted',file='scGWB_chem_pot_bin',status='old')
-   write(*,'(a)') ' Reading scGWB_chem_pot_bin'
+   open(unit=iunit,form='unformatted',file='scGXB_chem_pot_bin',status='old')
+   write(*,'(a)') ' Reading scGXB_chem_pot_bin'
    read(iunit) chem_pot
    close(iunit)
   endif

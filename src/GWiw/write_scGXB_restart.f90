@@ -24,7 +24,7 @@ subroutine write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_
  double precision                :: val_print_r
  complex*16                      :: val_print_c
 
-  open(unit=iunit,form='unformatted',file='scGWB_Gitau_bin')
+  open(unit=iunit,form='unformatted',file='scGXB_Gitau_bin')
   write(iunit) nBas_twice
   write(iunit) ntimes
   do itau=1,ntimes_twice
@@ -38,7 +38,7 @@ subroutine write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGWB_Giw_bin')
+  open(unit=iunit,form='unformatted',file='scGXB_Giw_bin')
   write(iunit) nBas_twice
   write(iunit) ntimes
   do ifreq=1,nfreqs
@@ -52,7 +52,7 @@ subroutine write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGWB_Rao_bin')
+  open(unit=iunit,form='unformatted',file='scGXB_Rao_bin')
   write(iunit) nBas_twice
   do ibas=1,nBas_twice
    do jbas=1,nBas_twice
@@ -63,11 +63,11 @@ subroutine write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGWB_chem_pot_bin')
+  open(unit=iunit,form='unformatted',file='scGXB_chem_pot_bin')
   write(iunit) chem_pot
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGWB_Gitau_hfb_bin')
+  open(unit=iunit,form='unformatted',file='scGXB_Gitau_hfb_bin')
   write(iunit) nBas_twice
   write(iunit) ntimes
   do itau=1,ntimes_twice
@@ -81,7 +81,7 @@ subroutine write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGWB_Giw_hfb_bin')
+  open(unit=iunit,form='unformatted',file='scGXB_Giw_hfb_bin')
   write(iunit) nBas_twice
   write(iunit) ntimes
   do ifreq=1,nfreqs
@@ -95,7 +95,7 @@ subroutine write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_
   enddo
   write(iunit) iunit
   close(iunit)
-  open(unit=iunit,form='unformatted',file='scGWB_Rao_hfb_bin')
+  open(unit=iunit,form='unformatted',file='scGXB_Rao_hfb_bin')
   write(iunit) nBas_twice
   do ibas=1,nBas_twice
    do jbas=1,nBas_twice
