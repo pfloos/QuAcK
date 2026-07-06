@@ -80,7 +80,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
   double precision,allocatable  :: R_ao_hfb(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_ao_hfb(:,:)
-  double precision,allocatable  :: cHFB_gorkov(:,:)
   double precision,allocatable  :: err_currentR(:)
   double precision,allocatable  :: err_diisR(:,:)
   double precision,allocatable  :: R_ao_extrap(:)
@@ -176,7 +175,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
  allocate(Occ(nOrb))
  allocate(cNO(nBas,nOrb))
  allocate(cHFBinv(nOrb,nBas))
- allocate(cHFB_gorkov(nBas_twice,nOrb_twice))
  allocate(U_mo(nOrb,nOrb))
  allocate(R_ao(nBas_twice,nBas_twice))
  allocate(R_ao_iter(nBas_twice,nBas_twice))
@@ -248,9 +246,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
  R_ao=R_ao_hfb
  R_ao_iter=R_ao_hfb
  cHFBinv=matmul(transpose(cHFB),S)
- cHFB_gorkov=0d0
- cHFB_gorkov(1:nBas           ,1:nOrb           ) = cHFB(1:nBas,1:nOrb)
- cHFB_gorkov(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = cHFB(1:nBas,1:nOrb)
  H_ao_hfb=0d0
  H_ao_hfb(1:nBas,1:nBas)=Hc(1:nBas,1:nBas)
  Ehfbl=0d0
@@ -740,7 +735,6 @@ subroutine scGF2B_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,resta
  ! Deallocate arrays
  deallocate(Occ)
  deallocate(cHFBinv)
- deallocate(cHFB_gorkov)
  deallocate(cNO)
  deallocate(U_mo)
  deallocate(R_ao)
