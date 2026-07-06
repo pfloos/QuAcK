@@ -270,7 +270,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   call G_AO_GHFB_w(nBas2,nOrb2,nOrb4,eta,Gen_cHFB,Gen_eQP_state,weval_cpx,Mat2,Mat1,Mat4,Mat3,G_ao_tmp)
   G_ao_iw_hfb(ifreq,nBas2+1:nBas4,1:nBas2      ) = G_ao_tmp(1:nBas2,1:nBas2)
   ! G_eh(iw)
-  call G_AO_GHFB_w(nBas2,nOrb2,nOrb4,eta,Gen_cHFB,Gen_eQP_state,weval_cpx,Mat4,Mat4,Mat2,Mat2,G_ao_tmp)
+  call G_AO_GHFB_w(nBas2,nOrb2,nOrb4,eta,Gen_cHFB,Gen_eQP_state,weval_cpx,Mat2,Mat2,Mat4,Mat4,G_ao_tmp)
   G_ao_iw_hfb(ifreq,nBas2+1:nBas4,nBas2+1:nBas4) = G_ao_tmp(1:nBas2,1:nBas2)
  enddo
  ! Build Go(i tau)
@@ -286,7 +286,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   call G_AO_GHFB_itau(nBas2,nOrb2,nOrb4, tcoord(itau),G_ao_tmp,Gen_cHFB,Gen_eQP_state,Mat2,Mat1,Mat4,Mat3)
   G_ao_itau_hfb(2*itau-1,nBas2+1:nBas4,1:nBas2      ) = G_ao_tmp(1:nBas2,1:nBas2)
   ! G_eh(i tau)
-  call G_AO_GHFB_itau(nBas2,nOrb2,nOrb4, tcoord(itau),G_ao_tmp,Gen_cHFB,Gen_eQP_state,Mat4,Mat4,Mat2,Mat2)
+  call G_AO_GHFB_itau(nBas2,nOrb2,nOrb4, tcoord(itau),G_ao_tmp,Gen_cHFB,Gen_eQP_state,Mat2,Mat2,Mat4,Mat4)
   G_ao_itau_hfb(2*itau-1,nBas2+1:nBas4,nBas2+1:nBas4) = G_ao_tmp(1:nBas2,1:nBas2)
   ! tau < 0
   ! G_he(i tau)
@@ -299,7 +299,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   call G_AO_GHFB_itau(nBas2,nOrb2,nOrb4,-tcoord(itau),G_ao_tmp,Gen_cHFB,Gen_eQP_state,Mat2,Mat1,Mat4,Mat3)
   G_ao_itau_hfb(2*itau  ,nBas2+1:nBas4,1:nBas2      ) = G_ao_tmp(1:nBas2,1:nBas2)
   ! G_eh(i tau)
-  call G_AO_GHFB_itau(nBas2,nOrb2,nOrb4,-tcoord(itau),G_ao_tmp,Gen_cHFB,Gen_eQP_state,Mat4,Mat4,Mat2,Mat2)
+  call G_AO_GHFB_itau(nBas2,nOrb2,nOrb4,-tcoord(itau),G_ao_tmp,Gen_cHFB,Gen_eQP_state,Mat2,Mat2,Mat4,Mat4)
   G_ao_itau_hfb(2*itau  ,nBas2+1:nBas4,nBas2+1:nBas4) = G_ao_tmp(1:nBas2,1:nBas2)
  enddo
  ! Initialize G(i tau)
