@@ -249,7 +249,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
    if(doRHF .and. .not. doMOM) then
 
     call wall_time(start_HF)
-    call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
     call wall_time(end_HF)
 
@@ -264,7 +264,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
     if(guess_type /= 6) then
     
       call wall_time(start_HF)
-      call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+      call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
                nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
       call wall_time(end_HF)
 

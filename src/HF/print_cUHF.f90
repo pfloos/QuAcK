@@ -24,16 +24,21 @@ subroutine print_cUHF(nBas,nO,S,eHF,c,ENuc,ET,EV,EJ,Ex,EW,EUHF)
 
   logical                            :: dump_orb = .false.
   double precision                   :: Sz, Sx2, Sy2, Sz2
+  complex*16, allocatable            :: tmp1(:,:), tmp2(:,:)
+  double precision                   :: tmpsum2
 
 ! Dump results
+
+  allocate(tmp1(nBas,nO(2)))
+  tmp1 = matmul(S, c(:,1:nO(2),2))
+  allocate(tmp2(nO(1),nO(2)))
+  tmp2 = matmul(transpose(conjg(c(:,1:nO(1),1))), tmp1)
+  deallocate(tmp1)
+  tmpsum2 = real(sum(tmp2)**2)
   
-  Sz =  0.5d0*dble(nO(1) - nO(2))
-  Sx2 = real(0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - &
-        0.5d0*sum(matmul(transpose(conjg(c(:,1:nO(1),1))),&
-                  matmul(S,c(:,1:nO(2),2)))**2))
-  Sy2 = real(0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - &
-        0.5d0*sum(matmul(transpose(conjg(c(:,1:nO(1),1))),&
-                  matmul(S,c(:,1:nO(2),2)))**2))
+  Sz =  0.5d0*dble(nO(1)  - nO(2))
+  Sx2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*tmpsum2
+  Sy2 = 0.25d0*dble(nO(1) - nO(2)) + 0.5d0*nO(2) - 0.5d0*tmpsum2
   Sz2 = 0.25d0*dble(nO(1) - nO(2))**2
 
   write(*,*)

@@ -1,6 +1,6 @@
 subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGF2,doscGW,readFCIDUMP,nNuc,nBas,  &
                   nOrb,nO,ENuc,eta,shift,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF,max_diis,doscGHF,thresh, &
-                  level_shift,guess_type,TDA,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,       &
+                  level_shift,guess_type,mix,TDA,maxSCF_GW,max_diis_GW,thresh_GW,dolinGW,dosign_XoB,temperature,sigma,   &
                   maxSCF_GF,max_diis_GF,thresh_GF,restart_scGF2,verbose_scGF2,                                           &
                   chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,error_P,verbose_scGW,chem_pot_scG,writeMOs)
 
@@ -42,6 +42,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   integer,intent(in)             :: ntimes
   double precision,intent(inout) :: ENuc
   double precision,intent(in)    :: eta
+  double precision,intent(in)    :: mix
   double precision,intent(in)    :: shift
   double precision,intent(in)    :: temperature,sigma
 
@@ -172,7 +173,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
 
     ! Run first a RHF calculation 
     call wall_time(start_HF)
-    call RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+    call RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EeleSD,eHF,MOCoef,pMAT,Fock)
     call wall_time(end_HF)
 
