@@ -253,10 +253,6 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,wri
       c(:,:,ispin) = matmul(X,cp(:,:,ispin))
     end do
 
-!   Mix guess for UHF solution in singlet states
-
-    if(nSCF == 1 .and. mix > 0d0) print *, "No mix guess available"
-
 !   Compute density matrix 
 
     do ispin=1,nspin
