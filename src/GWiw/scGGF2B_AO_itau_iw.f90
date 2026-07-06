@@ -365,6 +365,8 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   Sigma_c_w_ao=czero
   do itau=1,ntimes
 
+   call Sigma_c_GGF2B_brut(nBas2,nBas4,G_ao_itau(2*itau-1,:,:),G_ao_itau(2*itau,:,:),db_ERI_AO,Sigma_c_plus,Sigma_c_minus) 
+
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
@@ -388,8 +390,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
      EcGM_itau=EcGM_itau+tweight(itau)*Mat_gorkov_tmp(abas,abas)
     enddo
   enddo
-  EcGM=-real(EcGM_itau) ! Including a factor 2 to sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ]^he dt
-                        !                                                      = - \int Tr[ Sigma_c_up(-it) G_up(it) ]^he dt for QP. restricted calcs.
+  EcGM=-0.5d0*real(EcGM_itau) ! Including sum over spin-channels  EcGM = - 1/2 \sum_spin \int Tr[ Sigma_c_spin(-it) G_spin(it) ]^he dt
 
   ! Converge with respect to the H_HFB operator (using only good Gen_R_ao matrices -> Tr[R_ao_block S_ao]=Nelectrons )
   if(.not.no_h_hfb) then ! Skiiping the opt w.r.t. the H_HFB operator to do later the linearized approximation on Go -> [ lin-G = Go + Go Sigma Go ]
