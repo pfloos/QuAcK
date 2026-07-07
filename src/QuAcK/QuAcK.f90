@@ -480,10 +480,11 @@ program QuAcK
 !-------------------------!
 
   if(doBQuAcK) & 
-    call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGW,readFCIDUMP,nNuc,nBas,  &
-                nOrb,nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,        &
-                max_diis_HF,doscGHF,thresh_HF,level_shift,guess_type,mix,TDA,maxSCF_GW,max_diis_GW,thresh_GW,  &
-                do_linDM_GW,dosign_XoB,temperature,sigma,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight, &
+    call BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP2,doscGF2,doscGW,readFCIDUMP,nNuc, &
+                nBas, nOrb,nO,ENuc,eta_GW,shift_GW,restart_scGW,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,maxSCF_HF,    &
+                max_diis_HF,doscGHF,thresh_HF,level_shift,guess_type,mix,TDA,maxSCF_GW,max_diis_GW,thresh_GW,    &
+                do_linDM_GW,dosign_XoB,temperature,sigma,maxSCF_GF,max_diis_GF,thresh_GF,restart_scGF2,          &
+                verbose_scGF2,chem_pot_hf,restart_hfb,nfreqs,ntimes,wcoord,wweight,                              &
                 error_P,verbose_scGW,chem_pot_scG,writeMOs)
 
 !-----------!

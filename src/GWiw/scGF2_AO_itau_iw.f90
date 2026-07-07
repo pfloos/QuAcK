@@ -1,5 +1,5 @@
 subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,verbose_scGF2,chem_pot_scG,no_fock, &
-                            ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,vMAT,ERI_AO)
+                            ENuc,Hc,S,P_in,cHF,eHF,nfreqs,wcoord,wweight,ERI_AO)
 
 ! Restricted scGF2
 
@@ -24,13 +24,13 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   double precision,intent(in)   :: Hc(nBas,nBas)
   double precision,intent(in)   :: P_in(nBas,nBas)
   double precision,intent(in)   :: S(nBas,nBas)
-  double precision,intent(in)   :: vMAT(nBas*nBas,nBas*nBas)
   double precision,intent(in)   :: ERI_AO(nBas,nBas,nBas,nBas)
 
 ! Local variables
  
   logical                       :: file_exists
   logical                       :: read_SD_chkp
+  logical                       :: dont_adjust_Ne
 
   integer                       :: n_diis
   integer                       :: n_diisP
@@ -42,7 +42,6 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   integer                       :: idiis_indexP
   integer                       :: itau,ifreq
   integer                       :: ibas,jbas,kbas,lbas,nBasSq
-  integer                       :: mbas,sbas,pbas,qbas
   integer                       :: iter,iter_fock
   integer                       :: imax_error_sigma
   integer                       :: imax_error_gw2gt
@@ -126,6 +125,9 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  write(*,*)
 
  ! Initialize variables
+ dont_adjust_Ne=.false.
+ inquire(file='dont_adjust_Ne', exist=file_exists)
+ if(file_exists) dont_adjust_Ne=.true.
  n_diis=0
  verbose=0
  if(verbose_scGF2) verbose=1
@@ -149,6 +151,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
   write(*,'(A)') '   Adjusting the chemical potential is activated'
  else
   write(*,'(A)') '   Adjusting the chemical potential is deactivated'
+  if(dont_adjust_Ne) write(*,'(A)') '   switched off factor adjustment'
  endif
  write(*,*)
  eHF(:) = eHF(:)-chem_pot_saved
@@ -336,98 +339,12 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
    Aimql=czero
    Bisql=czero
    Cispl=czero
-   do ibas=1,nBas
-    do mbas=1,nBas
-     do qbas=1,nBas
-      do lbas=1,nBas
-       do kbas=1,nBas
-        Aimql(ibas,mbas,qbas,lbas)=Aimql(ibas,mbas,qbas,lbas)+G_plus_itau(kbas,lbas)*ERI_AO(ibas,qbas,mbas,kbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do sbas=1,nBas
-     do qbas=1,nBas
-      do lbas=1,nBas
-       do mbas=1,nBas
-        Bisql(ibas,sbas,qbas,lbas)=Bisql(ibas,sbas,qbas,lbas)+G_plus_itau(mbas,sbas)*Aimql(ibas,mbas,qbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do sbas=1,nBas
-     do pbas=1,nBas
-      do lbas=1,nBas
-       do qbas=1,nBas
-        Cispl(ibas,sbas,pbas,lbas)=Cispl(ibas,sbas,pbas,lbas)+G_minus_itau(pbas,qbas)*Bisql(ibas,sbas,qbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do jbas=1,nBas
-     do sbas=1,nBas
-      do pbas=1,nBas
-       do lbas=1,nBas
-        Sigma_c_plus(ibas,jbas) =Sigma_c_plus(ibas,jbas)+Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
+   call Sigma_c_GF2B_he_prime(nBas,Aimql,Bisql,Cispl,G_plus_itau,G_plus_itau,G_minus_itau,ERI_AO,Sigma_c_plus)     ! Borrowed from Bogoliubov he block 
    ! Sigma_c_ij(-i tau) =  \sum_klmspq Gkl(-i tau) Gms(-i tau) Gpq(i tau) v_iqmk (2 v_lspj - v_slpj)
    Aimql=czero
    Bisql=czero
    Cispl=czero
-   do ibas=1,nBas
-    do mbas=1,nBas
-     do qbas=1,nBas
-      do lbas=1,nBas
-       do kbas=1,nBas
-        Aimql(ibas,mbas,qbas,lbas)=Aimql(ibas,mbas,qbas,lbas)+G_minus_itau(kbas,lbas)*ERI_AO(ibas,qbas,mbas,kbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do sbas=1,nBas
-     do qbas=1,nBas
-      do lbas=1,nBas
-       do mbas=1,nBas
-        Bisql(ibas,sbas,qbas,lbas)=Bisql(ibas,sbas,qbas,lbas)+G_minus_itau(mbas,sbas)*Aimql(ibas,mbas,qbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do sbas=1,nBas
-     do pbas=1,nBas
-      do lbas=1,nBas
-       do qbas=1,nBas
-        Cispl(ibas,sbas,pbas,lbas)=Cispl(ibas,sbas,pbas,lbas)+G_plus_itau(pbas,qbas)*Bisql(ibas,sbas,qbas,lbas)
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
-   do ibas=1,nBas
-    do jbas=1,nBas
-     do sbas=1,nBas
-      do pbas=1,nBas
-       do lbas=1,nBas
-        Sigma_c_minus(ibas,jbas)=Sigma_c_minus(ibas,jbas)+Cispl(ibas,sbas,pbas,lbas)*(2d0*ERI_AO(lbas,sbas,pbas,jbas)-ERI_AO(sbas,lbas,pbas,jbas))
-       enddo
-      enddo
-     enddo
-    enddo
-   enddo
+   call Sigma_c_GF2B_he_prime(nBas,Aimql,Bisql,Cispl,G_minus_itau,G_minus_itau,G_plus_itau,ERI_AO,Sigma_c_minus)   ! Borrowed from Bogoliubov he block
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
@@ -517,7 +434,7 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
      call fix_chem_pot_scGX_bisec(iter_fock,nBas,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,F_ao,Sigma_c_w_ao,wcoord,wweight, &
                                   Mat_ao_tmp,G_ao_iw_hf,DeltaG_ao_iw,P_ao,P_ao_hf,trace_1_rdm,chem_pot_saved,verbose_scGF2)
-    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. .not.chem_pot_scG) &
+    if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. (.not.chem_pot_scG .and. .not.dont_adjust_Ne) ) &
      P_ao=nElectrons*P_ao/trace_1_rdm
     ! Check convergence of P_ao for fixed Sigma_c(i w)
     diff_Pao=0d0
@@ -665,6 +582,17 @@ subroutine scGF2_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,dolinGF2,restart_scGF2,v
  ! Write restart files
  call write_scGX_restart(nBas,ntimes,ntimes_twice,nfreqs,chem_pot,P_ao,P_ao_hf,G_ao_itau,G_ao_itau_hf, &
                          G_ao_iw_hf,DeltaG_ao_iw)
+ inquire(file='Print_Pao', exist=file_exists)
+ if(file_exists) then
+  write(*,*) 'P_scGF2_ao (full)'
+  do ibas=1,nBas
+   write(*,'(*(f10.5))') P_ao(ibas,:)
+  enddo
+  write(*,*) 'P_scGF2_ao (spin up)'
+  do ibas=1,nBas
+   write(*,'(*(f10.5))') 0.5d0*P_ao(ibas,:)
+  enddo
+ endif
  
  ! Using the correlated G and Sigma_c to test the linearized density matrix approximation
  if(dolinGF2) then

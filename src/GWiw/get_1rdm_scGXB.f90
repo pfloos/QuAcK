@@ -1,4 +1,4 @@
-subroutine get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
+subroutine get_1rdm_scGXB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
                           G_ao,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
 
 ! Compute the scGW 1RDM
