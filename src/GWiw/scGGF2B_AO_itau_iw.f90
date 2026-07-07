@@ -629,10 +629,11 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
  inquire(file='Print_Rao', exist=file_exists)
  if(file_exists) then
   write(*,*) 'R_scGGF2B_ao'
-  do abas=1,nBas2
+  do abas=1,nBas4
    write(*,'(*(f10.5))') Gen_R_ao(abas,:)
   enddo
  endif
+ write(*,*)
 
  ! Deallocate arrays
  deallocate(Occ)
