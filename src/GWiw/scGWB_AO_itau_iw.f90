@@ -89,8 +89,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   double precision,allocatable  :: R_ao_hfb(:,:)
   double precision,allocatable  :: R_ao_old(:,:)
   double precision,allocatable  :: H_ao_hfb(:,:)
-  double precision,allocatable  :: R_mo(:,:)
-  double precision,allocatable  :: cHFB_gorkov(:,:)
   double precision,allocatable  :: U_QP_tmp(:,:)
   double precision,allocatable  :: err_currentR(:)
   double precision,allocatable  :: err_diisR(:,:)
@@ -189,14 +187,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  allocate(Occ(nOrb))
  allocate(cNO(nBas,nOrb))
  allocate(cHFBinv(nOrb,nBas))
- allocate(cHFB_gorkov(nBas_twice,nOrb_twice))
  allocate(U_QP_tmp(nOrb_twice,nOrb_twice))
  allocate(U_mo(nOrb,nOrb))
  allocate(R_ao(nBas_twice,nBas_twice))
  allocate(R_ao_iter(nBas_twice,nBas_twice))
  allocate(R_ao_hfb(nBas_twice,nBas_twice))
  allocate(R_ao_old(nBas_twice,nBas_twice))
- allocate(R_mo(nOrb_twice,nOrb_twice))
  allocate(H_ao_hfb(nBas_twice,nBas_twice))
  allocate(G_ao_tmp(nBas,nBas))
  allocate(Mat_gorkov_tmp(nBas_twice,nBas_twice))
@@ -264,9 +260,6 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  R_ao=R_ao_hfb
  R_ao_iter=R_ao_hfb
  cHFBinv=matmul(transpose(cHFB),S)
- cHFB_gorkov=0d0
- cHFB_gorkov(1:nBas           ,1:nOrb           ) = cHFB(1:nBas,1:nOrb)
- cHFB_gorkov(nBas+1:nBas_twice,nOrb+1:nOrb_twice) = cHFB(1:nBas,1:nOrb)
  H_ao_hfb=0d0
  H_ao_hfb(1:nBas,1:nBas)=Hc(1:nBas,1:nBas)
  Ehfbl=0d0
@@ -381,7 +374,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   inquire(file='read_HFB_scGWB', exist=file_exists)
   read_HFB_chkp=.false.
   if(file_exists) read_HFB_chkp=.true.
-  call read_scGWB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_hfb,G_ao_iw_hfb,G_ao_itau,G_ao_itau_hfb,read_HFB_chkp)
+  call read_scGXB_restart(nBas_twice,nfreqs,ntimes_twice,chem_pot,R_ao,R_ao_hfb,G_ao_iw_hfb,G_ao_itau,G_ao_itau_hfb,read_HFB_chkp)
   R_ao_iter=R_ao
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  endif
@@ -648,10 +641,10 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
     H_ao_hfb(nBas+1:nBas_twice,1:nBas           ) =  H_ao_hfb(1:nBas,nBas+1:nBas_twice)
     ! Build G(i w) and R
     R_ao_old=R_ao
-    call get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
+    call get_1rdm_scGXB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
                         Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
-     call fix_chem_pot_scGWB_bisec(iter_hfb,nBas,nBas_twice,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,   &
+     call fix_chem_pot_scGXB_bisec(iter_hfb,nBas,nBas_twice,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,   &
                                    wcoord,wweight,Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm,chem_pot_saved, &
                                    verbose_scGWB)
     if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. .not.chem_pot_scG) &
@@ -814,7 +807,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  write(*,*)
 
  ! Write restart files
- call write_scGWB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
+ call write_scGXB_restart(nBas_twice,ntimes,ntimes_twice,nfreqs,chem_pot,R_ao,R_ao_hfb,G_ao_itau,G_ao_itau_hfb, &
                          G_ao_iw_hfb,DeltaG_ao_iw)
 
  inquire(file='Print_Rao', exist=file_exists)
@@ -907,10 +900,10 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
   write(*,*) ' -----------------------------------------------------------'
   ! Compute Go and Ro
   Sigma_c_w_ao=czero
-  call get_1rdm_scGWB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
+  call get_1rdm_scGXB(nBas,nBas_twice,nfreqs,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,wcoord,wweight, &
                       Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm) 
   if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. chem_pot_scG) &
-   call fix_chem_pot_scGWB_bisec(iter_hfb,nBas,nBas_twice,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,   &
+   call fix_chem_pot_scGXB_bisec(iter_hfb,nBas,nBas_twice,nfreqs,nElectrons,thrs_N,thrs_Ngrad,chem_pot,S,H_ao_hfb,Sigma_c_w_ao,   &
                                  wcoord,wweight,Mat_gorkov_tmp,G_ao_iw_hfb,DeltaG_ao_iw,R_ao,R_ao_hfb,trace_1_rdm,chem_pot_saved, &
                                  verbose_scGWB)
   if(abs(trace_1_rdm-nElectrons)**2d0>thrs_N .and. .not.chem_pot_scG) &
@@ -1015,14 +1008,12 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
  deallocate(Occ)
  deallocate(cHFBinv)
  deallocate(U_QP_tmp)
- deallocate(cHFB_gorkov)
  deallocate(cNO)
  deallocate(U_mo)
  deallocate(R_ao)
  deallocate(R_ao_iter)
  deallocate(R_ao_hfb)
  deallocate(R_ao_old)
- deallocate(R_mo)
  deallocate(H_ao_hfb)
  deallocate(G_ao_tmp)
  deallocate(Mat_gorkov_tmp)
