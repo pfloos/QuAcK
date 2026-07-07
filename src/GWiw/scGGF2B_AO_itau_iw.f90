@@ -466,8 +466,8 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
 
     ! Check convergence of Gen_R_ao for fixed Sigma_c(i w)
     diff_Rao=0d0
-    do abas=1,nBas2
-     do bbas=1,nBas2
+    do abas=1,nBas4
+     do bbas=1,nBas4
       diff_Rao=diff_Rao+abs(Gen_R_ao(abas,bbas)-Gen_R_ao_old(abas,bbas))
      enddo
     enddo
@@ -481,8 +481,8 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
      n_diisR=min(n_diisR+1,maxDIIS)
      err_currentR=0d0
      idiis_indexR=1
-     do abas=1,nBas2
-      do bbas=1,nBas2
+     do abas=1,nBas4
+      do bbas=1,nBas4
        err_currentR(idiis_indexR)=Gen_R_ao(abas,bbas)-Gen_R_ao_old(abas,bbas)
        if(abs(err_currentR(idiis_indexR))<1e-12) err_currentR(idiis_indexR)=0d0
        Gen_R_ao_extrap(idiis_indexR)=Gen_R_ao(abas,bbas)
@@ -491,8 +491,8 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
      enddo
      call DIIS_extrapolation(rcondR,nBas4Sq,nBas4Sq,n_diisR,err_diisR,Gen_R_ao_old_diis,err_currentR,Gen_R_ao_extrap)
      idiis_indexR=1
-     do abas=1,nBas2
-      do bbas=1,nBas2
+     do abas=1,nBas4
+      do bbas=1,nBas4
        Gen_R_ao(abas,bbas)=Gen_R_ao_extrap(idiis_indexR)
        idiis_indexR=idiis_indexR+1
       enddo
@@ -506,8 +506,8 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
 
   ! Check convergence of Gen_R_ao after a scGF2B iteration
   diff_Rao=0d0
-  do abas=1,nBas2
-   do bbas=1,nBas2
+  do abas=1,nBas4
+   do bbas=1,nBas4
     diff_Rao=diff_Rao+abs(Gen_R_ao(abas,bbas)-Gen_R_ao_iter(abas,bbas))
    enddo 
   enddo
@@ -561,8 +561,8 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
    err_current=czero
    idiis_index=1
    do itau=1,ntimes_twice
-    do abas=1,nBas2
-     do bbas=1,nBas2
+    do abas=1,nBas4
+     do bbas=1,nBas4
       err_current(idiis_index)=G_ao_itau(itau,abas,bbas)-G_ao_itau_old(itau,abas,bbas)
       if(abs(err_current(idiis_index))<1e-12) err_current(idiis_index)=czero
       G_itau_extrap(idiis_index)=G_ao_itau(itau,abas,bbas)
@@ -573,8 +573,8 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
    call complex_DIIS_extrapolation(rcond,nBas4Sqntimes2,nBas4Sqntimes2,n_diis,err_diis,G_itau_old_diis,err_current,G_itau_extrap)
    idiis_index=1
    do itau=1,ntimes_twice
-    do abas=1,nBas2
-     do bbas=1,nBas2
+    do abas=1,nBas4
+     do bbas=1,nBas4
       G_ao_itau(itau,abas,bbas)=G_itau_extrap(idiis_index)
       idiis_index=idiis_index+1
      enddo
