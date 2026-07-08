@@ -1,4 +1,4 @@
-subroutine RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc,        &
+subroutine RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc,        &
                       nBas,nOrb,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, & 
                       X,ERHF,e,c,P,F)
 
@@ -11,7 +11,7 @@ subroutine RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,writ
   integer,intent(in)            :: max_diis
   integer,intent(in)            :: guess_type
   double precision,intent(in)   :: thresh
-  double precision,intent(in)   :: level_shift
+  double precision,intent(in)   :: level_shift,mix
   logical,intent(in)            :: doaordm
   logical,intent(in)            :: writeMOs
 
@@ -96,7 +96,7 @@ subroutine RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,writ
 !---------------------!
 
     call wall_time(start_HF)
-    call RHF(.false.,doaordm,maxSCF,thresh,max_diis,guess,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc,&
+    call RHF(.false.,doaordm,maxSCF,thresh,max_diis,guess,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc,&
              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,e,c,P,F)
     call wall_time(end_HF)
 
