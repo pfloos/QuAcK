@@ -94,11 +94,9 @@ f.close()
 # Create PySCF molecule
 atoms = list(set(atom[0] for atom in list_pos_atom))
 if os.path.exists(input_basis):
-    print("MRM0" + working_dir + "/basis/" + input_basis)
     basis_dict = {atom: gto.basis.parse_nwchem.load(
         input_basis, atom) for atom in atoms}
 else:
-    print("MRM" + working_dir + "/basis/" + input_basis)
     basis_dict = {atom: gto.basis.parse_nwchem.load(
         working_dir + "/basis/" + input_basis, atom) for atom in atoms}
 basis = basis_dict
