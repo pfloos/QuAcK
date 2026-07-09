@@ -103,6 +103,9 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   complex*16,allocatable        :: Mat_gorkov_tmp2(:,:)
   complex*16,allocatable        :: G_itau_extrap(:)
   complex*16,allocatable        :: err_current(:)
+  complex*16,allocatable        :: G_ao1(:,:)
+  complex*16,allocatable        :: G_ao2(:,:)
+  complex*16,allocatable        :: G_ao3(:,:)
   complex*16,allocatable        :: G_ao_itau(:,:,:)
   complex*16,allocatable        :: G_ao_itau_old(:,:,:)
   complex*16,allocatable        :: G_ao_itau_hfb(:,:,:)
@@ -110,6 +113,9 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   complex*16,allocatable        :: G_itau_old_diis(:,:)
   complex*16,allocatable        :: G_ao_iw_hfb(:,:,:)
   complex*16,allocatable        :: DeltaG_ao_iw(:,:,:)
+  complex*16,allocatable        :: Ainter(:,:,:,:)
+  complex*16,allocatable        :: Binter(:,:,:,:)
+  complex*16,allocatable        :: Cinter(:,:,:,:)
 
 ! Output variables
   integer,intent(inout)         :: nfreqs
@@ -192,6 +198,12 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
  allocate(sinw2t_weight(ntimes,nfreqs))
  allocate(Mat1(nOrb2,nOrb2),Mat2(nOrb2,nOrb2))
  allocate(Mat3(nOrb2,nOrb2),Mat4(nOrb2,nOrb2))
+ allocate(Ainter(nBas2,nBas2,nBas2,nBas2))
+ allocate(Binter(nBas2,nBas2,nBas2,nBas2))
+ allocate(Cinter(nBas2,nBas2,nBas2,nBas2))
+ allocate(G_ao1(nBas2,nBas2))
+ allocate(G_ao2(nBas2,nBas2))
+ allocate(G_ao3(nBas2,nBas2))
  allocate(err_currentR(1))
  allocate(err_diisR(1,1))
  allocate(Gen_R_ao_extrap(1))
@@ -364,8 +376,113 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   EcGM_itau=czero
   Sigma_c_w_ao=czero
   do itau=1,ntimes
+   Sigma_c_plus=czero
+   Sigma_c_minus=czero
 
-   call Sigma_c_GGF2B_brut(nBas2,nBas4,G_ao_itau(2*itau-1,:,:),G_ao_itau(2*itau,:,:),db_ERI_AO,Sigma_c_plus,Sigma_c_minus) 
+   ! G(i tau) G(i tau) G(-i tau) -> Sigma_c(i tau)
+    ! Sigma_he_2prime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,      1:nBas2)  ! he   itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,      1:nBas2)  ! he   itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,      1:nBas2)  ! he  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_he_prime(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_plus(1:nBas2,1:nBas2))
+    ! Sigma_he_2primeprime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,      1:nBas2)  ! he   itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,nBas2+1:nBas4)  ! hh   itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,      1:nBas2)  ! ee  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_he_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_plus(1:nBas2,1:nBas2))
+    ! Sigma_eh_2prime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,nBas2+1:nBas4)  ! eh   itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,nBas2+1:nBas4)  ! eh   itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,nBas2+1:nBas4)  ! eh  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_eh_prime(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_plus(nBas2+1:nBas4,nBas2+1:nBas4))
+    ! Sigma_eh_2primeprime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,nBas2+1:nBas4)  ! eh   itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,nBas2+1:nBas4)  ! hh   itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,      1:nBas2)  ! ee  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_eh_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_plus(nBas2+1:nBas4,nBas2+1:nBas4))
+    ! Sigma_hh_2prime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,nBas2+1:nBas4)  ! hh   itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,      1:nBas2)  ! he   itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,      1:nBas2)  ! he  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_hh_prime(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_plus(1:nBas2,nBas2+1:nBas4))
+    ! Sigma_hh_2primeprime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,nBas2+1:nBas4)  ! hh   itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,nBas2+1:nBas4)  ! hh   itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,      1:nBas2)  ! ee  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_hh_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_plus(1:nBas2,nBas2+1:nBas4))
+    ! Sigma_ee_2prime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,      1:nBas2)  ! ee   itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,      1:nBas2)  ! he   itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,      1:nBas2)  ! he  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_ee_prime(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_plus(nBas2+1:nBas4,1:nBas2))
+    ! Sigma_ee_2primeprime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,      1:nBas2)  ! ee   itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,nBas2+1:nBas4)  ! hh   itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,      1:nBas2)  ! ee  -itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_ee_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_plus(nBas2+1:nBas4,1:nBas2))
+
+   ! G(-i tau) G(-i tau) G(i tau) -> Sigma_c(-i tau)
+    ! Sigma_he_2prime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,      1:nBas2)  ! he  -itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,      1:nBas2)  ! he  -itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,      1:nBas2)  ! he   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_he_prime(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(1:nBas2,1:nBas2))
+    ! Sigma_he_2primeprime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,      1:nBas2)  ! he  -itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,nBas2+1:nBas4)  ! hh  -itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,      1:nBas2)  ! ee   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_he_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(1:nBas2,1:nBas2))
+    ! Sigma_eh_2prime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,nBas2+1:nBas4)  ! eh  -itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,nBas2+1:nBas4)  ! eh  -itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,nBas2+1:nBas4)  ! eh   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_eh_prime(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(nBas2+1:nBas4,nBas2+1:nBas4))
+    ! Sigma_eh_2primeprime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,nBas2+1:nBas4)  ! eh  -itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,nBas2+1:nBas4)  ! hh  -itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,      1:nBas2)  ! ee   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_eh_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(nBas2+1:nBas4,nBas2+1:nBas4))
+    ! Sigma_hh_2prime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,nBas2+1:nBas4)  ! hh  -itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,      1:nBas2)  ! he  -itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,      1:nBas2)  ! he   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_hh_prime(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(1:nBas2,nBas2+1:nBas4))
+    ! Sigma_hh_2primeprime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,nBas2+1:nBas4)  ! hh  -itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,nBas2+1:nBas4)  ! hh  -itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,      1:nBas2)  ! ee   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_hh_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(1:nBas2,nBas2+1:nBas4))
+    ! Sigma_ee_2prime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,      1:nBas2)  ! ee  -itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,      1:nBas2)  ! he  -itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,      1:nBas2,      1:nBas2)  ! he   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_ee_prime(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(nBas2+1:nBas4,1:nBas2))
+    ! Sigma_ee_2primeprime
+    G_ao1(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,nBas2+1:nBas4,      1:nBas2)  ! ee  -itau
+    G_ao2(1:nBas2,1:nBas2) = G_ao_itau(2*itau  ,      1:nBas2,nBas2+1:nBas4)  ! hh  -itau
+    G_ao3(1:nBas2,1:nBas2) = G_ao_itau(2*itau-1,nBas2+1:nBas4,      1:nBas2)  ! ee   itau
+    Ainter=czero;Binter=czero;Cinter=czero;
+    call Sigma_c_GGF2B_ee_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(nBas2+1:nBas4,1:nBas2))
+
+   inquire(file='Bog_Sigma_c_M8', exist=file_exists)
+   if(file_exists) then
+    call Sigma_c_GGF2B_brut(nBas2,nBas4,G_ao_itau(2*itau-1,:,:),G_ao_itau(2*itau,:,:),db_ERI_AO,Sigma_c_plus,Sigma_c_minus) 
+   endif
 
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
@@ -660,6 +777,12 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
  deallocate(Sigma_c_s)
  deallocate(Mat1,Mat2)
  deallocate(Mat3,Mat4)
+ deallocate(Ainter)
+ deallocate(Binter)
+ deallocate(Cinter)
+ deallocate(G_ao1)
+ deallocate(G_ao2)
+ deallocate(G_ao3)
  deallocate(tweight,tcoord)
  deallocate(sint2w_weight)
  deallocate(cost2w_weight)
