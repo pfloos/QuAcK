@@ -355,10 +355,16 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
   nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
 
   if(dostab) then
-
-    call wall_time(start_stab)
-    call UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
-    call wall_time(end_stab)
+    
+    if(doMOM) then
+      call wall_time(start_stab)
+      call MOM_UHF_stability(nBas,nC,nO,nV,nR,nS,nCVS,FC,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,mom_occupations)
+      call wall_time(end_stab)
+    else
+      call wall_time(start_stab)
+      call UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
+      call wall_time(end_stab)
+    end if
 
     t_stab = end_stab - start_stab
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'
