@@ -14,7 +14,7 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
   double precision,intent(inout):: mix
   double precision,intent(in)   :: level_shift
   logical,intent(in)            :: writeMOs
-
+  
   integer,intent(in)            :: nBas
   integer,intent(in)            :: nC(nspin)
   integer,intent(in)            :: nO(nspin)
@@ -45,6 +45,7 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
   double precision              :: start_HF     ,end_HF       ,t_HF
   double precision              :: start_stab   ,end_stab     ,t_stab
   double precision              :: start_AOtoMO ,end_AOtoMO   ,t_AOtoMO
+  double precision              :: kick
 
   logical                       :: unstab,found
   integer                       :: guess
@@ -236,11 +237,17 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
     write(*,*)'-------------------------------------------------------------'
  
 
+    write(*,'(1X,A40,1X)')           'Too bad, UHF solution is unstable!'
     write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue:',Om(1),' au'
-    write(*,'(1X,A40,1X,F15.10,A3)') 'E(RHF) = ',ENuc + EUHF,' au'
-    write(*,*) 
+    write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EUHF,' au'
+    write(*,*)
     write(*,'(1X,A40,1X,A10)')       'Which one would you like to follow?','[Exit:0]'
     read(*,*) eig
+    if(eig == 0) return
+    write(*,'(1X,A40,1X,A10)')       'How strong do you want to kick?', '[Exit: 0]'
+    read(*,*) kick
+    if(kick == 0) return
+    
 
     if(eig < 0 .or. eig > nSt)  then
       write(*,'(1X,A40,1X,A10)')     'Invalid option...','Stop...'
@@ -249,7 +256,6 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
       stop
     end if
 
-    if(eig == 0) return
 
     ! Spin-up kick
 
@@ -258,8 +264,8 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
     do i=1,nO(1) - nFC(1)
       do a=nCVS(1)+1,nBas - nO(1)
         ia = ia + 1
-        R(virtuals(a,1),occupations_fc(i,1)) = +AB(ia,eig)
-        R(occupations_fc(i,1),virtuals(a,1)) = -AB(ia,eig)
+        R(virtuals(a,1),occupations_fc(i,1)) = +AB(ia,eig)*kick
+        R(occupations_fc(i,1),virtuals(a,1)) = -AB(ia,eig)*kick
       end do
     end do
 
@@ -273,8 +279,8 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
     do i=1,nO(2) - nFC(2)
       do a=nCVS(2)+1,nBas - nO(2)
         ia = ia + 1
-        R(virtuals(a,2),occupations_fc(i,2)) = +AB(ia,eig)
-        R(occupations_fc(i,2),virtuals(a,2)) = -AB(ia,eig)
+        R(virtuals(a,2),occupations_fc(i,2)) = +AB(ia,eig)*kick
+        R(occupations_fc(i,2),virtuals(a,2)) = -AB(ia,eig)*kick
       end do
     end do
 
