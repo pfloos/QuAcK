@@ -1,6 +1,6 @@
 subroutine MOM_UHF_stability(nBas,nC,nO,nV,nR,nS,nCVS,FC,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,occupations)
 
-! Perform a stability analysis of the RHF solution
+! Perform a stability analysis of the UHF solution obtained by MOM with eventually CVS and/or frozen core
 
   implicit none
   include 'parameters.h'
