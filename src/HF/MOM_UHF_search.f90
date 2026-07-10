@@ -236,8 +236,6 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
     end do
     write(*,*)'-------------------------------------------------------------'
  
-
-    write(*,'(1X,A40,1X)')           'Too bad, UHF solution is unstable!'
     write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue:',Om(1),' au'
     write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EUHF,' au'
     write(*,*)
