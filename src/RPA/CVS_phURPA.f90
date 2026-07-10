@@ -124,8 +124,6 @@ subroutine CVS_phURPA(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fli
     ispin = 1
 
     ! Memory allocation
-    nFC(1) = MERGE(1,0,FC(1)/=0) 
-    nFC(2) = MERGE(1,0,FC(2)/=0) 
     nSa = (nBas - nO(1) - nCVS(1))*(nO(1) - nFC(1))
     nSb = (nBas - nO(2) - nCVS(2))*(nO(2) - nFC(2))
     nSt = nSa + nSb

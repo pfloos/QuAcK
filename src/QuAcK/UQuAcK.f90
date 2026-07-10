@@ -355,10 +355,16 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
   nS(:) = (nO(:) - nC(:))*(nV(:) - nR(:))
 
   if(dostab) then
-
-    call wall_time(start_stab)
-    call UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
-    call wall_time(end_stab)
+    
+    if(doMOM) then
+      call wall_time(start_stab)
+      call MOM_UHF_stability(nBas,nC,nO,nV,nR,nS,nCVS,FC,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,mom_occupations)
+      call wall_time(end_stab)
+    else
+      call wall_time(start_stab)
+      call UHF_stability(nBas,nC,nO,nV,nR,nS,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb)
+      call wall_time(end_stab)
+    end if
 
     t_stab = end_stab - start_stab
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'
@@ -367,13 +373,20 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
   end if
 
   if(dosearch) then
-
-    call wall_time(start_stab)
-    call UHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-                    nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,      &
-                    dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF,FHF)
-
-    call wall_time(end_stab)
+    
+    if(doMOM) then
+      call wall_time(start_stab)
+      call MOM_UHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+                      nBas,nC,nO,nV,nR,nCVS,FC,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,           &
+                      dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
+      call wall_time(end_stab)
+    else
+      call wall_time(start_stab)
+      call UHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+                      nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,      &
+                      dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF,FHF)
+      call wall_time(end_stab)
+    end if
 
     t_stab = end_stab - start_stab
     write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for stability analysis = ',t_stab,' seconds'

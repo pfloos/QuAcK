@@ -75,9 +75,9 @@ subroutine MOM_RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,
 ! Memory allocation
 
   write(*,*)
-  write(*,*) '****************************'
-  write(*,*) '* Search for RHF solutions *'
-  write(*,*) '****************************'
+  write(*,*) '********************************'
+  write(*,*) '* Search for MOM-RHF solutions *'
+  write(*,*) '********************************'
   write(*,*)
 
 ! CVS
@@ -143,6 +143,23 @@ subroutine MOM_RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
     write(*,*)
+
+    ! Do Frozen core
+    occupations_fc(1:nO-nFC) = occupations(1:nO - nFC) 
+    found = .false.
+    do i=1,nO-1
+      if(.not. found) then
+        if(occupations(i)==FC) then
+          found = .true.
+          occupations_fc(i) = occupations(i+1) 
+        else
+          occupations_fc(i) = occupations(i)
+        endif
+      else
+        occupations_fc(i) = occupations(i+1) 
+      endif 
+    enddo
+
 
 !----------------------------------!
 ! AO to MO integral transformation !
@@ -217,23 +234,6 @@ subroutine MOM_RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,
     call matrix_exponential(nOrb,R,ExpR)
     c = matmul(c,ExpR)
  
-    ! Do Frozen core
-    do ispin=1,nspin
-      occupations_fc(1:nO-nFC) = occupations(1:nO - nFC) 
-      found = .false.
-      do i=1,nO-1
-        if(.not. found) then
-          if(occupations(i)==FC) then
-            found = .true.
-            occupations_fc(i) = occupations(i+1) 
-          else
-            occupations_fc(i) = occupations(i)
-          endif
-        else
-          occupations_fc(i) = occupations(i+1) 
-        endif 
-      enddo
-    enddo
 
     write(*,*)'-------------------------------------------------------------'
     write(*,*)
