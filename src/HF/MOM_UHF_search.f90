@@ -63,6 +63,7 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
   double precision,allocatable  :: AB(:,:)
   double precision,allocatable  :: R(:,:)
   double precision,allocatable  :: ExpR(:,:)
+  double precision              :: thresh_eig = 0.5d0
   
   integer                       :: ixyz
   integer                       :: eig
@@ -235,7 +236,31 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
         '|',ia,'|',Om(ia),'|',Om(ia)*HaToeV,'|'
     end do
     write(*,*)'-------------------------------------------------------------'
- 
+    do mu = 1,min(nSt,maxS)
+      write(*,*) 'Eigenvale no:',mu
+      do i=1,nO(1) - nFC(1)
+        do a=nCVS(1)+1,nBas - nO(1)
+          ia = ia + 1
+          if (abs(AB(ia,mu)) > thresh_eig) then
+            write(*,*) 'Transition alpha', ':' ,'weight'
+            write(*,*) occupations_fc(i,1),'->',virtuals(a,1),':',abs(AB(ia,mu))
+          end if
+        end do
+      end do
+      ia = nSa
+      do i=1,nO(2) - nFC(2)
+        do a=nCVS(2)+1,nBas - nO(2)
+          ia = ia + 1
+          if (abs(AB(ia,mu)) > thresh_eig) then
+            write(*,*) 'Transition beta', ':' ,'weight'
+            write(*,*) occupations_fc(i,2),'->',virtuals(a,2),':',abs(AB(ia,mu))
+          end if
+        end do
+      end do
+
+      write(*,*) '--------------------------------'
+
+    end do 
     write(*,'(1X,A40,1X,F15.10,A3)') 'Smallest eigenvalue:',Om(1),' au'
     write(*,'(1X,A40,1X,F15.10,A3)') 'E(UHF) = ',ENuc + EUHF,' au'
     write(*,*)
@@ -287,7 +312,7 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
 
     write(*,*)'-------------------------------------------------------------'
     write(*,*)
-
+    write(*,*) unstab
 !---------------!
 ! End of Search !
 !---------------!
