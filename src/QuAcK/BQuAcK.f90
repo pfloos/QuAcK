@@ -267,7 +267,8 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
   ! scGF2 Bogoliubov
   if(doscGF2) then
    no_fock=.false.
-   block ! Create a 'faked' Generalized HFB solution
+   ! MRM: TODO using a Block to remind that we should fix the restricted version of Bog. scGF2
+   block ! Create a 'faked' Generalized HFB solution to use generalized Bog. scGF2
     integer                        :: ibas,jbas,kbas,lbas
     integer                        :: nBas_twice
     integer                        :: nBas_3times

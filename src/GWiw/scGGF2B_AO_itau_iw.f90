@@ -35,6 +35,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   logical                       :: file_exists
   logical                       :: read_HFB_chkp
 
+  integer                       :: iunit=313
   integer                       :: ifreq,itau
   integer                       :: abas,bbas,cbas,dbas
   integer                       :: pbas,qbas,rbas,sbas
@@ -154,6 +155,15 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
  eta=0d0
  thrs_N=1d-10
  thrs_Ngrad=1d-6
+ inquire(file='threshold_N', exist=file_exists) ! Allow a hidden user defined threshold
+ if(file_exists) then
+  open(unit=iunit,form='formatted',file='threshold_N',status='old')
+  read(iunit,*) thrs_N
+  close(iunit)
+  write(*,*)
+  write(*,'(a,f15.8)') ' using as thrs_N ',thrs_N
+  write(*,*)
+ endif
  thrs_Rao=thresh_in
  nElectrons=0d0
  do abas=1,nBas2
