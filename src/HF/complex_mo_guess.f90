@@ -17,6 +17,7 @@ subroutine complex_mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
 ! Local variables  
   integer                       :: iorb
+  double precision,allocatable  :: real_c(:,:)
 
 ! Output variables
 
@@ -31,6 +32,17 @@ subroutine complex_mo_guess(nBas, nOrb, guess_type, S, Hc, X, c)
 
     write(*,*) 'Core guess...'
     call complex_core_guess(nBas, nOrb, Hc, X, c)
+  
+  elseif(guess_type == 3) then
+    
+    allocate(real_c(nBas,nOrb))
+    
+    call random_number(real_c)
+
+    write(*,*) 'Random guess...'
+    c(:,:) = cmplx(2d0*real_c(:,:) - 1d0,0d0,kind=8)
+    
+    deallocate(real_c)
   
   elseif(guess_type == 2) then
 
