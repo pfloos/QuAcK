@@ -155,7 +155,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
  eta=0d0
  thrs_N=1d-10
  thrs_Ngrad=1d-6
- inquire(file='threshold_N', exist=file_exists)
+ inquire(file='threshold_N', exist=file_exists) ! Allow a hidden user defined threshold
  if(file_exists) then
   open(unit=iunit,form='formatted',file='threshold_N',status='old')
   read(iunit,*) thrs_N
