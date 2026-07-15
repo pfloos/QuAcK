@@ -83,6 +83,32 @@ subroutine CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occup
     end do
   end do
 
+  ! Occupied part of the renormalization factor
+
+  do ispin=1,nspin
+    do p=1,nBas
+      do i=1,nO(ispin)-nFC(ispin)
+        do m=1,nSt
+          Dpim = e(p,ispin) - e(occupations(i,ispin),ispin) + Om(m)
+          Z(p,ispin) = Z(p,ispin) - rho(p,occupations(i,ispin),m,ispin)**2*(1d0-dexp(-2d0*s*Dpim*Dpim))/Dpim**2
+        end do
+      end do
+    end do
+  end do
+
+  ! Virtual part of the renormalization factor
+
+  do ispin=1,nspin
+    do p=1,nBas
+      do a=nCVS(ispin)+1,nBas-nO(ispin)
+        do m=1,nSt
+          Dpam = e(p,ispin) - e(virtuals(a,ispin),ispin) - Om(m)
+          Z(p,ispin) = Z(p,ispin)  - rho(p,virtuals(a,ispin),m,ispin)**2*(1d0-dexp(-2d0*s*Dpam*Dpam))/Dpam**2
+        end do
+      end do
+    end do
+  end do
+
 ! Compute renormalization factor from derivative 
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
