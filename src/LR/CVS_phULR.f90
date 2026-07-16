@@ -93,10 +93,8 @@ subroutine CVS_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
         XpY(:,i) = - XpY(:,i)
       end if
     enddo
-    
 
     call sort_eigenvalues_vec_vec(nSt,Om,XmY,XpY)
-    
     ! Orthonormalize
     ApB = matmul(transpose(XmY),XpY)
     call orthogonalize_matrix(1,nSt,ApB,AmB)

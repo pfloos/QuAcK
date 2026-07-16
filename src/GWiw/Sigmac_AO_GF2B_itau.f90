@@ -785,11 +785,13 @@ subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,
   write(*,*) 'Computing Bog. Sigma_c (M^8)'
   write(*,*)
 
-  !$OMP PARALLEL DEFAULT(NONE)                                                    &
-  !$OMP          PRIVATE(abas,bbas,cbas,dbas,gbas,ebas,fbas,hbas,Integ_val)       &
-  !$OMP          SHARED(nBas,nBas_twice,G_plus,G_minus,ERI_AO,                    &
-  !$OMP &        G_he_plus,G_hh_plus,G_ee_plus,G_eh_plus,G_he_minus,G_hh_minus,   &
-  !$OMP &        G_ee_minus,G_eh_minus,Sigma_he_plus,Sigma_hh_plus,Sigma_ee_plus, &
+  !$OMP PARALLEL DEFAULT(NONE)                                                              &
+  !$OMP PRIVATE( abas,bbas,cbas,dbas,gbas,ebas,fbas,hbas,Integ_val)                         &
+  !$OMP PRIVATE( Sigma_he_plus_th,Sigma_hh_plus_th,Sigma_ee_plus_th,Sigma_eh_plus_th,       &
+  !$OMP          Sigma_he_minus_th,Sigma_hh_minus_th,Sigma_ee_minus_th,Sigma_eh_minus_th)   &
+  !$OMP SHARED(  nBas,nBas_twice,G_plus,G_minus,ERI_AO,                                     &
+  !$OMP &        G_he_plus,G_hh_plus,G_ee_plus,G_eh_plus,G_he_minus,G_hh_minus,             &
+  !$OMP &        G_ee_minus,G_eh_minus,Sigma_he_plus,Sigma_hh_plus,Sigma_ee_plus,           &
   !$OMP &        Sigma_eh_plus,Sigma_he_minus,Sigma_hh_minus,Sigma_ee_minus,Sigma_eh_minus)
   block ! Use block to define local arrays
   complex*16,allocatable        :: Sigma_he_plus_th(:,:)
