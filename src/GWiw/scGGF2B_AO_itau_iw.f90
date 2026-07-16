@@ -489,11 +489,6 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
     Ainter=czero;Binter=czero;Cinter=czero;
     call Sigma_c_GGF2B_ee_prime2(nBas2,Ainter,Binter,Cinter,G_ao1,G_ao2,G_ao3,db_ERI_AO,Sigma_c_minus(nBas2+1:nBas4,1:nBas2))
 
-   inquire(file='Bog_Sigma_c_M8', exist=file_exists)
-   if(file_exists) then
-    call Sigma_c_GGF2B_brut(nBas2,nBas4,G_ao_itau(2*itau-1,:,:),G_ao_itau(2*itau,:,:),db_ERI_AO,Sigma_c_plus,Sigma_c_minus) 
-   endif
-
    ! Corrected Eqs. 17 and 18 in PRB, 109, 245101 (2024)
    Sigma_c_c= -im*(Sigma_c_plus+Sigma_c_minus)
    Sigma_c_s= -   (Sigma_c_plus-Sigma_c_minus)
