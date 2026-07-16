@@ -737,6 +737,15 @@ subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,
   complex*16,allocatable        :: Sigma_hh_minus(:,:)
   complex*16,allocatable        :: Sigma_ee_minus(:,:)
   complex*16,allocatable        :: Sigma_eh_minus(:,:)
+  
+  complex*16                    :: Sigma_he_plus_th(nBas,nBas)
+  complex*16                    :: Sigma_hh_plus_th(nBas,nBas)
+  complex*16                    :: Sigma_ee_plus_th(nBas,nBas)
+  complex*16                    :: Sigma_eh_plus_th(nBas,nBas)
+  complex*16                    :: Sigma_he_minus_th(nBas,nBas)
+  complex*16                    :: Sigma_hh_minus_th(nBas,nBas)
+  complex*16                    :: Sigma_ee_minus_th(nBas,nBas)
+  complex*16                    :: Sigma_eh_minus_th(nBas,nBas)
 
 ! Output variables
   complex*16,intent(inout)      :: Sigma_c_plus(nBas_twice,nBas_twice)
@@ -793,25 +802,6 @@ subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,
   !$OMP &        G_he_plus,G_hh_plus,G_ee_plus,G_eh_plus,G_he_minus,G_hh_minus,             &
   !$OMP &        G_ee_minus,G_eh_minus,Sigma_he_plus,Sigma_hh_plus,Sigma_ee_plus,           &
   !$OMP &        Sigma_eh_plus,Sigma_he_minus,Sigma_hh_minus,Sigma_ee_minus,Sigma_eh_minus)
-  block ! Use block to define local arrays
-  complex*16,allocatable        :: Sigma_he_plus_th(:,:)
-  complex*16,allocatable        :: Sigma_hh_plus_th(:,:)
-  complex*16,allocatable        :: Sigma_ee_plus_th(:,:)
-  complex*16,allocatable        :: Sigma_eh_plus_th(:,:)
-  complex*16,allocatable        :: Sigma_he_minus_th(:,:)
-  complex*16,allocatable        :: Sigma_hh_minus_th(:,:)
-  complex*16,allocatable        :: Sigma_ee_minus_th(:,:)
-  complex*16,allocatable        :: Sigma_eh_minus_th(:,:)
-
-  ! Allocate local arrays
-  allocate(Sigma_he_plus_th(nBas,nBas)) 
-  allocate(Sigma_hh_plus_th(nBas,nBas))
-  allocate(Sigma_ee_plus_th(nBas,nBas))
-  allocate(Sigma_eh_plus_th(nBas,nBas))
-  allocate(Sigma_he_minus_th(nBas,nBas))
-  allocate(Sigma_hh_minus_th(nBas,nBas))
-  allocate(Sigma_ee_minus_th(nBas,nBas))
-  allocate(Sigma_eh_minus_th(nBas,nBas))
 
   ! Initialize local arrays
   Sigma_he_plus_th=czero
@@ -899,17 +889,6 @@ subroutine Sigma_c_GF2B_brut(nBas,nBas_twice,G_plus,G_minus,ERI_AO,Sigma_c_plus,
   ! Wait for all to finish
   !$OMP BARRIER 
 
-  ! Deallocate local arrays 
-  deallocate(Sigma_he_plus_th) 
-  deallocate(Sigma_hh_plus_th)
-  deallocate(Sigma_ee_plus_th)
-  deallocate(Sigma_eh_plus_th)
-  deallocate(Sigma_he_minus_th)
-  deallocate(Sigma_hh_minus_th)
-  deallocate(Sigma_ee_minus_th)
-  deallocate(Sigma_eh_minus_th)
-
-  end block !
   !$OMP END PARALLEL
 
   ! Set Sigma_c Gorkov
