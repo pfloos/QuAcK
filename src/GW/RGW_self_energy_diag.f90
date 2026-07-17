@@ -41,9 +41,14 @@ subroutine RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z
  
 ! Occupied part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+  !$OMP PRIVATE(m,i,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC+1,nBas-nR
-    do i=nC+1,nO
-      do m=1,nS
+    do m=1,nS
+      do i=nC+1,nO
 
         eps = e(p) - e(i) + Om(m)
         num = 2d0*rho(p,i,m)**2
@@ -53,12 +58,19 @@ subroutine RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 ! Virtual part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nS,nC,nO,nBas,nR,e,Om) &
+  !$OMP PRIVATE(m,a,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC+1,nBas-nR
-    do a=nO+1,nBas-nR
-      do m=1,nS
+    do m=1,nS
+      do a=nO+1,nBas-nR
 
         eps = e(p) - e(a) - Om(m)
         num = 2d0*rho(p,a,m)**2
@@ -68,13 +80,21 @@ subroutine RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 ! Galitskii-Migdal correlation energy
 
   EcGM = 0d0
-  do i=nC+1,nO
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,eta,nS,nC,nO,nBas,nR,e,Om,EcGM) &
+  !$OMP PRIVATE(m,i,a,eps,num) &
+  !$OMP DEFAULT(NONE) &
+  !$OMP REDUCTION(-:EcGM)
+  !$OMP DO
+  do m=1,nS
     do a=nO+1,nBas-nR
-      do m=1,nS
+      do i=nC+1,nO
 
         eps = e(a) - e(i) + Om(m)
         num = 4d0*rho(a,i,m)**2
@@ -83,6 +103,8 @@ subroutine RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 ! Compute renormalization factor from derivative 
 
