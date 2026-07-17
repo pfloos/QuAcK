@@ -41,9 +41,14 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
 
   ! Occupied part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nSt,nC,nO,nBas,nR,e,Om) &
+  !$OMP PRIVATE(m,i,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC(1)+1,nBas-nR(1)
-    do i=nC(1)+1,nO(1)
-      do m=1,nSt
+    do m=1,nSt
+      do i=nC(1)+1,nO(1)
         eps = e(p,1) - e(i,1) + Om(m)
         num = rho(p,i,m,1)**2
         Sig(p,1) = Sig(p,1) + num*eps/(eps**2 + eta**2)
@@ -51,12 +56,19 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   ! Virtual part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nSt,nC,nO,nBas,nR,e,Om) &
+  !$OMP PRIVATE(m,a,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC(1)+1,nBas-nR(1)
-    do a=nO(1)+1,nBas-nR(1)
-      do m=1,nSt
+    do m=1,nSt
+      do a=nO(1)+1,nBas-nR(1)
         eps = e(p,1) - e(a,1) - Om(m)
         num = rho(p,a,m,1)**2
         Sig(p,1) = Sig(p,1) + num*eps/(eps**2 + eta**2)
@@ -64,18 +76,28 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   ! GM correlation energy
 
-  do i=nC(1)+1,nO(1)
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,EcGM) &
+  !$OMP PRIVATE(m,i,a,eps,num) &
+  !$OMP DEFAULT(NONE) &
+  !$OMP REDUCTION(-:EcGM)
+  !$OMP DO
+  do m=1,nSt
     do a=nO(1)+1,nBas-nR(1)
-      do m=1,nSt
+      do i=nC(1)+1,nO(1)
         eps = e(a,1) - e(i,1) + Om(m)  
         num = rho(a,i,m,1)**2
         EcGM(1) = EcGM(1) - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 !----------------!
 ! Spin-down part !
@@ -83,9 +105,14 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
 
   ! Occupied part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nSt,nC,nO,nBas,nR,e,Om) &
+  !$OMP PRIVATE(m,i,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC(2)+1,nBas-nR(2)
-    do i=nC(2)+1,nO(2)
-      do m=1,nSt
+    do m=1,nSt
+      do i=nC(2)+1,nO(2)
         eps = e(p,2) - e(i,2) + Om(m)
         num = rho(p,i,m,2)**2
         Sig(p,2) = Sig(p,2) + num*eps/(eps**2 + eta**2)
@@ -93,12 +120,19 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   ! Virtual part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nSt,nC,nO,nBas,nR,e,Om) &
+  !$OMP PRIVATE(m,a,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC(2)+1,nBas-nR(2)
-    do a=nO(2)+1,nBas-nR(2)
-      do m=1,nSt
+    do m=1,nSt
+      do a=nO(2)+1,nBas-nR(2)
         eps = e(p,2) - e(a,2) - Om(m)
         num = rho(p,a,m,2)**2
         Sig(p,2) = Sig(p,2) + num*eps/(eps**2 + eta**2)
@@ -106,18 +140,28 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   ! GM correlation energy
 
-  do i=nC(2)+1,nO(2)
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,EcGM) &
+  !$OMP PRIVATE(m,i,a,eps,num) &
+  !$OMP DEFAULT(NONE) &
+  !$OMP REDUCTION(-:EcGM)
+  !$OMP DO
+  do m=1,nSt
     do a=nO(2)+1,nBas-nR(2)
-      do m=1,nSt
+      do i=nC(2)+1,nO(2)
         eps = e(a,2) - e(i,2) + Om(m)
         num = rho(a,i,m,2)**2
         EcGM(2) = EcGM(2) - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 ! Compute renormalization factor from derivative 
 
