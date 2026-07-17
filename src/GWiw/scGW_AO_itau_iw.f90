@@ -37,6 +37,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA
   logical                       :: dont_adjust_Ne
   logical                       :: normal_diis
 
+  integer                       :: iunit=313
   integer                       :: n_diis
   integer                       :: n_diisP
   integer                       :: verbose
@@ -149,6 +150,15 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA
  eta=0d0
  thrs_N=1d-10
  thrs_Ngrad=1d-6
+ inquire(file='threshold_N', exist=file_exists) ! Allow a hidden user defined threshold
+ if(file_exists) then
+  open(unit=iunit,form='formatted',file='threshold_N',status='old')
+  read(iunit,*) thrs_N
+  close(iunit)
+  write(*,*)
+  write(*,'(a,f15.8)') ' using as thrs_N ',thrs_N
+  write(*,*)
+ endif
  thrs_Pao=thresh_in
  nElectrons=2d0*nO
  nBasSq=nBas*nBas

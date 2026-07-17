@@ -30,6 +30,7 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
   logical                       :: file_exists
   logical                       :: read_SD_chkp
 
+  integer                       :: iunit=313
   integer                       :: n_diis
   integer                       :: n_diisP
   integer                       :: verbose
@@ -120,6 +121,15 @@ subroutine scGHF_AO_itau_iw(nBas,nOrb,nO,maxSCF,maxDIIS,verbose_scGHF,restart_sc
  thrs_N=1d-10
  thrs_Ngrad=1d-6
  thrs_Pao=1d-6
+ inquire(file='threshold_N', exist=file_exists) ! Allow a hidden user defined threshold
+ if(file_exists) then
+  open(unit=iunit,form='formatted',file='threshold_N',status='old')
+  read(iunit,*) thrs_N
+  close(iunit)
+  write(*,*)
+  write(*,'(a,f15.8)') ' using as thrs_N ',thrs_N
+  write(*,*)
+ endif
  nElectrons=2d0*nO
  nBasSq=nBas*nBas
  chem_pot_saved = 0.5d0*(eHF(nO)+eHF(nO+1))
