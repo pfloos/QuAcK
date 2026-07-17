@@ -26,6 +26,7 @@ subroutine CVS_UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupations,vir
 
   integer                       :: i,a,p,q,m
   double precision              :: num,eps
+  double precision              :: EcGM_alpha, EcGM_beta
 
 ! Output variables
 
@@ -88,24 +89,26 @@ subroutine CVS_UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupations,vir
   !$OMP END PARALLEL
 
   ! GM correlation energy
-
+  
+  EcGM_alpha = 0d0
   !$OMP PARALLEL &
-  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals,EcGM) &
+  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals) &
   !$OMP PRIVATE(m,i,a,eps,num) &
   !$OMP DEFAULT(NONE) &
-  !$OMP REDUCTION(-:EcGM)
+  !$OMP REDUCTION(-:EcGM_alpha)
   !$OMP DO
   do m=1,nSt
     do a=nCVS(1)+1,nBas-nO(1)
       do i=1,nO(1)-nFC(1)
         eps = e(virtuals(a,1),1) - e(occupations(i,1),1) + Om(m)
         num = rho(virtuals(a,1),occupations(i,1),m,1)**2
-        EcGM(1) = EcGM(1) - num*eps/(eps**2 + eta**2)
+        EcGM_alpha = EcGM_alpha - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
   !$OMP END DO
   !$OMP END PARALLEL
+  EcGM(1) = EcGM_alpha
 
 !----------------!
 ! Spin-down part !
@@ -157,23 +160,25 @@ subroutine CVS_UGW_self_energy(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupations,vir
 
   ! GM correlation energy
 
+  EcGM_beta = 0d0
   !$OMP PARALLEL &
-  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals,EcGM) &
+  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals) &
   !$OMP PRIVATE(m,i,a,eps,num) &
   !$OMP DEFAULT(NONE) &
-  !$OMP REDUCTION(-:EcGM)
+  !$OMP REDUCTION(-:EcGM_beta)
   !$OMP DO
   do m=1,nSt
     do a=nCVS(2)+1,nBas-nO(2)
       do i=1,nO(2)-nFC(2)
         eps = e(virtuals(a,2),2) - e(occupations(i,2),2) + Om(m)
         num = rho(virtuals(a,2),occupations(i,2),m,2)**2
-        EcGM(2) = EcGM(2) - num*eps/(eps**2 + eta**2)
+        EcGM_beta = EcGM_beta - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
   !$OMP END DO
   !$OMP END PARALLEL
+  EcGM(2) = EcGM_beta
 
 ! Compute renormalization factor from derivative 
 

@@ -22,6 +22,7 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
 
   integer                       :: i,a,p,m
   double precision              :: num,eps
+  double precision              :: EcGM_alpha,EcGM_beta
 
 ! Output variables
 
@@ -80,24 +81,26 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
   !$OMP END PARALLEL
 
   ! GM correlation energy
-
+  
+  EcGM_alpha = 0d0
   !$OMP PARALLEL &
-  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,EcGM) &
+  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om) &
   !$OMP PRIVATE(m,i,a,eps,num) &
   !$OMP DEFAULT(NONE) &
-  !$OMP REDUCTION(-:EcGM)
+  !$OMP REDUCTION(-:EcGM_alpha)
   !$OMP DO
   do m=1,nSt
     do a=nO(1)+1,nBas-nR(1)
       do i=nC(1)+1,nO(1)
         eps = e(a,1) - e(i,1) + Om(m)  
         num = rho(a,i,m,1)**2
-        EcGM(1) = EcGM(1) - num*eps/(eps**2 + eta**2)
+        EcGM_alpha = EcGM_alpha - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
   !$OMP END DO
   !$OMP END PARALLEL
+  EcGM(1) = EcGM_alpha
 
 !----------------!
 ! Spin-down part !
@@ -144,27 +147,29 @@ subroutine UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,e,Om,rho,EcGM,Sig,Z)
   !$OMP END PARALLEL
 
   ! GM correlation energy
-
+  
+  EcGM_beta = 0d0
   !$OMP PARALLEL &
-  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,EcGM) &
+  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om) &
   !$OMP PRIVATE(m,i,a,eps,num) &
   !$OMP DEFAULT(NONE) &
-  !$OMP REDUCTION(-:EcGM)
+  !$OMP REDUCTION(-:EcGM_beta)
   !$OMP DO
   do m=1,nSt
     do a=nO(2)+1,nBas-nR(2)
       do i=nC(2)+1,nO(2)
         eps = e(a,2) - e(i,2) + Om(m)
         num = rho(a,i,m,2)**2
-        EcGM(2) = EcGM(2) - num*eps/(eps**2 + eta**2)
+        EcGM_beta = EcGM_beta - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
   !$OMP END DO
   !$OMP END PARALLEL
+  EcGM(2) = EcGM_beta
 
 ! Compute renormalization factor from derivative 
-
+  
   Z(:,:) = 1d0/(1d0 - Z(:,:))
 
 end subroutine 

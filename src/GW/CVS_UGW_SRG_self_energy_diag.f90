@@ -28,6 +28,7 @@ subroutine CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occup
   double precision              :: num,eps
   double precision              :: s
   double precision              :: Dpim,Dpam,Diam
+  double precision              :: EcGM_tmp
 
 ! Output variables
 
@@ -47,7 +48,7 @@ subroutine CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occup
     ! Occupied part of the correlation self-energy
 
     !$OMP PARALLEL &
-    !$OMP SHARED(SigC,rho,s,nSt,nC,nO,nBas,nR,e,Om,nFC,occupations) &
+    !$OMP SHARED(ispin,SigC,rho,s,nSt,nC,nO,nBas,nR,e,Om,nFC,occupations) &
     !$OMP PRIVATE(m,i,p,Dpim) &
     !$OMP DEFAULT(NONE)
     !$OMP DO
@@ -66,7 +67,7 @@ subroutine CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occup
     ! Virtual part of the correlation self-energy
 
     !$OMP PARALLEL &
-    !$OMP SHARED(SigC,rho,s,nSt,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
+    !$OMP SHARED(ispin,SigC,rho,s,nSt,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
     !$OMP PRIVATE(m,a,p,Dpam) &
     !$OMP DEFAULT(NONE)
     !$OMP DO
@@ -87,7 +88,7 @@ subroutine CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occup
 
   do ispin=1,nspin
     !$OMP PARALLEL &
-    !$OMP SHARED(Z,rho,s,nSt,nC,nO,nBas,nR,e,Om,nFC,occupations) &
+    !$OMP SHARED(ispin,Z,rho,s,nSt,nC,nO,nBas,nR,e,Om,nFC,occupations) &
     !$OMP PRIVATE(m,i,p,Dpim) &
     !$OMP DEFAULT(NONE)
     !$OMP DO
@@ -107,7 +108,7 @@ subroutine CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occup
 
   do ispin=1,nspin
     !$OMP PARALLEL &
-    !$OMP SHARED(Z,rho,s,nSt,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
+    !$OMP SHARED(ispin,Z,rho,s,nSt,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
     !$OMP PRIVATE(m,a,p,Dpam) &
     !$OMP DEFAULT(NONE)
     !$OMP DO
@@ -129,25 +130,24 @@ subroutine CVS_UGW_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occup
 
   ! GM correlation energy
 
-  !$OMP PARALLEL &
-  !$OMP SHARED(rho,s,nSt,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals,EcGM) &
-  !$OMP PRIVATE(ispin,m,i,a,Diam) &
-  !$OMP DEFAULT(NONE) &
-  !$OMP REDUCTION(-:EcGM)
-  !$OMP DO
   do ispin=1,nspin
+    EcGM_tmp = 0d0
+    !$OMP PARALLEL DO DEFAULT(NONE) &
+    !$OMP SHARED(ispin,rho,s,nSt,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals) &
+    !$OMP PRIVATE(m,i,a,Diam) &
+    !$OMP REDUCTION(-:EcGM_tmp)
     do m=1,nSt
       do a=nCVS(ispin)+1,nBas-nO(ispin)
         do i=1,nO(ispin)-nFC(ispin)
+
           Diam = e(virtuals(a,ispin),ispin) - e(occupations(i,ispin),ispin) + Om(m)
-          EcGM(ispin) = EcGM(ispin) - rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)&
-                                     * rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)&
-                                     * (1d0-dexp(-2d0*s*Diam*Diam))/Diam 
+          EcGM_tmp = EcGM_tmp - &
+                     rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)**2 * &
+                     (1d0-dexp(-2d0*s*Diam*Diam))/Diam
         end do
       end do
     end do
+    EcGM(ispin) = EcGM_tmp
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
 end subroutine 

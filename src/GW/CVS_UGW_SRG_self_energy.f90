@@ -113,7 +113,7 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
 
   do ispin=1,nspin
     !$OMP PARALLEL &
-    !$OMP SHARED(Z,rho,s,nS,nC,nO,nBas,nR,e,Om,nFC,occupations) &
+    !$OMP SHARED(ispin,Z,rho,s,nS,nC,nO,nBas,nR,e,Om,nFC,occupations) &
     !$OMP PRIVATE(m,i,p,Dpim) &
     !$OMP DEFAULT(NONE)
     !$OMP DO
@@ -133,7 +133,7 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
 
   do ispin=1,nspin
     !$OMP PARALLEL &
-    !$OMP SHARED(Z,rho,s,nS,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
+    !$OMP SHARED(ispin,Z,rho,s,nS,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
     !$OMP PRIVATE(m,a,p,Dpam) &
     !$OMP DEFAULT(NONE)
     !$OMP DO
@@ -156,13 +156,13 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
 !-------------------------------------!
 
   EcGM = 0d0
-  !$OMP PARALLEL &
-  !$OMP SHARED(rho,s,nS,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals,EcGM) &
-  !$OMP PRIVATE(ispin,m,i,a,Diam) &
-  !$OMP DEFAULT(NONE) &
-  !$OMP REDUCTION(-:EcGM)
-  !$OMP DO
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(ispin,rho,s,nS,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals) &
+    !$OMP PRIVATE(m,i,a,Diam) &
+    !$OMP DEFAULT(NONE) &
+    !$OMP REDUCTION(-:EcGM)
+    !$OMP DO
     do m=1,nS
       do a=nCVS(ispin)+1,nBas-nO(ispin)
         do i=1,nO(ispin)-nFC(ispin)
@@ -171,8 +171,8 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
 end subroutine 

@@ -139,7 +139,7 @@ subroutine RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
   EcGM = 0d0
   !$OMP PARALLEL &
-  !$OMP SHARED(rho,eta,nS,nC,nO,nOrb,nR,e,Om,EcGM) &
+  !$OMP SHARED(rho,eta,nS,nC,nO,nOrb,nR,e,Om) &
   !$OMP PRIVATE(m,i,a,eps,num) &
   !$OMP DEFAULT(NONE) &
   !$OMP REDUCTION(-:EcGM)

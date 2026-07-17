@@ -149,7 +149,7 @@ subroutine RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
 
   EcGM = 0d0
   !$OMP PARALLEL &
-  !$OMP SHARED(rho,s,nS,nC,nO,nOrb,nR,e,Om,EcGM) &
+  !$OMP SHARED(rho,s,nS,nC,nO,nOrb,nR,e,Om) &
   !$OMP PRIVATE(m,i,a,Diam) &
   !$OMP DEFAULT(NONE) &
   !$OMP REDUCTION(-:EcGM)
