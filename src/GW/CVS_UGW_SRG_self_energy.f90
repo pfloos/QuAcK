@@ -92,7 +92,7 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
             Dpam = e(p,ispin) - e(virtuals(a,ispin),ispin) - Om(m)
             Dqam = e(q,ispin) - e(virtuals(a,ispin),ispin) - Om(m)
             SigC(p,q,ispin) = SigC(p,q,ispin) &
-                 + rho(p,virtuals(a,ispin),m,ispin)*rho(q,virtuals(a,ispin),m,ispin)*(1d0-exp(-s*Dpam*Dpam)*exp(-s*Dqam*Dqam)) &
+                 + rho(p,virtuals(a,ispin),m,ispin)*rho(q,virtuals(a,ispin),m,ispin)*(1d0-dexp(-s*Dpam*Dpam)*dexp(-s*Dqam*Dqam)) &
                  *(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
 
           end do
@@ -100,8 +100,8 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
       end do
     end do
   end do
- !$OMP END DO
- !$OMP END PARALLEL
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 !------------------------!
 ! Renormalization factor !
@@ -112,27 +112,41 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
   ! Occupied part of the renormalization factor
 
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(Z,rho,s,nS,nC,nO,nBas,nR,e,Om,nFC,occupations) &
+    !$OMP PRIVATE(m,i,p,Dpim) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO
     do p=1,nBas
-      do i=1,nO(ispin)-nFC(ispin)
-        do m=1,nS
+      do m=1,nS
+        do i=1,nO(ispin)-nFC(ispin)
           Dpim = e(p,ispin) - e(occupations(i,ispin),ispin) + Om(m)
           Z(p,ispin) = Z(p,ispin) - rho(p,occupations(i,ispin),m,ispin)**2*(1d0-dexp(-2d0*s*Dpim*Dpim))/Dpim**2
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
 
   ! Virtual part of the renormalization factor
 
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(Z,rho,s,nS,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
+    !$OMP PRIVATE(m,a,p,Dpam) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO
     do p=1,nBas
-      do a=nCVS(ispin)+1,nBas-nO(ispin)
-        do m=1,nS
+      do m=1,nS
+        do a=nCVS(ispin)+1,nBas-nO(ispin)
           Dpam = e(p,ispin) - e(virtuals(a,ispin),ispin) - Om(m)
           Z(p,ispin) = Z(p,ispin)  - rho(p,virtuals(a,ispin),m,ispin)**2*(1d0-dexp(-2d0*s*Dpam*Dpam))/Dpam**2
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
@@ -142,15 +156,23 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
 !-------------------------------------!
 
   EcGM = 0d0
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,s,nS,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals,EcGM) &
+  !$OMP PRIVATE(ispin,m,i,a,Diam) &
+  !$OMP DEFAULT(NONE) &
+  !$OMP REDUCTION(-:EcGM)
+  !$OMP DO
   do ispin=1,nspin
-  do i=1,nO(ispin)-nFC(ispin)
-    do a=nCVS(ispin)+1,nBas-nO(ispin)
-      do m=1,nS
-        Diam = e(virtuals(a,ispin),ispin) - e(occupations(i,ispin),ispin) + Om(m)
-        EcGM = EcGM - rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)*rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)*(1d0-exp(-2d0*s*Diam*Diam))/Diam 
+    do m=1,nS
+      do a=nCVS(ispin)+1,nBas-nO(ispin)
+        do i=1,nO(ispin)-nFC(ispin)
+          Diam = e(virtuals(a,ispin),ispin) - e(occupations(i,ispin),ispin) + Om(m)
+          EcGM = EcGM - rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)*rho(virtuals(a,ispin),occupations(i,ispin),m,ispin)*(1d0-dexp(-2d0*s*Diam*Diam))/Diam 
+        end do
       end do
     end do
   end do
-  end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine 
