@@ -47,6 +47,7 @@ subroutine complex_RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Si
   Im_Sig(:,:) = 0d0
   Re_DS(:) = 0d0
   Im_DS(:) = 0d0
+  EcGM = cmplx(0d0,0d0,kind=8)
 
 ! Occupied part of the correlation self-energy
 
