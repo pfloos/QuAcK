@@ -51,12 +51,12 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
 
   ! Occupied part of the correlation self-energy
 
-  !$OMP PARALLEL &
-  !$OMP SHARED(SigC,rho,s,nS,nC,nO,nBas,nR,e,Om,nFC,occupations) &
-  !$OMP PRIVATE(ispin,m,i,q,p,Dpim,Dqim) &
-  !$OMP DEFAULT(NONE)
-  !$OMP DO 
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(ispin,SigC,rho,s,nS,nC,nO,nBas,nR,e,Om,nFC,occupations) &
+    !$OMP PRIVATE(m,i,q,p,Dpim,Dqim) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO 
     do q=1,nBas
       do p=1,nBas
         do m=1,nS
@@ -72,18 +72,18 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
   ! Virtual part of the correlation self-energy
 
-  !$OMP PARALLEL &
-  !$OMP SHARED(SigC,rho,s,nS,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
-  !$OMP PRIVATE(ispin,m,a,q,p,Dpam,Dqam) &
-  !$OMP DEFAULT(NONE)
-  !$OMP DO
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(ispin,SigC,rho,s,nS,nC,nO,nR,nBas,e,Om,nCVS,virtuals) &
+    !$OMP PRIVATE(m,a,q,p,Dpam,Dqam) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO
     do q=1,nBas
       do p=1,nBas
         do m=1,nS
@@ -99,9 +99,9 @@ subroutine CVS_UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,nCVS,nFC,occupations
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
 !------------------------!
 ! Renormalization factor !

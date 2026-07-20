@@ -127,7 +127,7 @@ subroutine UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTD
 !----------------------!
  
   call UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ERI_bbbb,XpY,rho)
-
+  print*,"densities calculated"
 !------------------------------------------------!
 ! Compute self-energy and renormalization factor !
 !------------------------------------------------!

@@ -47,12 +47,12 @@ subroutine UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
   ! Occupied part of the correlation self-energy
 
-  !$OMP PARALLEL &
-  !$OMP SHARED(SigC,rho,s,nS,nC,nO,nBas,nR,e,Om) &
-  !$OMP PRIVATE(ispin,m,i,q,p,Dpim,Dqim) &
-  !$OMP DEFAULT(NONE)
-  !$OMP DO 
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(ispin,SigC,rho,s,nS,nC,nO,nBas,nR,e,Om) &
+    !$OMP PRIVATE(m,i,q,p,Dpim,Dqim) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO 
     do q=nC(ispin)+1,nBas-nR(ispin)
       do p=nC(ispin)+1,nBas-nR(ispin)
         do m=1,nS
@@ -68,18 +68,18 @@ subroutine UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
   ! Virtual part of the correlation self-energy
 
-  !$OMP PARALLEL &
-  !$OMP SHARED(SigC,rho,s,nS,nC,nO,nR,nBas,e,Om) &
-  !$OMP PRIVATE(ispin,m,a,q,p,Dpam,Dqam) &
-  !$OMP DEFAULT(NONE)
-  !$OMP DO
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(ispin,SigC,rho,s,nS,nC,nO,nR,nBas,e,Om) &
+    !$OMP PRIVATE(m,a,q,p,Dpam,Dqam) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO 
     do q=nC(ispin)+1,nBas-nR(ispin)
       do p=nC(ispin)+1,nBas-nR(ispin)
         do m=1,nS
@@ -95,9 +95,9 @@ subroutine UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
 !------------------------!
 ! Renormalization factor !
@@ -107,12 +107,12 @@ subroutine UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 
   ! Occupied part of the renormalization factor
 
-  !$OMP PARALLEL &
-  !$OMP SHARED(Z,rho,s,nS,nC,nO,nBas,nR,e,Om) &
-  !$OMP PRIVATE(ispin,m,i,p,Dpim) &
-  !$OMP DEFAULT(NONE)
-  !$OMP DO
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(ispin,Z,rho,s,nS,nC,nO,nBas,nR,e,Om) &
+    !$OMP PRIVATE(m,i,p,Dpim) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO 
     do p=nC(ispin)+1,nBas-nR(ispin)
       do m=1,nS
         do i=nC(ispin)+1,nO(ispin)
@@ -121,18 +121,18 @@ subroutine UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
   ! Virtual part of the renormalization factor
 
-  !$OMP PARALLEL &
-  !$OMP SHARED(Z,rho,s,nS,nC,nO,nR,nBas,e,Om) &
-  !$OMP PRIVATE(ispin,m,a,p,Dpam) &
-  !$OMP DEFAULT(NONE)
-  !$OMP DO
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(ispin,Z,rho,s,nS,nC,nO,nR,nBas,e,Om) &
+    !$OMP PRIVATE(m,a,p,Dpam) &
+    !$OMP DEFAULT(NONE)
+    !$OMP DO  
     do p=nC(ispin)+1,nBas-nR(ispin)
       do m=1,nS
         do a=nO(ispin)+1,nBas-nR(ispin)
@@ -141,9 +141,9 @@ subroutine UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
   Z(:,:) = 1d0/(1d0 - Z(:,:))
 
@@ -152,13 +152,13 @@ subroutine UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
 !-------------------------------------!
 
   EcGM = 0d0
-  !$OMP PARALLEL &
-  !$OMP SHARED(rho,s,nS,nC,nO,nBas,nR,e,Om) &
-  !$OMP PRIVATE(ispin,m,i,a,Diam) &
-  !$OMP DEFAULT(NONE) &
-  !$OMP REDUCTION(-:EcGM)
-  !$OMP DO
   do ispin=1,nspin
+    !$OMP PARALLEL &
+    !$OMP SHARED(ispin,rho,s,nS,nC,nO,nBas,nR,e,Om) &
+    !$OMP PRIVATE(m,i,a,Diam) &
+    !$OMP DEFAULT(NONE) &
+    !$OMP REDUCTION(-:EcGM)
+    !$OMP DO  
     do m=1,nS
       do a=nO(ispin)+1,nBas-nR(ispin)
         do i=nC(ispin)+1,nO(ispin)
@@ -167,8 +167,8 @@ subroutine UGW_SRG_self_energy(flow,nBas,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,Z)
         end do
       end do
     end do
+    !$OMP END DO
+    !$OMP END PARALLEL
   end do
-  !$OMP END DO
-  !$OMP END PARALLEL
 
 end subroutine 
