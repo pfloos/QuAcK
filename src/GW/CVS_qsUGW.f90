@@ -256,7 +256,7 @@ subroutine CVS_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS
     ! Compute linear response
 
     call CVS_phULR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,eGW,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    if(.not.TDA) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+    if(.not. TDA_W) call CVS_phULR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
     
     call CVS_phULR(TDA_W,nSa,nSb,nSt,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     !----------------------!
