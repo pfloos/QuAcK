@@ -35,6 +35,11 @@ subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ER
 ! alpha block !
 !-------------!
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,ERI_aaaa,ERI_aabb,XpY,nC,nO,nBas,nR,nSt,nSa) &
+  !$OMP PRIVATE(p,q,ia,j,b,jb) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC(1)+1,nBas-nR(1)
     do q=nC(1)+1,nBas-nR(1)
 
@@ -66,11 +71,18 @@ subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ER
 
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 !------------!
 ! Beta block !
 !------------!
-
+  
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,ERI_bbbb,ERI_aabb,XpY,nC,nO,nBas,nR,nSt,nSa) &
+  !$OMP PRIVATE(p,q,ia,j,b,jb) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC(2)+1,nBas-nR(2)
     do q=nC(2)+1,nBas-nR(2)
 
@@ -102,5 +114,7 @@ subroutine UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,ERI_aaaa,ERI_aabb,ER
 
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine 

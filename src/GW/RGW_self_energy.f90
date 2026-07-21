@@ -91,11 +91,11 @@ subroutine RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 
 ! Occupied part of the renormalization factor
 
-!$OMP PARALLEL &
-!$OMP SHARED(Sig,Z,rho,eta,nS,nC,nO,nOrb,nR,e,Om) &
-!$OMP PRIVATE(m,i,p,eps,num) &
-!$OMP DEFAULT(NONE)
-!$OMP DO
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nS,nC,nO,nOrb,nR,e,Om) &
+  !$OMP PRIVATE(m,i,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC+1,nOrb-nR
      do m=1,nS
         do i=nC+1,nO
@@ -130,7 +130,7 @@ subroutine RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
   end do
   !$OMP END DO
   !$OMP END PARALLEL
-  
+   
   Z(:) = 1d0/(1d0 - Z(:))
 
 !-------------------------------------!
@@ -138,6 +138,12 @@ subroutine RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
 !-------------------------------------!
 
   EcGM = 0d0
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,eta,nS,nC,nO,nOrb,nR,e,Om) &
+  !$OMP PRIVATE(m,i,a,eps,num) &
+  !$OMP DEFAULT(NONE) &
+  !$OMP REDUCTION(-:EcGM)
+  !$OMP DO
   do m=1,nS
     do a=nO+1,nOrb-nR
       do i=nC+1,nO
@@ -149,4 +155,7 @@ subroutine RGW_self_energy(eta,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,Sig,Z)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
+
 end subroutine 

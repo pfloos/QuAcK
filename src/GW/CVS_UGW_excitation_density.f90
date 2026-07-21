@@ -38,6 +38,11 @@ subroutine CVS_UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,nCVS,nFC,occupat
 ! alpha block !
 !-------------!
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,ERI_aaaa,ERI_aabb,XpY,occupations,virtuals,nBas,nO,nFC,nCVS,nSt,nSa) &
+  !$OMP PRIVATE(p,q,ia,j,b,jb) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=1,nBas
     do q=1,nBas
 
@@ -69,11 +74,18 @@ subroutine CVS_UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,nCVS,nFC,occupat
 
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 !------------!
 ! Beta block !
 !------------!
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,ERI_bbbb,ERI_aabb,XpY,occupations,virtuals,nBas,nO,nFC,nCVS,nSt,nSa) &
+  !$OMP PRIVATE(p,q,ia,j,b,jb) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=1,nBas
     do q=1,nBas
 
@@ -105,5 +117,7 @@ subroutine CVS_UGW_excitation_density(nBas,nC,nO,nR,nSa,nSb,nSt,nCVS,nFC,occupat
 
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine 

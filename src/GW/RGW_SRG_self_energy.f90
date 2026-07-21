@@ -61,7 +61,7 @@ subroutine RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
           Dqim = e(q) - e(i) + Om(m)
           SigC(p,q) = SigC(p,q)                  &
                     + 2d0*rho(p,i,m)*rho(q,i,m)* &
-                      (1d0-exp(-s*Dpim*Dpim)*exp(-s*Dqim*Dqim))*(Dpim + Dqim)/(Dpim*Dpim + Dqim*Dqim)
+                      (1d0-dexp(-s*Dpim*Dpim)*dexp(-s*Dqim*Dqim))*(Dpim + Dqim)/(Dpim*Dpim + Dqim*Dqim)
 
         end do
       end do
@@ -81,13 +81,13 @@ subroutine RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
     do p=nC+1,nOrb-nR
       do m=1,nS
         do a=nO+1,nOrb-nR
- 
+  
            Dpam = e(p) - e(a) - Om(m)
            Dqam = e(q) - e(a) - Om(m)
            SigC(p,q) = SigC(p,q)                  & 
                      + 2d0*rho(p,a,m)*rho(q,a,m)* &
-                       (1d0-exp(-s*Dpam*Dpam)*exp(-s*Dqam*Dqam))*(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
- 
+                       (1d0-dexp(-s*Dpam*Dpam)*dexp(-s*Dqam*Dqam))*(Dpam + Dqam)/(Dpam*Dpam + Dqam*Dqam)
+  
         end do
       end do
     end do
@@ -101,31 +101,45 @@ subroutine RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
 
   Z(:)  = 0d0
 
-  ! Occupied part of the renormlization factor
+  ! Occupied part of the renormalization factor
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Z,rho,s,nS,nC,nO,nOrb,nR,e,Om) &
+  !$OMP PRIVATE(m,i,p,Dpim) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC+1,nOrb-nR
-    do i=nC+1,nO
-      do m=1,nS
+    do m=1,nS
+      do i=nC+1,nO
 
         Dpim = e(p) - e(i) + Om(m)
-        Z(p) = Z(p) - 2d0*rho(p,i,m)**2*(1d0-exp(-2d0*s*Dpim*Dpim))/Dpim**2
+        Z(p) = Z(p) - 2d0*rho(p,i,m)**2*(1d0-dexp(-2d0*s*Dpim*Dpim))/Dpim**2
 
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
-  ! Virtual part of the renormlization factor
+  ! Virtual part of the renormalization factor
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Z,rho,s,nS,nC,nO,nR,nOrb,e,Om) &
+  !$OMP PRIVATE(m,a,p,Dpam) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=nC+1,nOrb-nR
-    do a=nO+1,nOrb-nR
-      do m=1,nS
+    do m=1,nS
+      do a=nO+1,nOrb-nR
 
         Dpam = e(p) - e(a) - Om(m)
-        Z(p) = Z(p)  - 2d0*rho(p,a,m)**2*(1d0-exp(-2d0*s*Dpam*Dpam))/Dpam**2
+        Z(p) = Z(p)  - 2d0*rho(p,a,m)**2*(1d0-dexp(-2d0*s*Dpam*Dpam))/Dpam**2
 
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   Z(:) = 1d0/(1d0 - Z(:))
 
@@ -134,15 +148,23 @@ subroutine RGW_SRG_self_energy(flow,nBas,nOrb,nC,nO,nV,nR,nS,e,Om,rho,EcGM,SigC,
 !-------------------------------------!
 
   EcGM = 0d0
-  do i=nC+1,nO
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,s,nS,nC,nO,nOrb,nR,e,Om) &
+  !$OMP PRIVATE(m,i,a,Diam) &
+  !$OMP DEFAULT(NONE) &
+  !$OMP REDUCTION(-:EcGM)
+  !$OMP DO
+  do m=1,nS
     do a=nO+1,nOrb-nR
-      do m=1,nS
+      do i=nC+1,nO
 
         Diam = e(a) - e(i) + Om(m)
-        EcGM = EcGM - 4d0*rho(a,i,m)*rho(a,i,m)*(1d0-exp(-2d0*s*Diam*Diam))/Diam 
+        EcGM = EcGM - 4d0*rho(a,i,m)*rho(a,i,m)*(1d0-dexp(-2d0*s*Diam*Diam))/Diam 
 
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
 end subroutine 

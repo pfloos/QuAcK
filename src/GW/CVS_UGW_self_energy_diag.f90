@@ -26,6 +26,7 @@ subroutine CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupation
 
   integer                       :: i,a,p,m
   double precision              :: num,eps
+  double precision              :: EcGM_alpha,EcGM_beta
 
 ! Output variables
 
@@ -45,9 +46,14 @@ subroutine CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupation
 
   ! Occupied part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nSt,nC,nO,nBas,nR,e,Om,nFC,occupations) &
+  !$OMP PRIVATE(m,i,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=1,nBas
-    do i=1,nO(1)-nFC(1)
-      do m=1,nSt
+    do m=1,nSt
+      do i=1,nO(1)-nFC(1)
         eps = e(p,1) - e(occupations(i,1),1) + Om(m)
         num = rho(p,occupations(i,1),m,1)**2
         Sig(p,1) = Sig(p,1) + num*eps/(eps**2 + eta**2)
@@ -55,12 +61,19 @@ subroutine CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupation
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   ! Virtual part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nSt,nC,nO,nBas,nR,e,Om,nCVS,virtuals) &
+  !$OMP PRIVATE(m,a,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=1,nBas
-    do a=1+nCVS(1),nBas - nO(1)
-      do m=1,nSt
+    do m=1,nSt
+      do a=1+nCVS(1),nBas - nO(1)
         eps = e(p,1) - e(virtuals(a,1),1) - Om(m)
         num = rho(p,virtuals(a,1),m,1)**2
         Sig(p,1) = Sig(p,1) + num*eps/(eps**2 + eta**2)
@@ -68,18 +81,30 @@ subroutine CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupation
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   ! GM correlation energy
 
-  do i=1,nO(1)-nFC(1)
+  EcGM_alpha = 0d0
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals) &
+  !$OMP PRIVATE(m,i,a,eps,num) &
+  !$OMP DEFAULT(NONE) &
+  !$OMP REDUCTION(-:EcGM_alpha)
+  !$OMP DO
+  do m=1,nSt
     do a=nCVS(1)+1,nBas-nO(1)
-      do m=1,nSt
+      do i=1,nO(1)-nFC(1)
         eps = e(virtuals(a,1),1) - e(occupations(i,1),1) + Om(m)  
         num = rho(virtuals(a,1),occupations(i,1),m,1)**2
-        EcGM(1) = EcGM(1) - num*eps/(eps**2 + eta**2)
+        EcGM_alpha = EcGM_alpha - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
+  EcGM(1) = EcGM_alpha
 
 !----------------!
 ! Spin-down part !
@@ -87,9 +112,14 @@ subroutine CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupation
 
   ! Occupied part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nSt,nC,nO,nBas,nR,e,Om,nFC,occupations) &
+  !$OMP PRIVATE(m,i,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=1,nBas
-    do i=1,nO(2)-nFC(2)
-      do m=1,nSt
+    do m=1,nSt
+      do i=1,nO(2)-nFC(2)
         eps = e(p,2) - e(occupations(i,2),2) + Om(m)
         num = rho(p,occupations(i,2),m,2)**2
         Sig(p,2) = Sig(p,2) + num*eps/(eps**2 + eta**2)
@@ -97,12 +127,19 @@ subroutine CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupation
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   ! Virtual part of the correlation self-energy
 
+  !$OMP PARALLEL &
+  !$OMP SHARED(Sig,Z,rho,eta,nSt,nC,nO,nBas,nR,e,Om,nCVS,virtuals) &
+  !$OMP PRIVATE(m,a,p,eps,num) &
+  !$OMP DEFAULT(NONE)
+  !$OMP DO
   do p=1,nBas
-    do a=nCVS(2)+1,nBas-nO(2)
-      do m=1,nSt
+    do m=1,nSt
+      do a=nCVS(2)+1,nBas-nO(2)
         eps = e(p,2) - e(virtuals(a,2),2) - Om(m)
         num = rho(p,virtuals(a,2),m,2)**2
         Sig(p,2) = Sig(p,2) + num*eps/(eps**2 + eta**2)
@@ -110,18 +147,30 @@ subroutine CVS_UGW_self_energy_diag(eta,nBas,nC,nO,nV,nR,nSt,nCVS,nFC,occupation
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   ! GM correlation energy
 
-  do i=1,nO(2)-nFC(2)
+  EcGM_beta = 0d0
+  !$OMP PARALLEL &
+  !$OMP SHARED(rho,eta,nSt,nC,nO,nBas,nR,e,Om,nCVS,nFC,occupations,virtuals) &
+  !$OMP PRIVATE(m,i,a,eps,num) &
+  !$OMP DEFAULT(NONE) &
+  !$OMP REDUCTION(-:EcGM_beta)
+  !$OMP DO
+  do m=1,nSt
     do a=nCVS(2)+1,nBas-nO(2)
-      do m=1,nSt
+      do i=1,nO(2)-nFC(2)
         eps = e(virtuals(a,2),2) - e(occupations(i,2),2) + Om(m)
         num = rho(virtuals(a,2),occupations(i,2),m,2)**2
-        EcGM(2) = EcGM(2) - num*eps/(eps**2 + eta**2)
+        EcGM_beta = EcGM_beta - num*eps/(eps**2 + eta**2)
       end do
     end do
   end do
+  !$OMP END DO
+  !$OMP END PARALLEL
+  EcGM(2) = EcGM_beta
 
 ! Compute renormalization factor from derivative 
 
