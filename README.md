@@ -74,31 +74,61 @@ cd src; make
 ```
 ~ 💩 % cd $QUACK_ROOT
 QuAcK 💩 % python PyDuck.py -h
-usage: PyDuck.py [-h] -b BASIS [--bohr] [-c CHARGE] [--cartesian] [--print_2e] [--formatted_2e] [--mmap_2e] [--aosym_2e] [-fc FROZEN_CORE]
-                 [-m MULTIPLICITY] [--working_dir WORKING_DIR] -x XYZ
+<!-- BEGIN PYDUCK_HELP -->
+usage: PyDuck.py [-h] [--working_dir WORKING_DIR] -b BASIS -x XYZ [--bohr]
+                 [--cartesian] [-c CHARGE] [-m MULTIPLICITY] [--print_2e]
+                 [--formatted_2e] [--mmap_2e] [--aosym_2e] [-nc] [-dm]
 
-This script is the main script of QuAcK, it is used to run the calculation. If $QUACK_ROOT is not set, $QUACK_ROOT is replaces by the current
-directory.
+This script is the main script of QuAcK, it is used to run the calculation. If
+$QUACK_ROOT is not set, $QUACK_ROOT is replaced by the current directory.
 
 options:
   -h, --help            show this help message and exit
-  -b, --basis BASIS     Name of the file containing the basis set information in the $QUACK_ROOT/basis/ directory
-  --bohr                By default QuAcK assumes that the xyz files are in Angstrom. Add this argument if your xyz file is in Bohr.
-  -c, --charge CHARGE   Total charge of the molecule. Specify negative charges with "m" instead of the minus sign, for example m1 instead of -1.
-                        Default is 0
-  --cartesian           Add this option if you want to use cartesian basis functions.
+
+Input files:
+  --working_dir WORKING_DIR
+                        Set a working directory to run the calculation.
+                        Default is $QUACK_ROOT, if set, otherwise the current
+                        working directory (./)
+  -b BASIS, --basis BASIS
+                        Name or path of the file containing the basis set
+                        information. If the argument is not a filepath QuAcK
+                        searches in WORKING_DIR/basis for a file matching the
+                        argument.
+  -x XYZ, --xyz XYZ     Name of the file containing the nuclear coordinates in
+                        xyz format in the WORKING_DIR/mol/ directory without
+                        the .xyz extension.
+
+Input format:
+  --bohr                By default QuAcK assumes that the xyz files are in
+                        Angstrom. Add this argument if your xyz file is in
+                        Bohr.
+  --cartesian           Add this option if you want to use cartesian basis
+                        functions.
+
+Molecule:
+  -c CHARGE, --charge CHARGE
+                        Total charge of the molecule. Specify negative charges
+                        with "m" instead of the minus sign, for example m1
+                        instead of -1. Default is 0.
+  -m MULTIPLICITY, --multiplicity MULTIPLICITY
+                        Spin multiplicity. Default is 1 (singlet).
+
+Electron integrals:
   --print_2e            If True, print ERIs to disk.
   --formatted_2e        Add this option if you want to print formatted ERIs.
   --mmap_2e             If True, avoid using DRAM when generating ERIs.
   --aosym_2e            If True, use 8-fold symmetry in ERIs.
-  -fc, --frozen_core FROZEN_CORE
-                        Freeze core orbitals. Default is false
-  -m, --multiplicity MULTIPLICITY
-                        Spin multiplicity. Default is 1 (singlet)
-  --working_dir WORKING_DIR
-                        Set a working directory to run the calculation.
-  -x, --xyz XYZ         Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz
-                        extension
+  -nc, --no_cap         If true, no CAP integrals are calculated and stored.If
+                        the python module pyopencap is not available, this is
+                        set automatically true.
+
+Molecular orbitals:
+  -dm, --dump_molden    Dump a molden file with the molecular orbitals. If
+                        this is true WriteMOs in the QuAcK options is
+                        automatically set to true an the molecular orbitals
+                        are dumbed.
+<!-- END PYDUCK_HELP -->
 ```
 
 The two most important files are:
@@ -114,56 +144,74 @@ You can then edit these files to run the methods you'd like (by replacing `F` wi
 These files look like this
 ```
 QuAcK 💩 % cat input/methods 
-# RHF UHF GHF ROHF HFB 
-  F   F   F   F    F
-# MP2 MP3 
-  F   F   
-# CCD pCCD DCD CCSD CCSD(T) 
+<!-- BEGIN methods -->
+# RHF UHF GHF ROHF HFB cRHF cUHF eRHF scGHF
+  F   F   F   F    F   F    F	 F    F
+# MP2 MP3
+  F   F
+# CCD pCCD DCD CCSD CCSD(T)
   F   F    F   F    F
 # drCCD rCCD crCCD lCCD
   F     F    F     F
 # CIS CIS(D) CID CISD FCI
   F   F      F   F    F
-# phRPA phRPAx crRPA ppRPA 
-  F     F      F     F 
-# G0F2 evGF2 qsGF2 ufGF2 G0F3 evGF3
-  F    F     F     F    F    F
-# G0W0 evGW qsGW ufG0W0 ufGW
-  F    F    F    F      F
+# phRPA phRPAx crRPA ppRPA BRPA
+  F     F      F     F     F   
+# OORPA
+  F
+# G0F2 evGF2 qsGF2 G0F3 evGF3 psdG0F3 scGF2
+  F    F     F     F    F     F     F
+# G0W0 evGW qsGW scGW
+  F    F    F    F
 # G0T0pp evGTpp qsGTpp ufG0T0pp
-  F      F      F      F
+  F      F        F       F
 # G0T0eh evGTeh qsGTeh
   F      F      F
-# Parquet
-  F
+# evParquet qsParquet
+  F         F
+# IPEA-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2 psdG3W2
+  F         F         F     F      F    F
+# ADC-GW ADC-2SOSEX ADC(3)-G3W2 ADC(3x)-G3W2 ADC-G3W2
+  F      F          F           F            F
 # Rtest Utest Gtest
   F     F     F
+<!-- END methods -->
 ```
 and
 ```
 QuAcK 💩 % cat input/options 
-# HF: maxSCF thresh  DIIS guess mix shift stab search
-      256    0.00001 5    1     0.0 0.0   F    F
+<!-- BEGIN options -->
+# HF: maxSCF 	thresh  DIIS	guess	mix	shift	stab	search	aordm	readFCIDUMP	MOM WriteMOs
+      256	1e-7	5	1	0.0 	0.0   	F    	F	F   	F		F	F
 # MP: reg
       F
-# CC: maxSCF thresh   DIIS
-      64     0.00001  5
-# LR: TDA singlet triplet
-      F   T       T
-# GF: maxSCF thresh  DIIS lin eta renorm reg
-      256    0.00001 5    F   0.0 0      F
-# GW: maxSCF thresh  DIIS lin eta TDA_W reg
-      256    0.00001 5    F   0.0 F     F 
-# GT: maxSCF thresh  DIIS lin eta TDA_T reg
-      256    0.00001 5    F   0.0 F     F  
+# CC: maxSCF thresh  DIIS
+      64     0.00001 5
+# spin: TDA singlet triplet
+        F   T       T
+# RPA/MP2: CVS-Alpha CVS-Beta  FC-Alpha FC-Beta
+               0         0          0       0
+# OORPA:  maxIter thresh  dRPA state diagHess
+          256     0.00001 T    0     T    
+# GF: maxSCF thresh  DIIS lin eta renorm reg linDM restart_scGF2 verbose_scGF2
+      256    0.00001 5    F   0.0 0      F   F     F		 F
+# GW: maxSCF thresh  DIIS lin eta TDA_W reg nfreqs shift linDM restart_scGW verbose_scGW adjust_mu_scGW change_sign_XoB
+      256    0.00001 5    F   0.0 F     F   1      0.0   F     F            F            F              F
+# GT: maxSCF thresh  DIIS lin eta TDA_T reg linDM
+      256    0.00001 5    F   0.0 F     F   F
 # ACFDT: AC Kx  XBS
-         F  F   T
+         F  F   F
 # BSE: phBSE phBSE2 ppBSE dBSE dTDA
-       F     F      F     F    T    
-# HFB: temperature  sigma chem_pot_HF restart_HFB
-          0.05      1.00  T           F
-# Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b DIIS_1b DIIS_2b lin reg
-           T     T     10        0.00001 10        0.00001 2       2       T   100.0
+       F     F      F     F    F
+# HFB: temperature  sigma chem_pot_HF restart_HFB error_P
+         0.05       1.0   F           F		  F
+# Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b max_diis_1b max_diis_2b lin_parquet reg_1b reg_2b reg_PA
+            T     T        1      0.01     1         0.01      1            1          F       1000.0 1000.0 T
+# ADC: dyson diag_approx sig_inf lin reg eta
+       T     F           F       F   F   0.0
+# Ensemble: weight_N  N+1[for N-1 use F]
+	    0.00000   T
+<!-- END options -->
 ```
 
 For example, if you want to run a calculation on water using the cc-pvdz basis set:
