@@ -10,6 +10,7 @@ import numpy as np
 import subprocess
 import time
 import gc
+from utils import override_input
 
 try:
     import pyopencap
@@ -67,7 +68,8 @@ integral_group.add_argument('-nc', '--no_cap', default=False, action='store_true
                                   'If the python module pyopencap is not available, this is set automatically true.'))
 mo_group = parser.add_argument_group("Molecular orbitals")
 mo_group.add_argument('-dm', '--dump_molden', default=False, action='store_true',
-                      help='Dump a molden file with the molecular orbitals. Make sure to run QuAcK with writeMOs = T.')
+                      help=('Dump a molden file with the molecular orbitals. \n'
+                            'If this is true WriteMOs in the QuAcK options is automatically set to true an the molecular orbitals are dumbed.'))
 
 # Parse the arguments
 args = parser.parse_args()
@@ -83,6 +85,9 @@ formatted_2e = args.formatted_2e
 mmap_2e = args.mmap_2e
 aosym_2e = args.aosym_2e
 dump_molden = args.dump_molden
+if dump_molden:
+    override_input.override_options(
+        {'HF': {'WriteMOs': 'T'}}, working_dir + '/input/options')
 if args.no_cap:
     use_cap = False
 # Read molecule
