@@ -75,6 +75,7 @@ cd src; make
 ~ 💩 % cd $QUACK_ROOT
 QuAcK 💩 % python PyDuck.py -h
 <!-- BEGIN PYDUCK_HELP -->
+Module pyopencap is not installed.
 usage: PyDuck.py [-h] [--working_dir WORKING_DIR] -b BASIS -x XYZ [--bohr]
                  [--cartesian] [-c CHARGE] [-m MULTIPLICITY] [--print_2e]
                  [--formatted_2e] [--mmap_2e] [--aosym_2e] [-nc] [-dm]
@@ -90,12 +91,11 @@ Input files:
                         Set a working directory to run the calculation.
                         Default is $QUACK_ROOT, if set, otherwise the current
                         working directory (./)
-  -b BASIS, --basis BASIS
-                        Name or path of the file containing the basis set
+  -b, --basis BASIS     Name or path of the file containing the basis set
                         information. If the argument is not a filepath QuAcK
                         searches in WORKING_DIR/basis for a file matching the
                         argument.
-  -x XYZ, --xyz XYZ     Name of the file containing the nuclear coordinates in
+  -x, --xyz XYZ         Name of the file containing the nuclear coordinates in
                         xyz format in the WORKING_DIR/mol/ directory without
                         the .xyz extension.
 
@@ -107,11 +107,10 @@ Input format:
                         functions.
 
 Molecule:
-  -c CHARGE, --charge CHARGE
-                        Total charge of the molecule. Specify negative charges
+  -c, --charge CHARGE   Total charge of the molecule. Specify negative charges
                         with "m" instead of the minus sign, for example m1
                         instead of -1. Default is 0.
-  -m MULTIPLICITY, --multiplicity MULTIPLICITY
+  -m, --multiplicity MULTIPLICITY
                         Spin multiplicity. Default is 1 (singlet).
 
 Electron integrals:
@@ -181,8 +180,8 @@ and
 ```
 QuAcK 💩 % cat input/options 
 <!-- BEGIN options -->
-# HF: maxSCF 	thresh  DIIS	guess	mix	shift	stab	search	aordm	readFCIDUMP	MOM WriteMOs
-      256	1e-7	5	1	0.0 	0.0   	F    	F	F   	F		F	F
+# HF: maxSCF thresh  DIIS guess mix shift stab search aordm readFCIDUMP MOM WriteMOs
+      256    0.0000001 5    1     0.0 0.0   F    F      F     F		F   F
 # MP: reg
       F
 # CC: maxSCF thresh  DIIS
