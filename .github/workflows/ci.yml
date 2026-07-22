@@ -11,6 +11,8 @@ on:
   schedule:
   - cron: "42 19 * * 6"
 
+permissions:
+  contents: write
 
 jobs:
 
@@ -61,3 +63,19 @@ jobs:
         cd ../tests
         python create_database.py
         python lunch_bench.py -s light -t 1e-1
+    
+    - name: Update README
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      run: |
+        source quack.rc
+        cd "$QUACK_ROOT/utils"
+        python update_readme.py
+
+    - name: Commit README update
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add README.md
+        git diff --cached --quiet || git commit -m "Update README automatically"
+        git push
