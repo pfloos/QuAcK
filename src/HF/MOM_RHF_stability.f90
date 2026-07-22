@@ -83,8 +83,8 @@ subroutine MOM_RHF_stability(nBas,nC,nO,nV,nR,nS,nCVS,FC,eHF,ERI,occupations)
  
   ispin = 1
   
-  call CVS_phRLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,eHF,ERI,A)
-  call CVS_phRLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,ERI,B)
+  call MOM_phRLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,eHF,ERI,A)
+  call MOM_phRLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,ERI,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 
@@ -160,8 +160,8 @@ subroutine MOM_RHF_stability(nBas,nC,nO,nV,nR,nS,nCVS,FC,eHF,ERI,occupations)
  
   ispin = 2
 
-  call CVS_phRLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,eHF,ERI,A)
-  call CVS_phRLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,ERI,B)
+  call MOM_phRLR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,eHF,ERI,A)
+  call MOM_phRLR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,ERI,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 

@@ -185,8 +185,8 @@ subroutine MOM_RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,
 
     ispin = 1
     
-    call CVS_phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,e,ERI_MO,Aph)
-    call CVS_phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_MO,Bph)
+    call MOM_phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,e,ERI_MO,Aph)
+    call MOM_phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_MO,Bph)
  
     AB(:,:) = Aph(:,:) + Bph(:,:)
  

@@ -96,8 +96,8 @@ subroutine MOM_UHF_stability(nBas,nC,nO,nV,nR,nS,nCVS,FC,eHF,ERI_aaaa,ERI_aabb,E
   nSt = nSa + nSb
   allocate(A(nSt,nSt),B(nSt,nSt),AB(nSt,nSt),Om(nSt))
 
-  call CVS_phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,A)
-  call CVS_phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,B)
+  call MOM_phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,A)
+  call MOM_phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 
@@ -185,8 +185,8 @@ subroutine MOM_UHF_stability(nBas,nC,nO,nV,nR,nS,nCVS,FC,eHF,ERI_aaaa,ERI_aabb,E
   allocate(A(nSt,nSt),B(nSt,nSt),AB(nSt,nSt),Om(nSt))
 
 
-  call CVS_phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,A)
-  call CVS_phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,B)
+  call MOM_phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,eHF,ERI_aaaa,ERI_aabb,ERI_bbbb,A)
+  call MOM_phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,B)
 
   AB(:,:) = A(:,:) + B(:,:)
 

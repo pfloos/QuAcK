@@ -119,8 +119,8 @@ subroutine complex_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nB
 
     ispin = 1
 
-                 call complex_CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,eHF,ERI,Aph)
-    if(.not.TDA) call complex_CVS_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,ERI,Bph)
+                 call complex_MOM_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,eHF,ERI,Aph)
+    if(.not.TDA) call complex_MOM_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,ERI,Bph)
 
     call complex_complex_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call complex_print_excitation_energies('phRPAx@RHF','singlet',nSCVS,Om)
@@ -135,8 +135,8 @@ subroutine complex_phRRPAx(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nB
 
     ispin = 2
 
-                 call complex_CVS_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,eHF,ERI,Aph)
-    if(.not.TDA) call complex_CVS_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,ERI,Bph)
+                 call complex_MOM_phRLR_A(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,eHF,ERI,Aph)
+    if(.not.TDA) call complex_MOM_phRLR_B(ispin,dRPA,nBas,nC,nO,nV,nR,nSCVS,nCVS,nFC,occupations_fc,virtuals,lambda,ERI,Bph)
 
     call complex_complex_phRLR(TDA,nSCVS,Aph,Bph,EcRPA(ispin),Om,XpY,XmY)
     call complex_print_excitation_energies('phRPAx@RHF','triplet',nSCVS,Om)

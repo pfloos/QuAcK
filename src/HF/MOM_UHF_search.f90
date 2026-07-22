@@ -217,8 +217,8 @@ subroutine MOM_UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
 
     ispin = 1
     
-    call CVS_phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
-    call CVS_phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
+    call MOM_phULR_A(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,e,ERI_aaaa,ERI_aabb,ERI_bbbb,Aph)
+    call MOM_phULR_B(ispin,.false.,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nCVS,nFC,occupations_fc,virtuals,1d0,ERI_aaaa,ERI_aabb,ERI_bbbb,Bph)
  
     AB(:,:) = Aph(:,:) + Bph(:,:)
  
