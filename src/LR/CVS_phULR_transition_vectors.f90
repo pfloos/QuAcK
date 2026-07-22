@@ -51,9 +51,9 @@ subroutine CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
   if(ispin == 1) call CVS_phULR_oscillator_strength(nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nCVS,nFC,maxS, & 
                                                 occupations,virtuals,dipole_int_aa,dipole_int_bb,Om,XpY,XmY,os)
 
-!! Compute <S**2>
-!
-!  call S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,maxS,c,S,Om,XpY,XmY,S2)
+! Compute <S**2>
+
+  call CVS_S2_expval(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,nCVS,nFC,occupations,virtuals,maxS,c,S,Om,XpY,XmY,S2)
 
 ! Print details about spin-conserved excitations
 
@@ -66,7 +66,7 @@ subroutine CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
 
       print*,'-------------------------------------------------------------'
       write(*,'(A15,I3,A2,F12.6,A3,A6,F6.4,A11,F6.4)') & 
-              ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia)!,'  <S**2> = ',S2(ia)
+              ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
       print*,'-------------------------------------------------------------'
 
       ! Spin-up transitions
@@ -122,7 +122,7 @@ subroutine CVS_phULR_transition_vectors(ispin,nBas,nC,nO,nV,nR,nS,nSa,nSb,nSt,&
 
       print*,'-------------------------------------------------------------'
       write(*,'(A15,I3,A2,F12.6,A3,A6,F6.4,A11,F6.4)') & 
-              ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia)!,'  <S**2> = ',S2(ia)
+              ' Excitation n. ',ia,': ',Om(ia)*HaToeV,' eV','  f = ',os(ia),'  <S**2> = ',S2(ia)
       print*,'-------------------------------------------------------------'
 
       ! Spin-up transitions
