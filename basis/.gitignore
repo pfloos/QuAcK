@@ -1,5 +1,5 @@
 # Ignore all basis sets
-./*
+*
 
 # Keep this file
 !README.md
