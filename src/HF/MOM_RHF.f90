@@ -1,5 +1,5 @@
 subroutine MOM_RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F,occupationsGuess)
+               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F,occupationsGuess,working_dir)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -32,6 +32,8 @@ subroutine MOM_RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,
   double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -256,11 +258,11 @@ subroutine MOM_RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,
 ! Write MOs
 
   if(writeMOs) then
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
-    call write_occupations(nO,nO,occupations,occupations,'occupations.dat')
+    call write_matout(nBas,nBas,c(:,:),  trim(working_dir)//'/real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:),  trim(working_dir)//'/real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:),trim(working_dir)//'/imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:),trim(working_dir)//'/imag_MOs_beta.dat')
+    call write_occupations(nO,nO,occupations,occupations,trim(working_dir)//'/occupations.dat')
   endif
 
 ! Testing zone

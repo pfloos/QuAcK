@@ -195,7 +195,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
     
     call wall_time(start_HF)
     call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -209,7 +209,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
     if(guess_type /= 6) then
       call wall_time(start_HF)
       call UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-               nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF)
+               nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,working_dir)
       call wall_time(end_HF)
 
       t_HF = end_HF - start_HF
@@ -219,7 +219,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
 
     call wall_time(start_HF)
     call MOM_UHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -232,7 +232,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
    
     call wall_time(start_HF)
     call cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
+             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -246,7 +246,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
     if(guess_type /= 6) then
       call wall_time(start_HF)
       call cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-               nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
+               nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,working_dir)
       call wall_time(end_HF)
 
       t_HF = end_HF - start_HF
@@ -256,7 +256,7 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
 
     call wall_time(start_HF)
     call MOM_cUHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,mom_occupations)
+             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_EUHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,mom_occupations,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -378,13 +378,13 @@ subroutine UQuAcK(working_dir,dotest,doUHF,docUHF,doMOM,dostab,dosearch,doMP2,do
       call wall_time(start_stab)
       call MOM_UHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
                       nBas,nC,nO,nV,nR,nCVS,FC,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,           &
-                      dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations)
+                      dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF,FHF,mom_occupations,working_dir)
       call wall_time(end_stab)
     else
       call wall_time(start_stab)
       call UHF_search(maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
                       nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,      &
-                      dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF,FHF)
+                      dipole_int_aa,dipole_int_bb,X,EUHF,eHF,cHF,PHF,FHF,working_dir)
       call wall_time(end_stab)
     end if
 

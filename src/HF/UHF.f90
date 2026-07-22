@@ -1,5 +1,5 @@
 subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F)
+               nBas,nO,S,T,V,Hc,ERI,dipole_int,X,EUHF,eHF,c,P,F,working_dir)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -31,6 +31,8 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -267,10 +269,10 @@ subroutine UHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs
 ! Write MOs
 
   if(writeMOs) then
-    call write_matout(nBas,nBas,c(:,:,1),'real_MOs_alpha.dat')
-    call write_matout(nBas,nBas,c(:,:,2),'real_MOs_beta.dat')
-    call write_matout(nBas,nBas,0*c(:,:,1),'imag_MOs_alpha.dat')
-    call write_matout(nBas,nBas,0*c(:,:,2),'imag_MOs_beta.dat')
+    call write_matout(nBas,nBas,c(:,:,1),  trim(working_dir)//'/real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:,2),  trim(working_dir)//'/real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:,1),trim(working_dir)//'/imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:,2),trim(working_dir)//'/imag_MOs_beta.dat')
   endif
 
 ! Print test values

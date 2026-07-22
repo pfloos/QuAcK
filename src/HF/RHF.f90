@@ -1,6 +1,6 @@
 ! MRM NOTE: If the call to RHF is modified, please also incorporate the changes to the call of RHF in the BQuAcK branch
 subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
-               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F)
+               nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,ERHF,eHF,c,P,F,working_dir)
 
 ! Perform restricted Hartree-Fock calculation
 
@@ -33,6 +33,8 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,mix,level_shift,
   double precision,intent(in)   :: X(nBas,nOrb)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -289,10 +291,10 @@ subroutine RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,mix,level_shift,
 
   if(writeMOs) then
     if(mix > 0d0) call RHF_mix_guess(nBas,nOrb,nO,mix,c)
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
+    call write_matout(nBas,nBas,c(:,:),  trim(working_dir)//'/real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:),  trim(working_dir)//'/real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:),trim(working_dir)//'/imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:),trim(working_dir)//'/imag_MOs_beta.dat')
     if(mix > 0d0) call RHF_mix_guess(nBas,nOrb,nO,-mix,c)
   endif
 

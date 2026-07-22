@@ -1,6 +1,6 @@
 subroutine MOM_RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc,        &
                       nBas,nOrb,nC,nO,nV,nR,nCVS,FC,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, & 
-                      X,ERHF,e,c,P,F,occupations)
+                      X,ERHF,e,c,P,F,occupations,working_dir)
 
 ! Search for MOM-RHF solutions
 
@@ -36,6 +36,8 @@ subroutine MOM_RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
   double precision,intent(inout):: dipole_int_MO(nOrb,nOrb,ncart)
   integer,intent(in)            :: occupations(nO)
+  
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -137,7 +139,7 @@ subroutine MOM_RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,level_shift,
 
     call wall_time(start_HF)
     call MOM_RHF(.false.,doaordm,maxSCF,thresh,max_diis,guess,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc,&
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,e,c,P,F,occupations)
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,e,c,P,F,occupations,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF

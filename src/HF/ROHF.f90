@@ -1,5 +1,5 @@
 subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, & 
-                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot)
+                nBas,nOrb,nO,S,T,V,Hc,ERI,dipole_int,X,EROHF,eHF,c,Ptot,Ftot,working_dir)
 
 ! Perform restricted open-shell Hartree-Fock calculation
 
@@ -32,6 +32,8 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMO
   double precision,intent(in)   :: X(nBas,nOrb) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
   double precision,intent(in)   :: dipole_int(nBas,nBas,ncart)
+  
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -266,10 +268,10 @@ subroutine ROHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMO
 ! Write MOs
 
   if(writeMOs) then
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_alpha.dat')
-    call write_matout(nBas,nBas,c(:,:),'real_MOs_beta.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_alpha.dat')
-    call write_matout(nBas,nBas,0*c(:,:),'imag_MOs_beta.dat')
+    call write_matout(nBas,nBas,c(:,:),  trim(working_dir)//'/real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,c(:,:),  trim(working_dir)//'/real_MOs_beta.dat')
+    call write_matout(nBas,nBas,0*c(:,:),trim(working_dir)//'/imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,0*c(:,:),trim(working_dir)//'/imag_MOs_beta.dat')
   endif
 
 ! Print test values
