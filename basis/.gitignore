@@ -1,0 +1,9 @@
+# Ignore all basis sets
+./*
+
+# Keep this file
+!README.md
+
+# Keep the basis needed for the tests
+!6-31g
+!cc-pvdz
