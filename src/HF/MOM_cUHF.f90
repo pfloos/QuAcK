@@ -197,6 +197,7 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,wri
     end do
 
 ! CAP energy
+
     do ispin=1,nspin
       EW(ispin) = complex_trace_matrix(nBas,matmul(P(:,:,ispin),(0d0,1d0)*CAP))
     end do
