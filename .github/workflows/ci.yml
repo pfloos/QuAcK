@@ -66,14 +66,27 @@ jobs:
         python lunch_bench.py -s light -t 1e-1
     
     - name: Update README
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      if: |
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/master' &&
+        (
+          contains(github.event.head_commit.modified, 'PyDuck.py') ||
+          contains(github.event.head_commit.modified, 'input/options.default') ||
+          contains(github.event.head_commit.modified, 'input/methods.default')
+        )
       run: |
         source quack.rc
-        cd "$QUACK_ROOT/utils"
-        python update_readme.py
+        python utils/update_readme.py
 
     - name: Commit README update
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      if: |
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/master' &&
+        (
+          contains(github.event.head_commit.modified, 'PyDuck.py') ||
+          contains(github.event.head_commit.modified, 'input/options.default') ||
+          contains(github.event.head_commit.modified, 'input/methods.default')
+        )
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
