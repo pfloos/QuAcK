@@ -90,11 +90,12 @@ Input files:
                         Set a working directory to run the calculation.
                         Default is $QUACK_ROOT, if set, otherwise the current
                         working directory (./)
-  -b, --basis BASIS     Name or path of the file containing the basis set
+  -b BASIS, --basis BASIS
+                        Name or path of the file containing the basis set
                         information. If the argument is not a filepath QuAcK
                         searches in WORKING_DIR/basis for a file matching the
                         argument.
-  -x, --xyz XYZ         Name of the file containing the nuclear coordinates in
+  -x XYZ, --xyz XYZ     Name of the file containing the nuclear coordinates in
                         xyz format in the WORKING_DIR/mol/ directory without
                         the .xyz extension.
 
@@ -106,10 +107,11 @@ Input format:
                         functions.
 
 Molecule:
-  -c, --charge CHARGE   Total charge of the molecule. Specify negative charges
+  -c CHARGE, --charge CHARGE
+                        Total charge of the molecule. Specify negative charges
                         with "m" instead of the minus sign, for example m1
                         instead of -1. Default is 0.
-  -m, --multiplicity MULTIPLICITY
+  -m MULTIPLICITY, --multiplicity MULTIPLICITY
                         Spin multiplicity. Default is 1 (singlet).
 
 Electron integrals:
@@ -142,7 +144,7 @@ You can then edit these files to run the methods you'd like (by replacing `F` wi
 These files look like this
 <!-- BEGIN methods -->
 ```
-QuAcK 💩 % cat input/methods 
+QuAcK 💩 % cat input/methods
 # RHF UHF GHF ROHF HFB cRHF cUHF eRHF scGHF
   F   F   F   F    F   F    F	 F    F
 # MP2 MP3
@@ -176,11 +178,11 @@ QuAcK 💩 % cat input/methods
 ```
 <!-- END methods -->
 and
-```
 <!-- BEGIN options -->
-QuAcK 💩 % cat input/options 
+```
+QuAcK 💩 % cat input/options
 # HF: maxSCF thresh  DIIS guess mix shift stab search aordm readFCIDUMP MOM WriteMOs
-      256    0.0000001 5    1     0.0 0.0   F    F      F     F		F   F
+      256    0.0000001 5    1   0.0  0.0   F     F      F      F         F    F
 # MP: reg
       F
 # CC: maxSCF thresh  DIIS
@@ -188,7 +190,7 @@ QuAcK 💩 % cat input/options
 # spin: TDA singlet triplet
         F   T       T
 # RPA/MP2: CVS-Alpha CVS-Beta  FC-Alpha FC-Beta
-               0         0          0       0
+               0         0          0      0
 # OORPA:  maxIter thresh  dRPA state diagHess
           256     0.00001 T    0     T    
 # GF: maxSCF thresh  DIIS lin eta renorm reg linDM restart_scGF2 verbose_scGF2
@@ -209,6 +211,7 @@ QuAcK 💩 % cat input/options
        T     F           F       F   F   0.0
 # Ensemble: weight_N  N+1[for N-1 use F]
 	    0.00000   T
+
 ```
 <!-- END options -->
 

@@ -49,6 +49,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyscf
+        pip install pyopencap
 
     - name: Run tests
       run: |
