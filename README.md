@@ -90,12 +90,11 @@ Input files:
                         Set a working directory to run the calculation.
                         Default is $QUACK_ROOT, if set, otherwise the current
                         working directory (./)
-  -b BASIS, --basis BASIS
-                        Name or path of the file containing the basis set
+  -b, --basis BASIS     Name or path of the file containing the basis set
                         information. If the argument is not a filepath QuAcK
                         searches in WORKING_DIR/basis for a file matching the
                         argument.
-  -x XYZ, --xyz XYZ     Name of the file containing the nuclear coordinates in
+  -x, --xyz XYZ         Name of the file containing the nuclear coordinates in
                         xyz format in the WORKING_DIR/mol/ directory without
                         the .xyz extension.
 
@@ -107,11 +106,10 @@ Input format:
                         functions.
 
 Molecule:
-  -c CHARGE, --charge CHARGE
-                        Total charge of the molecule. Specify negative charges
+  -c, --charge CHARGE   Total charge of the molecule. Specify negative charges
                         with "m" instead of the minus sign, for example m1
                         instead of -1. Default is 0.
-  -m MULTIPLICITY, --multiplicity MULTIPLICITY
+  -m, --multiplicity MULTIPLICITY
                         Spin multiplicity. Default is 1 (singlet).
 
 Electron integrals:
@@ -142,9 +140,9 @@ cp $QUACK_ROOT/input/options.default $QUACK_ROOT/input/options
 ```
 You can then edit these files to run the methods you'd like (by replacing `F` with `T`) with specific options.
 These files look like this
+<!-- BEGIN methods -->
 ```
 QuAcK 💩 % cat input/methods 
-<!-- BEGIN methods -->
 # RHF UHF GHF ROHF HFB cRHF cUHF eRHF scGHF
   F   F   F   F    F   F    F	 F    F
 # MP2 MP3
@@ -175,12 +173,12 @@ QuAcK 💩 % cat input/methods
   F      F          F           F            F
 # Rtest Utest Gtest
   F     F     F
-<!-- END methods -->
 ```
+<!-- END methods -->
 and
 ```
-QuAcK 💩 % cat input/options 
 <!-- BEGIN options -->
+QuAcK 💩 % cat input/options 
 # HF: maxSCF thresh  DIIS guess mix shift stab search aordm readFCIDUMP MOM WriteMOs
       256    0.0000001 5    1     0.0 0.0   F    F      F     F		F   F
 # MP: reg
@@ -211,8 +209,8 @@ QuAcK 💩 % cat input/options
        T     F           F       F   F   0.0
 # Ensemble: weight_N  N+1[for N-1 use F]
 	    0.00000   T
-<!-- END options -->
 ```
+<!-- END options -->
 
 For example, if you want to run a calculation on water using the cc-pvdz basis set:
 ```
