@@ -2,46 +2,55 @@
 
 from pathlib import Path
 import subprocess
+import os
 
+QUACK_ROOT = Path(os.environ.get("QUACK_ROOT", ".."))
 
-README = Path("../README.md")
-PYDUCK = Path("../PyDuck.py")
+README = QUACK_ROOT / "README.md"
+PYDUCK = QUACK_ROOT / "PyDuck.py"
 
 
 def get_pyduck_help():
     """Run PyDuck.py -h and return its output."""
-    result = subprocess.run(
+    help_text = subprocess.run(
         ["python", str(PYDUCK), "-h"],
         capture_output=True,
         text=True,
         check=True
-    )
-
-    return result.stdout
+    ).stdout
+    return f"""```
+~ 💩 % cd $QUACK_ROOT
+QuAcK 💩 % python PyDuck.py -h
+{help_text.rstrip()}
+```"""
 
 
 def get_options():
-    """Run PyDuck.py -h and return its output."""
-    result = subprocess.run(
-        ["cat", "../input/options.default"],
+    """Return the content of the options file output."""
+    options_text = subprocess.run(
+        ["cat", QUACK_ROOT / "input/options.default"],
         capture_output=True,
         text=True,
         check=True
-    )
-
-    return result.stdout
+    ).stdout
+    return f"""```
+QuAcK 💩 % cat input/options 
+{options_text.rstrip()}
+```"""
 
 
 def get_methods():
-    """Run PyDuck.py -h and return its output."""
-    result = subprocess.run(
-        ["cat", "../input/methods.default"],
+    """Return the content of the methods file."""
+    methods_text = subprocess.run(
+        ["cat", QUACK_ROOT / "input/methods.default"],
         capture_output=True,
         text=True,
         check=True
-    )
-
-    return result.stdout
+    ).stdout
+    return f"""```
+QuAcK 💩 % cat input/methods 
+{methods_text.rstrip()}
+```"""
 
 
 def update_section(text, name, content):
@@ -67,29 +76,31 @@ def update_section(text, name, content):
     )
 
 
+def update_readme(readme, sections):
+    """
+    Updates all sections in the readme text by the text defined by the
+    get_%section function
+
+    Parameters
+    ----------
+    readme : Text of the Readme
+    sections :  Sections which are supposed to be updated
+
+    Returns
+    -------
+
+    """
+    for section in sections:
+        section_text = globals()[f'get_{section}']()
+        readme = update_section(readme, section, section_text)
+    return readme
+
+
 def main():
 
     readme = README.read_text()
-
-    help_text = get_pyduck_help()
-    options_text = get_options()
-    methods_text = get_methods()
-    readme = update_section(
-        readme,
-        "PYDUCK_HELP",
-        help_text
-    )
-    readme = update_section(
-        readme,
-        "options",
-        options_text
-    )
-    readme = update_section(
-        readme,
-        "methods",
-        methods_text
-    )
-
+    sections = ['pyduck_help', 'options', 'methods']
+    update_readme(readme, sections)
     README.write_text(readme)
 
 

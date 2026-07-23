@@ -71,10 +71,10 @@ cd src; make
 
 ## ⚡ Quick Start
 
+<!-- BEGIN pyduck_help -->
 ```
 ~ 💩 % cd $QUACK_ROOT
 QuAcK 💩 % python PyDuck.py -h
-<!-- BEGIN PYDUCK_HELP -->
 usage: PyDuck.py [-h] [--working_dir WORKING_DIR] -b BASIS -x XYZ [--bohr]
                  [--cartesian] [-c CHARGE] [-m MULTIPLICITY] [--print_2e]
                  [--formatted_2e] [--mmap_2e] [--aosym_2e] [-nc] [-dm]
@@ -128,8 +128,8 @@ Molecular orbitals:
                         this is true WriteMOs in the QuAcK options is
                         automatically set to true an the molecular orbitals
                         are dumbed.
-<!-- END PYDUCK_HELP -->
 ```
+<!-- END pyduck_help -->
 
 The two most important files are:
 - `$QUACK_ROOT/input/methods` that gathers the methods you want to use.
@@ -181,8 +181,8 @@ and
 ```
 QuAcK 💩 % cat input/options 
 <!-- BEGIN options -->
-# HF: maxSCF 	thresh  DIIS	guess	mix	shift	stab	search	aordm	readFCIDUMP	MOM WriteMOs
-      256	1e-7	5	1	0.0 	0.0   	F    	F	F   	F		F	F
+# HF: maxSCF thresh  DIIS guess mix shift stab search aordm readFCIDUMP MOM WriteMOs
+      256    0.0000001 5    1     0.0 0.0   F    F      F     F		F   F
 # MP: reg
       F
 # CC: maxSCF thresh  DIIS
