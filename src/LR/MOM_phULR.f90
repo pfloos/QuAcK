@@ -62,7 +62,7 @@ subroutine MOM_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
 
     ! Diagonalize linear response matrix
     call diagonalize_general_matrix(nSt,ApB,Om,XmY)
-    
+
     ! Deal with complex eigenvalue and then stop program
     if(any(Om < -1d-8)) then
       print*,"Found complex eigenvalue in Linear Response ! Use complex code !"
@@ -77,12 +77,22 @@ subroutine MOM_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
       deallocate(complex_Om)
       stop
     end if
-
-    Om = sqrt(Om)
+    
+    Om = sqrt(abs(Om))
     
     ! Get XpY via (X+Y) =(\tilde{A}-B - 2*eF*Id)(X-Y)Omega^-1
     XpY = matmul(AmB,XmY) - 2*eF*XmY
-    call AD(nSt,XpY,1/Om)
+    if(maxval(abs(Om)) > 1e-8) then
+      call AD(nSt,XpY,1/Om)
+    else
+      do i=1,nSt
+        if(abs(Om(i)) < 1e-8) then
+          XpY(:,i) = XpY(:,i) / Om(i)
+        else
+          print *, "Warning: Zero mode found in Linear Response, corresponding eigenvectors might be wrong !"
+        end if
+      end do
+    endif
      
     ! Compute Overlap and assign ex-/deexcitations
     ApB = matmul(transpose(XmY),XpY)
@@ -95,9 +105,11 @@ subroutine MOM_phULR(TDA,nSa,nSb,nSt,Aph,Bph,EcRPA,Om,XpY,XmY)
     enddo
 
     call sort_eigenvalues_vec_vec(nSt,Om,XmY,XpY)
-    ! Orthonormalize
+    ! Orthonormalize (only if no zero mode)
     ApB = matmul(transpose(XmY),XpY)
-    call orthogonalize_matrix(1,nSt,ApB,AmB)
+    if(minval(abs(Om)) < 1e-8) then
+      call orthogonalize_matrix(1,nSt,ApB,AmB)
+    end if
     XmY = matmul(XmY,AmB)
     XpY = matmul(XpY,AmB)
     
