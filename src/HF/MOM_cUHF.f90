@@ -37,8 +37,6 @@ subroutine MOM_cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,wri
 
 ! Local variables
 
-  logical                       :: file_exists
-
   integer                       :: iorb
   integer                       :: nSCF
   integer                       :: nBasSq
