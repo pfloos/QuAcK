@@ -93,7 +93,7 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
   if(doG0W0 .and. CVS) then
     
     call wall_time(start_GW)
-    call CVS_UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
+    call MOM_UG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,spin_conserved,spin_flip, & 
                linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF,S,ERI_aaaa,ERI_aabb,ERI_bbbb,            & 
                dipole_int_aa,dipole_int_bb,cHF,eHF,occupations)
     call wall_time(end_GW)
@@ -125,7 +125,7 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
   if(doevGW .and. CVS) then
 
     call wall_time(start_GW)
-    call CVS_evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA, & 
+    call MOM_evUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA, & 
               spin_conserved,spin_flip,linearize,eta,doSRG,nBas,nC,nO,nV,nR,nS,nCVS,FC,ENuc,EUHF,S,  & 
               ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_aa,dipole_int_bb,cHF,eHF,occupations)
     call wall_time(end_GW)
@@ -157,7 +157,7 @@ subroutine UGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
   if(doqsGW .and. CVS) then 
 
     call wall_time(start_GW)
-    call CVS_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,        & 
+    call MOM_qsUGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,TDA_W,TDA,dBSE,dTDA,        & 
                spin_conserved,spin_flip,eta,doSRG,nNuc,ZNuc,rNuc,ENuc,nBas,nC,nO,nV,nR,nS,                         &
                nCVS,FC,EUHF,                                                                                       & 
                S,X,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,dipole_int_AO,dipole_int_aa,dipole_int_bb,PHF,cHF,eHF, &

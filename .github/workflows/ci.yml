@@ -11,6 +11,8 @@ on:
   schedule:
   - cron: "42 19 * * 6"
 
+permissions:
+  contents: write
 
 jobs:
 
@@ -47,6 +49,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyscf
+        pip install pyopencap
 
     - name: Run tests
       run: |
@@ -61,3 +64,35 @@ jobs:
         cd ../tests
         python create_database.py
         python lunch_bench.py -s light -t 1e-1
+    
+    - name: Check README dependencies
+      id: readme_check
+      run: |
+        if git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep -qE '(^PyDuck.py$|^input/options.default$|^input/methods.default$)'; then
+          echo "update=true" >> $GITHUB_OUTPUT
+        else
+          echo "update=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Update README
+      if: |
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/master' &&
+        steps.readme_check.outputs.update == 'true'
+      run: |
+        source quack.rc
+        cd "$QUACK_ROOT/utils"
+        python update_readme.py
+
+    - name: Commit README update
+      if: |
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/master' &&
+        steps.readme_check.outputs.update == 'true'
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+
+        git add README.md
+        git diff --cached --quiet || git commit -m "Update README automatically"
+        git push

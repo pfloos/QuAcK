@@ -1,6 +1,6 @@
 subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,write_MOs,nNuc,ZNuc,rNuc,ENuc, &
                       nBas,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_aaaa,ERI_aabb,ERI_bbbb,           &
-                      dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,e,c,P,F)
+                      dipole_int_AO,dipole_int_aa,dipole_int_bb,X,EUHF,e,c,P,F,working_dir)
 
 ! Search for UHF solutions
 
@@ -36,6 +36,8 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,write_MO
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
   double precision,intent(inout):: dipole_int_aa(nBas,nBas,ncart)
   double precision,intent(inout):: dipole_int_bb(nBas,nBas,ncart)
+  
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -107,7 +109,7 @@ subroutine UHF_search(maxSCF,thresh,max_diis,guess_type,mix,level_shift,write_MO
 
     call wall_time(start_HF)
     call UHF(.false.,maxSCF,thresh,max_diis,guess,mix,level_shift,write_MOs,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,e,c,P,F)
+             nBas,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EUHF,e,c,P,F,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF

@@ -1,5 +1,5 @@
 subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,ENuc, & 
-                nBas,nO,S,T,V,ERI,CAP,X,ERHF,eHF,c,P,F)
+                nBas,nO,S,T,V,ERI,CAP,X,ERHF,eHF,c,P,F,working_dir)
 
 ! Perform complex restricted Hartree-Fock calculation
 
@@ -25,6 +25,8 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
   double precision,intent(in)   :: X(nBas,nBas)
   double precision,intent(in)   :: CAP(nBas,nBas)
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+  
+  character(len=256),intent(in) :: working_dir
   
   ! Local variables
 
@@ -217,10 +219,10 @@ subroutine cRHF(dotest,maxSCF,thresh,max_diis,guess_type,level_shift,writeMOs,EN
   call print_cRHF(nBas,nBas,nO,eHF,C,ENuc,ET,EV,EW,EJ,EK,ERHF)
   
   if(writeMOs) then
-        call write_matout(nBas,nBas,real(c),'real_MOs_alpha.dat')
-        call write_matout(nBas,nBas,aimag(c),'imag_MOs_alpha.dat')
-        call write_matout(nBas,nBas,real(c),'real_MOs_beta.dat')
-        call write_matout(nBas,nBas,aimag(c),'imag_MOs_beta.dat')
+        call write_matout(nBas,nBas,real(c), trim(working_dir)//'/real_MOs_alpha.dat')
+        call write_matout(nBas,nBas,aimag(c),trim(working_dir)//'/imag_MOs_alpha.dat')
+        call write_matout(nBas,nBas,real(c), trim(working_dir)//'/real_MOs_beta.dat')
+        call write_matout(nBas,nBas,aimag(c),trim(working_dir)//'/imag_MOs_beta.dat')
   endif
 
   ! Testing zone

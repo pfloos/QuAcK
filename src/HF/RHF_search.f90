@@ -1,6 +1,6 @@
 subroutine RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc,        &
                       nBas,nOrb,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO, & 
-                      X,ERHF,e,c,P,F)
+                      X,ERHF,e,c,P,F,working_dir)
 
 ! Search for RHF solutions
 
@@ -33,6 +33,8 @@ subroutine RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,mix,level_shift,
   double precision,intent(inout):: ERI_MO(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in)   :: dipole_int_AO(nBas,nBas,ncart)
   double precision,intent(inout):: dipole_int_MO(nOrb,nOrb,ncart)
+  
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -97,7 +99,7 @@ subroutine RHF_search(maxSCF,doaordm,thresh,max_diis,guess_type,mix,level_shift,
 
     call wall_time(start_HF)
     call RHF(.false.,doaordm,maxSCF,thresh,max_diis,guess,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc,&
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,e,c,P,F)
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,e,c,P,F,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF

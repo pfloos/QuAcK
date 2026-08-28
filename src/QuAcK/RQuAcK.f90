@@ -250,7 +250,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
     call wall_time(start_HF)
     call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -265,7 +265,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
     
       call wall_time(start_HF)
       call RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-               nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+               nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,working_dir)
       call wall_time(end_HF)
 
       t_HF = end_HF - start_HF
@@ -276,7 +276,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
     call wall_time(start_HF)
     call MOM_RHF(dotest,doaordm,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations)
+             nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -289,8 +289,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
 
     call wall_time(start_HF)
     call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,working_dir)
     call wall_time(end_HF)
+
 
     t_HF = end_HF - start_HF
     write(*,'(A65,1X,F9.3,A8)') 'Total wall time for ROHF = ',t_HF,' seconds'
@@ -303,14 +304,14 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
    
       call wall_time(start_HF)
       call ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-                nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF)
+                nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,working_dir)
       call wall_time(end_HF)
     
     end if 
     
     call wall_time(start_HF)
     call MOM_ROHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations)
+              nBas,nOrb,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,ERHF,eHF,cHF,PHF,FHF,mom_occupations,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -323,7 +324,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   
     call wall_time(start_HF)
     call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,ENuc, &
-             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
+             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -336,7 +337,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
     if(guess_type /= 6) then 
       call wall_time(start_HF)
       call cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,ENuc, &
-               nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF)
+               nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,working_dir)
       call wall_time(end_HF)
 
       t_HF = end_HF - start_HF
@@ -345,7 +346,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
     endif
     call wall_time(start_HF)
     call MOM_cRHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,ENuc, &
-             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,mom_occupations)
+             nBas,nO,S,T,V,ERI_AO,CAP_AO,X,complex_ERHF,complex_eHF,complex_cHF,complex_PHF,complex_FHF,mom_occupations,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
@@ -500,7 +501,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
     call wall_time(start_stab)
     call RHF_search(maxSCF_HF,doaordm,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
                     nBas,nOrb,nC,nO,nV,nR,S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X, & 
-                    ERHF,eHF,cHF,PHF,FHF)
+                    ERHF,eHF,cHF,PHF,FHF,working_dir)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab
@@ -514,7 +515,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
     call wall_time(start_stab)
     call MOM_RHF_search(maxSCF_HF,doaordm,thresh_HF,max_diis_HF,guess_type,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
                     nBas,nOrb,nC,nO,nV,nR,nCVS(1),FC(1),S,T,V,Hc,ERI_AO,ERI_MO,dipole_int_AO,dipole_int_MO,X, & 
-                    ERHF,eHF,cHF,PHF,FHF,mom_occupations(:,1))
+                    ERHF,eHF,cHF,PHF,FHF,mom_occupations(:,1),working_dir)
     call wall_time(end_stab)
 
     t_stab = end_stab - start_stab

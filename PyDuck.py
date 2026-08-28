@@ -10,6 +10,7 @@ import numpy as np
 import subprocess
 import time
 import gc
+from utils import override_input
 
 try:
     import pyopencap
@@ -27,39 +28,48 @@ QuAcK_dir = os.environ.get('QUACK_ROOT', './')
 
 # Create the argument parser object and gives a description of the script
 parser = argparse.ArgumentParser(
-    description='This script is the main script of QuAcK, it is used to run the calculation.\n If $QUACK_ROOT is not set, $QUACK_ROOT is replaces by the current directory.')
+    description=('This script is the main script of QuAcK, it is used to run the calculation.\n'
+                 'If $QUACK_ROOT is not set, $QUACK_ROOT is replaced by the current directory.\n'))
 
 # Initialize all the options for the script
-parser.add_argument('-b', '--basis', type=str, required=True,
-                    help='Name of the file containing the basis set information in the $QUACK_ROOT/basis/ directory')
-parser.add_argument('--bohr', default='Angstrom', action='store_const', const='Bohr',
-                    help='By default QuAcK assumes that the xyz files are in Angstrom. Add this argument if your xyz file is in Bohr.')
-parser.add_argument('-c', '--charge', type=int, default=0,
-                    help='Total charge of the molecule. Specify negative charges with "m" instead of the minus sign, for example m1 instead of -1. Default is 0')
-parser.add_argument('--cartesian', default=False, action='store_true',
-                    help='Add this option if you want to use cartesian basis functions.')
-parser.add_argument('--print_2e', default=True,
-                    action='store_true', help='If True, print ERIs to disk.')
-parser.add_argument('--formatted_2e', default=False, action='store_true',
-                    help='Add this option if you want to print formatted ERIs.')
-parser.add_argument('--mmap_2e', default=False, action='store_true',
-                    help='If True, avoid using DRAM when generating ERIs.')
-parser.add_argument('--aosym_2e', default=False, action='store_true',
-                    help='If True, use 8-fold symmetry in ERIs.')
-parser.add_argument('-fc', '--frozen_core', type=bool,
-                    default=False, help='Freeze core orbitals. Default is false')
-parser.add_argument('-m', '--multiplicity', type=int, default=1,
-                    help='Spin multiplicity. Default is 1 (singlet)')
-parser.add_argument('--working_dir', type=str, default=QuAcK_dir,
-                    help='Set a working directory to run the calculation.')
-parser.add_argument('-x', '--xyz', type=str, required=True,
-                    help='Name of the file containing the nuclear coordinates in xyz format in the $QUACK_ROOT/mol/ directory without the .xyz extension')
-
-parser.add_argument('-dm', '--dump_molden', default=False, action='store_true',
-                    help='Dump molden file with the dyson orbitals. Make sure that in the Quack Code before compilation the keyword writeMOs in cRHF or complex_qsRGW is set to true. So far, this is only available for cRHF and complex_qsRGW.')
-
-parser.add_argument('-nc', '--no_cap', default=False, action='store_true',
-                    help='If true, no CAP integrals are calculated and stored.')
+input_group = parser.add_argument_group("Input files")
+input_group.add_argument('--working_dir', type=str, default=QuAcK_dir,
+                         help=('Set a working directory to run the calculation.\n'
+                               'Default is $QUACK_ROOT, if set, otherwise the current working directory (./)\n'))
+input_group.add_argument('-b', '--basis', type=str, required=True,
+                         help=('Name or path of the file containing the basis set information.\n'
+                               'If the argument is not a filepath QuAcK searches in WORKING_DIR/basis for a file matching the argument.'))
+input_group.add_argument('-x', '--xyz', type=str, required=True,
+                         help='Name of the file containing the nuclear coordinates in xyz format in the WORKING_DIR/mol/ directory without the .xyz extension.\n')
+input_options_group = parser.add_argument_group("Input format")
+input_options_group.add_argument('--bohr', default='Angstrom', action='store_const', const='Bohr',
+                                 help=('By default QuAcK assumes that the xyz files are in Angstrom.\n'
+                                       'Add this argument if your xyz file is in Bohr.\n'))
+input_options_group.add_argument('--cartesian', default=False, action='store_true',
+                                 help='Add this option if you want to use cartesian basis functions.\n')
+molecule_group = parser.add_argument_group("Molecule")
+molecule_group.add_argument('-c', '--charge', type=int, default=0,
+                            help=('Total charge of the molecule.\n'
+                                  'Specify negative charges with "m" instead of the minus sign, for example m1 instead of -1.\n'
+                                  'Default is 0.\n'))
+molecule_group.add_argument('-m', '--multiplicity', type=int, default=1,
+                            help='Spin multiplicity. Default is 1 (singlet).\n')
+integral_group = parser.add_argument_group("Electron integrals")
+integral_group.add_argument('--print_2e', default=True,
+                            action='store_true', help='If True, print ERIs to disk.\n')
+integral_group.add_argument('--formatted_2e', default=False, action='store_true',
+                            help='Add this option if you want to print formatted ERIs.\n')
+integral_group.add_argument('--mmap_2e', default=False, action='store_true',
+                            help='If True, avoid using DRAM when generating ERIs.\n')
+integral_group.add_argument('--aosym_2e', default=False, action='store_true',
+                            help='If True, use 8-fold symmetry in ERIs.\n')
+integral_group.add_argument('-nc', '--no_cap', default=False, action='store_true',
+                            help=('If true, no CAP integrals are calculated and stored.'
+                                  'If the python module pyopencap is not available, this is set automatically true.'))
+mo_group = parser.add_argument_group("Molecular orbitals")
+mo_group.add_argument('-dm', '--dump_molden', default=False, action='store_true',
+                      help=('Dump a molden file with the molecular orbitals. \n'
+                            'If this is true WriteMOs in the QuAcK options is automatically set to true an the molecular orbitals are dumbed.'))
 
 # Parse the arguments
 args = parser.parse_args()
@@ -67,7 +77,6 @@ working_dir = args.working_dir
 input_basis = args.basis
 unit = args.bohr
 charge = args.charge
-frozen_core = args.frozen_core
 multiplicity = args.multiplicity
 xyz = args.xyz + '.xyz'
 cartesian = args.cartesian
@@ -76,6 +85,9 @@ formatted_2e = args.formatted_2e
 mmap_2e = args.mmap_2e
 aosym_2e = args.aosym_2e
 dump_molden = args.dump_molden
+if dump_molden:
+    override_input.override_options(
+        {'HF': {'WriteMOs': 'T'}}, working_dir + '/input/options')
 if args.no_cap:
     use_cap = False
 # Read molecule
@@ -105,7 +117,7 @@ mol = gto.M(
     basis=basis,
     charge=charge,
     spin=multiplicity - 1
-    #    symmetry = True  # Enable symmetry
+    # symmetry=True  # Enable symmetry
 )
 
 # Fix the unit for the lengths
@@ -349,11 +361,11 @@ gc.collect()
 subprocess.call([QuAcK_dir + '/bin/QuAcK', working_dir])
 
 if dump_molden:
-    real_mo_coeff = np.loadtxt('real_MOs_alpha.dat')
-    imag_mo_coeff = np.loadtxt('imag_MOs_alpha.dat')
-    molden.from_mo(mol, "real_MOs_alpha.molden", real_mo_coeff)
-    molden.from_mo(mol, "imag_MOs_alpha.molden", imag_mo_coeff)
-    real_mo_coeff = np.loadtxt('real_MOs_beta.dat')
-    imag_mo_coeff = np.loadtxt('imag_MOs_beta.dat')
-    molden.from_mo(mol, "real_MOs_beta.molden", real_mo_coeff)
-    molden.from_mo(mol, "imag_MOs_beta.molden", imag_mo_coeff)
+    real_mo_coeff = np.loadtxt(working_dir + '/real_MOs_alpha.dat')
+    imag_mo_coeff = np.loadtxt(working_dir + '/imag_MOs_alpha.dat')
+    molden.from_mo(mol, working_dir + "/real_MOs_alpha.molden", real_mo_coeff)
+    molden.from_mo(mol, working_dir + "/imag_MOs_alpha.molden", imag_mo_coeff)
+    real_mo_coeff = np.loadtxt(working_dir + '/real_MOs_beta.dat')
+    imag_mo_coeff = np.loadtxt(working_dir + '/imag_MOs_beta.dat')
+    molden.from_mo(mol, working_dir + "/real_MOs_beta.molden", real_mo_coeff)
+    molden.from_mo(mol, working_dir + "/imag_MOs_beta.molden", imag_mo_coeff)

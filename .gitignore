@@ -15,3 +15,5 @@ quadrature/build_iw_itau_grid_saved.f90
 src/quadrature/build_iw_itau_grid_saved.f90
 utils/gitver.f90
 src/utils/gitver.f90
+/*.dat
+hfb_bin

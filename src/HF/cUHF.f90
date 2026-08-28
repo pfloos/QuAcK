@@ -1,5 +1,5 @@
 subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
-             nBas,nO,S,T,V,ERI,CAP,X,EUHF,eHF,c,P,F)
+             nBas,nO,S,T,V,ERI,CAP,X,EUHF,eHF,c,P,F,working_dir)
 
 ! Perform unrestricted Hartree-Fock calculation
 
@@ -31,6 +31,8 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMO
   double precision,intent(in)   :: X(nBas,nBas) 
   double precision,intent(in)   :: CAP(nBas,nBas) 
   double precision,intent(in)   :: ERI(nBas,nBas,nBas,nBas)
+
+  character(len=256),intent(in) :: working_dir
 
 ! Local variables
 
@@ -284,10 +286,10 @@ subroutine cUHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writeMO
 
 
   if(writeMOs) then
-    call write_matout(nBas,nBas,real(c(:,:,1)),'real_MOs_alpha.dat')
-    call write_matout(nBas,nBas,real(c(:,:,2)),'real_MOs_beta.dat')
-    call write_matout(nBas,nBas,aimag(c(:,:,1)),'imag_MOs_alpha.dat')
-    call write_matout(nBas,nBas,aimag(c(:,:,2)),'imag_MOs_beta.dat')
+    call write_matout(nBas,nBas,real(c(:,:,1)), trim(working_dir)//'/real_MOs_alpha.dat')
+    call write_matout(nBas,nBas,real(c(:,:,2)), trim(working_dir)//'/real_MOs_beta.dat')
+    call write_matout(nBas,nBas,aimag(c(:,:,1)),trim(working_dir)//'/imag_MOs_alpha.dat')
+    call write_matout(nBas,nBas,aimag(c(:,:,2)),trim(working_dir)//'/imag_MOs_beta.dat')
   endif
 
 ! Print test values
