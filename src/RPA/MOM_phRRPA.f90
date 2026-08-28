@@ -51,9 +51,9 @@ subroutine MOM_phRRPA(dotest,TDA,doACFDT,exchange_kernel,singlet,triplet,nBas,nC
 ! Hello world
 
   write(*,*)
-  write(*,*)'*********************************'
-  write(*,*)'* Restricted ph-RPA Calculation *'
-  write(*,*)'*********************************'
+  write(*,*)'*************************************'
+  write(*,*)'* Restricted MOM ph-RPA Calculation *'
+  write(*,*)'*************************************'
   write(*,*)
 
 ! CVS
