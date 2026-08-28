@@ -37,8 +37,6 @@ subroutine MOM_RHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,
 
 ! Local variables
 
-  logical                       :: file_exists
-  integer                       :: iunit,iunit2
   integer                       :: iorb
   integer                       :: ibas,jbas,kbas,lbas
   integer                       :: nSCF

@@ -36,8 +36,6 @@ subroutine ensembleRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_sh
 
 ! Local variables
 
-  logical                       :: file_exists
-  integer                       :: iunit,iunit2
   integer                       :: iorb
   integer                       :: ibas,jbas,kbas,lbas
   integer                       :: nSCF
@@ -52,7 +50,6 @@ subroutine ensembleRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_sh
   double precision              :: Eee
   double precision              :: dipole(ncart)
 
-  double precision              :: Val
   double precision              :: Conv
   double precision              :: rcond
   double precision              :: errE
@@ -127,19 +124,6 @@ subroutine ensembleRHF(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_sh
      P_delta(:,:) = 2d0*matmul(c(:,1:nO-1),transpose(c(:,1:nO-1)))
     endif
     P_tot(:,:) = (1d0-eweight)*P_tot(:,:) + eweight*P_delta(:,:)
-   endif
-  endif
-  if(guess_type == 5) then
-   inquire(file='P_tot_ao_bin', exist=file_exists)
-   if(file_exists) then
-    write(*,*) 'Reading P_tot_ao_bin matrix...'
-    open(unit=314, form='unformatted', file='P_tot_ao_bin', status='old')
-    do
-     read(314) ibas,jbas,Val
-     if(ibas==0 .and. jbas==0) exit
-     P_tot(ibas,jbas)=Val 
-    enddo
-    close(314)
    endif
   endif
 

@@ -34,6 +34,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
 
   logical                       :: file_exists
   logical                       :: read_HFB_chkp
+  logical                       :: one_macro_iter
 
   integer                       :: iunit=313
   integer                       :: ifreq,itau
@@ -177,6 +178,15 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
  rcond=0d0
  n_diis=0
  nBas4Sqntimes2=nBas4Sq*ntimes_twice
+ one_macro_iter=.false.
+ inquire(file='one_macro_iter', exist=file_exists) ! Allow just one macro-iteration
+ if(file_exists) then
+  write(*,*)
+  write(*,'(a)') ' allowing only one macro iteration because one_macro_iter file is present'
+  write(*,*)
+  one_macro_iter=.true.
+ endif
+
 
  ! Allocate arrays
  allocate(Occ(nOrb2))
@@ -659,6 +669,8 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
   if(diff_Rao<=thrs_Rao) exit
 
   if(iter==maxSCF) exit
+  
+  if(one_macro_iter) exit
 
   ! Transform DeltaG(i w) -> DeltaG(i tau) [ i tau and -i tau ]
   !      [ the weights contain the 2 /(2 pi) = 1 / pi factor and the cos(tau w) or sin(tau w) ]

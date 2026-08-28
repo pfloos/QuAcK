@@ -99,34 +99,7 @@ subroutine RH(dotest,doaordm,maxSCF,thresh,max_diis,guess_type,level_shift,write
   P(:,:) = 2d0 * matmul(c(:,1:nO), transpose(c(:,1:nO)))
   ! If guess_type is read density and files P_ao_bin and/or P_ao_form exists
   if(guess_type == 5) then
-   inquire(file='P_ao_bin', exist=file_exists)
-   if(file_exists) then
-    write(*,*) 'Reading P_ao_bin matrix...'
-    open(unit=314, form='unformatted', file='P_ao_bin', status='old')
-    do
-     read(314) ibas,jbas,Val
-     if(ibas==0 .and. jbas==0) exit
-     P(ibas,jbas)=Val 
-    enddo
-    close(314)
-   endif
-   inquire(file='P_ao_form', exist=file_exists)
-   if(file_exists) then
-    write(*,*) 'Reading P_ao_form matrix...'
-    open(unit=314, form='formatted', file='P_ao_form', status='old')
-    ibas=1;jbas=0;
-    do
-     read(314,*) Val
-     jbas=jbas+1
-     if(jbas>nBas) then
-      ibas=ibas+1
-      jbas=1
-     endif
-     P(ibas,jbas)=Val 
-     if(ibas==jbas .and. ibas==nBas) exit
-    enddo
-    close(314)
-   endif
+   call guess_read_rhf(nBas,P)
   endif
 
 ! call dgemm('N', 'T', nBas, nBas, nO, 2.d0, &
