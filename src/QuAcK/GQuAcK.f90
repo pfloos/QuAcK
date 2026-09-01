@@ -1,10 +1,11 @@
-subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,       &
+subroutine GQuAcK(working_dir,dotest,doGHF,doMOM,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                   dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                                      &
                   doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0F3,dopsdG0F3,                                             &
                   doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                                              & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          & 
                   do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2,                                           &
                   nNuc,nBas,nC,nO,nV,nR,ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,                                            &
+                  mom_occupations,writeMOs,                                                                                 &
                   maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                                        &
                   maxSCF_CC,max_diis_CC,thresh_CC,                                                                          &
                   TDA,nfreqs,wcoord,wweight,                                                                                &
@@ -27,6 +28,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
   logical,intent(in)            :: readFCIDUMP
   logical,intent(in)            :: dostab
   logical,intent(in)            :: dosearch
+  logical,intent(in)            :: doMOM,writeMOs
   logical,intent(in)            :: doMP2
   logical,intent(in)            :: doMP3
   logical,intent(in)            :: doCCD,dopCCD,doDCD,doCCSD,doCCSDT
@@ -49,6 +51,8 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
   integer,intent(in)            :: nV
   integer,intent(in)            :: nR
   double precision,intent(in)   :: ENuc
+  integer,intent(in)            :: mom_occupations(nO,nspin)
+
 
   double precision,intent(in)   :: ZNuc(nNuc),rNuc(nNuc,ncart)
 
@@ -175,11 +179,24 @@ subroutine GQuAcK(working_dir,dotest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doM
 ! Hartree-Fock module !
 !---------------------!
 
-  if(doGHF) then
+  if(doGHF .and. .not. doMOM) then
 
     call wall_time(start_HF)
     call GHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF,FHF)
+    call wall_time(end_HF)
+
+    t_HF = end_HF - start_HF
+    write(*,'(A65,1X,F9.3,A8)') 'Total CPU time for UHF = ',t_HF,' seconds'
+    write(*,*)
+
+  end if
+  
+  if(doGHF .and. doMOM) then
+
+    call wall_time(start_HF)
+    call MOM_GHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
+             nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF,FHF,mom_occupations,working_dir)
     call wall_time(end_HF)
 
     t_HF = end_HF - start_HF
