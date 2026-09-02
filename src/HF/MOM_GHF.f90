@@ -57,6 +57,7 @@ subroutine MOM_GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
   double precision,allocatable  :: Paa(:,:),Pab(:,:),Pba(:,:),Pbb(:,:)
   double precision,allocatable  :: Fp(:,:)
   double precision,allocatable  :: Cp(:,:)
+  double precision,allocatable  :: tmp(:,:)
   double precision,allocatable  :: H(:,:)
   double precision,allocatable  :: S(:,:)
   double precision,allocatable  :: X(:,:)
@@ -69,6 +70,8 @@ subroutine MOM_GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
   double precision,allocatable  :: cGuess(:,:)
   integer,allocatable           :: occupations(:)
   integer                       :: i
+  logical                       :: file_exists
+  character(len=500)            :: filename
 
 
 ! Output variables
@@ -134,14 +137,50 @@ subroutine MOM_GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
 
 ! Guess coefficients and density matrix
   if(guess_type ==6) then
+    
     ! Read MO Coefficients from file
-    print *, "Reading MO Coefficients from MOs dir..."
-    call read_matin(nBas2,nBas2,c,"real_MOs_alpha.dat")
-  end if
+    print *, "Reading GHF MO Coefficients..."
+    allocate(tmp(nBas,nBas))
+    
+    c(:,:) = 0d0
 
-! Guess coefficients and density matrices
-
-  call mo_guess(nBas2,nBas2,guess_type,S,H,X,C)
+    ! C^alpha,alpha
+    call read_matin(nBas,nBas,tmp, &
+        trim(working_dir)//'/real_MOs_alpha.dat')
+    c(1:nBas,1:nBas) = tmp
+    
+    ! C^beta,beta
+    call read_matin(nBas,nBas,tmp, &
+        trim(working_dir)//'/real_MOs_beta.dat')
+    c(nBas+1:2*nBas,nBas+1:2*nBas) = tmp
+    
+    
+    ! C^alpha,beta
+    filename = trim(working_dir)//'/real_MOs_alphabeta.dat'
+    inquire(file=filename, exist=file_exists)
+    
+    if (file_exists) then
+        call read_matin(nBas,nBas,tmp,filename)
+        c(1:nBas,nBas+1:2*nBas) = tmp
+    else
+        print *, "No alpha-beta MO file found. Setting C^alpha,beta = 0."
+    endif
+    
+    
+    ! C^beta,alpha
+    filename = trim(working_dir)//'/real_MOs_betaalpha.dat'
+    inquire(file=filename, exist=file_exists)
+    
+    if (file_exists) then
+        call read_matin(nBas,nBas,tmp,filename)
+        c(nBas+1:2*nBas,1:nBas) = tmp
+    else
+        print *, "No beta-alpha MO file found. Setting C^beta,alpha = 0."
+    endif
+    
+    deallocate(tmp)
+  
+  endif
 
 ! Read input occupations (ground state) and prepare guess
   print *, ""
@@ -315,6 +354,33 @@ subroutine MOM_GHF(dotest,maxSCF,thresh,max_diis,guess_type,mix,level_shift,writ
 ! Compute final GHF energy
 
   call print_MOM_GHF(nBas,nBas2,nO,eHF,C,Ov,ENuc,ET,EV,EJ,EK,EGHF,dipole,occupations)
+
+! Write MOs
+  if(writeMOs) then
+      ! UHF compatible Calphaalpha and Cbetabeta blocks
+      call write_matout(nBas,nBas, &
+          c(1:nBas,1:nBas), &
+          trim(working_dir)//'/real_MOs_alpha.dat')
+      call write_matout(nBas,nBas, &
+          c(nBas+1:2*nBas,nBas+1:2*nBas), &
+          trim(working_dir)//'/real_MOs_beta.dat')
+      ! Imaginary parts (zero because real GHF)
+      call write_matout(nBas,nBas, &
+          0.0d0*c(1:nBas,1:nBas), &
+          trim(working_dir)//'/imag_MOs_alpha.dat')
+      call write_matout(nBas,nBas, &
+          0.0d0*c(nBas+1:2*nBas,nBas+1:2*nBas), &
+          trim(working_dir)//'/imag_MOs_beta.dat')
+      ! GHF off-diagonal blocks
+      call write_matout(nBas,nBas, &
+          c(1:nBas,nBas+1:2*nBas), &
+          trim(working_dir)//'/real_MOs_alphabeta.dat')
+      call write_matout(nBas,nBas, &
+          c(nBas+1:2*nBas,1:nBas), &
+          trim(working_dir)//'/real_MOs_betaalpha.dat')
+      call write_occupations(nO,nO,occupations,occupations,trim(working_dir)//'/occupations.dat')
+      print*, "MOs and occupations are written. Attention: Those are GHF occupations (and not UHF or RHF)."
+  endif
 
 ! Print test values
 

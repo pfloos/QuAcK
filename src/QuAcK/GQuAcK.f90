@@ -194,6 +194,19 @@ subroutine GQuAcK(working_dir,dotest,doGHF,doMOM,dostab,dosearch,readFCIDUMP,doM
   
   if(doGHF .and. doMOM) then
 
+    if(guess_type /= 6) then
+    
+      call wall_time(start_HF)
+      call GHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,nNuc,ZNuc,rNuc,ENuc, &
+               nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF,FHF)
+      call wall_time(end_HF)
+
+      t_HF = end_HF - start_HF
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for RHF = ',t_HF,' seconds'
+      write(*,*)
+
+    end if
+
     call wall_time(start_HF)
     call MOM_GHF(dotest,maxSCF_HF,thresh_HF,max_diis_HF,guess_type,mix,level_shift,writeMOs,nNuc,ZNuc,rNuc,ENuc, &
              nBas,nBas2,nO,S,T,V,Hc,ERI_AO,dipole_int_AO,X,EGHF,eHF,cHF,PHF,FHF,mom_occupations,working_dir)

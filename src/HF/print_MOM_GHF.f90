@@ -46,10 +46,16 @@ subroutine print_MOM_GHF(nBas,nBas2,nO,eHF,C,S,ENuc,ET,EV,EJ,EK,EGHF,dipole,occu
 
   double precision,external          :: trace_matrix
 
+  integer,allocatable                :: virtual(:)
+
+
+  allocate(virtual(nBas2-nO))
+
 ! HOMO and LUMO
 
-  HOMO = nO
-  LUMO = HOMO + 1
+  call non_occupied(nO, nBas2, occupations,virtual)  
+  HOMO = maxval(occupations)
+  LUMO = minval(virtual)
   Gap = eHF(LUMO)-eHF(HOMO)
 
 ! Density matrices
@@ -148,9 +154,15 @@ subroutine print_MOM_GHF(nBas,nBas2,nO,eHF,C,S,ENuc,ET,EV,EJ,EK,EGHF,dipole,occu
   call vecout(nO,eHF(occupations(1:nO)))
   write(*,*)
   write(*,'(A50)') '---------------------------------------'
-  write(*,'(A50)') ' GHF orbital energies (au) '
+  write(*,'(A50)') ' GHF unoccupied orbital energies (au) '
   write(*,'(A50)') '---------------------------------------'
-  call vecout(nBas2,eHF)
+  call vecout(nBas2-nO,eHF(virtual(:)))
   write(*,*)
+
+  print *, "Orbital occupations for MOM-GHF:"
+  print *, occupations(:)
+  print *, ""
+
+  deallocate(virtual)
 
 end subroutine 
