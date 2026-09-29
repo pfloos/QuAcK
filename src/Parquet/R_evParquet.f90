@@ -111,8 +111,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical                       :: do_1pp_BSE = .true.
   logical                       :: do_3pp_BSE = .true.
 
-  logical                       :: dRPA_1eh = .true.
-  logical                       :: dRPA_3eh = .true.
+  logical                       :: dRPA_1eh = .false.
+  logical                       :: dRPA_3eh = .false.
   
 ! Output variables
 ! None
