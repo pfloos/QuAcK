@@ -16,7 +16,6 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   integer                       :: ia,jb,p,q,j,b
   double precision,allocatable  :: X(:,:),Y(:,:)
   double precision,allocatable  :: Gamma_eh_bj(:,:,:),Gamma_eh_jb(:,:,:)
-  double precision              :: Kx = 1d0
 
 ! Output variables
   double precision,intent(out)  :: rho(nOrb,nOrb,nS)
@@ -34,7 +33,7 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
   Gamma_eh_jb(:,:,:) = 0d0
 
   !$OMP PARALLEL &
-  !$OMP SHARED(nC,nOrb,nR,nO,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,Gamma_eh_jb,Gamma_eh_bj,Kx) &
+  !$OMP SHARED(nC,nOrb,nR,nO,ERI,eh_sing_Phi,eh_trip_Phi,pp_sing_Phi,pp_trip_Phi,Gamma_eh_jb,Gamma_eh_bj) &
   !$OMP PRIVATE(q,p,jb) &
   !$OMP DEFAULT(NONE)
   !$OMP DO COLLAPSE(2)
@@ -48,11 +47,11 @@ subroutine R_eh_singlet_screened_integral(nOrb,nC,nO,nR,nS,ERI,eh_sing_Phi,eh_tr
 
                  
                  Gamma_eh_bj(p,q,jb) = Gamma_eh_bj(p,q,jb)                              &
-                             + ( 2d0*ERI(p,b,q,j) - Kx*ERI(p,b,j,q)                     & 
+                             + ( 2d0*ERI(p,b,q,j) - ERI(p,b,j,q)                        & 
                              - 0.5d0*eh_sing_Phi(p,b,j,q) - 1.5d0*eh_trip_Phi(p,b,j,q)  &
                              + 0.5d0*pp_sing_Phi(p,b,q,j) + 1.5d0*pp_trip_Phi(p,b,q,j) )
                  Gamma_eh_jb(p,q,jb) = Gamma_eh_jb(p,q,jb)                              &
-                             + ( 2d0*ERI(p,j,q,b) - Kx*ERI(p,j,b,q)                     & 
+                             + ( 2d0*ERI(p,j,q,b) - ERI(p,j,b,q)                        & 
                              - 0.5d0*eh_sing_Phi(p,j,b,q) - 1.5d0*eh_trip_Phi(p,j,b,q)  &
                              + 0.5d0*pp_sing_Phi(p,j,q,b) + 1.5d0*pp_trip_Phi(p,j,q,b) )
                  
