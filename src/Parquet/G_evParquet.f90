@@ -377,10 +377,16 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*) 'Computing pp screened integrals...'
 
       call wall_time(start_t)
-      call G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,old_eh_Phi,X1,Y1,ee_rho,X2,Y2,hh_rho)
+      call G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,old_eh_Phi, &
+                            X1,Y1,ee_rho,X2,Y2,hh_rho)
       call wall_time(end_t)
       t = end_t - start_t
-      ! Keep X1/Y1/X2/Y2 until the final-iteration ADC test below.
+
+      ! Done with pp eigenvectors
+      mem = mem - size(X1) - size(Y1) - size(X2) - size(Y2)
+      deallocate(X1,Y1,X2,Y2)
+
+      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp integrals =',t,' seconds'
       write(*,*)
