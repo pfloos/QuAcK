@@ -542,8 +542,13 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     write(*,*) 
     
     call wall_time(start_t)
-    call G_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
-                               eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
+!   call G_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+!                                   eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
+
+    call G_Parquet_self_energy_alt_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+                                        eh_rho,old_eh_Om,ee_rho,old_ee_Om,           &
+                                        hh_rho,old_hh_Om,EcGM,SigC,Z)
+
     call wall_time(end_t)
     t = end_t - start_t
     write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
