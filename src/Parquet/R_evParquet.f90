@@ -10,6 +10,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
   logical                       :: print_phLR = .false. ! Print the eh two-body excitations at each two-body iterations
   logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
+  logical                       :: do_ADC_self_energy = .true. ! Use Hermitian PSD ADC-Parquet
   
 ! Input variables
 
@@ -89,6 +90,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   double precision,allocatable  :: eQPlin(:),eQP(:),eOld(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
+  double precision,allocatable  :: eADC(:),ZADC(:)
   double precision              :: EcGM
 
   double precision              :: mem = 0d0
@@ -124,9 +126,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   nOOt = nO*(nO - 1)/2
   nVVt = nV*(nV - 1)/2
 
-  allocate(eQP(nOrb),eOld(nOrb))
+  allocate(eQP(nOrb),eOld(nOrb),eADC(nOrb),ZADC(nOrb))
 
-  mem = mem + size(eQP) + size(eOld)
+  mem = mem + size(eQP) + size(eOld) + size(eADC) + size(ZADC)
   write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet = ',mem*dp_in_GB,' GB'
  
 ! DIIS parameters
@@ -211,8 +213,10 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   n_it_1b = 0
   err_1b  = 1d0
 
-  eQP(:)  = eHF(:)
-  eOld(:) = eHF(:)
+  eQP(:)   = eHF(:)
+  eOld(:)  = eHF(:)
+  eADC(:)  = eHF(:)
+  ZADC(:)  = 1d0
 
   eh_sing_rho(:,:,:) = 0d0
   eh_trip_rho(:,:,:) = 0d0
@@ -333,7 +337,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       allocate(Aph(nS,nS),Bph(nS,nS),eh_trip_Om(nS),trip_XpY(nS,nS),trip_XmY(nS,nS),eh_trip_Gam_A(nS,nS),eh_trip_Gam_B(nS,nS))
 
       mem = mem + size(Aph) + size(Bph) & 
-                + size(eh_trip_Om) + size(trip_XpY) + size(trip_XmY) & 
+                + size(eh_trip_Om) + size(trip_XpY) + size(trip_XmY) &
                 + size(eh_trip_Gam_A) + size(eh_trip_Gam_B)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
@@ -552,10 +556,10 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet eh integrals =',t,' seconds'
       write(*,*)
 
-      ! Done with eigenvectors and kernel
+      ! Done with singlet eh eigenvectors
       mem = mem - size(sing_XpY) - size(sing_XmY)
       deallocate(sing_XpY,sing_XmY)
-  
+
       ! Build triplet eh screened integrals
       write(*,*) 'Computing triplet eh screened integrals...'
 
@@ -568,10 +572,10 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet eh integrals =',t,' seconds'
       write(*,*)
 
-      ! Done with eigenvectors and kernel
+      ! Done with triplet eh eigenvectors
       mem = mem - size(trip_XpY) - size(trip_XmY)
       deallocate(trip_XpY,trip_XmY)
-      
+
       ! Build singlet pp screened integrals
       write(*,*) 'Computing singlet pp screened integrals...'
 
@@ -585,6 +589,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for singlet pp integrals =',t,' seconds'
       write(*,*)
 
+      ! Done with singlet pp eigenvectors
       mem = mem - size(X1s) - size(Y1s) - size(X2s) - size(Y2s)
       deallocate(X1s,Y1s,X2s,Y2s)
 
@@ -600,7 +605,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for triplet pp integrals =',t,' seconds'
       write(*,*)
 
-      ! Done with eigenvectors and kernel
+      ! Done with triplet pp eigenvectors
       mem = mem - size(X1t) - size(Y1t) - size(X2t) - size(Y2t)
       deallocate(X1t,Y1t,X2t,Y2t)
 
@@ -665,6 +670,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       err_eh_trip = maxval(abs(old_eh_trip_Phi - eh_trip_Phi))
       err_pp_sing = maxval(abs(old_pp_sing_Phi - pp_sing_Phi))
       err_pp_trip = maxval(abs(old_pp_trip_Phi - pp_trip_Phi))
+
 
       call wall_time(start_t)
       write(*,*) 'Extrapolating two-body kernels...'
@@ -798,50 +804,73 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     mem = mem + size(eQPlin) + size(Z) + size(SigC)
     write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
-    write(*,*) 'Computing self-energy...'
-    write(*,*)
+    if(do_ADC_self_energy) then
 
-    call wall_time(start_t)
-!   call R_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI, &
-!                                   eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,   &
-!                                   ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,   &
-!                                   hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,   &
-!                                   EcGM,SigC,Z)
+      write(*,*) 'Building full Hermitian spin-adapted PSD ADC-Parquet matrix...'
+      write(*,*)
 
-    call R_Parquet_self_energy_alt_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI, &
-                                        eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,    &
-                                        ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,    &
-                                        hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,    &
-                                        EcGM,SigC,Z)
+      call wall_time(start_t)
+      call R_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eOld,ERI,                         &
+                         old_eh_sing_Phi,old_eh_trip_Phi,                       &
+                         old_pp_sing_Phi,old_pp_trip_Phi,eADC,ZADC)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'
+      write(*,*)
 
-    call wall_time(end_t)
-    t = end_t - start_t
-    write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
-    write(*,*)
+      eQP(:)    = eADC(:)
+      Z(:)      = ZADC(:)
+      eQPlin(:) = eADC(:)
 
-    eQPlin(:) = eHF(:) + Z(:)*SigC(:)
-
-    ! Solve the quasi-particle equation
-
-    if(linearize) then
-
-       write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
-       write(*,*)
-
-       eQP(:) = eQPlin(:)
+      ! Kept only for compatibility with R_print_parquet_1b.
+      SigC(:) = eQP(:) - eHF(:)
+      EcGM    = 0d0
 
     else
 
-      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
+      write(*,*) 'Computing self-energy...'
       write(*,*)
 
-      call R_Parquet_QP_graph(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI,    &
-                              eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
-                              ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
-                              hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
-                              eHF,eQPlin,eOld,eQP,Z)
+      call wall_time(start_t)
+!     call R_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI, &
+!                                     eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,   &
+!                                     ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,   &
+!                                     hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,   &
+!                                     EcGM,SigC,Z)
+
+      call R_Parquet_self_energy_alt_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,eOld,ERI, &
+                                          eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om,    &
+                                          ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om,    &
+                                          hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om,    &
+                                          EcGM,SigC,Z)
+
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
+      write(*,*)
+
+      eQPlin(:) = eHF(:) + Z(:)*SigC(:)
+
+      if(linearize) then
+
+        write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+        write(*,*)
+        eQP(:) = eQPlin(:)
+
+      else
+
+        write(*,*) ' *** Quasiparticle energies obtained by root search *** '
+        write(*,*)
+
+        call R_Parquet_QP_graph(eta_1b,nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,ERI,    &
+                                eh_sing_rho,old_eh_sing_Om,eh_trip_rho,old_eh_trip_Om, &
+                                ee_sing_rho,old_ee_sing_Om,ee_trip_rho,old_ee_trip_Om, &
+                                hh_sing_rho,old_hh_sing_Om,hh_trip_rho,old_hh_trip_Om, &
+                                eHF,eQPlin,eOld,eQP,Z)
+      end if
+
     end if
-   
+
     ! DIIS for one-body part
    
     if(max_diis_1b > 1) then
