@@ -1,43 +1,84 @@
-subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eQP,ERI,eh_Phi,pp_Phi,eADC,ZADC)
+subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
+                                eHF,eQP,ERI,                                  &
+                                eh_Om,eh_rho,                                 &
+                                ee_Om,ee_rho,hh_Om,hh_rho,                    &
+                                eADC,ZADC)
 
-! Hermitian / PSD ADC-Parquet in the generalized spin-orbital formalism.
+! Full Hermitian / PSD ADC-Parquet construction in spin-orbital form.
 !
-! Sigma_ADC-PA(w) = U^T [ w - (K + C_PA) ]^{-1} U
+! Symmetric ADC gauge:
 !
-! This is a PSD ADC completion of the static parquet kernels, not an
-! exact rewriting of the original parquet self-energy.
+!   alpha_B = alpha_eh = alpha_hh/ee = 1/2
 !
-! At eh_Phi = pp_Phi = 0, this routine reduces exactly to the
-! first-order U/K/C content of G_IPEA_ADC3.
+! The native parquet self-energy is distributed as follows:
+!
+!   * GF2 + one-bare-pole pieces          -> U_B
+!   * one-eh-pole pieces                  -> U_eh
+!   * one-hh/ee-pole pieces               -> U_hh / U_ee
+!   * B <-> eh mixed-pole pieces          -> C_B_eh
+!   * B <-> hh / ee mixed-pole pieces     -> C_B_hh / C_B_ee
+!
+! The Hermitian resolvent therefore contains every native PA term and
+! generates additional PSD ADC completion terms.
+!
+! No SRG regulator is applied inside the ADC decomposition.  The
+! identities used here correspond to the unregularized parent PA
+! self-energy.
 
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)            :: nOrb,nC,nO,nV,nR
-  double precision,intent(in)   :: eHF(nOrb)
-  double precision,intent(in)   :: eQP(nOrb)
+! Input variables
+
+  integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS,nOO,nVV
+  double precision,intent(in)   :: eHF(nOrb),eQP(nOrb)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(in)   :: eh_Phi(nOrb,nOrb,nOrb,nOrb)
-  double precision,intent(in)   :: pp_Phi(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: eh_Om(nS)
+  double precision,intent(in)   :: eh_rho(nOrb,nOrb,nS)
+  double precision,intent(in)   :: ee_Om(nVV)
+  double precision,intent(in)   :: ee_rho(nOrb,nOrb,nVV)
+  double precision,intent(in)   :: hh_Om(nOO)
+  double precision,intent(in)   :: hh_rho(nOrb,nOrb,nOO)
 
-  double precision,intent(out)  :: eADC(nOrb)
-  double precision,intent(out)  :: ZADC(nOrb)
+! Output variables
 
-  integer                       :: nOcc,nVir,n2h1p,n2p1h,nH,nAct
-  integer                       :: p,i,j,k,l,a,b,c,d,s
-  integer                       :: ija,klc,iab,kcd,idx,it
-  double precision              :: val,cutoff,asym,sumZ
-  double precision              :: tol_deg,wgrp,wbest
-  double precision              :: start_timing,end_timing,timing
+  double precision,intent(out)  :: eADC(nOrb),ZADC(nOrb)
+
+! Local variables
+
+  integer                       :: nOcc,nVir,nAct
+  integer                       :: nBm,nEhm,nHhm,nBp,nEhp,nEep,nH
+  integer                       :: oBm,oEhm,oHhm,oBp,oEhp,oEep
+  integer                       :: p,i,j,k,a,b,c,n,s,idx,it
+  integer                       :: ib,jb
+  double precision              :: val,cutoff,tol_deg,wgrp,wbest
+  double precision              :: asym,sumZ
   double precision,allocatable  :: H(:,:),ePA(:),Zstate(:)
 
   nOcc = nO - nC
   nVir = nOrb - nR - nO
   nAct = nOrb - nR - nC
 
-  n2h1p = nOcc*(nOcc-1)*nVir/2
-  n2p1h = nOcc*nVir*(nVir-1)/2
-  nH    = nOrb + n2h1p + n2p1h
+! Auxiliary dimensions
+
+  nBm  = nOcc*(nOcc-1)*nVir/2
+  nEhm = nOcc*nS
+  nHhm = nVir*nOO
+
+  nBp  = nOcc*nVir*(nVir-1)/2
+  nEhp = nVir*nS
+  nEep = nOcc*nVV
+
+! Offsets
+
+  oBm  = nOrb
+  oEhm = oBm  + nBm
+  oHhm = oEhm + nEhm
+  oBp  = oHhm + nHhm
+  oEhp = oBp  + nBp
+  oEep = oEhp + nEhp
+
+  nH = oEep + nEep
 
   cutoff  = 1d-2
   tol_deg = 1d-8
@@ -51,70 +92,183 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eQP,ERI,eh_Phi,pp_Phi,eADC,ZADC)
   ZADC(:)   = 1d0
 
   write(*,*)
-  write(*,*)'****************************************'
-  write(*,*)'* Generalized Hermitian ADC-Parquet    *'
-  write(*,*)'****************************************'
-  write(*,*)
-  write(*,'(1X,A20,I8)') '2h1p dimension     =',n2h1p
-  write(*,'(1X,A20,I8)') '2p1h dimension     =',n2p1h
-  write(*,'(1X,A20,I8)') 'Total dimension    =',nH
+  write(*,*)'***********************************************'
+  write(*,*)'* Full generalized Hermitian ADC-Parquet     *'
+  write(*,*)'***********************************************'
+  write(*,'(1X,A24,I10)') 'B- dimension       =',nBm
+  write(*,'(1X,A24,I10)') 'eh- dimension      =',nEhm
+  write(*,'(1X,A24,I10)') 'hh- dimension      =',nHhm
+  write(*,'(1X,A24,I10)') 'B+ dimension       =',nBp
+  write(*,'(1X,A24,I10)') 'eh+ dimension      =',nEhp
+  write(*,'(1X,A24,I10)') 'ee+ dimension      =',nEep
+  write(*,'(1X,A24,I10)') 'Total dimension    =',nH
   write(*,*)
 
-  call wall_time(start_timing)
-
-! F block
+! ======================================================================
+! Physical block
+! ======================================================================
 
   do p=1,nOrb
     H(p,p) = eHF(p)
   end do
 
-! U^- and K^- : 2h1p
+! ======================================================================
+! B- block: K_B- and U_B- = 1/2 V- + D_B-
+! ======================================================================
 
-  ija = nOrb
+  ib = oBm
+
   do i=nC+1,nO
     do j=i+1,nO
       do a=nO+1,nOrb-nR
 
-        ija = ija + 1
-        H(ija,ija) = eQP(i) + eQP(j) - eQP(a)
+        ib = ib + 1
+        H(ib,ib) = eQP(i) + eQP(j) - eQP(a)
 
-        do p=1,nOrb
-          val = ERI(i,j,p,a) - ERI(i,j,a,p)
-          H(p,ija) = val
-          H(ija,p) = val
+        do p=nC+1,nOrb-nR
+          val = 0.5d0*vminus(p,a,i,j) + DBminus(i,j,a,p)
+          H(p,ib) = val
+          H(ib,p) = val
         end do
 
       end do
     end do
   end do
 
-! C^- : exact index pattern of G_IPEA_ADC3 with
-! bare pair interactions replaced by Gamma^eh / Gamma^pp
+! ======================================================================
+! eh- block: K_eh- and U_eh- = 1/2 rho + D_eh-
+! ======================================================================
 
-  ija = nOrb
+  ib = oEhm
+
+  do j=nC+1,nO
+    do n=1,nS
+
+      ib = ib + 1
+      H(ib,ib) = eQP(j) - eh_Om(n)
+
+      do p=nC+1,nOrb-nR
+        val = 0.5d0*eh_rho(p,j,n) + Dehminus(j,n,p)
+        H(p,ib) = val
+        H(ib,p) = val
+      end do
+
+    end do
+  end do
+
+! ======================================================================
+! hh- block: K_hh- and U_hh- = 1/2 rho + D_hh-
+! ======================================================================
+
+  ib = oHhm
+
+  do a=nO+1,nOrb-nR
+    do n=1,nOO
+
+      ib = ib + 1
+      H(ib,ib) = hh_Om(n) - eQP(a)
+
+      do p=nC+1,nOrb-nR
+        val = 0.5d0*hh_rho(p,a,n) + Dhhminus(a,n,p)
+        H(p,ib) = val
+        H(ib,p) = val
+      end do
+
+    end do
+  end do
+
+! ======================================================================
+! B+ block
+! ======================================================================
+
+  ib = oBp
+
+  do i=nC+1,nO
+    do a=nO+1,nOrb-nR
+      do b=a+1,nOrb-nR
+
+        ib = ib + 1
+        H(ib,ib) = eQP(a) + eQP(b) - eQP(i)
+
+        do p=nC+1,nOrb-nR
+          val = 0.5d0*vplus(p,i,a,b) + DBplus(i,a,b,p)
+          H(p,ib) = val
+          H(ib,p) = val
+        end do
+
+      end do
+    end do
+  end do
+
+! ======================================================================
+! eh+ block
+! ======================================================================
+
+  ib = oEhp
+
+  do b=nO+1,nOrb-nR
+    do n=1,nS
+
+      ib = ib + 1
+      H(ib,ib) = eQP(b) + eh_Om(n)
+
+      do p=nC+1,nOrb-nR
+        val = 0.5d0*eh_rho(b,p,n) + Dehplus(b,n,p)
+        H(p,ib) = val
+        H(ib,p) = val
+      end do
+
+    end do
+  end do
+
+! ======================================================================
+! ee+ block
+! ======================================================================
+
+  ib = oEep
+
+  do i=nC+1,nO
+    do n=1,nVV
+
+      ib = ib + 1
+      H(ib,ib) = ee_Om(n) - eQP(i)
+
+      do p=nC+1,nOrb-nR
+        val = 0.5d0*ee_rho(p,i,n) + Deeplus(i,n,p)
+        H(p,ib) = val
+        H(ib,p) = val
+      end do
+
+    end do
+  end do
+
+! ======================================================================
+! C_B-,eh- = 2 Xi_B-,eh-
+!
+! Xi_{ija,k n} = delta_jk rho_ia,n - delta_ik rho_ja,n
+! ======================================================================
+
+  ib = oBm
+
   do i=nC+1,nO
     do j=i+1,nO
       do a=nO+1,nOrb-nR
 
-        ija = ija + 1
-        klc = nOrb
+        ib = ib + 1
+        jb = oEhm
 
         do k=nC+1,nO
-          do l=k+1,nO
-            do c=nO+1,nOrb-nR
+          do n=1,nS
 
-              klc = klc + 1
-              val = 0d0
+            jb = jb + 1
+            val = 0d0
 
-              if(a == c) val = val - Gamma_pp(i,j,k,l)
-              if(i == k) val = val + Gamma_eh(c,j,a,l)
-              if(j == l) val = val + Gamma_eh(c,i,a,k)
-              if(i == l) val = val - Gamma_eh(c,j,a,k)
-              if(j == k) val = val - Gamma_eh(c,i,a,l)
+            if(j == k) val = val + 2d0*eh_rho(i,a,n)
+            if(i == k) val = val - 2d0*eh_rho(j,a,n)
 
-              H(ija,klc) = H(ija,klc) + val
+            H(ib,jb) = val
+            H(jb,ib) = val
 
-            end do
           end do
         end do
 
@@ -122,52 +276,32 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eQP,ERI,eh_Phi,pp_Phi,eADC,ZADC)
     end do
   end do
 
-! U^+ and K^+ : 2p1h
+! ======================================================================
+! C_B-,hh- = 2 Xi_B-,hh-
+!
+! Xi_{ija,b m} = - delta_ab rho_ij,m
+! ======================================================================
 
-  iab = nOrb + n2h1p
+  ib = oBm
+
   do i=nC+1,nO
-    do a=nO+1,nOrb-nR
-      do b=a+1,nOrb-nR
+    do j=i+1,nO
+      do a=nO+1,nOrb-nR
 
-        iab = iab + 1
-        H(iab,iab) = eQP(a) + eQP(b) - eQP(i)
+        ib = ib + 1
+        jb = oHhm
 
-        do p=1,nOrb
-          val = ERI(a,b,p,i) - ERI(a,b,i,p)
-          H(p,iab) = val
-          H(iab,p) = val
-        end do
+        do b=nO+1,nOrb-nR
+          do n=1,nOO
 
-      end do
-    end do
-  end do
+            jb = jb + 1
+            val = 0d0
 
-! C^+ : exact index pattern of G_IPEA_ADC3
+            if(a == b) val = -2d0*hh_rho(i,j,n)
 
-  iab = nOrb + n2h1p
-  do i=nC+1,nO
-    do a=nO+1,nOrb-nR
-      do b=a+1,nOrb-nR
+            H(ib,jb) = val
+            H(jb,ib) = val
 
-        iab = iab + 1
-        kcd = nOrb + n2h1p
-
-        do k=nC+1,nO
-          do c=nO+1,nOrb-nR
-            do d=c+1,nOrb-nR
-
-              kcd = kcd + 1
-              val = 0d0
-
-              if(i == k) val = val + Gamma_pp(a,b,c,d)
-              if(a == c) val = val - Gamma_eh(k,b,i,d)
-              if(b == d) val = val - Gamma_eh(k,a,i,c)
-              if(a == d) val = val + Gamma_eh(k,b,i,c)
-              if(b == c) val = val + Gamma_eh(k,a,i,d)
-
-              H(iab,kcd) = H(iab,kcd) + val
-
-            end do
           end do
         end do
 
@@ -175,32 +309,90 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eQP,ERI,eh_Phi,pp_Phi,eADC,ZADC)
     end do
   end do
 
-! Check and enforce Hermiticity
+! ======================================================================
+! C_B+,eh+ = 2 Xi_B+,eh+
+!
+! Xi_{iab,c n} = delta_ac rho_ib,n - delta_bc rho_ia,n
+! ======================================================================
 
-  asym = maxval(abs(H(:,:) - transpose(H(:,:))))
-  write(*,'(1X,A32,1X,ES12.4)') 'Max pre-symmetrization |H-H^T| =',asym
+  ib = oBp
 
-  H(:,:) = 0.5d0*(H(:,:) + transpose(H(:,:)))
+  do i=nC+1,nO
+    do a=nO+1,nOrb-nR
+      do b=a+1,nOrb-nR
 
-  call wall_time(end_timing)
-  timing = end_timing - start_timing
+        ib = ib + 1
+        jb = oEhp
 
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for ADC-PA matrix construction =',timing,' seconds'
-  write(*,*)
+        do c=nO+1,nOrb-nR
+          do n=1,nS
 
-! Diagonalize
+            jb = jb + 1
+            val = 0d0
 
-  call wall_time(start_timing)
+            if(a == c) val = val + 2d0*eh_rho(i,b,n)
+            if(b == c) val = val - 2d0*eh_rho(i,a,n)
+
+            H(ib,jb) = val
+            H(jb,ib) = val
+
+          end do
+        end do
+
+      end do
+    end do
+  end do
+
+! ======================================================================
+! C_B+,ee+ = 2 Xi_B+,ee+
+!
+! Xi_{iab,j m} = delta_ij rho_ab,m
+! ======================================================================
+
+  ib = oBp
+
+  do i=nC+1,nO
+    do a=nO+1,nOrb-nR
+      do b=a+1,nOrb-nR
+
+        ib = ib + 1
+        jb = oEep
+
+        do j=nC+1,nO
+          do n=1,nVV
+
+            jb = jb + 1
+            val = 0d0
+
+            if(i == j) val = 2d0*ee_rho(a,b,n)
+
+            H(ib,jb) = val
+            H(jb,ib) = val
+
+          end do
+        end do
+
+      end do
+    end do
+  end do
+
+! ======================================================================
+! Hermiticity check
+! ======================================================================
+
+  asym = maxval(abs(H-transpose(H)))
+  write(*,'(1X,A34,1X,ES12.4)') 'Max |H-H^T| before diagonalization =',asym
+
+  H = 0.5d0*(H + transpose(H))
+
+! ======================================================================
+! Diagonalization
+! ======================================================================
+
   call diagonalize_matrix(nH,H,ePA)
-  call wall_time(end_timing)
 
-  timing = end_timing - start_timing
-  write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for ADC-PA diagonalization =',timing,' seconds'
-  write(*,*)
+! Total active one-particle spectral weight
 
-! Spectral weights
-
-  Zstate(:) = 0d0
   do s=1,nH
     do p=nC+1,nOrb-nR
       Zstate(s) = Zstate(s) + H(p,s)**2
@@ -208,9 +400,12 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eQP,ERI,eh_Phi,pp_Phi,eADC,ZADC)
   end do
 
   sumZ = sum(Zstate)
+
   write(*,'(1X,A30,F16.10)') 'Sum of active 1p weights      =',sumZ
   write(*,'(1X,A30,I16)')    'Expected active 1p dimension =',nAct
   write(*,*)
+
+! Dominant pole associated with each orbital, grouping exact degeneracies
 
   do p=nC+1,nOrb-nR
 
@@ -222,7 +417,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eQP,ERI,eh_Phi,pp_Phi,eADC,ZADC)
 
       it = s
       do while(it < nH)
-        if(abs(ePA(it+1) - ePA(s)) > tol_deg) exit
+        if(abs(ePA(it+1)-ePA(s)) > tol_deg) exit
         it = it + 1
       end do
 
@@ -242,10 +437,10 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eQP,ERI,eh_Phi,pp_Phi,eADC,ZADC)
 
   end do
 
-! Print spectrum
+! Print significant poles
 
   write(*,*)'-------------------------------------------------------'
-  write(*,*)'         Generalized PSD ADC-Parquet spectrum           '
+  write(*,*)'      Full generalized PSD ADC-Parquet spectrum         '
   write(*,*)'-------------------------------------------------------'
   write(*,'(1X,A6,2X,A16,2X,A16)') '#','energy (eV)','1p weight'
 
@@ -262,27 +457,209 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eQP,ERI,eh_Phi,pp_Phi,eADC,ZADC)
 
 contains
 
-  double precision function Gamma_eh(p1,p2,p3,p4)
+! ======================================================================
+! Antisymmetrized bare vertices
+! ======================================================================
+
+  double precision function vminus(pp,aa,ii,jj)
 
     implicit none
-    integer,intent(in) :: p1,p2,p3,p4
+    integer,intent(in) :: pp,aa,ii,jj
 
-    Gamma_eh = ERI(p1,p2,p3,p4) - ERI(p1,p2,p4,p3)  &
-             - eh_Phi(p1,p2,p4,p3)                   &
-             + pp_Phi(p1,p2,p3,p4)
+    vminus = ERI(pp,aa,ii,jj) - ERI(pp,aa,jj,ii)
 
-  end function Gamma_eh
+  end function vminus
 
 
-  double precision function Gamma_pp(p1,p2,p3,p4)
+  double precision function vplus(pp,ii,aa,bb)
 
     implicit none
-    integer,intent(in) :: p1,p2,p3,p4
+    integer,intent(in) :: pp,ii,aa,bb
 
-    Gamma_pp = ERI(p1,p2,p3,p4) - ERI(p1,p2,p4,p3)  &
-             + eh_Phi(p1,p2,p3,p4)                   &
-             - eh_Phi(p1,p2,p4,p3)
+    vplus = ERI(pp,ii,aa,bb) - ERI(pp,ii,bb,aa)
 
-  end function Gamma_pp
+  end function vplus
+
+! ======================================================================
+! B- correction
+! ======================================================================
+
+  double precision function DBminus(ii,jj,aa,pp)
+
+    implicit none
+    integer,intent(in) :: ii,jj,aa,pp
+
+    integer            :: nn
+    double precision   :: dem
+
+    DBminus = 0d0
+
+!   eh one-bare-pole contribution
+
+    do nn=1,nS
+
+      dem = eQP(aa) - eQP(ii) + eh_Om(nn)
+      DBminus = DBminus + eh_rho(aa,ii,nn)*eh_rho(jj,pp,nn)/dem
+
+      dem = eQP(aa) - eQP(jj) + eh_Om(nn)
+      DBminus = DBminus - eh_rho(aa,jj,nn)*eh_rho(ii,pp,nn)/dem
+
+    end do
+
+!   pp/ee one-bare-pole contribution
+
+    do nn=1,nVV
+
+      dem = ee_Om(nn) - eQP(ii) - eQP(jj)
+      DBminus = DBminus - ee_rho(ii,jj,nn)*ee_rho(pp,aa,nn)/dem
+
+    end do
+
+  end function DBminus
+
+! ======================================================================
+! B+ correction
+! ======================================================================
+
+  double precision function DBplus(ii,aa,bb,pp)
+
+    implicit none
+    integer,intent(in) :: ii,aa,bb,pp
+
+    integer            :: nn
+    double precision   :: dem
+
+    DBplus = 0d0
+
+!   eh one-bare-pole contribution
+
+    do nn=1,nS
+
+      dem = eQP(aa) - eQP(ii) + eh_Om(nn)
+      DBplus = DBplus + eh_rho(aa,ii,nn)*eh_rho(pp,bb,nn)/dem
+
+      dem = eQP(bb) - eQP(ii) + eh_Om(nn)
+      DBplus = DBplus - eh_rho(bb,ii,nn)*eh_rho(pp,aa,nn)/dem
+
+    end do
+
+!   pp/hh one-bare-pole contribution
+
+    do nn=1,nOO
+
+      dem = hh_Om(nn) - eQP(aa) - eQP(bb)
+      DBplus = DBplus + hh_rho(aa,bb,nn)*hh_rho(pp,ii,nn)/dem
+
+    end do
+
+  end function DBplus
+
+! ======================================================================
+! eh- correction
+! ======================================================================
+
+  double precision function Dehminus(jj,nn,pp)
+
+    implicit none
+    integer,intent(in) :: jj,nn,pp
+
+    integer            :: ii,aa
+    double precision   :: dem
+
+    Dehminus = 0d0
+
+    do ii=nC+1,nO
+      do aa=nO+1,nOrb-nR
+
+        dem = eQP(aa) - eQP(ii) + eh_Om(nn)
+
+        Dehminus = Dehminus                                          &
+          + (ERI(pp,ii,aa,jj)-ERI(pp,ii,jj,aa))*eh_rho(aa,ii,nn)/dem
+
+      end do
+    end do
+
+  end function Dehminus
+
+! ======================================================================
+! eh+ correction
+! ======================================================================
+
+  double precision function Dehplus(bb,nn,pp)
+
+    implicit none
+    integer,intent(in) :: bb,nn,pp
+
+    integer            :: ii,aa
+    double precision   :: dem
+
+    Dehplus = 0d0
+
+    do ii=nC+1,nO
+      do aa=nO+1,nOrb-nR
+
+        dem = eQP(aa) - eQP(ii) + eh_Om(nn)
+
+        Dehplus = Dehplus                                            &
+          + (ERI(pp,aa,ii,bb)-ERI(pp,aa,bb,ii))*eh_rho(aa,ii,nn)/dem
+
+      end do
+    end do
+
+  end function Dehplus
+
+! ======================================================================
+! hh- correction
+! ======================================================================
+
+  double precision function Dhhminus(aa,nn,pp)
+
+    implicit none
+    integer,intent(in) :: aa,nn,pp
+
+    integer            :: bb,cc
+    double precision   :: dem
+
+    Dhhminus = 0d0
+
+    do bb=nO+1,nOrb-nR
+      do cc=bb+1,nOrb-nR
+
+        dem = hh_Om(nn) - eQP(bb) - eQP(cc)
+
+        Dhhminus = Dhhminus                                          &
+          + (ERI(pp,aa,bb,cc)-ERI(pp,aa,cc,bb))*hh_rho(bb,cc,nn)/dem
+
+      end do
+    end do
+
+  end function Dhhminus
+
+! ======================================================================
+! ee+ correction
+! ======================================================================
+
+  double precision function Deeplus(ii,nn,pp)
+
+    implicit none
+    integer,intent(in) :: ii,nn,pp
+
+    integer            :: jj,kk
+    double precision   :: dem
+
+    Deeplus = 0d0
+
+    do jj=nC+1,nO
+      do kk=jj+1,nO
+
+        dem = ee_Om(nn) - eQP(jj) - eQP(kk)
+
+        Deeplus = Deeplus                                            &
+          - (ERI(pp,ii,jj,kk)-ERI(pp,ii,kk,jj))*ee_rho(jj,kk,nn)/dem
+
+      end do
+    end do
+
+  end function Deeplus
 
 end subroutine G_ADC_Parquet

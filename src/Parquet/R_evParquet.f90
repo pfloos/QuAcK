@@ -810,9 +810,15 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*)
 
       call wall_time(start_t)
-      call R_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eOld,ERI,                         &
-                         old_eh_sing_Phi,old_eh_trip_Phi,                       &
-                         old_pp_sing_Phi,old_pp_trip_Phi,eADC,ZADC)
+      call R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,  &
+                         eHF,eOld,ERI,                                &
+                         old_eh_sing_Om,eh_sing_rho,                  &
+                         old_eh_trip_Om,eh_trip_rho,                  &
+                         old_ee_sing_Om,ee_sing_rho,                  &
+                         old_ee_trip_Om,ee_trip_rho,                  &
+                         old_hh_sing_Om,hh_sing_rho,                  &
+                         old_hh_trip_Om,hh_trip_rho,                  &
+                         eADC,ZADC)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'

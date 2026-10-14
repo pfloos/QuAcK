@@ -1,5 +1,5 @@
 subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
-                    nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
+                       nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation with eigenvalue self-consistency based on spin orbitals
 
@@ -547,7 +547,11 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*)
 
       call wall_time(start_t)
-      call G_ADC_Parquet(nOrb,nC,nO,nV,nR,eHF,eOld,ERI,old_eh_Phi,old_pp_Phi,eADC,ZADC)
+      call G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                  &
+                         eHF,eOld,ERI,                                 &
+                         old_eh_Om,eh_rho,                             &
+                         old_ee_Om,ee_rho,old_hh_Om,hh_rho,            &
+                         eADC,ZADC)
       call wall_time(end_t)
       t = end_t - start_t
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'
