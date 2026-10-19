@@ -43,6 +43,9 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
   if(ispin == 1) then
 
     ! aaaa block
+    
+    print *,'aaaa Block' 
+    print *, 'i,a,j,b, KBiajb'
  
     ia = 0
     do i=nC(1)+1,nO(1)
@@ -60,6 +63,7 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             end do
  
             KB(ia,jb) = 2d0*lambda**2*chi
+            print*, i,a,j,b, 2d0*lambda**2*chi
  
           end do
         end do
@@ -68,6 +72,8 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
  
  
     ! bbbb block
+    print *,'bbbb Block' 
+    print *, 'i,a,j,b, KBiajb'
  
     ia = 0
     do i=nC(2)+1,nO(2)
@@ -85,6 +91,7 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             end do
  
             KB(nSa+ia,nSa+jb) = 2d0*lambda**2*chi
+            print*, i,a,j,b, 2d0*lambda**2*chi
  
           end do
         end do
@@ -101,6 +108,8 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
   if(ispin == 2) then
 
     ! abba block
+    print *,'abba Block' 
+    print *, 'i,a,j,b, KBiajb'
 
     ia = 0
     do i=nC(1)+1,nO(1)
@@ -118,6 +127,7 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             end do
 
             KB(ia,nSa+jb) = 2d0*lambda**2*chi
+            print*, i,a,j,b, 2d0*lambda**2*chi
 
           end  do
         end  do
@@ -125,6 +135,8 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
     end  do
 
     ! baab block
+    print *,'baab Block' 
+    print *, 'i,a,j,b, KBiajb'
 
     ia = 0
     do i=nC(2)+1,nO(2)
@@ -142,6 +154,7 @@ subroutine UGW_phBSE_static_kernel_B(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             end do
 
             KB(nSa+ia,jb) =  2d0*lambda**2*chi
+            print*, i,a,j,b, 2d0*lambda**2*chi
 
           end  do
         end  do

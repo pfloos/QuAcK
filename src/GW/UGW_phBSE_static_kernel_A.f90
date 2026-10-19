@@ -39,8 +39,9 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
 !--------------------------------------------------!
 ! Build BSE matrix for spin-conserving transitions !
 !--------------------------------------------------!
-
   if(ispin == 1) then
+    print *,'aaaa Block' 
+    print *, 'i,a,j,b, KAiajb'
 
     ! aaaa block
  
@@ -60,6 +61,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             end do
  
             KA(ia,jb) = 2d0*lambda**2*chi
+            print*, i,a,j,b, 2d0*lambda**2*chi
  
           end do
         end do
@@ -68,6 +70,9 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
 
     ! bbbb block
  
+    print *,'bbbb Block' 
+    print *, 'i,a,j,b, KAiajb'
+    
     ia = 0
     do i=nC(2)+1,nO(2)
       do a=nO(2)+1,nBas-nR(2)
@@ -84,7 +89,8 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             end do
  
             KA(nSa+ia,nSa+jb) = 2d0*lambda**2*chi
- 
+            print*, i,a,j,b, 2d0*lambda**2*chi
+
           end do
         end do
       end do
@@ -99,6 +105,8 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
   if(ispin == 2) then
 
     ! abab block
+    print *,'abab Block' 
+    print *, 'i,a,j,b, KAiajb'
 
     ia = 0
     do i=nC(1)+1,nO(1)
@@ -116,6 +124,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             end do
 
             KA(ia,jb) = 2d0*lambda**2*chi
+            print*, i,a,j,b, 2d0*lambda**2*chi
 
           end  do
         end  do
@@ -123,6 +132,8 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
     end  do
 
     ! baba block
+    print *,'baba Block' 
+    print *,'i,a,j,b, KAiajb'
 
     ia = 0
     do i=nC(2)+1,nO(2)
@@ -140,6 +151,7 @@ subroutine UGW_phBSE_static_kernel_A(ispin,eta,nBas,nC,nO,nV,nR,nSa,nSb,nSt,nS_s
             end do
 
             KA(nSa+ia,nSa+jb) = 2d0*lambda**2*chi
+            print*, i,a,j,b, 2d0*lambda**2*chi
 
           end  do
         end  do
