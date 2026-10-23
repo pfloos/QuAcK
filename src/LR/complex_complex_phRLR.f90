@@ -67,6 +67,6 @@ subroutine complex_complex_phRLR(TDA,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
 
   ! Compute the RPA correlation energy
 
-  EcRPA = (0.5d0,0.d0)*(sum(Om) - complex_trace_matrix(nS,Aph))
+  EcRPA = (0.5d0,0.d0)*(sum(Om, mask = (abs(aimag(Om)) < 1.d-6)) - complex_trace_matrix(nS,Aph))
 
 end subroutine 
