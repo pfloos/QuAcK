@@ -1,31 +1,34 @@
-subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
-                                eHF,eQP,ERI,                                      &
-                                eh_sing_Om,eh_sing_rho,eh_trip_Om,eh_trip_rho,    &
-                                ee_sing_Om,ee_sing_rho,ee_trip_Om,ee_trip_rho,    &
-                                hh_sing_Om,hh_sing_rho,hh_trip_Om,hh_trip_rho,    &
-                                eADC,ZADC)
+subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
+                         nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,           &
+                         eHF,eQP,ERI,                                         &
+                         eh_sing_Om,eh_sing_rho,eh_trip_Om,eh_trip_rho,      &
+                         ee_sing_Om,ee_sing_rho,ee_trip_Om,ee_trip_rho,      &
+                         hh_sing_Om,hh_sing_rho,hh_trip_Om,hh_trip_rho,      &
+                         eADC,ZADC)
 
 ! Full Hermitian / PSD ADC-Parquet construction in restricted spin-adapted form.
 !
-! This is the spin-adapted counterpart of G_ADC_Parquet_full.
+! The bare 2h1p/2p1h space is represented by the three spin-adapted doublet
+! sectors used in restricted IP/EA-ADC.  The dressed eh and pp auxiliary
+! sectors are resolved into singlet and triplet components.
 !
-! Symmetric ADC gauge:
+! The external couplings correspond to the equal-weight ADC construction.
+! Internal response denominators entering the higher-order U corrections can
+! be regularized with the same one-body SRG prescription as the parent parquet
+! self-energy,
 !
-!   alpha = 1/2
+!   1/Delta -> [1 - exp(-2 eta_1b Delta**2)]/Delta.
 !
-! The bare 2h1p/2p1h space is the same three-doublet-sector basis as
-! R_IPEA_ADC3.  The dressed eh/hh/ee spaces are kept in singlet/triplet
-! form.  The native restricted parquet self-energy fixes all U corrections
-! and all inter-sector C blocks.
-!
-! The resulting matrix is real symmetric and therefore yields non-negative
-! one-particle spectral weights.
+! The genuine ADC pole energies in the K blocks and the denominator-free C
+! blocks are left unchanged.
 
   implicit none
   include 'parameters.h'
 
 ! Input variables
 
+  logical,intent(in)            :: reg_PA
+  double precision,intent(in)   :: eta_1b
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
   integer,intent(in)            :: nOOs,nVVs,nOOt,nVVt
   double precision,intent(in)   :: eHF(nOrb),eQP(nOrb)
@@ -124,16 +127,18 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
   write(*,*)'***********************************************'
   write(*,*)'* Full restricted Hermitian ADC-Parquet      *'
   write(*,*)'***********************************************'
+  write(*,'(1X,A34,L4)')            'SRG regularization enabled =',reg_PA
+  if(reg_PA) write(*,'(1X,A34,1X,ES12.4)') 'One-body SRG parameter eta_1b =',eta_1b
   write(*,'(1X,A24,I10)') 'B- dimension       =',nBm
   write(*,'(1X,A24,I10)') 'eh- singlet        =',nEhmS
   write(*,'(1X,A24,I10)') 'eh- triplet        =',nEhmT
-  write(*,'(1X,A24,I10)') 'hh- singlet        =',nHhmS
-  write(*,'(1X,A24,I10)') 'hh- triplet        =',nHhmT
+  write(*,'(1X,A24,I10)') 'pp- singlet        =',nHhmS
+  write(*,'(1X,A24,I10)') 'pp- triplet        =',nHhmT
   write(*,'(1X,A24,I10)') 'B+ dimension       =',nBp
   write(*,'(1X,A24,I10)') 'eh+ singlet        =',nEhpS
   write(*,'(1X,A24,I10)') 'eh+ triplet        =',nEhpT
-  write(*,'(1X,A24,I10)') 'ee+ singlet        =',nEepS
-  write(*,'(1X,A24,I10)') 'ee+ triplet        =',nEepT
+  write(*,'(1X,A24,I10)') 'pp+ singlet        =',nEepS
+  write(*,'(1X,A24,I10)') 'pp+ triplet        =',nEepT
   write(*,'(1X,A24,I10)') 'Total dimension    =',nH
   write(*,*)
 
@@ -215,82 +220,62 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
   end do
 
 ! ======================================================================
-! eh- singlet
+! eh- singlet / triplet
 ! ======================================================================
 
   ib = oEhmS
-
   do j=nC+1,nO
     do n=1,nS
-
       ib = ib + 1
       H(ib,ib) = eQP(j) - eh_sing_Om(n)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*sqrt(0.5d0)*eh_sing_rho(p,j,n) + DehmS(j,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
-! ======================================================================
-! eh- triplet
-! ======================================================================
-
   ib = oEhmT
-
   do j=nC+1,nO
     do n=1,nS
-
       ib = ib + 1
       H(ib,ib) = eQP(j) - eh_trip_Om(n)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*sqrt(1.5d0)*eh_trip_rho(p,j,n) + DehmT(j,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
 ! ======================================================================
-! hh- singlet / triplet
+! pp- singlet / triplet (hh response modes)
 ! ======================================================================
 
   ib = oHhmS
-
   do a=nO+1,nOrb-nR
     do n=1,nOOs
-
       ib = ib + 1
       H(ib,ib) = hh_sing_Om(n) - eQP(a)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*sqrt(0.5d0)*hh_sing_rho(p,a,n) + DhhmS(a,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
   ib = oHhmT
-
   do a=nO+1,nOrb-nR
     do n=1,nOOt
-
       ib = ib + 1
       H(ib,ib) = hh_trip_Om(n) - eQP(a)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*sqrt(1.5d0)*hh_trip_rho(p,a,n) + DhhmT(a,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
@@ -299,19 +284,15 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oBp
-
   do i=nC+1,nO
     do a=nO+1,nOrb-nR
-
       ib = ib + 1
       H(ib,ib) = 2d0*eQP(a) - eQP(i)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*ERI(a,a,p,i) + DBpI(i,a,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
@@ -320,21 +301,17 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oBp + nIp
-
   do i=nC+1,nO
     do a=nO+1,nOrb-nR
       do b=a+1,nOrb-nR
-
         ib = ib + 1
         H(ib,ib) = eQP(a) + eQP(b) - eQP(i)
-
         do p=nC+1,nOrb-nR
           val = 0.5d0*sqrt(1.5d0)*(ERI(a,b,p,i)-ERI(a,b,i,p)) &
               + DBpII(i,a,b,p)
           H(p,ib) = val
           H(ib,p) = val
         end do
-
       end do
     end do
   end do
@@ -344,21 +321,17 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oBp + nIp + nIIp
-
   do i=nC+1,nO
     do a=nO+1,nOrb-nR
       do b=a+1,nOrb-nR
-
         ib = ib + 1
         H(ib,ib) = eQP(a) + eQP(b) - eQP(i)
-
         do p=nC+1,nOrb-nR
           val = 0.5d0*sqrt(0.5d0)*(ERI(a,b,p,i)+ERI(a,b,i,p)) &
               + DBpIII(i,a,b,p)
           H(p,ib) = val
           H(ib,p) = val
         end do
-
       end do
     end do
   end do
@@ -368,86 +341,68 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oEhpS
-
   do b=nO+1,nOrb-nR
     do n=1,nS
-
       ib = ib + 1
       H(ib,ib) = eQP(b) + eh_sing_Om(n)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*sqrt(0.5d0)*eh_sing_rho(b,p,n) + DehpS(b,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
   ib = oEhpT
-
   do b=nO+1,nOrb-nR
     do n=1,nS
-
       ib = ib + 1
       H(ib,ib) = eQP(b) + eh_trip_Om(n)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*sqrt(1.5d0)*eh_trip_rho(b,p,n) + DehpT(b,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
 ! ======================================================================
-! ee+ singlet / triplet
+! pp+ singlet / triplet (ee response modes)
 ! ======================================================================
 
   ib = oEepS
-
   do i=nC+1,nO
     do n=1,nVVs
-
       ib = ib + 1
       H(ib,ib) = ee_sing_Om(n) - eQP(i)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*sqrt(0.5d0)*ee_sing_rho(p,i,n) + DeepS(i,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
   ib = oEepT
-
   do i=nC+1,nO
     do n=1,nVVt
-
       ib = ib + 1
       H(ib,ib) = ee_trip_Om(n) - eQP(i)
-
       do p=nC+1,nOrb-nR
         val = 0.5d0*sqrt(1.5d0)*ee_trip_rho(p,i,n) + DeepT(i,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
-
     end do
   end do
 
 ! ======================================================================
-! B- Part I <-> eh- singlet/triplet
+! B- Part I <-> eh-
 ! ======================================================================
 
   ib = oBm
-
   do i=nC+1,nO
     do a=nO+1,nOrb-nR
-
       ib = ib + 1
 
       jb = oEhmS
@@ -471,7 +426,6 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
           H(jb,ib) = val
         end do
       end do
-
     end do
   end do
 
@@ -480,11 +434,9 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oBm + nIm
-
   do i=nC+1,nO
     do j=i+1,nO
       do a=nO+1,nOrb-nR
-
         ib = ib + 1
 
         jb = oEhmS
@@ -510,7 +462,6 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
             H(jb,ib) = val
           end do
         end do
-
       end do
     end do
   end do
@@ -520,11 +471,9 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oBm + nIm + nIIm
-
   do i=nC+1,nO
     do j=i+1,nO
       do a=nO+1,nOrb-nR
-
         ib = ib + 1
 
         jb = oEhmS
@@ -550,16 +499,15 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
             H(jb,ib) = val
           end do
         end do
-
       end do
     end do
   end do
 
 ! ======================================================================
-! B- <-> hh-
+! B- <-> pp-
 ! ======================================================================
 
-! Part I -> singlet hh
+! Part I -> singlet pp-
 
   ib = oBm
   do i=nC+1,nO
@@ -578,7 +526,7 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
     end do
   end do
 
-! Part II -> triplet hh
+! Part II -> triplet pp-
 
   ib = oBm + nIm
   do i=nC+1,nO
@@ -599,7 +547,7 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
     end do
   end do
 
-! Part III -> singlet hh
+! Part III -> singlet pp-
 
   ib = oBm + nIm + nIIm
   do i=nC+1,nO
@@ -625,10 +573,8 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oBp
-
   do i=nC+1,nO
     do a=nO+1,nOrb-nR
-
       ib = ib + 1
 
       jb = oEhpS
@@ -652,7 +598,6 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
           H(jb,ib) = val
         end do
       end do
-
     end do
   end do
 
@@ -661,11 +606,9 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oBp + nIp
-
   do i=nC+1,nO
     do a=nO+1,nOrb-nR
       do b=a+1,nOrb-nR
-
         ib = ib + 1
 
         jb = oEhpS
@@ -691,7 +634,6 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
             H(jb,ib) = val
           end do
         end do
-
       end do
     end do
   end do
@@ -701,11 +643,9 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 ! ======================================================================
 
   ib = oBp + nIp + nIIp
-
   do i=nC+1,nO
     do a=nO+1,nOrb-nR
       do b=a+1,nOrb-nR
-
         ib = ib + 1
 
         jb = oEhpS
@@ -731,16 +671,15 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
             H(jb,ib) = val
           end do
         end do
-
       end do
     end do
   end do
 
 ! ======================================================================
-! B+ <-> ee+
+! B+ <-> pp+
 ! ======================================================================
 
-! Part I -> singlet ee
+! Part I -> singlet pp+
 
   ib = oBp
   do i=nC+1,nO
@@ -759,7 +698,7 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
     end do
   end do
 
-! Part II -> triplet ee
+! Part II -> triplet pp+
 
   ib = oBp + nIp
   do i=nC+1,nO
@@ -780,7 +719,7 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
     end do
   end do
 
-! Part III -> singlet ee
+! Part III -> singlet pp+
 
   ib = oBp + nIp + nIIp
   do i=nC+1,nO
@@ -833,7 +772,6 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
     s     = 1
 
     do while(s <= nH)
-
       it = s
       do while(it < nH)
         if(abs(ePA(it+1)-ePA(s)) > tol_deg) exit
@@ -848,12 +786,10 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
       end if
 
       s = it + 1
-
     end do
 
     eADC(p) = ePA(idx)
     ZADC(p) = wbest
-
   end do
 
   write(*,*)'-------------------------------------------------------'
@@ -875,6 +811,24 @@ subroutine R_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt,       &
 contains
 
 ! ======================================================================
+! SRG-regularized inverse for internal response denominators
+! ======================================================================
+
+  double precision function regularized_inverse(dem)
+
+    implicit none
+    double precision,intent(in) :: dem
+    double precision,external   :: SRG_reg
+
+    if(reg_PA) then
+      regularized_inverse = SRG_reg(dem,eta_1b)
+    else
+      regularized_inverse = 1d0/dem
+    end if
+
+  end function regularized_inverse
+
+! ======================================================================
 ! Bare removal corrections
 ! ======================================================================
 
@@ -889,15 +843,15 @@ contains
 
     do nn=1,nS
       dem = eQP(aa)-eQP(ii)+eh_sing_Om(nn)
-      DBmI = DBmI - 0.5d0*eh_sing_rho(aa,ii,nn)*eh_sing_rho(ii,pp,nn)/dem
+      DBmI = DBmI - 0.5d0*eh_sing_rho(aa,ii,nn)*eh_sing_rho(ii,pp,nn)*regularized_inverse(dem)
 
       dem = eQP(aa)-eQP(ii)+eh_trip_Om(nn)
-      DBmI = DBmI + 1.5d0*eh_trip_rho(aa,ii,nn)*eh_trip_rho(ii,pp,nn)/dem
+      DBmI = DBmI + 1.5d0*eh_trip_rho(aa,ii,nn)*eh_trip_rho(ii,pp,nn)*regularized_inverse(dem)
     end do
 
     do nn=1,nVVs
       dem = ee_sing_Om(nn)-2d0*eQP(ii)
-      DBmI = DBmI - 0.5d0*ee_sing_rho(ii,ii,nn)*ee_sing_rho(pp,aa,nn)/dem
+      DBmI = DBmI - 0.5d0*ee_sing_rho(ii,ii,nn)*ee_sing_rho(pp,aa,nn)*regularized_inverse(dem)
     end do
 
   end function DBmI
@@ -916,21 +870,21 @@ contains
 
       d1 = eQP(aa)-eQP(ii)+eh_sing_Om(nn)
       d2 = eQP(aa)-eQP(jj)+eh_sing_Om(nn)
-      x1 = eh_sing_rho(aa,ii,nn)*eh_sing_rho(jj,pp,nn)/d1
-      x2 = eh_sing_rho(aa,jj,nn)*eh_sing_rho(ii,pp,nn)/d2
+      x1 = eh_sing_rho(aa,ii,nn)*eh_sing_rho(jj,pp,nn)*regularized_inverse(d1)
+      x2 = eh_sing_rho(aa,jj,nn)*eh_sing_rho(ii,pp,nn)*regularized_inverse(d2)
       DBmII = DBmII + 0.25d0*sqrt(6d0)*(x1-x2)
 
       d1 = eQP(aa)-eQP(ii)+eh_trip_Om(nn)
       d2 = eQP(aa)-eQP(jj)+eh_trip_Om(nn)
-      x1 = eh_trip_rho(aa,ii,nn)*eh_trip_rho(jj,pp,nn)/d1
-      x2 = eh_trip_rho(aa,jj,nn)*eh_trip_rho(ii,pp,nn)/d2
+      x1 = eh_trip_rho(aa,ii,nn)*eh_trip_rho(jj,pp,nn)*regularized_inverse(d1)
+      x2 = eh_trip_rho(aa,jj,nn)*eh_trip_rho(ii,pp,nn)*regularized_inverse(d2)
       DBmII = DBmII + 0.25d0*sqrt(6d0)*(x1-x2)
 
     end do
 
     do nn=1,nVVt
       d1 = ee_trip_Om(nn)-eQP(ii)-eQP(jj)
-      DBmII = DBmII - sqrt(1.5d0)*ee_trip_rho(ii,jj,nn)*ee_trip_rho(pp,aa,nn)/d1
+      DBmII = DBmII - sqrt(1.5d0)*ee_trip_rho(ii,jj,nn)*ee_trip_rho(pp,aa,nn)*regularized_inverse(d1)
     end do
 
   end function DBmII
@@ -949,21 +903,21 @@ contains
 
       d1 = eQP(aa)-eQP(ii)+eh_sing_Om(nn)
       d2 = eQP(aa)-eQP(jj)+eh_sing_Om(nn)
-      x1 = eh_sing_rho(aa,ii,nn)*eh_sing_rho(jj,pp,nn)/d1
-      x2 = eh_sing_rho(aa,jj,nn)*eh_sing_rho(ii,pp,nn)/d2
+      x1 = eh_sing_rho(aa,ii,nn)*eh_sing_rho(jj,pp,nn)*regularized_inverse(d1)
+      x2 = eh_sing_rho(aa,jj,nn)*eh_sing_rho(ii,pp,nn)*regularized_inverse(d2)
       DBmIII = DBmIII - 0.25d0*sqrt(2d0)*(x1+x2)
 
       d1 = eQP(aa)-eQP(ii)+eh_trip_Om(nn)
       d2 = eQP(aa)-eQP(jj)+eh_trip_Om(nn)
-      x1 = eh_trip_rho(aa,ii,nn)*eh_trip_rho(jj,pp,nn)/d1
-      x2 = eh_trip_rho(aa,jj,nn)*eh_trip_rho(ii,pp,nn)/d2
+      x1 = eh_trip_rho(aa,ii,nn)*eh_trip_rho(jj,pp,nn)*regularized_inverse(d1)
+      x2 = eh_trip_rho(aa,jj,nn)*eh_trip_rho(ii,pp,nn)*regularized_inverse(d2)
       DBmIII = DBmIII + 0.75d0*sqrt(2d0)*(x1+x2)
 
     end do
 
     do nn=1,nVVs
       d1 = ee_sing_Om(nn)-eQP(ii)-eQP(jj)
-      DBmIII = DBmIII - sqrt(0.5d0)*ee_sing_rho(ii,jj,nn)*ee_sing_rho(pp,aa,nn)/d1
+      DBmIII = DBmIII - sqrt(0.5d0)*ee_sing_rho(ii,jj,nn)*ee_sing_rho(pp,aa,nn)*regularized_inverse(d1)
     end do
 
   end function DBmIII
@@ -983,15 +937,15 @@ contains
 
     do nn=1,nS
       dem = eQP(aa)-eQP(ii)+eh_sing_Om(nn)
-      DBpI = DBpI - 0.5d0*eh_sing_rho(aa,ii,nn)*eh_sing_rho(pp,aa,nn)/dem
+      DBpI = DBpI - 0.5d0*eh_sing_rho(aa,ii,nn)*eh_sing_rho(pp,aa,nn)*regularized_inverse(dem)
 
       dem = eQP(aa)-eQP(ii)+eh_trip_Om(nn)
-      DBpI = DBpI + 1.5d0*eh_trip_rho(aa,ii,nn)*eh_trip_rho(pp,aa,nn)/dem
+      DBpI = DBpI + 1.5d0*eh_trip_rho(aa,ii,nn)*eh_trip_rho(pp,aa,nn)*regularized_inverse(dem)
     end do
 
     do nn=1,nOOs
       dem = hh_sing_Om(nn)-2d0*eQP(aa)
-      DBpI = DBpI + 0.5d0*hh_sing_rho(aa,aa,nn)*hh_sing_rho(pp,ii,nn)/dem
+      DBpI = DBpI + 0.5d0*hh_sing_rho(aa,aa,nn)*hh_sing_rho(pp,ii,nn)*regularized_inverse(dem)
     end do
 
   end function DBpI
@@ -1010,21 +964,21 @@ contains
 
       d1 = eQP(aa)-eQP(ii)+eh_sing_Om(nn)
       d2 = eQP(bb)-eQP(ii)+eh_sing_Om(nn)
-      x1 = eh_sing_rho(aa,ii,nn)*eh_sing_rho(pp,bb,nn)/d1
-      x2 = eh_sing_rho(bb,ii,nn)*eh_sing_rho(pp,aa,nn)/d2
+      x1 = eh_sing_rho(aa,ii,nn)*eh_sing_rho(pp,bb,nn)*regularized_inverse(d1)
+      x2 = eh_sing_rho(bb,ii,nn)*eh_sing_rho(pp,aa,nn)*regularized_inverse(d2)
       DBpII = DBpII + 0.25d0*sqrt(6d0)*(x1-x2)
 
       d1 = eQP(aa)-eQP(ii)+eh_trip_Om(nn)
       d2 = eQP(bb)-eQP(ii)+eh_trip_Om(nn)
-      x1 = eh_trip_rho(aa,ii,nn)*eh_trip_rho(pp,bb,nn)/d1
-      x2 = eh_trip_rho(bb,ii,nn)*eh_trip_rho(pp,aa,nn)/d2
+      x1 = eh_trip_rho(aa,ii,nn)*eh_trip_rho(pp,bb,nn)*regularized_inverse(d1)
+      x2 = eh_trip_rho(bb,ii,nn)*eh_trip_rho(pp,aa,nn)*regularized_inverse(d2)
       DBpII = DBpII + 0.25d0*sqrt(6d0)*(x1-x2)
 
     end do
 
     do nn=1,nOOt
       d1 = hh_trip_Om(nn)-eQP(aa)-eQP(bb)
-      DBpII = DBpII + sqrt(1.5d0)*hh_trip_rho(aa,bb,nn)*hh_trip_rho(pp,ii,nn)/d1
+      DBpII = DBpII + sqrt(1.5d0)*hh_trip_rho(aa,bb,nn)*hh_trip_rho(pp,ii,nn)*regularized_inverse(d1)
     end do
 
   end function DBpII
@@ -1043,21 +997,21 @@ contains
 
       d1 = eQP(aa)-eQP(ii)+eh_sing_Om(nn)
       d2 = eQP(bb)-eQP(ii)+eh_sing_Om(nn)
-      x1 = eh_sing_rho(aa,ii,nn)*eh_sing_rho(pp,bb,nn)/d1
-      x2 = eh_sing_rho(bb,ii,nn)*eh_sing_rho(pp,aa,nn)/d2
+      x1 = eh_sing_rho(aa,ii,nn)*eh_sing_rho(pp,bb,nn)*regularized_inverse(d1)
+      x2 = eh_sing_rho(bb,ii,nn)*eh_sing_rho(pp,aa,nn)*regularized_inverse(d2)
       DBpIII = DBpIII - 0.25d0*sqrt(2d0)*(x1+x2)
 
       d1 = eQP(aa)-eQP(ii)+eh_trip_Om(nn)
       d2 = eQP(bb)-eQP(ii)+eh_trip_Om(nn)
-      x1 = eh_trip_rho(aa,ii,nn)*eh_trip_rho(pp,bb,nn)/d1
-      x2 = eh_trip_rho(bb,ii,nn)*eh_trip_rho(pp,aa,nn)/d2
+      x1 = eh_trip_rho(aa,ii,nn)*eh_trip_rho(pp,bb,nn)*regularized_inverse(d1)
+      x2 = eh_trip_rho(bb,ii,nn)*eh_trip_rho(pp,aa,nn)*regularized_inverse(d2)
       DBpIII = DBpIII + 0.75d0*sqrt(2d0)*(x1+x2)
 
     end do
 
     do nn=1,nOOs
       d1 = hh_sing_Om(nn)-eQP(aa)-eQP(bb)
-      DBpIII = DBpIII + sqrt(0.5d0)*hh_sing_rho(aa,bb,nn)*hh_sing_rho(pp,ii,nn)/d1
+      DBpIII = DBpIII + sqrt(0.5d0)*hh_sing_rho(aa,bb,nn)*hh_sing_rho(pp,ii,nn)*regularized_inverse(d1)
     end do
 
   end function DBpIII
@@ -1080,7 +1034,7 @@ contains
         dem = eQP(aa)-eQP(ii)+eh_sing_Om(nn)
         DehmS = DehmS + sqrt(2d0)                                  &
           *(0.5d0*ERI(pp,ii,aa,jj)-ERI(pp,ii,jj,aa))               &
-          *eh_sing_rho(aa,ii,nn)/dem
+          *eh_sing_rho(aa,ii,nn)*regularized_inverse(dem)
       end do
     end do
 
@@ -1100,7 +1054,7 @@ contains
       do aa=nO+1,nOrb-nR
         dem = eQP(aa)-eQP(ii)+eh_trip_Om(nn)
         DehmT = DehmT + sqrt(1.5d0)*ERI(pp,ii,aa,jj)                &
-          *eh_trip_rho(aa,ii,nn)/dem
+          *eh_trip_rho(aa,ii,nn)*regularized_inverse(dem)
       end do
     end do
 
@@ -1121,7 +1075,7 @@ contains
         dem = eQP(aa)-eQP(ii)+eh_sing_Om(nn)
         DehpS = DehpS + sqrt(2d0)                                  &
           *(0.5d0*ERI(pp,aa,ii,bb)-ERI(pp,aa,bb,ii))               &
-          *eh_sing_rho(aa,ii,nn)/dem
+          *eh_sing_rho(aa,ii,nn)*regularized_inverse(dem)
       end do
     end do
 
@@ -1141,14 +1095,14 @@ contains
       do aa=nO+1,nOrb-nR
         dem = eQP(aa)-eQP(ii)+eh_trip_Om(nn)
         DehpT = DehpT + sqrt(1.5d0)*ERI(pp,aa,ii,bb)                &
-          *eh_trip_rho(aa,ii,nn)/dem
+          *eh_trip_rho(aa,ii,nn)*regularized_inverse(dem)
       end do
     end do
 
   end function DehpT
 
 ! ======================================================================
-! hh / ee dressed-sector corrections
+! pp dressed-sector corrections
 ! ======================================================================
 
   double precision function DhhmS(cc,nn,pp)
@@ -1164,7 +1118,7 @@ contains
       do bb=nO+1,nOrb-nR
         dem = hh_sing_Om(nn)-eQP(aa)-eQP(bb)
         DhhmS = DhhmS + sqrt(0.5d0)*ERI(pp,cc,aa,bb)                &
-          *hh_sing_rho(aa,bb,nn)/dem
+          *hh_sing_rho(aa,bb,nn)*regularized_inverse(dem)
       end do
     end do
 
@@ -1184,7 +1138,7 @@ contains
       do bb=nO+1,nOrb-nR
         dem = hh_trip_Om(nn)-eQP(aa)-eQP(bb)
         DhhmT = DhhmT + sqrt(1.5d0)*ERI(pp,cc,aa,bb)                &
-          *hh_trip_rho(aa,bb,nn)/dem
+          *hh_trip_rho(aa,bb,nn)*regularized_inverse(dem)
       end do
     end do
 
@@ -1204,7 +1158,7 @@ contains
       do jj=nC+1,nO
         dem = ee_sing_Om(nn)-eQP(ii)-eQP(jj)
         DeepS = DeepS - sqrt(0.5d0)*ERI(pp,kk,ii,jj)                &
-          *ee_sing_rho(ii,jj,nn)/dem
+          *ee_sing_rho(ii,jj,nn)*regularized_inverse(dem)
       end do
     end do
 
@@ -1224,7 +1178,7 @@ contains
       do jj=nC+1,nO
         dem = ee_trip_Om(nn)-eQP(ii)-eQP(jj)
         DeepT = DeepT - sqrt(1.5d0)*ERI(pp,kk,ii,jj)                &
-          *ee_trip_rho(ii,jj,nn)/dem
+          *ee_trip_rho(ii,jj,nn)*regularized_inverse(dem)
       end do
     end do
 

@@ -547,7 +547,8 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,*)
 
       call wall_time(start_t)
-      call G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                  &
+      call G_ADC_Parquet(reg_PA,eta_1b,                                &
+                         nOrb,nC,nO,nV,nR,nS,nOO,nVV,                  &
                          eHF,eOld,ERI,                                 &
                          old_eh_Om,eh_rho,                             &
                          old_ee_Om,ee_rho,old_hh_Om,hh_rho,            &

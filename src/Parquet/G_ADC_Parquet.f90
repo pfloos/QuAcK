@@ -1,4 +1,5 @@
-subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
+subroutine G_ADC_Parquet(reg_PA,eta_1b,                              &
+                                nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
                                 eHF,eQP,ERI,                                  &
                                 eh_Om,eh_rho,                                 &
                                 ee_Om,ee_rho,hh_Om,hh_rho,                    &
@@ -6,9 +7,22 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
 
 ! Full Hermitian / PSD ADC-Parquet construction in spin-orbital form.
 !
-! Symmetric ADC gauge:
+! The ADC gauge is controlled by six relative weights defined in the
+! "ADC gauge controls" block below.  The code normalizes these weights so
+! that
 !
-!   alpha_B = alpha_eh = alpha_hh/ee = 1/2
+!   alpha_B-**2 + 2 alpha_eh-**2 + alpha_hh-**2 = 1
+!   alpha_B+**2 + 2 alpha_eh+**2 + alpha_ee+**2 = 1
+!
+! and then enforces the parent-self-energy matching conditions
+!
+!   beta_gamma = 1/(2 alpha_gamma)
+!   C_gamma,delta = Xi_gamma,delta/(2 alpha_gamma alpha_delta)
+!
+! Thus changing the gauge only requires changing the six weights below.
+! The default choice g=1 for every sector gives the present symmetric gauge
+!
+!   alpha = 1/2,  beta = 1,  C = 2 Xi.
 !
 ! The native parquet self-energy is distributed as follows:
 !
@@ -18,18 +32,23 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
 !   * B <-> eh mixed-pole pieces          -> C_B_eh
 !   * B <-> hh / ee mixed-pole pieces     -> C_B_hh / C_B_ee
 !
-! The Hermitian resolvent therefore contains every native PA term and
-! generates additional PSD ADC completion terms.
+! Internal denominators entering the D corrections can be regularized
+! with the same one-body SRG prescription as the parent parquet
+! self-energy:
 !
-! No SRG regulator is applied inside the ADC decomposition.  The
-! identities used here correspond to the unregularized parent PA
-! self-energy.
+!   1/Delta -> [1 - exp(-2 eta_1b Delta**2)]/Delta.
+!
+! The regularization is controlled by reg_PA and eta_1b.  The genuine
+! ADC pole energies in the K blocks and the denominator-free C blocks
+! are left unchanged.
 
   implicit none
   include 'parameters.h'
 
 ! Input variables
 
+  logical,intent(in)            :: reg_PA
+  double precision,intent(in)   :: eta_1b
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS,nOO,nVV
   double precision,intent(in)   :: eHF(nOrb),eQP(nOrb)
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
@@ -55,9 +74,88 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   double precision              :: asym,sumZ
   double precision,allocatable  :: H(:,:),ePA(:),Zstate(:)
 
+! ADC gauge variables
+
+  double precision              :: gBm,gEhm,gHhm,gBp,gEhp,gEep
+  double precision              :: normMinus,normPlus
+  double precision              :: alphaBm,alphaEhm,alphaHhm
+  double precision              :: alphaBp,alphaEhp,alphaEep
+  double precision              :: betaBm,betaEhm,betaHhm
+  double precision              :: betaBp,betaEhp,betaEep
+  double precision              :: cBmEhm,cBmHhm,cBpEhp,cBpEep
+  double precision,parameter    :: gauge_tol = 1d-12
+
   nOcc = nO - nC
   nVir = nOrb - nR - nO
   nAct = nOrb - nR - nC
+
+! ======================================================================
+! ADC gauge controls
+! ======================================================================
+!
+! Edit ONLY these six relative weights to explore the gauge freedom.
+! An overall rescaling of all weights within one branch is irrelevant,
+! because the weights are normalized below.
+!
+! Symmetric gauge: all six weights = 1.
+!
+! Example: emphasize the bare B sectors relative to the dressed sectors:
+!   gBm = 2d0 ; gEhm = 1d0 ; gHhm = 1d0
+!   gBp = 2d0 ; gEhp = 1d0 ; gEep = 1d0
+!
+! None of the normalized alpha values may vanish, because the exact parent
+! matching then requires beta or C to diverge.
+
+  gBm  = 1d0
+  gEhm = 1d0
+  gHhm = 1d0
+
+  gBp  = 1d0
+  gEhp = 1d0
+  gEep = 1d0
+
+! Normalize the relative weights so that GF2 is reproduced exactly once.
+
+  normMinus = sqrt(gBm*gBm + 2d0*gEhm*gEhm + gHhm*gHhm)
+  normPlus  = sqrt(gBp*gBp + 2d0*gEhp*gEhp + gEep*gEep)
+
+  if(normMinus < gauge_tol .or. normPlus < gauge_tol) then
+    write(*,*) 'ERROR in G_ADC_Parquet: vanishing ADC gauge norm.'
+    stop
+  end if
+
+  alphaBm  = gBm  / normMinus
+  alphaEhm = gEhm / normMinus
+  alphaHhm = gHhm / normMinus
+
+  alphaBp  = gBp  / normPlus
+  alphaEhp = gEhp / normPlus
+  alphaEep = gEep / normPlus
+
+  if(abs(alphaBm ) < gauge_tol .or. abs(alphaEhm) < gauge_tol .or. &
+     abs(alphaHhm) < gauge_tol .or. abs(alphaBp ) < gauge_tol .or. &
+     abs(alphaEhp) < gauge_tol .or. abs(alphaEep) < gauge_tol) then
+    write(*,*) 'ERROR in G_ADC_Parquet: all ADC alpha values must be nonzero.'
+    stop
+  end if
+
+! Parent-one-pole matching: 2 alpha_gamma beta_gamma = 1.
+
+  betaBm  = 1d0/(2d0*alphaBm )
+  betaEhm = 1d0/(2d0*alphaEhm)
+  betaHhm = 1d0/(2d0*alphaHhm)
+
+  betaBp  = 1d0/(2d0*alphaBp )
+  betaEhp = 1d0/(2d0*alphaEhp)
+  betaEep = 1d0/(2d0*alphaEep)
+
+! Parent-mixed-pole matching:
+! C_gamma,delta = Xi_gamma,delta/(2 alpha_gamma alpha_delta).
+
+  cBmEhm = 1d0/(2d0*alphaBm*alphaEhm)
+  cBmHhm = 1d0/(2d0*alphaBm*alphaHhm)
+  cBpEhp = 1d0/(2d0*alphaBp*alphaEhp)
+  cBpEep = 1d0/(2d0*alphaBp*alphaEep)
 
 ! Auxiliary dimensions
 
@@ -103,6 +201,18 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   write(*,'(1X,A24,I10)') 'ee+ dimension      =',nEep
   write(*,'(1X,A24,I10)') 'Total dimension    =',nH
   write(*,*)
+  write(*,'(1X,A34,L4)') 'SRG regularization enabled =',reg_PA
+  if(reg_PA) write(*,'(1X,A34,1X,ES12.4)') 'One-body SRG parameter eta_1b =',eta_1b
+  write(*,*)
+
+  write(*,*)'ADC gauge parameters:'
+  write(*,'(1X,A8,3(1X,F12.8))') 'alpha - ',alphaBm,alphaEhm,alphaHhm
+  write(*,'(1X,A8,3(1X,F12.8))') 'beta  - ',betaBm,betaEhm,betaHhm
+  write(*,'(1X,A8,3(1X,F12.8))') 'alpha + ',alphaBp,alphaEhp,alphaEep
+  write(*,'(1X,A8,3(1X,F12.8))') 'beta  + ',betaBp,betaEhp,betaEep
+  write(*,'(1X,A12,2(1X,F12.8))') 'C scales - ',cBmEhm,cBmHhm
+  write(*,'(1X,A12,2(1X,F12.8))') 'C scales + ',cBpEhp,cBpEep
+  write(*,*)
 
 ! ======================================================================
 ! Physical block
@@ -113,7 +223,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! B- block: K_B- and U_B- = 1/2 V- + D_B-
+! B- block: U_B- = alpha_B- V- + beta_B- D_B-
 ! ======================================================================
 
   ib = oBm
@@ -126,7 +236,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
         H(ib,ib) = eQP(i) + eQP(j) - eQP(a)
 
         do p=nC+1,nOrb-nR
-          val = 0.5d0*vminus(p,a,i,j) + DBminus(i,j,a,p)
+          val = alphaBm*vminus(p,a,i,j) + betaBm*DBminus(i,j,a,p)
           H(p,ib) = val
           H(ib,p) = val
         end do
@@ -136,7 +246,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! eh- block: K_eh- and U_eh- = 1/2 rho + D_eh-
+! eh- block: U_eh- = alpha_eh- rho + beta_eh- D_eh-
 ! ======================================================================
 
   ib = oEhm
@@ -148,7 +258,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
       H(ib,ib) = eQP(j) - eh_Om(n)
 
       do p=nC+1,nOrb-nR
-        val = 0.5d0*eh_rho(p,j,n) + Dehminus(j,n,p)
+        val = alphaEhm*eh_rho(p,j,n) + betaEhm*Dehminus(j,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -157,7 +267,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! hh- block: K_hh- and U_hh- = 1/2 rho + D_hh-
+! hh- block: U_hh- = alpha_hh- rho + beta_hh- D_hh-
 ! ======================================================================
 
   ib = oHhm
@@ -169,7 +279,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
       H(ib,ib) = hh_Om(n) - eQP(a)
 
       do p=nC+1,nOrb-nR
-        val = 0.5d0*hh_rho(p,a,n) + Dhhminus(a,n,p)
+        val = alphaHhm*hh_rho(p,a,n) + betaHhm*Dhhminus(a,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -178,7 +288,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! B+ block
+! B+ block: U_B+ = alpha_B+ V+ + beta_B+ D_B+
 ! ======================================================================
 
   ib = oBp
@@ -191,7 +301,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
         H(ib,ib) = eQP(a) + eQP(b) - eQP(i)
 
         do p=nC+1,nOrb-nR
-          val = 0.5d0*vplus(p,i,a,b) + DBplus(i,a,b,p)
+          val = alphaBp*vplus(p,i,a,b) + betaBp*DBplus(i,a,b,p)
           H(p,ib) = val
           H(ib,p) = val
         end do
@@ -201,7 +311,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! eh+ block
+! eh+ block: U_eh+ = alpha_eh+ rho + beta_eh+ D_eh+
 ! ======================================================================
 
   ib = oEhp
@@ -213,7 +323,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
       H(ib,ib) = eQP(b) + eh_Om(n)
 
       do p=nC+1,nOrb-nR
-        val = 0.5d0*eh_rho(b,p,n) + Dehplus(b,n,p)
+        val = alphaEhp*eh_rho(b,p,n) + betaEhp*Dehplus(b,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -222,7 +332,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! ee+ block
+! ee+ block: U_ee+ = alpha_ee+ rho + beta_ee+ D_ee+
 ! ======================================================================
 
   ib = oEep
@@ -234,7 +344,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
       H(ib,ib) = ee_Om(n) - eQP(i)
 
       do p=nC+1,nOrb-nR
-        val = 0.5d0*ee_rho(p,i,n) + Deeplus(i,n,p)
+        val = alphaEep*ee_rho(p,i,n) + betaEep*Deeplus(i,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -243,7 +353,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! C_B-,eh- = 2 Xi_B-,eh-
+! C_B-,eh- = cBmEhm Xi_B-,eh-
 !
 ! Xi_{ija,k n} = delta_jk rho_ia,n - delta_ik rho_ja,n
 ! ======================================================================
@@ -263,8 +373,8 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
             jb = jb + 1
             val = 0d0
 
-            if(j == k) val = val + 2d0*eh_rho(i,a,n)
-            if(i == k) val = val - 2d0*eh_rho(j,a,n)
+            if(j == k) val = val + cBmEhm*eh_rho(i,a,n)
+            if(i == k) val = val - cBmEhm*eh_rho(j,a,n)
 
             H(ib,jb) = val
             H(jb,ib) = val
@@ -277,7 +387,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! C_B-,hh- = 2 Xi_B-,hh-
+! C_B-,hh- = cBmHhm Xi_B-,hh-
 !
 ! Xi_{ija,b m} = - delta_ab rho_ij,m
 ! ======================================================================
@@ -297,7 +407,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
             jb = jb + 1
             val = 0d0
 
-            if(a == b) val = -2d0*hh_rho(i,j,n)
+            if(a == b) val = -cBmHhm*hh_rho(i,j,n)
 
             H(ib,jb) = val
             H(jb,ib) = val
@@ -310,7 +420,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! C_B+,eh+ = 2 Xi_B+,eh+
+! C_B+,eh+ = cBpEhp Xi_B+,eh+
 !
 ! Xi_{iab,c n} = delta_ac rho_ib,n - delta_bc rho_ia,n
 ! ======================================================================
@@ -330,8 +440,8 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
             jb = jb + 1
             val = 0d0
 
-            if(a == c) val = val + 2d0*eh_rho(i,b,n)
-            if(b == c) val = val - 2d0*eh_rho(i,a,n)
+            if(a == c) val = val + cBpEhp*eh_rho(i,b,n)
+            if(b == c) val = val - cBpEhp*eh_rho(i,a,n)
 
             H(ib,jb) = val
             H(jb,ib) = val
@@ -344,7 +454,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
   end do
 
 ! ======================================================================
-! C_B+,ee+ = 2 Xi_B+,ee+
+! C_B+,ee+ = cBpEep Xi_B+,ee+
 !
 ! Xi_{iab,j m} = delta_ij rho_ab,m
 ! ======================================================================
@@ -364,7 +474,7 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
             jb = jb + 1
             val = 0d0
 
-            if(i == j) val = 2d0*ee_rho(a,b,n)
+            if(i == j) val = cBpEep*ee_rho(a,b,n)
 
             H(ib,jb) = val
             H(jb,ib) = val
@@ -458,6 +568,28 @@ subroutine G_ADC_Parquet(nOrb,nC,nO,nV,nR,nS,nOO,nVV,                 &
 contains
 
 ! ======================================================================
+! Internal denominator regularization
+! ======================================================================
+!
+! Use the same one-body SRG regularization as the parent parquet
+! self-energy and ADC-G3W2.  Only the explicit internal denominators in
+! the D corrections pass through this helper.  K and C are untouched.
+
+  double precision function regularized_inverse(dem)
+
+    implicit none
+    double precision,intent(in) :: dem
+    double precision,external   :: SRG_reg
+
+    if(reg_PA) then
+      regularized_inverse = SRG_reg(dem,eta_1b)
+    else
+      regularized_inverse = 1d0/dem
+    end if
+
+  end function regularized_inverse
+
+! ======================================================================
 ! Antisymmetrized bare vertices
 ! ======================================================================
 
@@ -499,10 +631,10 @@ contains
     do nn=1,nS
 
       dem = eQP(aa) - eQP(ii) + eh_Om(nn)
-      DBminus = DBminus + eh_rho(aa,ii,nn)*eh_rho(jj,pp,nn)/dem
+      DBminus = DBminus + eh_rho(aa,ii,nn)*eh_rho(jj,pp,nn)*regularized_inverse(dem)
 
       dem = eQP(aa) - eQP(jj) + eh_Om(nn)
-      DBminus = DBminus - eh_rho(aa,jj,nn)*eh_rho(ii,pp,nn)/dem
+      DBminus = DBminus - eh_rho(aa,jj,nn)*eh_rho(ii,pp,nn)*regularized_inverse(dem)
 
     end do
 
@@ -511,7 +643,7 @@ contains
     do nn=1,nVV
 
       dem = ee_Om(nn) - eQP(ii) - eQP(jj)
-      DBminus = DBminus - ee_rho(ii,jj,nn)*ee_rho(pp,aa,nn)/dem
+      DBminus = DBminus - ee_rho(ii,jj,nn)*ee_rho(pp,aa,nn)*regularized_inverse(dem)
 
     end do
 
@@ -536,10 +668,10 @@ contains
     do nn=1,nS
 
       dem = eQP(aa) - eQP(ii) + eh_Om(nn)
-      DBplus = DBplus + eh_rho(aa,ii,nn)*eh_rho(pp,bb,nn)/dem
+      DBplus = DBplus + eh_rho(aa,ii,nn)*eh_rho(pp,bb,nn)*regularized_inverse(dem)
 
       dem = eQP(bb) - eQP(ii) + eh_Om(nn)
-      DBplus = DBplus - eh_rho(bb,ii,nn)*eh_rho(pp,aa,nn)/dem
+      DBplus = DBplus - eh_rho(bb,ii,nn)*eh_rho(pp,aa,nn)*regularized_inverse(dem)
 
     end do
 
@@ -548,7 +680,7 @@ contains
     do nn=1,nOO
 
       dem = hh_Om(nn) - eQP(aa) - eQP(bb)
-      DBplus = DBplus + hh_rho(aa,bb,nn)*hh_rho(pp,ii,nn)/dem
+      DBplus = DBplus + hh_rho(aa,bb,nn)*hh_rho(pp,ii,nn)*regularized_inverse(dem)
 
     end do
 
@@ -574,7 +706,7 @@ contains
         dem = eQP(aa) - eQP(ii) + eh_Om(nn)
 
         Dehminus = Dehminus                                          &
-          + (ERI(pp,ii,aa,jj)-ERI(pp,ii,jj,aa))*eh_rho(aa,ii,nn)/dem
+          + (ERI(pp,ii,aa,jj)-ERI(pp,ii,jj,aa))*eh_rho(aa,ii,nn)*regularized_inverse(dem)
 
       end do
     end do
@@ -601,7 +733,7 @@ contains
         dem = eQP(aa) - eQP(ii) + eh_Om(nn)
 
         Dehplus = Dehplus                                            &
-          + (ERI(pp,aa,ii,bb)-ERI(pp,aa,bb,ii))*eh_rho(aa,ii,nn)/dem
+          + (ERI(pp,aa,ii,bb)-ERI(pp,aa,bb,ii))*eh_rho(aa,ii,nn)*regularized_inverse(dem)
 
       end do
     end do
@@ -628,7 +760,7 @@ contains
         dem = hh_Om(nn) - eQP(bb) - eQP(cc)
 
         Dhhminus = Dhhminus                                          &
-          + (ERI(pp,aa,bb,cc)-ERI(pp,aa,cc,bb))*hh_rho(bb,cc,nn)/dem
+          + (ERI(pp,aa,bb,cc)-ERI(pp,aa,cc,bb))*hh_rho(bb,cc,nn)*regularized_inverse(dem)
 
       end do
     end do
@@ -655,7 +787,7 @@ contains
         dem = ee_Om(nn) - eQP(jj) - eQP(kk)
 
         Deeplus = Deeplus                                            &
-          - (ERI(pp,ii,jj,kk)-ERI(pp,ii,kk,jj))*ee_rho(jj,kk,nn)/dem
+          - (ERI(pp,ii,jj,kk)-ERI(pp,ii,kk,jj))*ee_rho(jj,kk,nn)*regularized_inverse(dem)
 
       end do
     end do
@@ -663,3 +795,4 @@ contains
   end function Deeplus
 
 end subroutine G_ADC_Parquet
+
