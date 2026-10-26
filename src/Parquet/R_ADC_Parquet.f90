@@ -6,13 +6,36 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
                          hh_sing_Om,hh_sing_rho,hh_trip_Om,hh_trip_rho,      &
                          eADC,ZADC)
 
-! Full Hermitian / PSD ADC-Parquet construction in restricted spin-adapted form.
+! Hermitian / PSD completion of the ADC-Parquet construction in
+! restricted spin-adapted form.
 !
 ! The bare 2h1p/2p1h space is represented by the three spin-adapted doublet
 ! sectors used in restricted IP/EA-ADC.  The dressed eh and pp auxiliary
 ! sectors are resolved into singlet and triplet components.
 !
-! The external couplings correspond to the equal-weight ADC construction.
+! The parent parquet self-energy is one-sided.  We first use the symmetric
+! representation
+!
+!   Sigma_gamma = V^T R V
+!               + 1/2 V^T R D + 1/2 D^T R V.
+!
+! The restricted routine uses the same equal-weight convention as the
+! generalized routine,
+!
+!   U_gamma = alpha_U1 V_gamma + beta_U2 D_gamma,
+!   alpha_U1 = 1/2,
+!   beta_U2  = 1,
+!
+! so alpha_U1*beta_U2 = 1/2.  Thus the factor-1/2 symmetrization is already
+! present through the leading coupling.  The D correction must NOT be halved
+! again.  In a convention with alpha_U1=1, the equivalent choice would be
+! beta_U2=1/2.
+!
+! IMPORTANT: the full Hermitian resolvent additionally generates quadratic
+! D-D terms, higher powers of the inter-sector C couplings, and mixed C-D
+! terms.  These are PSD completion terms beyond the parent Schwinger-Dyson
+! parquet self-energy.
+!
 ! Internal response denominators entering the higher-order U corrections can
 ! be regularized with the same one-body SRG prescription as the parent parquet
 ! self-energy,
@@ -65,6 +88,11 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
   double precision              :: val,cutoff,tol_deg,wgrp,wbest
   double precision              :: asym,sumZ
   double precision,allocatable  :: H(:,:),ePA(:),Zstate(:)
+
+! Symmetrized ADC half-amplitude factors
+
+  double precision,parameter    :: alphaU1 = 0.5d0
+  double precision,parameter    :: betaU2  = 1d0
 
   nOcc = nO - nC
   nVir = nOrb - nR - nO
@@ -125,7 +153,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
 
   write(*,*)
   write(*,*)'***********************************************'
-  write(*,*)'* Full restricted Hermitian ADC-Parquet      *'
+  write(*,*)'* Restricted PSD ADC-Parquet completion        *'
   write(*,*)'***********************************************'
   write(*,'(1X,A34,L4)')            'SRG regularization enabled =',reg_PA
   if(reg_PA) write(*,'(1X,A34,1X,ES12.4)') 'One-body SRG parameter eta_1b =',eta_1b
@@ -140,6 +168,8 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
   write(*,'(1X,A24,I10)') 'pp+ singlet        =',nEepS
   write(*,'(1X,A24,I10)') 'pp+ triplet        =',nEepT
   write(*,'(1X,A24,I10)') 'Total dimension    =',nH
+  write(*,'(1X,A24,F10.6)') 'alpha_U1           =',alphaU1
+  write(*,'(1X,A24,F10.6)') 'beta_U2            =',betaU2
   write(*,*)
 
 ! ======================================================================
@@ -163,7 +193,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       H(ib,ib) = 2d0*eQP(i) - eQP(a)
 
       do p=nC+1,nOrb-nR
-        val = 0.5d0*ERI(i,i,p,a) + DBmI(i,a,p)
+        val = alphaU1*ERI(i,i,p,a) + betaU2*DBmI(i,a,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -185,8 +215,8 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
         H(ib,ib) = eQP(i) + eQP(j) - eQP(a)
 
         do p=nC+1,nOrb-nR
-          val = 0.5d0*sqrt(1.5d0)*(ERI(i,j,p,a)-ERI(i,j,a,p)) &
-              + DBmII(i,j,a,p)
+          val = alphaU1*sqrt(1.5d0)*(ERI(i,j,p,a)-ERI(i,j,a,p)) &
+              + betaU2*DBmII(i,j,a,p)
           H(p,ib) = val
           H(ib,p) = val
         end do
@@ -209,8 +239,8 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
         H(ib,ib) = eQP(i) + eQP(j) - eQP(a)
 
         do p=nC+1,nOrb-nR
-          val = 0.5d0*sqrt(0.5d0)*(ERI(i,j,p,a)+ERI(i,j,a,p)) &
-              + DBmIII(i,j,a,p)
+          val = alphaU1*sqrt(0.5d0)*(ERI(i,j,p,a)+ERI(i,j,a,p)) &
+              + betaU2*DBmIII(i,j,a,p)
           H(p,ib) = val
           H(ib,p) = val
         end do
@@ -229,7 +259,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = eQP(j) - eh_sing_Om(n)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*sqrt(0.5d0)*eh_sing_rho(p,j,n) + DehmS(j,n,p)
+        val = alphaU1*sqrt(0.5d0)*eh_sing_rho(p,j,n) + betaU2*DehmS(j,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -242,7 +272,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = eQP(j) - eh_trip_Om(n)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*sqrt(1.5d0)*eh_trip_rho(p,j,n) + DehmT(j,n,p)
+        val = alphaU1*sqrt(1.5d0)*eh_trip_rho(p,j,n) + betaU2*DehmT(j,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -259,7 +289,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = hh_sing_Om(n) - eQP(a)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*sqrt(0.5d0)*hh_sing_rho(p,a,n) + DhhmS(a,n,p)
+        val = alphaU1*sqrt(0.5d0)*hh_sing_rho(p,a,n) + betaU2*DhhmS(a,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -272,7 +302,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = hh_trip_Om(n) - eQP(a)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*sqrt(1.5d0)*hh_trip_rho(p,a,n) + DhhmT(a,n,p)
+        val = alphaU1*sqrt(1.5d0)*hh_trip_rho(p,a,n) + betaU2*DhhmT(a,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -289,7 +319,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = 2d0*eQP(a) - eQP(i)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*ERI(a,a,p,i) + DBpI(i,a,p)
+        val = alphaU1*ERI(a,a,p,i) + betaU2*DBpI(i,a,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -307,8 +337,8 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
         ib = ib + 1
         H(ib,ib) = eQP(a) + eQP(b) - eQP(i)
         do p=nC+1,nOrb-nR
-          val = 0.5d0*sqrt(1.5d0)*(ERI(a,b,p,i)-ERI(a,b,i,p)) &
-              + DBpII(i,a,b,p)
+          val = alphaU1*sqrt(1.5d0)*(ERI(a,b,p,i)-ERI(a,b,i,p)) &
+              + betaU2*DBpII(i,a,b,p)
           H(p,ib) = val
           H(ib,p) = val
         end do
@@ -327,8 +357,8 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
         ib = ib + 1
         H(ib,ib) = eQP(a) + eQP(b) - eQP(i)
         do p=nC+1,nOrb-nR
-          val = 0.5d0*sqrt(0.5d0)*(ERI(a,b,p,i)+ERI(a,b,i,p)) &
-              + DBpIII(i,a,b,p)
+          val = alphaU1*sqrt(0.5d0)*(ERI(a,b,p,i)+ERI(a,b,i,p)) &
+              + betaU2*DBpIII(i,a,b,p)
           H(p,ib) = val
           H(ib,p) = val
         end do
@@ -346,7 +376,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = eQP(b) + eh_sing_Om(n)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*sqrt(0.5d0)*eh_sing_rho(b,p,n) + DehpS(b,n,p)
+        val = alphaU1*sqrt(0.5d0)*eh_sing_rho(b,p,n) + betaU2*DehpS(b,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -359,7 +389,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = eQP(b) + eh_trip_Om(n)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*sqrt(1.5d0)*eh_trip_rho(b,p,n) + DehpT(b,n,p)
+        val = alphaU1*sqrt(1.5d0)*eh_trip_rho(b,p,n) + betaU2*DehpT(b,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -376,7 +406,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = ee_sing_Om(n) - eQP(i)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*sqrt(0.5d0)*ee_sing_rho(p,i,n) + DeepS(i,n,p)
+        val = alphaU1*sqrt(0.5d0)*ee_sing_rho(p,i,n) + betaU2*DeepS(i,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do
@@ -389,7 +419,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
       ib = ib + 1
       H(ib,ib) = ee_trip_Om(n) - eQP(i)
       do p=nC+1,nOrb-nR
-        val = 0.5d0*sqrt(1.5d0)*ee_trip_rho(p,i,n) + DeepT(i,n,p)
+        val = alphaU1*sqrt(1.5d0)*ee_trip_rho(p,i,n) + betaU2*DeepT(i,n,p)
         H(p,ib) = val
         H(ib,p) = val
       end do

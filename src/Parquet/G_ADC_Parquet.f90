@@ -5,32 +5,54 @@ subroutine G_ADC_Parquet(reg_PA,eta_1b,                              &
                                 ee_Om,ee_rho,hh_Om,hh_rho,                    &
                                 eADC,ZADC)
 
-! Full Hermitian / PSD ADC-Parquet construction in spin-orbital form.
+! Hermitian / PSD completion of the ADC-Parquet construction in
+! spin-orbital form.
 !
-! The ADC gauge is controlled by six relative weights defined in the
-! "ADC gauge controls" block below.  The code normalizes these weights so
-! that
+! The parent parquet self-energy is one-sided.  For a generic auxiliary
+! sector gamma, write the leading half-amplitude as V_gamma and the
+! subleading correction as D_gamma.  Before imposing Hermiticity we use the
+! symmetric representation
+!
+!   Sigma_gamma = V^T R V
+!               + 1/2 V^T R D + 1/2 D^T R V.
+!
+! The ADC coupling is parameterized as
+!
+!   U_gamma = alpha_gamma V_gamma + beta_gamma D_gamma,
+!
+! so matching the two symmetrized cross terms requires
+!
+!   alpha_gamma beta_gamma = 1/2,
+!
+! i.e.
+!
+!   beta_gamma = 1/(2 alpha_gamma).
+!
+! The leading GF2 content is distributed over the auxiliary sectors through
 !
 !   alpha_B-**2 + 2 alpha_eh-**2 + alpha_hh-**2 = 1
-!   alpha_B+**2 + 2 alpha_eh+**2 + alpha_ee+**2 = 1
+!   alpha_B+**2 + 2 alpha_eh+**2 + alpha_ee+**2 = 1.
 !
-! and then enforces the parent-self-energy matching conditions
+! The default equal-weight choice therefore gives
 !
-!   beta_gamma = 1/(2 alpha_gamma)
-!   C_gamma,delta = Xi_gamma,delta/(2 alpha_gamma alpha_delta)
+!   alpha = 1/2,  beta = 1.
 !
-! Thus changing the gauge only requires changing the six weights below.
-! The default choice g=1 for every sector gives the present symmetric gauge
+! This is exactly the factor-1/2 symmetrization: because the leading
+! half-amplitude already carries alpha=1/2, the D correction must NOT be
+! multiplied by another factor 1/2.  In the alternative convention alpha=1,
+! the same matching condition would read beta=1/2.
 !
-!   alpha = 1/2,  beta = 1,  C = 2 Xi.
+! Mixed-pole terms are matched with
 !
-! The native parquet self-energy is distributed as follows:
+!   C_gamma,delta = Xi_gamma,delta/(2 alpha_gamma alpha_delta),
 !
-!   * GF2 + one-bare-pole pieces          -> U_B
-!   * one-eh-pole pieces                  -> U_eh
-!   * one-hh/ee-pole pieces               -> U_hh / U_ee
-!   * B <-> eh mixed-pole pieces          -> C_B_eh
-!   * B <-> hh / ee mixed-pole pieces     -> C_B_hh / C_B_ee
+! which gives C = 2 Xi in the default symmetric gauge.
+!
+! IMPORTANT: the full Hermitian resolvent also generates completion terms
+! such as beta_gamma**2 D^T R D, higher powers of C, and mixed C-D terms.
+! These terms are not present in the parent Schwinger-Dyson parquet
+! self-energy and should be regarded as additional PSD completion terms,
+! not as an exact rewriting of parquet beyond the explicitly matched terms.
 !
 ! Internal denominators entering the D corrections can be regularized
 ! with the same one-body SRG prescription as the parent parquet
@@ -139,7 +161,7 @@ subroutine G_ADC_Parquet(reg_PA,eta_1b,                              &
     stop
   end if
 
-! Parent-one-pole matching: 2 alpha_gamma beta_gamma = 1.
+! Symmetrized one-pole matching: alpha_gamma beta_gamma = 1/2.
 
   betaBm  = 1d0/(2d0*alphaBm )
   betaEhm = 1d0/(2d0*alphaEhm)
@@ -191,7 +213,7 @@ subroutine G_ADC_Parquet(reg_PA,eta_1b,                              &
 
   write(*,*)
   write(*,*)'***********************************************'
-  write(*,*)'* Full generalized Hermitian ADC-Parquet     *'
+  write(*,*)'* Generalized PSD ADC-Parquet completion       *'
   write(*,*)'***********************************************'
   write(*,'(1X,A24,I10)') 'B- dimension       =',nBm
   write(*,'(1X,A24,I10)') 'eh- dimension      =',nEhm
@@ -206,6 +228,7 @@ subroutine G_ADC_Parquet(reg_PA,eta_1b,                              &
   write(*,*)
 
   write(*,*)'ADC gauge parameters:'
+  write(*,*)'Symmetrized matching: alpha_gamma*beta_gamma = 1/2'
   write(*,'(1X,A8,3(1X,F12.8))') 'alpha - ',alphaBm,alphaEhm,alphaHhm
   write(*,'(1X,A8,3(1X,F12.8))') 'beta  - ',betaBm,betaEhm,betaHhm
   write(*,'(1X,A8,3(1X,F12.8))') 'alpha + ',alphaBp,alphaEhp,alphaEep
