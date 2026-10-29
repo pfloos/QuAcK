@@ -19,7 +19,7 @@ program QuAcK
   logical                       :: docG0W0,docG0F2,doscGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
-  logical                       :: doevParquet,doqsParquet
+  logical                       :: doevParquet,doqsParquet,doGWParquet
   logical                       :: do_IPEA_ADC2,do_IPEA_ADC3
   logical                       :: do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2
   logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2
@@ -206,7 +206,7 @@ program QuAcK
                     doscGW,doscGF2,                                               &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                        &
                     doG0T0eh,doevGTeh,doqsGTeh,                                   &
-                    doevParquet,doqsParquet,                                      &
+                    doevParquet,doqsParquet,doGWParquet,                          &
                     do_IPEA_ADC2,do_IPEA_ADC3,                                    & 
                     do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                        & 
                     do_ADC_GW,do_ADC_2SOSEX,                                      &
@@ -331,9 +331,13 @@ program QuAcK
   end if
 
 ! Read occupations for MOM or initialize as 1,...,nO
-
-  allocate(mom_occupations(maxval(nO),nspin)) 
-  call read_mom_occupations(working_dir,nO,doMOM,mom_occupations)
+  if(doGHF) then
+    allocate(mom_occupations(sum(nO),nspin)) 
+    call read_mom_occupations(working_dir,[sum(nO),sum(nO)],doMOM,mom_occupations)
+  else
+    allocate(mom_occupations(maxval(nO),nspin)) 
+    call read_mom_occupations(working_dir,nO,doMOM,mom_occupations)
+  end if
 
 ! Read integrals
 
@@ -384,6 +388,12 @@ program QuAcK
   doBQuAcK = .false.
   if(doRHFB .or. doBRPA) doBQuAcK = .true.
 
+! GW-Parquet is defined for a real, fixed RHF reference in the standard driver.
+  if(doGWParquet) then
+    if(.not.doRHF .or. docRHF .or. doROHF .or. doeRHF .or. doOO .or. switch_hpc) &
+      error stop 'GW-Parquet requires RHF and the standard restricted driver'
+  end if
+
 !-----------------!
 ! Initialize Test !
 !-----------------!
@@ -415,7 +425,7 @@ program QuAcK
                   doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                            &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doG0W0,doevGW,doqsGW,                                     &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet,     &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          &
@@ -457,13 +467,14 @@ program QuAcK
 !--------------------------!
 
   if(doGQuAcK) & 
-    call GQuAcK(working_dir,doGtest,doGHF,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
+    call GQuAcK(working_dir,doGtest,doGHF,doMOM,dostab,dosearch,readFCIDUMP,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT, &
                 dodrCCD,dorCCD,docrCCD,dolCCD,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,                     &
                 doG0W0,doevGW,doqsGW,doG0F2,doevGF2,doqsGF2,doG0F3,dopsdG0F3,                            &
                 doG0T0pp,doevGTpp,doqsGTpp,doG0T0eh,doevParquet,doqsParquet,                             & 
                 do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                         &
                 do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2,                          &
                 nNuc,nBas,sum(nC),sum(nO),sum(nV),sum(nR),ENuc,ZNuc,rNuc,S,T,V,Hc,X,dipole_int_AO,       &
+                mom_occupations,writeMOs,                                                                &
                 maxSCF_HF,max_diis_HF,thresh_HF,level_shift,guess_type,mix,reg_MP,                       &
                 maxSCF_CC,max_diis_CC,thresh_CC,TDA,nfreqs,wcoord,wweight,                               &
                 max_iter_OO,thresh_OO,dRPA_OO,mu_OO,diagHess_OO,                                         & 

@@ -1,5 +1,5 @@
 subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
-                    nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
+                       nOrb,nC,nO,nV,nR,nS,EGHF,eHF,ERI)
 
 ! Parquet approximation with eigenvalue self-consistency based on spin orbitals
 
@@ -10,6 +10,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
   logical                       :: print_phLR = .false. ! Print the eh two-body excitations at each two-body iterations
   logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
+  logical                       :: do_ADC_self_energy = .true. ! Use Hermitian PSD ADC-Parquet
   
 ! Input variables
 
@@ -62,6 +63,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   double precision,allocatable  :: eQPlin(:),eQP(:),eOld(:)
   double precision,allocatable  :: SigC(:)
   double precision,allocatable  :: Z(:)
+  double precision,allocatable  :: eADC(:),ZADC(:)
   double precision              :: EcGM
   ! DIIS
   integer                       :: n_diis_1b,n_diis_2b
@@ -140,9 +142,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   
 ! Memory allocation
   
-  allocate(eQP(nOrb),eOld(nOrb))
+  allocate(eQP(nOrb),eOld(nOrb),eADC(nOrb),ZADC(nOrb))
 
-  mem = mem + size(eQP) + size(eOld)
+  mem = mem + size(eQP) + size(eOld) + size(eADC) + size(ZADC)
 
   allocate(old_eh_Om(nS),old_ee_Om(nVV),old_hh_Om(nOO))
   allocate(eh_rho(nOrb,nOrb,nS),ee_rho(nOrb,nOrb,nVV),hh_rho(nOrb,nOrb,nOO))
@@ -158,8 +160,10 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   n_it_1b = 0
   err_1b  = 1d0
     
-  eQP(:)  = eHF(:)
-  eOld(:) = eHF(:)
+  eQP(:)   = eHF(:)
+  eOld(:)  = eHF(:)
+  eADC(:)  = eHF(:)
+  ZADC(:)  = 1d0
   
   eh_rho(:,:,:) = 0d0
   ee_rho(:,:,:) = 0d0
@@ -365,25 +369,23 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for eh integrals =',t,' seconds'
       write(*,*)
 
-      ! Done with eigenvectors and kernel
-
-      deallocate(XpY,XmY)
-
+      ! Done with eh eigenvectors
       mem = mem - size(XpY) - size(XmY)
-      write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
+      deallocate(XpY,XmY)
 
       ! Build singlet pp integrals
       write(*,*) 'Computing pp screened integrals...'
 
       call wall_time(start_t)
-      call G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,old_eh_Phi,X1,Y1,ee_rho,X2,Y2,hh_rho)
+      call G_pp_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,old_eh_Phi, &
+                            X1,Y1,ee_rho,X2,Y2,hh_rho)
       call wall_time(end_t)
       t = end_t - start_t
-      ! Done with eigenvectors and kernel
 
+      ! Done with pp eigenvectors
+      mem = mem - size(X1) - size(Y1) - size(X2) - size(Y2)
       deallocate(X1,Y1,X2,Y2)
 
-      mem = mem - size(X1) - size(Y1) - size(X2) - size(Y2)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for pp integrals =',t,' seconds'
@@ -423,9 +425,10 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       err_eh = maxval(abs(eh_Phi - old_eh_Phi))
       err_pp = maxval(abs(pp_Phi - old_pp_Phi))
 
+
       call wall_time(start_t)
       write(*,*) 'Extrapolating two-body kernels...'
-      alpha = 0.33d0
+      alpha = 1d0
       eh_Phi(:,:,:,:) = alpha * eh_Phi(:,:,:,:) + (1d0 - alpha) * old_eh_Phi(:,:,:,:)
       pp_Phi(:,:,:,:) = alpha * pp_Phi(:,:,:,:) + (1d0 - alpha) * old_pp_Phi(:,:,:,:)
 
@@ -538,33 +541,61 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     mem = mem + size(eQPlin) + size(Z) + size(SigC)
     write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
-    write(*,*) 'Computing self-energy...'
-    write(*,*) 
-    
-    call wall_time(start_t)
-    call G_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
-                               eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
-    call wall_time(end_t)
-    t = end_t - start_t
-    write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
-    write(*,*)
+    if(do_ADC_self_energy) then
 
-    eQPlin(:) = eHF(:) + Z(:)*SigC(:)
-    
-    ! Solve the quasi-particle equation
+      write(*,*) 'Building full Hermitian PSD ADC-Parquet matrix...'
+      write(*,*)
 
-    if(linearize) then
+      call wall_time(start_t)
+      call G_ADC_Parquet(reg_PA,eta_1b,                                &
+                         nOrb,nC,nO,nV,nR,nS,nOO,nVV,                  &
+                         eHF,eOld,ERI,                                 &
+                         old_eh_Om,eh_rho,                             &
+                         old_ee_Om,ee_rho,old_hh_Om,hh_rho,            &
+                         eADC,ZADC)
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'
+      write(*,*)
 
-       eQP(:) = eQPlin(:)
+      eQP(:)    = eADC(:)
+      Z(:)      = ZADC(:)
+      eQPlin(:) = eADC(:)
+
+      ! Kept only for compatibility with G_print_parquet_1b.
+      SigC(:) = eQP(:) - eHF(:)
+      EcGM    = 0d0
 
     else
 
+      write(*,*) 'Computing self-energy...'
       write(*,*)
-      write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-      write(*,*)'  Newton-Raphson for Dyson equation not implemented  '
-      write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+
+      call wall_time(start_t)
+!     call G_Parquet_self_energy_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+!                                     eh_rho,old_eh_Om,ee_rho,old_ee_Om,hh_rho,old_hh_Om,EcGM,SigC,Z)
+
+      call G_Parquet_self_energy_alt_diag(eta_1b,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eOld,ERI, &
+                                          eh_rho,old_eh_Om,ee_rho,old_ee_Om,           &
+                                          hh_rho,old_hh_Om,EcGM,SigC,Z)
+
+      call wall_time(end_t)
+      t = end_t - start_t
+      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for self energy =',t,' seconds'
       write(*,*)
-      stop
+
+      eQPlin(:) = eHF(:) + Z(:)*SigC(:)
+
+      if(linearize) then
+        eQP(:) = eQPlin(:)
+      else
+        write(*,*)
+        write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+        write(*,*)'  Newton-Raphson for Dyson equation not implemented  '
+        write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+        write(*,*)
+        stop
+      end if
 
     end if
 

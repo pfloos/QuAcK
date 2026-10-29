@@ -96,7 +96,7 @@ subroutine print_MOM_RHF(nBas, nOrb, nO, eHF, cHF, ENuc, ET, EV, EJ, EK, ERHF, d
   call vecout(nOrb - nO, eHF(virtual(:)))
   write(*,*)
   
-  print *, "Orbital occupations for MOMRHF:"
+  print *, "Orbital occupations for MOM-RHF:"
   print *, occupations(:)
   print *, ""
   

@@ -52,7 +52,7 @@ subroutine RCC(dotest,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,dodrCCD,dorCCD,docrCCD,d
   if(doCCD) then
 
     call wall_time(start_CC)
-    call CCD(dotest,maxSCF,thresh,max_diis,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
+    call R_CCD(dotest,maxSCF,thresh,max_diis,nOrb,nC,nO,nV,nR,ERI_MO,ENuc,ERHF,eHF)
     call wall_time(end_CC)
 
     t_CC = end_CC - start_CC

@@ -59,7 +59,7 @@ subroutine MOM_phURPAx(dotest,TDA,doACFDT,exchange_kernel,spin_conserved,spin_fl
  
   write(*,*)
   write(*,*)'***************************************'
-  write(*,*)'* Unrestricted CVS ph-RPA Calculation *'
+  write(*,*)'* Unrestricted MOM ph-RPA Calculation *'
   write(*,*)'***************************************'
   write(*,*)
 
