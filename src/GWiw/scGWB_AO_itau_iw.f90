@@ -261,6 +261,7 @@ subroutine scGWB_AO_itau_iw(nBas,nOrb,nOrb_twice,maxSCF,thresh_in,maxDIIS,dolinG
 
  ! Initialize arrays
  DeltaG_ao_iw(:,:,:)=czero
+ Ecore=0d0; Eh=0d0; Ex=0d0; Epair=0d0;
  Mat1(1:nOrb,1:nOrb)=U_QP(1:nOrb,1:nOrb)
  Mat2(1:nOrb,1:nOrb)=U_QP(nOrb+1:nOrb_twice,1:nOrb)
  R_ao_hfb(1:nBas           ,1:nBas           ) = 0.5d0*P_in(1:nBas,1:nBas)
