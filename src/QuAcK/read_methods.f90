@@ -12,7 +12,7 @@ subroutine read_methods(working_dir,                                            
                         doscGW,doscGF2,                                               & 
                         doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                        &
                         doG0T0eh,doevGTeh,doqsGTeh,                                   &
-                        doevParquet,doqsParquet,                                      &
+                        doevParquet,doqsParquet,doGWParquet,                          &
                         do_IPEA_ADC2,do_IPEA_ADC3,                                    &
                         do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                        &
                         do_ADC_GW,do_ADC_2SOSEX,                                      &
@@ -40,7 +40,7 @@ subroutine read_methods(working_dir,                                            
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doscGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
-  logical,intent(out)           :: doevParquet,doqsParquet
+  logical,intent(out)           :: doevParquet,doqsParquet,doGWParquet
   logical,intent(out)           :: do_IPEA_ADC2,do_IPEA_ADC3
   logical,intent(out)           :: do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2
   logical,intent(out)           :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2
@@ -52,6 +52,7 @@ subroutine read_methods(working_dir,                                            
   character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
   integer                       :: status
   character(len=256)            :: file_path
+  character(len=1024)           :: parquet_line
 
 
   file_path = trim(working_dir) // '/input/methods'
@@ -231,12 +232,20 @@ subroutine read_methods(working_dir,                                            
 
       doevParquet = .false.
       doqsParquet = .false.
+      doGWParquet = .false.
 
       read(1,*)
-      read(1,*) ans1,ans2
+      read(1,'(A)') parquet_line
+      ans3='F'
+      read(parquet_line,*,iostat=status) ans1,ans2,ans3
+      if(status /= 0) then
+        ans3='F'
+        read(parquet_line,*) ans1,ans2
+      end if
       if(ans1 == 'T') doevParquet = .true.
       if(ans2 == 'T') doqsParquet = .true.
- 
+      if(ans3 == 'T') doGWParquet = .true.
+
       ! Read ADC methods - Take 1
      
       do_IPEA_ADC2  = .false. 

@@ -2,7 +2,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                    &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doG0W0,doevGW,doqsGW,                                     &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,                 & 
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet,     &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          & 
@@ -51,7 +51,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
   logical,intent(in)            :: doCAP
-  logical,intent(in)            :: doevParquet,doqsParquet
+  logical,intent(in)            :: doevParquet,doqsParquet,doGWParquet
   logical,intent(in)            :: do_IPEA_ADC2,do_IPEA_ADC3
   logical,intent(in)            :: do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2
   logical,intent(in)            :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2
@@ -175,7 +175,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   integer                       :: ixyz
   integer                       :: nS
   complex*16,allocatable        :: complex_ERI_MO(:,:,:,:)
-  double precision,allocatable  :: eGW(:)
+  double precision,allocatable  :: eGW(:),eGWPA(:),ZGWPA(:)
 
   logical                       :: doRDMs_numerically = .false.
   double precision,intent(inout):: wcoord(nfreqs)
@@ -676,12 +676,12 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
 ! GW module !
 !-----------!
 
-  doGW = doG0W0 .or. doevGW .or. doqsGW .or. docG0W0 
+  doGW = (doG0W0 .and. .not.doGWParquet) .or. doevGW .or. doqsGW .or. docG0W0
 
   if(doGW .and. .not. docRHF) then
     
     call wall_time(start_GW)
-    call RGW(dotest,doG0W0,doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                                & 
+    call RGW(dotest,(doG0W0 .and. .not.doGWParquet),doevGW,doqsGW,maxSCF_GW,thresh_GW,max_diis_GW,                                &
              doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
              lin_GW,eta_GW,reg_GW,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,   &
              V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,FHF,cHF,eHF,eGW)
@@ -764,6 +764,19 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
 !----------------!
 ! Parquet module !
 !----------------!
+
+  if(doGWParquet) then
+    call wall_time(start_Parquet)
+    allocate(eGWPA(nOrb),ZGWPA(nOrb))
+    call R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,lin_parquet, &
+                      reg_1b,reg_2b,reg_PA,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF, &
+                      ERI_MO,dipole_int_MO,eHF,eGW,eGWPA,ZGWPA)
+    deallocate(eGWPA,ZGWPA)
+    call wall_time(end_Parquet)
+    t_Parquet=end_Parquet-start_Parquet
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for single-shot GW-Parquet = ',t_Parquet,' seconds'
+    write(*,*)
+  end if
 
   if(doevParquet) then
     call wall_time(start_Parquet)
