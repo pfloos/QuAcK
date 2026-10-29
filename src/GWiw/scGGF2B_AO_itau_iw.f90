@@ -255,6 +255,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
 
  ! Initialize arrays
  DeltaG_ao_iw(:,:,:)=czero
+ Ehfbl=0d0; Ecore=0d0; Ehx=0d0; Epair=0d0;
  Mat1(1:nOrb2,1:nOrb2)=Gen_U_QP(1:nOrb2      ,1:nOrb2)        ! \bar{V}
  Mat2(1:nOrb2,1:nOrb2)=Gen_U_QP(nOrb2+1:nOrb4,1:nOrb2)        ! \bar{U}
  do iorb=1,nOrb2
@@ -374,7 +375,7 @@ subroutine scGGF2B_AO_itau_iw(nBas2,nBas4,nOrb2,nOrb4,maxSCF,thresh_in,maxDIIS,r
 
  ! If required, read restart files
  if(restart_scGF2B) then
-  inquire(file='read_HFB_scGWB', exist=file_exists)
+  inquire(file='read_HFB_scGF2B', exist=file_exists)
   read_HFB_chkp=.false.
   if(file_exists) read_HFB_chkp=.true.
   call read_scGXB_restart(nBas4,nfreqs,ntimes_twice,chem_pot,Gen_R_ao,Gen_R_ao_hfb,G_ao_iw_hfb,G_ao_itau,G_ao_itau_hfb,read_HFB_chkp)
