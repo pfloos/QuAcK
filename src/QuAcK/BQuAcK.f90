@@ -159,7 +159,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
     do jorb=1,nBas
      do korb=1,nBas
       do lorb=1,nBas
-       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+       vMAT(1+(korb-1)+(iorb-1)*nBas,1+(lorb-1)+(jorb-1)*nBas)=ERI_AO(iorb,jorb,korb,lorb)
       enddo
      enddo
     enddo
@@ -331,7 +331,7 @@ subroutine BQuAcK(working_dir,dotest,doaordm,doRHFB,doBRPA,dophRPA,dophRPAx,doMP
     do jorb=1,nBas
      do korb=1,nBas
       do lorb=1,nBas
-       vMAT(1+(korb-1)+(iorb-1)*nOrb,1+(lorb-1)+(jorb-1)*nOrb)=ERI_AO(iorb,jorb,korb,lorb)
+       vMAT(1+(korb-1)+(iorb-1)*nBas,1+(lorb-1)+(jorb-1)*nBas)=ERI_AO(iorb,jorb,korb,lorb)
       enddo
      enddo
     enddo

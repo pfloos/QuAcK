@@ -268,6 +268,9 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA
 
  ! Initialize arrays
  DeltaG_ao_iw=czero  ! Initialize DeltaG(i w) [ it will be G(i w) - Go(i w) ]  
+ Ehcore=0d0
+ Ehartree=0d0
+ Ex=0d0
  G_ao_itau=czero
  err_diis=czero
  err_diis2=czero
@@ -371,6 +374,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA
   P_ao_iter=P_ao
   G_ao_itau_old(:,:,:)=G_ao_itau(:,:,:)
  endif
+ G_ao_iw_old(:,:,:)=G_ao_iw_hf(:,:,:)+DeltaG_ao_iw(:,:,:)
 
 !-----------!
 ! scGW loop !
@@ -905,7 +909,7 @@ subroutine scGW_AO_itau_iw(nBas,nOrb,nO,maxSCF,thresh_in,maxDIIS,dolinGW,dophRPA
   enddo
 
   write(*,*)
-  write(*,'(a,f15.8)')        ' Trace Go      ',2d0*trace_1_rdm
+  write(*,'(a,f15.8)')        ' Trace Go      ',trace_1_rdm
   write(*,'(a,f15.8)')        ' Chem. Pot.    ',chem_pot
   write(*,'(a,f15.8)')        ' Enuc          ',ENuc
   write(*,'(a,f15.8)')        ' Ehcore        ',Ehcore
