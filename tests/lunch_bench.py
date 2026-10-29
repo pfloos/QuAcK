@@ -40,8 +40,7 @@ python_version_full = platform.python_version_tuple()
 PYTHON_VERSION = "{}.{}".format(python_version_full[0], python_version_full[1])
 
 
-print(f"The current date and time is {
-      current_date.strftime('%Y-%m-%d %H:%M:%S')}")
+print(f"The current date and time is {current_date.strftime('%Y-%m-%d %H:%M:%S')}")
 print(f"User Name: {user_name}")
 print(f"Operating System: {os_name} {os_release} ({os_version})")
 print(f"CPU: {processor} ({machine})")
@@ -159,13 +158,11 @@ class Quack_Job:
             spinner = ['|', '/', '-', '\\']
             idx = 0
             while not done_event.is_set():
-                stdout_col(f'\r    Testing {self.methd} ({self.basis}) {
-                           spinner[idx]}', "cyan")
+                stdout_col(f'\r    Testing {self.methd} ({self.basis}) {spinner[idx]}', "cyan")
                 sys.stdout.flush()
                 idx = (idx + 1) % len(spinner)
                 time.sleep(0.05)
-            stdout_col(f'\r    Testing {self.methd} ({
-                       self.basis})    \n\n', "cyan")
+            stdout_col(f'\r    Testing {self.methd} ({self.basis})    \n\n', "cyan")
 
         done_event = threading.Event()
         spinner_thread = threading.Thread(target=display_spinner)
@@ -231,8 +228,7 @@ class Quack_Job:
                     if (diff <= THRESH):
                         print_col(f"        🙂 {key}", "green")
                     else:
-                        print_col(f"        ☹️  {key}: ❌ {
-                                  data_ref[key]} ≠ {data_new[key]}", "red")
+                        print_col(f"        ☹️  {key}: ❌ {data_ref[key]} ≠ {data_new[key]}", "red")
                         test_failed_ = True
         except FileNotFoundError:
             print_col(f"Error: The file '{filepath}' does not exist.", "red")
