@@ -315,4 +315,6 @@ libraries and the same BLAS/LAPACK libraries used by QuAcK.
 ## TDA Faddeev-Parquet
 
 Restricted and generalized TDA self-energies with ADC(3) external couplings
-are available through `evParquet`. See [usage, equations, and checks](docs/TDA_Faddeev_Parquet.md).
+are available through `evParquet`. A matrix-free harmonic Davidson solver
+targets the principal IP by default; `do_principal_IP=.false.` restores the
+full spectrum. See [usage, equations, and checks](docs/TDA_Faddeev_Parquet.md).

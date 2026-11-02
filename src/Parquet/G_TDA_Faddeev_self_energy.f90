@@ -56,6 +56,7 @@ subroutine G_TDA_Faddeev_build(reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH
   integer :: noact,nvact,nphys,nm,np,p,q,i,j,k,l,a,b,c,d,r,s,ij,kl,ab,cd
   integer,allocatable :: ph(:,:),hh(:,:),ee(:,:),minus(:,:),plus(:,:),phys(:)
   double precision :: x,asym
+  double precision,allocatable :: Um(:,:),Up(:,:)
 
   noact=nO-nC
   nvact=nOrb-nR-nO
@@ -113,6 +114,9 @@ subroutine G_TDA_Faddeev_build(reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH
     phys(p)=p
     if(spin_block==1) phys(p)=2*p-1
   end do
+  allocate(Um(nm,nphys),Up(np,nphys))
+  call G_TDA_Faddeev_vertices(reg_PA,eta,nOrb,nOrb,nC,nO,nR,nphys,nm,np, &
+                              phys,minus,plus,eQP,ERI,Um,Up)
   H=0d0
   do p=1,nphys
     H(p,p)=eHF(phys(p))
@@ -133,21 +137,8 @@ subroutine G_TDA_Faddeev_build(reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH
       H(nphys+r,nphys+s)=H(nphys+r,nphys+s)+x
     end do
     do q=1,nphys
-      p=phys(q)
-      if(p<=nC.or.p>nOrb-nR) cycle
-      x=v(i,j,p,a)
-      do c=nO+1,nOrb-nR
-        do d=c+1,nOrb-nR
-          x=x+v(c,d,p,a)*v(i,j,c,d)*inv(eQP(i)+eQP(j)-eQP(c)-eQP(d))
-        end do
-      end do
-      do k=nC+1,nO
-        do c=nO+1,nOrb-nR
-          x=x-v(c,j,p,k)*v(i,k,c,a)*inv(eQP(i)+eQP(k)-eQP(c)-eQP(a)) &
-             +v(c,i,p,k)*v(j,k,c,a)*inv(eQP(j)+eQP(k)-eQP(c)-eQP(a))
-        end do
-      end do
-      H(q,nphys+r)=x; H(nphys+r,q)=x
+      H(q,nphys+r)=Um(r,q)
+      H(nphys+r,q)=Um(r,q)
     end do
   end do
 
@@ -166,21 +157,8 @@ subroutine G_TDA_Faddeev_build(reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH
       H(nphys+nm+r,nphys+nm+s)=H(nphys+nm+r,nphys+nm+s)+x
     end do
     do q=1,nphys
-      p=phys(q)
-      if(p<=nC.or.p>nOrb-nR) cycle
-      x=v(a,b,p,i)
-      do k=nC+1,nO
-        do l=k+1,nO
-          x=x-v(k,l,p,i)*v(a,b,k,l)*inv(eQP(a)+eQP(b)-eQP(k)-eQP(l))
-        end do
-      end do
-      do k=nC+1,nO
-        do c=nO+1,nOrb-nR
-          x=x+v(k,b,p,c)*v(a,c,k,i)*inv(eQP(a)+eQP(c)-eQP(k)-eQP(i)) &
-             -v(k,a,p,c)*v(b,c,k,i)*inv(eQP(b)+eQP(c)-eQP(k)-eQP(i))
-        end do
-      end do
-      H(q,nphys+nm+r)=x; H(nphys+nm+r,q)=x
+      H(q,nphys+nm+r)=Up(r,q)
+      H(nphys+nm+r,q)=Up(r,q)
     end do
   end do
   if(.not.all(ieee_is_finite(H))) error stop 'TDA Faddeev: nonfinite matrix'
@@ -194,25 +172,7 @@ contains
     integer,intent(in) :: t
     spin=1-2*mod(t-1,2)
   end function
-  double precision function v(t,u,w,z)
-    integer,intent(in) :: t,u,w,z
-    v=ERI(t,u,w,z)-ERI(t,u,z,w)
-  end function
-  double precision function inv(den)
-    double precision,intent(in) :: den
-    double precision :: y
-    if(reg_PA) then
-      y=2d0*eta*den**2
-      if(y<1d-5) then
-        inv=2d0*eta*den*(1d0-y/2d0+y*y/6d0)
-      else
-        inv=(1d0-exp(-y))/den
-      end if
-    else
-      if(abs(den)<1d-12) error stop 'TDA Faddeev: singular ADC(3) endpoint denominator'
-      inv=1d0/den
-    end if
-  end function
+
 end subroutine
 
 subroutine G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
@@ -261,4 +221,95 @@ subroutine G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
   do p=nC+1,nOrb-nR
     write(*,'(I7,3F20.10)') p,eHF(p)*HaToeV,ePA(p)*HaToeV,ZPA(p)
   end do
+end subroutine
+
+subroutine G_TDA_Faddeev_vertices(reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np, &
+                                 phys,minus,plus,eQP,ERI,Um,Up)
+! ADC(3) endpoints shared by the dense and matrix-free implementations.
+! nERI=nOrb: general spin-orbital ERIs; 2*nERI=nOrb: spatial Coulomb
+! integrals with interleaved alpha/beta spin indices. Cache MP2 amplitudes
+! once instead of evaluating the same denominators for every external p.
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+  implicit none
+  logical,intent(in) :: reg_PA
+  integer,intent(in) :: nERI,nOrb,nC,nO,nR,nphys,nm,np
+  integer,intent(in) :: phys(nphys),minus(3,nm),plus(3,np)
+  double precision,intent(in) :: eta,eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
+  double precision,intent(out) :: Um(nm,nphys),Up(np,nphys)
+  double precision,allocatable :: t2(:,:,:,:)
+  double precision :: x
+  integer :: i,j,k,l,a,b,c,d,p,q,r
+  if(nERI/=nOrb.and.2*nERI/=nOrb) error stop 'Faddeev vertices: invalid ERI dimension'
+  if(reg_PA.and.(eta<=0d0.or..not.ieee_is_finite(eta))) error stop 'Faddeev vertices: invalid SRG flow'
+  allocate(t2(nC+1:nO,nC+1:nO,nO+1:nOrb-nR,nO+1:nOrb-nR))
+  do b=nO+1,nOrb-nR
+    do a=nO+1,nOrb-nR
+      do j=nC+1,nO
+        do i=nC+1,nO
+          t2(i,j,a,b)=v(i,j,a,b)*inv(eQP(i)+eQP(j)-eQP(a)-eQP(b))
+        end do
+      end do
+    end do
+  end do
+  Um=0d0; Up=0d0
+  do q=1,nphys
+    p=phys(q)
+    if(p<=nC.or.p>nOrb-nR) cycle
+    do r=1,nm
+      i=minus(1,r); j=minus(2,r); a=minus(3,r)
+      x=v(i,j,p,a)
+      do c=nO+1,nOrb-nR
+        do d=c+1,nOrb-nR
+          x=x+v(c,d,p,a)*t2(i,j,c,d)
+        end do
+      end do
+      do k=nC+1,nO
+        do c=nO+1,nOrb-nR
+          x=x-v(c,j,p,k)*t2(i,k,c,a)+v(c,i,p,k)*t2(j,k,c,a)
+        end do
+      end do
+      Um(r,q)=x
+    end do
+    do r=1,np
+      i=plus(1,r); a=plus(2,r); b=plus(3,r)
+      x=v(a,b,p,i)
+      do k=nC+1,nO
+        do l=k+1,nO
+          x=x+v(k,l,p,i)*t2(k,l,a,b)
+        end do
+      end do
+      do k=nC+1,nO
+        do c=nO+1,nOrb-nR
+          x=x-v(k,b,p,c)*t2(k,i,a,c)+v(k,a,p,c)*t2(k,i,b,c)
+        end do
+      end do
+      Up(r,q)=x
+    end do
+  end do
+contains
+  double precision function v(t,u,w,z)
+    integer,intent(in) :: t,u,w,z
+    if(nERI==nOrb) then
+      v=ERI(t,u,w,z)-ERI(t,u,z,w)
+    else
+      v=0d0
+      if(mod(t-w,2)==0.and.mod(u-z,2)==0) v=ERI((t+1)/2,(u+1)/2,(w+1)/2,(z+1)/2)
+      if(mod(t-z,2)==0.and.mod(u-w,2)==0) v=v-ERI((t+1)/2,(u+1)/2,(z+1)/2,(w+1)/2)
+    end if
+  end function
+  double precision function inv(den)
+    double precision,intent(in) :: den
+    double precision :: y
+    if(reg_PA) then
+      y=2d0*eta*den**2
+      if(y<1d-5) then
+        inv=2d0*eta*den*(1d0-y/2d0+y*y/6d0)
+      else
+        inv=(1d0-exp(-y))/den
+      end if
+    else
+      if(abs(den)<1d-12) error stop 'Faddeev vertices: singular ADC(3) denominator'
+      inv=1d0/den
+    end if
+  end function
 end subroutine

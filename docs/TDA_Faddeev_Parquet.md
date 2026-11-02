@@ -23,10 +23,12 @@ just like the previous ADC-Parquet switch:
 ```fortran
 logical :: do_ADC_self_energy = .false.
 logical :: do_Faddeev_self_energy = .true.
+logical :: do_principal_IP = .true.
 ```
 
-TDA Faddeev-Parquet is enabled by default in both drivers. Rebuild QuAcK
-after changing either switch, then launch PyDuck or QuAcK normally.
+The matrix-free principal-IP mode is enabled by default in both drivers.
+Set `do_principal_IP=.false.` for the full spectrum. Rebuild QuAcK after
+changing these switches, then launch PyDuck or QuAcK normally.
 
 Both `TDAeh` and `TDApp` must be `T`; the driver rejects other values.
 The method uses the existing `evParquet` switch and its pair iterations,
@@ -38,17 +40,49 @@ the reported pair convergence. Fixed unconverged snapshots can differ
 between R and G when DIIS uses different residual metrics; compare fixed
 snapshots with `max_diis_2b=1`.
 
-The full upfolded matrix is diagonalized, so `lin_parquet` is unused in this
-path. More than one one-body iteration feeds the dominant poles back into
-the existing eigenvalue-self-consistent parquet loop. For one evaluation,
-the inherited driver may report one-body nonconvergence because an energy
-update was intentionally not iterated.
+`lin_parquet` is unused in either Faddeev solver. Principal-IP mode requires
+`max_it_1b=1`: the driver returns the IP without feeding a partial orbital
+energy array into one-body self-consistency. Pair iterations are unchanged.
+In full-spectrum mode, more than one one-body iteration feeds all dominant
+poles into the existing eigenvalue-self-consistent parquet loop.
 
 To select the previous ADC-Parquet self-energy, set
 `do_ADC_self_energy=.true.` and `do_Faddeev_self_energy=.false.`.
 Set both to `.false.` for the native parquet self-energy. Setting both to
 `.true.` is rejected. These switches apply to the R/G `evParquet` drivers,
 not `qsParquet` or `R_GW_Parquet`.
+
+## Matrix-free principal IP
+
+`TDA_Faddeev_IP.f90` applies the same physical upfolded matrix using pair
+contractions. Both 2h1p and 2p1h branches and the full one-particle block
+are retained. The charged matrix is never built. Endpoint vertices are
+cached, and their MP2 denominators are evaluated once. The R solver passes
+spatial ERIs directly and applies spin deltas without constructing a
+four-index spin-orbital ERI tensor.
+
+The block harmonic Davidson solver starts from the entire active HF HOMO
+manifold and up to two neighboring occupied orbitals. Candidate selection
+uses HOMO-subspace weight, with previous-vector overlap breaking near ties,
+and excludes poles above the HF gap midpoint. Several candidates are kept
+through a thick restart. Defaults in `davidson` are a 96-vector subspace,
+256 iterations, and a residual tolerance of `1e-8` Ha; the diagonal
+preconditioner uses a `0.05` Ha denominator floor. The final residual is
+checked with a fresh matrix-vector product. Failure is reported explicitly;
+there is no automatic dense fallback.
+
+Output contains the IP, negative-energy pole, total one-particle weight Z,
+HOMO-subspace weight, residual, iteration/product counts, and separate setup
+and solve timings. This targets the principal HOMO-connected ionization.
+It does not search every cation state: if orbital ordering changes or HOMO
+character fragments strongly, compare the full spectrum. A degenerate or
+split HOMO manifold is treated as a block; the smallest IP among its
+converged selected roots is reported.
+
+At fixed subspace and orbital counts, solver storage grows linearly with
+the charged dimension, rather than quadratically. Pair kernels and cached
+external vertices still consume memory; the existing parquet pair solves
+and four-index reducible vertices are unchanged.
 
 ## Matrix and conventions
 
@@ -86,8 +120,8 @@ orbitals and constructs only the alpha charged determinant block
 one-particle space for spin-invariant inputs. This exact representation
 shares the G endpoint implementation; it does not average screened
 singlet and triplet kernels. Spatial external orbitals and their weights
-are returned once. The implementation uses dense matrices and is intended
-initially for small test systems.
+are returned once. The full-spectrum solver uses dense matrices; the
+principal-IP solver uses this same spin representation with pair contractions.
 
 Frozen occupied orbitals and removed virtual orbitals are excluded from
 all internal pairs and external correlations. Output includes significant
@@ -122,15 +156,19 @@ the physical reduction avoids its extra sectors and normalization issues.
 Algebraic regression checks cover the matrix and external couplings
 against QuAcK's existing `G_IPEA_ADC3`, R/G spin reconstruction, active
 spaces and empty triplet sectors, the exact Faddeev intertwining identity
-for both branches with dense dressed kernels, and SRG limits:
+for both branches with dense dressed kernels, and SRG limits. They also
+compare matrix-free products and diagonals with the dense construction,
+principal roots and residues with dense eigenpairs, split HOMO manifolds,
+forced thick restart, and explicit nonconvergence:
 
 ```sh
 python tests/check_tda_faddeev.py --workdir /tmp/new-algebraic-checks
 ```
 
 Build QuAcK first; the check requires NumPy and gfortran. Set `FC` and
-`LAPACK_LIBS` if necessary. The molecular test script requires PySCF and
-runs H2O/6-31G and H2/STO-3G, with logs retained:
+`LAPACK_LIBS` if necessary. The full-spectrum molecular test script requires
+PySCF and a build with `do_principal_IP=.false.` in both drivers. It runs
+H2O/6-31G and H2/STO-3G, with logs retained:
 
 ```sh
 python tests/check_tda_faddeev_molecules.py --workdir /tmp/new-molecular-checks

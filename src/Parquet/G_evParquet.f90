@@ -12,6 +12,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
   logical                       :: do_ADC_self_energy = .false. ! Use Hermitian PSD ADC-Parquet
   logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet with ADC(3) couplings
+  logical                       :: do_principal_IP = .true. ! Matrix-free HOMO-targeted Davidson; fixed one-body energies
   
 ! Input variables
 
@@ -30,6 +31,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   double precision,intent(in)   :: ERI(nOrb,nOrb,nOrb,nOrb)
 
 ! Local variables
+
+  double precision              :: ip_omega,ip_Z,ip_homo,ip_residual
+  integer                       :: ip_info
 
   double precision,allocatable  :: F_eh(:,:),F_hh(:,:),F_ee(:,:)
 
@@ -93,6 +97,8 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     error stop 'Select only one of ADC-Parquet and TDA Faddeev-Parquet'
   if(do_Faddeev_self_energy) then
     if(.not.TDAeh.or..not.TDApp) error stop 'TDA Faddeev-Parquet requires both TDAeh=T and TDApp=T'
+    if(do_principal_IP.and.max_it_1b/=1) &
+      error stop 'Principal-IP mode requires max_it_1b=1 (fixed one-body energies)'
     if(max_it_1b<1.or.max_it_2b<1.or.max_diis_1b<1.or.max_diis_2b<1) &
       error stop 'TDA Faddeev requires positive iteration and DIIS limits'
   end if
@@ -571,6 +577,14 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     if(do_Faddeev_self_energy.or.do_ADC_self_energy) then
 
       if(do_Faddeev_self_energy) then
+        if(do_principal_IP) then
+          call G_TDA_Faddeev_IP(reg_PA,eta_1b,0,nOrb,nOrb,nC,nO,nR,nS,nOO,nVV, &
+                                eHF,eOld,ERI,F_eh,F_hh,F_ee,ip_omega,ip_Z,ip_homo,ip_residual,ip_info)
+          if(ip_info/=0) error stop 'Principal-IP Davidson failed to converge; use the full-spectrum mode'
+          ! No partial quasiparticle array is returned to the one-body loop.
+          write(*,*) 'Principal-IP evaluation complete; one-body energies kept fixed.'
+          return
+        end if
         call G_TDA_Faddeev_self_energy(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOO,nVV, &
                                         eHF,eOld,ERI,F_eh,F_hh,F_ee,eADC,ZADC)
       else

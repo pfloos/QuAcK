@@ -37,15 +37,33 @@ n2h1p=(nO-nC)*(nO-nC-1)*(nOrb-nR-nO)/2
 H=0d0
 ''' + body + '\nend subroutine\n'
     (work / 'reference.f90').write_text(reference)
+    # Exercise bounded-subspace restart and explicit nonconvergence through
+    # the same operator/solver, using a small test-only Fortran interface.
+    restart_wrapper = '''
+subroutine controlled_ip(nOrb,nO,nS,nOO,nVV,maxspace,maxiter,e,v,Weh,Whh,Wee,omega,z,hw,residual,info)
+use TDA_Faddeev_IP_operator
+implicit none
+integer,intent(in) :: nOrb,nO,nS,nOO,nVV,maxspace,maxiter
+double precision,intent(in) :: e(nOrb),v(nOrb,nOrb,nOrb,nOrb),Weh(nS,nS),Whh(nOO,nOO),Wee(nVV,nVV)
+double precision,intent(out) :: omega,z,hw,residual
+integer,intent(out) :: info
+integer :: iterations
+type(Faddeev_operator) :: op
+call initialize(op,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,Whh,Wee)
+call davidson(op,nO,omega,z,hw,residual,iterations,info,maxspace,maxiter)
+end subroutine
+'''
+    (work / 'controlled.f90').write_text(restart_wrapper)
     shared = work / ('checks.dylib' if sys.platform == 'darwin' else 'checks.so')
     command = shlex.split(os.environ.get('FC', 'gfortran')) + [
         '-dynamiclib' if sys.platform == 'darwin' else '-shared', '-fPIC',
         '-fcheck=all', '-fbacktrace', '-ffree-line-length-none', '-I' + str(root / 'include'),
         str(root / 'src/Parquet/G_TDA_Faddeev_self_energy.f90'),
-        str(root / 'src/Parquet/R_TDA_Faddeev_self_energy.f90'), str(work / 'reference.f90'),
+        str(root / 'src/Parquet/TDA_Faddeev_IP.f90'),
+        str(root / 'src/Parquet/R_TDA_Faddeev_self_energy.f90'), str(work / 'reference.f90'), str(work / 'controlled.f90'),
         str(root / 'lib/utils.a'), '-o', str(shared)]
     command += shlex.split(os.environ.get('LAPACK_LIBS', '-lblas -llapack'))
-    subprocess.run(command, check=True)
+    subprocess.run(command, check=True, cwd=work)
     lib = ct.CDLL(str(shared))
 
     def call(name, *args):
@@ -83,6 +101,27 @@ H=0d0
              len(hh), len(ee), nh, e, e, v, *wk, h)
         return h, minus, plus
 
+    def check_action(e, v, o, h, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1.):
+        n = len(e); no = o-nc; nv = n-nr-o
+        eri = v if spatial is None else spatial
+        vectors = arr(rng.normal(size=(len(h), 5)))
+        got = np.zeros_like(vectors, order='F'); diag = arr(np.zeros(len(h)))
+        call('g_tda_faddeev_ip_action', reg, flow, block, len(eri), n, nc, o, nr,
+             no*nv, no*(no-1)//2, nv*(nv-1)//2, len(h), 5, e, e, eri, *wk, vectors, got, diag)
+        np.testing.assert_allclose(got, h @ vectors, atol=3e-13, rtol=1e-12)
+        np.testing.assert_allclose(diag, np.diag(h), atol=2e-13)
+
+    def solve_ip(e, v, o, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1.):
+        n = len(e); no = o-nc; nv = n-nr-o
+        eri = v if spatial is None else spatial
+        omega, z, hw, residual = [arr(np.zeros(1)) for _ in range(4)]
+        info = np.zeros(1, dtype=np.int32)
+        call('g_tda_faddeev_ip', reg, flow, block, len(eri), n, nc, o, nr,
+             no*nv, no*(no-1)//2, nv*(nv-1)//2, e, e, eri, *wk, omega, z, hw, residual, info)
+        assert info[0] == 0, (omega, residual, info)
+        assert residual[0] < 1e-8
+        return omega[0], z[0], hw[0]
+
     rng = np.random.default_rng(82391)
     n = 4; o = 2
     factors = rng.normal(size=(5, n, n))*.04
@@ -98,6 +137,13 @@ H=0d0
         if nr:
             ref[n-nr:n, n:] = 0.; ref[n:, n-nr:n] = 0.
         np.testing.assert_allclose(h, ref, atol=1e-13, rtol=1e-13)
+        wk = kernels(v, range(nc, o), range(o, n-nr))
+        check_action(e, v, o, h, wk, nc, nr)
+        omega,z,hw = solve_ip(e, v, o, wk, nc, nr)
+        values, vec = np.linalg.eigh(h)
+        principal = np.argmax(vec[o-1,:]**2)
+        np.testing.assert_allclose(omega, values[principal], atol=1e-10)
+        np.testing.assert_allclose(z, sum(vec[:n,principal]**2), atol=1e-9)
     print('PASS bare-kernel matrices and ADC(3) endpoints vs existing G_IPEA_ADC3, including active spaces')
 
     # Spin-adapted bare pair kernels. Verify the R lift against direct Coulomb
@@ -138,8 +184,15 @@ H=0d0
         np.testing.assert_allclose(ha, h[np.ix_(selected, selected)], atol=1e-14)
         outside = sorted(set(range(len(h))) - set(selected))
         np.testing.assert_allclose(h[np.ix_(selected, outside)], 0., atol=1e-14)
+        check_action(eg, vg, og, ha, lifted, 2*nc, 2*nr, block=1, spatial=v)
+        ip,zprincipal,hwp = solve_ip(eg, vg, og, lifted, 2*nc, 2*nr, block=1, spatial=v)
         er = np.zeros(n, order='F'); zr = er.copy(order='F')
         call('r_tda_faddeev_self_energy', False, 1., n, nc, o, nr, *dims, e, e, v, *rk, er, zr)
+        np.testing.assert_allclose(ip, er[o-1], atol=1e-10)
+        np.testing.assert_allclose(zprincipal, zr[o-1], atol=1e-9)
+        omega,z,hw = solve_ip(eg, vg, og, lifted, 2*nc, 2*nr)
+        np.testing.assert_allclose(omega, ip, atol=1e-10)
+        np.testing.assert_allclose(z, zprincipal, atol=1e-9)
         eig, u = np.linalg.eigh(h)
         # Full spectral measure, independent of potentially degenerate pole
         # eigenvectors: compare the R dominant-pole data to the G resolvent.
@@ -159,6 +212,12 @@ H=0d0
         w = rng.normal(size=(size, size))*.03
         wk.append(arr((w+w.T)/2))
     h, minus, plus = build(e, v, o, wk=wk)
+    check_action(e, v, o, h, wk)
+    omega,z,hw = solve_ip(e, v, o, wk)
+    values, vec = np.linalg.eigh(h)
+    principal = np.argmax(vec[o-1,:]**2)
+    np.testing.assert_allclose(omega, values[principal], atol=1e-10)
+    np.testing.assert_allclose(z, sum(vec[:n,principal]**2), atol=1e-9)
     for removal in [True, False]:
         ordered = ([(i,j,a) for i in occ for j in occ for a in vir] if removal else
                    [(i,a,b) for i in occ for a in vir for b in vir])
@@ -230,7 +289,47 @@ H=0d0
     hr, _, _ = build(e, v, o, reg=True, flow=1e6)
     hu, _, _ = build(e, v, o)
     np.testing.assert_allclose(hr, hu, atol=1e-13)
+    hreg,_,_ = build(e,v,o,reg=True,flow=.7)
+    wreg = kernels(v,range(o),range(o,n))
+    check_action(e,v,o,hreg,wreg,reg=True,flow=.7)
+    omega,z,hw = solve_ip(e,v,o,wreg,reg=True,flow=.7)
+    values,vec = np.linalg.eigh(hreg)
+    principal = np.argmax(vec[o-1,:]**2)
+    np.testing.assert_allclose(omega,values[principal],atol=1e-10)
+
+    # A degenerate HF HOMO manifold can split when correlated. Follow the
+    # whole manifold and choose the smallest principal IP, not a single
+    # arbitrarily selected HF orbital or the nearest-energy satellite.
+    edeg = arr([-.7,-.7,.25,.65])
+    hdeg,_,_ = build(edeg,v,o)
+    wdeg = kernels(v,range(o),range(o,n))
+    omega,z,hw = solve_ip(edeg,v,o,wdeg)
+    values,vec = np.linalg.eigh(hdeg)
+    character = np.sum(vec[:o,:]**2,axis=0)
+    roots = np.argsort(character)[-o:]
+    np.testing.assert_allclose(omega,np.max(values[roots]),atol=1e-10)
     print('PASS SRG zero-denominator limit and unregularized large-flow limit')
+    print('PASS matrix-free products, diagonals and principal-IP Davidson vs dense matrices, R/G, active spaces, dressed kernels, SRG and split HOMO manifold')
+    # Force repeated thick restarts in a bounded space, then check that an
+    # intentionally exhausted iteration budget returns a failure status.
+    nstress, ostress = 8, 4
+    stress_factors = rng.normal(size=(6,nstress,nstress))*.05
+    stress_factors += stress_factors.transpose(0,2,1)
+    vs = arr(np.einsum('xpr,xqs->pqrs', stress_factors, stress_factors))
+    es = arr([-1.3,-1.05,-.8,-.55,.25,.4,.65,.9])
+    ws = kernels(vs,range(ostress),range(ostress,nstress))
+    hs,_,_ = build(es,vs,ostress,wk=ws)
+    vals,vecs = np.linalg.eigh(hs)
+    target = np.argmax(vecs[ostress-1,:]**2)
+    outputs = [arr(np.zeros(1)) for _ in range(4)]
+    info = np.zeros(1,dtype=np.int32)
+    call('controlled_ip', nstress,ostress,16,6,6,12,256,es,vs,*ws,*outputs,info)
+    assert info[0] == 0, (outputs,info)
+    np.testing.assert_allclose(outputs[0][0], vals[target], atol=1e-10)
+    assert outputs[3][0] < 1e-8
+    call('controlled_ip', nstress,ostress,16,6,6,12,1,es,vs,*ws,*outputs,info)
+    assert info[0] != 0 and outputs[3][0] > 1e-8
+    print('PASS thick restart vs dense root and explicit nonconvergence status')
     print('All algebraic TDA Faddeev checks passed.')
 
 

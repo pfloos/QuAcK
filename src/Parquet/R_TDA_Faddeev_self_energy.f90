@@ -45,6 +45,35 @@ subroutine R_TDA_Faddeev_self_energy(reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,
   call G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 
+subroutine R_TDA_Faddeev_IP(reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+                           eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,omega,Z,homo_weight,residual,info)
+! Matrix-free restricted principal IP. Spatial ERIs are passed directly;
+! the shared endpoint builder applies spin deltas without expanding ERIs.
+  implicit none
+  logical,intent(in) :: reg
+  integer,intent(in) :: nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt
+  double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in) :: Wehs(nS,nS),Weht(nS,nS),Whhs(nOOs,nOOs),Whht(nOOt,nOOt)
+  double precision,intent(in) :: Wees(nVVs,nVVs),Weet(nVVt,nVVt)
+  double precision,intent(out) :: omega,Z,homo_weight,residual
+  integer,intent(out) :: info
+  integer :: ng,nsG,nooG,nvvG,noact,nv,p
+  double precision,allocatable :: eg(:),fg(:),Weh(:,:),Whh(:,:),Wee(:,:)
+  noact=nO-nC; nv=nOrb-nR-nO
+  if(nC<0.or.nR<0.or.noact<1.or.nv<1) error stop 'R Faddeev IP: invalid active space'
+  if(nS/=noact*nv.or.nOOs/=noact*(noact+1)/2.or.nOOt/=noact*(noact-1)/2.or. &
+     nVVs/=nv*(nv+1)/2.or.nVVt/=nv*(nv-1)/2) error stop 'R Faddeev IP: incomplete pair spaces'
+  ng=2*nOrb; nsG=4*nS; nooG=noact*(2*noact-1); nvvG=nv*(2*nv-1)
+  allocate(eg(ng),fg(ng),Weh(nsG,nsG),Whh(nooG,nooG),Wee(nvvG,nvvG))
+  do p=1,ng
+    eg(p)=eQP((p+1)/2); fg(p)=eHF((p+1)/2)
+  end do
+  call R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+                         Wehs,Weht,Whhs,Whht,Wees,Weet,Weh,Whh,Wee)
+  call G_TDA_Faddeev_IP(reg,eta,1,nOrb,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG, &
+                       fg,eg,ERI,Weh,Whh,Wee,omega,Z,homo_weight,residual,info)
+end subroutine
+
 subroutine R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                              Wehs,Weht,Whhs,Whht,Wees,Weet,Weh,Whh,Wee)
 ! Orthonormal Clebsch-Gordan transforms. The eh singlet is (aa+bb)/sqrt2,

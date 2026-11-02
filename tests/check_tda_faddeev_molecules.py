@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """R/G molecular integration tests; requires built QuAcK and PySCF.
 Build with do_Faddeev_self_energy=.true. and do_ADC_self_energy=.false.
-in both R_evParquet.f90 and G_evParquet.f90.
+and do_principal_IP=.false. in both R_evParquet.f90 and G_evParquet.f90.
 python tests/check_tda_faddeev_molecules.py --workdir /tmp/new-faddeev-molecules
 """
 import argparse
