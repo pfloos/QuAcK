@@ -363,8 +363,9 @@ contains
   end subroutine
 
   subroutine davidson_roots(op,nocc,nroots,omega,Z,residual,iterations,info,max_space,max_iterations)
-! Lowest IPs = largest eigenvalues below the HF gap midpoint. Keep the
-! shift in the gap so deeper roots cannot displace the upper ionization edge.
+! Follow the dominant poles of the highest nroots active occupied HF orbitals.
+! HF hole vectors seed the search; a one-to-one maximum-weight assignment
+! keeps distinct Ritz roots attached to their HF orbital character.
     type(Faddeev_operator),intent(inout) :: op
     integer,intent(in) :: nocc,nroots
     double precision,intent(out) :: omega(nroots),Z(nroots),residual(nroots)
@@ -372,86 +373,102 @@ contains
     integer,intent(in),optional :: max_space,max_iterations
     double precision,parameter :: tolerance=1d-8
     double precision,allocatable :: V(:,:),AV(:,:),coef(:,:),x(:,:),ax(:,:), &
-                                    theta(:),pole(:),rn(:),t(:),keep(:,:)
-    integer,allocatable :: order(:),seeds(:)
-    integer :: n,limit,maxiter,nt,m,i,j,k,nseed,ncand,nkeep,nmv,added
+                                    theta(:),rn(:),weight(:,:),character(:),t(:),keep(:,:)
+    integer,allocatable :: order(:),assigned(:),target(:),reported(:)
+    integer :: n,limit,maxiter,nt,m,i,j,k,first_occ,first_target,nh,nkeep,nmv,added
     double precision :: fermi,norm,den
-    n=op%n; limit=min(n,max(96,4*nroots+8)); maxiter=256
+    logical :: converged
+    n=op%n; maxiter=256
+    first_occ=count(op%phys<=op%nC)+1
+    if(nocc<first_occ.or.nocc>=op%nphys) error stop 'Faddeev IP roots: invalid HOMO index'
+    if(nroots<1.or.nroots>nocc-first_occ+1) &
+      error stop 'Faddeev IP roots: root count exceeds active occupied HF orbitals'
+    first_target=nocc-nroots+1
+! Retain a whole HF degeneracy at the lower boundary; report nroots poles.
+    do while(first_target>first_occ)
+      if(abs(op%f(first_target-1)-op%f(nocc-nroots+1))>1d-7) exit
+      first_target=first_target-1
+    end do
+    nh=nocc-first_target+1
+    limit=min(n,max(96,4*nh+8))
     if(present(max_space)) limit=min(n,max_space)
     if(present(max_iterations)) maxiter=max_iterations
-    if(nocc<1.or.nocc>=op%nphys) error stop 'Faddeev IP roots: invalid HOMO index'
-    if(nroots<1.or.nroots>=n.or.limit<min(n,nroots+2).or.maxiter<1) &
-      error stop 'Faddeev IP roots: invalid root count or solver limits'
+    if(limit<min(n,nh+2).or.maxiter<1) error stop 'Faddeev IP roots: invalid solver limits'
     fermi=0.5d0*(op%f(nocc)+op%f(nocc+1))
-    nt=min(limit-1,max(nroots+4,2*nroots))
+    nt=min(limit-1,max(nh+4,2*nh))
     allocate(V(n,limit),AV(n,limit),coef(limit,limit),x(n,limit),ax(n,limit), &
-             theta(limit),pole(limit),rn(limit),t(n),keep(n,nt),order(limit),seeds(n))
-! Include removal configurations as guesses as well as occupied orbitals:
-! otherwise an exactly uncoupled satellite cannot enter the search space.
-    nseed=0
-    do i=1,n
-      if(i<=op%nphys) then
-        if(op%phys(i)<=op%nC.or.i>nocc) cycle
-      end if
-      if(op%diag(i)>=fermi) cycle
-      nseed=nseed+1; seeds(nseed)=i
+             theta(limit),rn(limit),weight(nh,limit),character(limit),t(n),keep(n,nt), &
+             order(limit),assigned(nh),target(nh),reported(nh))
+    V=0d0; m=nh; nmv=0
+    do j=1,nh
+      target(j)=nocc-j+1
+      V(target(j),j)=1d0
     end do
-    if(nseed<nroots) error stop 'Faddeev IP roots: too few ionization guesses'
-    m=min(nseed,nt)
-    do i=1,m
-      do j=i+1,nseed
-        if(op%diag(seeds(j))>op%diag(seeds(i))) then
-          k=seeds(i); seeds(i)=seeds(j); seeds(j)=k
-        end if
-      end do
+! Only occupied HF holes are used as initial guesses, never charged satellites.
+    do i=first_target-1,first_occ,-1
+      if(m>=min(limit,nh+2)) exit
+      m=m+1; V(i,m)=1d0
     end do
-    V=0d0; nmv=0
     do j=1,m
-      V(seeds(j),j)=1d0
       call apply(op,V(:,j),AV(:,j)); nmv=nmv+1
     end do
-    info=1; omega=fermi; Z=0d0; residual=huge(1d0)
+    info=1; omega=op%f(nocc); Z=0d0; residual=huge(1d0)
     do iterations=1,maxiter
-      call harmonic(m,V(:,1:m),AV(:,1:m),fermi,coef(1:m,1:m))
+! Ordinary Ritz extraction allows each HF hole to follow its own energy,
+! including deeper ionizations far from the HOMO or the gap midpoint.
+      call dgemm('T','N',m,m,n,1d0,V,n,AV,n,0d0,coef,limit)
+      coef(1:m,1:m)=0.5d0*(coef(1:m,1:m)+transpose(coef(1:m,1:m)))
+      call diagonalize_matrix(m,coef(1:m,1:m),theta(1:m))
       call dgemm('N','N',n,m,m,1d0,V,n,coef,limit,0d0,x,n)
       call dgemm('N','N',n,m,m,1d0,AV,n,coef,limit,0d0,ax,n)
-      ncand=0; residual=huge(1d0)
       do k=1,m
-        norm=sqrt(sum(x(:,k)**2)); x(:,k)=x(:,k)/norm; ax(:,k)=ax(:,k)/norm
-        theta(k)=dot_product(x(:,k),ax(:,k))
         rn(k)=sqrt(sum((ax(:,k)-theta(k)*x(:,k))**2))
-        t=ax(:,k)-fermi*x(:,k); den=dot_product(x(:,k),t)
-        if(abs(den)<1d-28) cycle
-        ! Rank harmonic poles rather than Rayleigh quotients: an unconverged
-        ! vector mixing IP and EA states can have a misleading Rayleigh value.
-        pole(k)=fermi+dot_product(t,t)/den
-        if(pole(k)>=fermi) cycle
-        ncand=ncand+1; order(ncand)=k
+        weight(:,k)=x(target,k)**2
+        character(k)=sum(weight(:,k))
+        if(theta(k)>=fermi) weight(:,k)=-1d0
       end do
-      do i=1,ncand-1
-        do j=i+1,ncand
-          if(pole(order(j))>pole(order(i))) then
+      call assign_holes(nh,m,weight(:,1:m),assigned)
+      order(1:nh)=assigned
+! Keep additional roots with HF target character through thick restarts.
+      nkeep=nh
+      do k=1,m
+        if(any(assigned==k)) cycle
+        nkeep=nkeep+1; order(nkeep)=k
+      end do
+      do i=nh+1,m-1
+        do j=i+1,m
+          if(character(order(j))>character(order(i))) then
             k=order(i); order(i)=order(j); order(j)=k
           end if
         end do
       end do
-      do j=1,min(nroots,ncand)
-        k=order(j); omega(j)=theta(k); Z(j)=sum(x(1:op%nphys,k)**2); residual(j)=rn(k)
+      converged=.true.
+      do j=1,nh
+        k=assigned(j)
+        if(theta(k)>=fermi.or.character(k)<1d-10.or.rn(k)>tolerance) converged=.false.
       end do
-      if(ncand>=nroots) then
-        if(all(residual<=tolerance)) then
-          ! Verify every root with a fresh action, including degenerate roots.
-          do j=1,nroots
-            k=order(j)
-            call apply(op,x(:,k),t); nmv=nmv+1
-            residual(j)=sqrt(sum((t-omega(j)*x(:,k))**2))
-          end do
-          if(all(residual<=tolerance)) info=0
-          exit
-        end if
+      reported=assigned
+      do i=1,nh-1
+        do j=i+1,nh
+          if(theta(reported(j))>theta(reported(i))) then
+            k=reported(i); reported(i)=reported(j); reported(j)=k
+          end if
+        end do
+      end do
+      do j=1,nroots
+        k=reported(j); omega(j)=theta(k); Z(j)=sum(x(1:op%nphys,k)**2); residual(j)=rn(k)
+      end do
+      if(converged) then
+        do j=1,nroots
+          k=reported(j)
+          call apply(op,x(:,k),t); nmv=nmv+1
+          residual(j)=sqrt(sum((t-omega(j)*x(:,k))**2))
+        end do
+        if(all(residual<=tolerance)) info=0
+        exit
       end if
-      nkeep=min(nt,ncand)
-      if(m+min(nroots,ncand)>limit) then
+      if(m+nh>limit) then
+        nkeep=min(nt,m)
         do j=1,nkeep
           keep(:,j)=x(:,order(j))
         end do
@@ -465,8 +482,8 @@ contains
         end do
       end if
       added=0
-      do j=1,min(nroots,ncand)
-        k=order(j)
+      do j=1,nh
+        k=assigned(j)
         if(rn(k)<=tolerance) cycle
         t=ax(:,k)-theta(k)*x(:,k)
         do i=1,n
@@ -481,12 +498,10 @@ contains
         if(m==limit) exit
       end do
       if(added==0) then
-        ! Recover a missing or linearly dependent direction from remaining
-        ! ionization guesses; this also resolves exact spin degeneracies.
-        do j=1,nseed
-          t=0d0; t(seeds(j))=1d0
+        do j=1,nh
+          k=assigned(j); t=ax(:,k)-theta(k)*x(:,k)
           call orthogonalize(n,m,V,t,norm)
-          if(norm<1d-10.or.m==limit) cycle
+          if(norm<1d-12.or.m==limit) cycle
           m=m+1; V(:,m)=t/norm
           call apply(op,V(:,m),AV(:,m)); nmv=nmv+1; added=1
           exit
@@ -497,6 +512,52 @@ contains
     write(*,'(A,I5,A,I6)') ' Faddeev IP Davidson iterations: ',min(iterations,maxiter),'; matrix-vector products: ',nmv
     write(*,'(A,ES12.4)') ' Largest Faddeev IP residual (Ha): ',maxval(residual)
     if(.not.all(ieee_is_finite(omega)).or..not.all(ieee_is_finite(residual))) info=2
+  end subroutine
+
+  subroutine assign_holes(nh,m,weight,assigned)
+! Rectangular Hungarian assignment maximizes the total HF-hole weight.
+! Each HF orbital gets a distinct root, even when several orbitals mix.
+    integer,intent(in) :: nh,m
+    double precision,intent(in) :: weight(nh,m)
+    integer,intent(out) :: assigned(nh)
+    double precision :: u(0:nh),v(0:m),best(m),delta,cost
+    integer :: owner(0:m),way(m),i,j,j0,j1,i0
+    logical :: used(0:m)
+    if(nh>m) error stop 'Faddeev IP roots: fewer Ritz vectors than targets'
+    u=0d0; v=0d0; owner=0
+    do i=1,nh
+      owner(0)=i; j0=0; best=huge(1d0); used=.false.
+      do
+        used(j0)=.true.; i0=owner(j0); delta=huge(1d0); j1=0
+        do j=1,m
+          if(used(j)) cycle
+          cost=-weight(i0,j)-u(i0)-v(j)
+          if(cost<best(j)) then
+            best(j)=cost; way(j)=j0
+          end if
+          if(best(j)<delta) then
+            delta=best(j); j1=j
+          end if
+        end do
+        do j=0,m
+          if(used(j)) then
+            u(owner(j))=u(owner(j))+delta; v(j)=v(j)-delta
+          else if(j>0) then
+            best(j)=best(j)-delta
+          end if
+        end do
+        j0=j1
+        if(owner(j0)==0) exit
+      end do
+      do
+        j1=way(j0); owner(j0)=owner(j1); j0=j1
+        if(j0==0) exit
+      end do
+    end do
+    assigned=0
+    do j=1,m
+      if(owner(j)>0) assigned(owner(j))=j
+    end do
   end subroutine
 
   subroutine orthogonalize(n,m,V,t,norm)

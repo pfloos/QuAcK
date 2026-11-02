@@ -14,7 +14,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet
   logical                       :: do_Faddeev_ADC2 = .false. ! ADC(2) endpoints; false keeps ADC(3) (full and Davidson)
   logical                       :: do_principal_IP = .true. ! Matrix-free IP Davidson; fixed one-body energies
-  integer                       :: n_IP_roots = 1 ! Davidson roots; 1 retains the principal HOMO IP
+  integer                       :: n_IP_roots = 1 ! HF-hole targets, HOMO downward; 1 keeps the principal HOMO IP
   
 ! Input variables
 
@@ -99,7 +99,8 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     error stop 'Select only one of ADC-Parquet and TDA Faddeev-Parquet'
   if(do_Faddeev_self_energy) then
     if(.not.TDAeh.or..not.TDApp) error stop 'TDA Faddeev-Parquet requires both TDAeh=T and TDApp=T'
-    if(do_principal_IP.and.n_IP_roots<1) error stop 'Faddeev IP: n_IP_roots must be positive'
+    if(do_principal_IP.and.(n_IP_roots<1.or.n_IP_roots>nO-nC)) &
+      error stop 'Faddeev IP: n_IP_roots must be between 1 and the active occupied count'
     if(do_principal_IP.and.max_it_1b/=1) &
       error stop 'Principal-IP mode requires max_it_1b=1 (fixed one-body energies)'
     if(max_it_1b<1.or.max_it_2b<1.or.max_diis_1b<1.or.max_diis_2b<1) &

@@ -92,25 +92,31 @@ character fragments strongly, compare the full spectrum. A degenerate or
 split HOMO manifold is treated as a block; the smallest IP among its
 converged selected roots is reported.
 
-For `n_IP_roots>1`, a block harmonic Davidson search returns the requested
-number of ionization eigenpairs in increasing IP order. Its fixed target is
-the HF gap midpoint; poles above that midpoint are excluded. Initial guesses
-include occupied orbitals and low-IP charged configurations. The restart
-retains the requested roots and extra candidates. The default subspace is
-`max(96,4*n_IP_roots+8)` vectors (capped by the matrix dimension), with the
-same 256-iteration limit and `1e-8` Ha residual tolerance. Every returned
-root is checked with a fresh matrix-vector product. Nonconvergence of any
-requested root fails explicitly.
+For `n_IP_roots>1`, block Davidson targets the highest occupied active HF
+orbitals, starting from their one-hole vectors (plus up to two neighboring
+occupied HF guesses). Satellite configurations are not used as initial
+guesses. Ritz roots are assigned one-to-one to the HF targets by maximizing
+the sum of squared orbital overlaps. Root selection is therefore based on
+HF-hole character, rather than on IP order or proximity to the HF gap.
+The HF gap midpoint only excludes addition poles. Ordinary Ritz extraction
+lets deeper ionizations follow their own energies. Thick restarts retain
+the assigned roots and additional candidates carrying target character.
+
+`n_IP_roots` cannot exceed the number of active occupied HF orbitals.
+If its lower boundary cuts an HF degeneracy, the solver follows the whole
+manifold and reports the requested number of poles in increasing IP order.
+G counts spin partners separately; R uses the alpha charged block. The
+default subspace is `max(96,4*n_targets+8)` vectors (capped by the matrix
+dimension), with a 256-iteration limit and `1e-8` Ha residual tolerance.
+Every reported root is checked with a fresh matrix-vector product.
+Nonconvergence of any targeted root fails explicitly.
 
 The output table gives root index, IP, pole energy, total one-particle
-weight Z, and residual. These are eigenpairs, so satellites and dark states
-with small or zero Z can appear among the higher IPs. Degeneracies count
-as separate roots: G includes spin partners, while R uses the alpha charged
-block. Request enough G roots to include the desired distinct IPs. Root
-count 1 retains the original HOMO-character selection described above;
-it is not an energy-only search. Multiple-root mode does not filter by Z.
-As with an iterative interior eigensolver, strongly rearranged spectra or
-missing disconnected configurations warrant comparison with a full spectrum.
+weight Z, and residual. It now reports the dominant HF-hole-connected
+ionizations, rather than filling the root count with low-IP dark states.
+If an HF hole fragments strongly, a single dominant pole may be insufficient
+to describe its spectrum; compare the full spectrum in that case. Root count
+1 retains the original HOMO-character selection described above.
 
 At fixed subspace and orbital counts, solver storage grows linearly with
 the charged dimension, rather than quadratically. Pair kernels and cached
@@ -195,7 +201,8 @@ principal roots and residues with dense eigenpairs, split HOMO manifolds,
 forced thick restart, and explicit nonconvergence. ADC(2) checks verify
 bare endpoint elements, unchanged charged blocks, zero-denominator safety,
 and R/G full-spectrum and Davidson agreement. Multiple-root checks cover
-ordered eigenpairs and weights against dense spectra, satellites, spin
+HF-character assignments and weights against dense spectra, rejection of
+intervening dark satellites, spin
 degeneracies, bounded-subspace restarts, and explicit nonconvergence:
 
 ```sh

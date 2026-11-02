@@ -402,8 +402,24 @@ end subroutine
     call('controlled_ip', nstress,ostress,16,6,6,12,1,es,vs,*ws,*outputs,info)
     assert info[0] != 0 and outputs[3][0] > 1e-8
     print('PASS thick restart vs dense root and explicit nonconvergence status')
-    # Multiple IP eigenpairs ordered by increasing IP, including satellites
-    # and spin degeneracies. Exclude the deliberately uncoupled frozen 1p rows.
+    def dense_assignment(score):
+        # Independent small-target reference by subset dynamic programming.
+        nh,ncol=score.shape
+        states={0:(0.,[-1]*nh)}
+        for col in range(ncol):
+            for mask,(value,indices) in list(states.items()):
+                for row in range(nh):
+                    if mask & (1<<row):
+                        continue
+                    newmask=mask | (1<<row)
+                    candidate=value+score[row,col]
+                    if newmask not in states or candidate>states[newmask][0]:
+                        selected=indices.copy(); selected[row]=col
+                        states[newmask]=(candidate,selected)
+        return np.array(states[(1<<nh)-1][1])
+
+    # HF-hole targeted IPs: compare with the distinct dense poles maximizing
+    # occupied HF orbital character, rather than the energy-ordered satellites.
     def check_roots(e,v,o,nroots,nc=0,nr=0,block=0,spatial=None,wk=None,adc2=False,reg=False):
         n = len(e); no=o-nc; nv=n-nr-o
         wk = kernels(v,range(nc,o),range(o,n-nr)) if wk is None else wk
@@ -414,7 +430,16 @@ end subroutine
         active = [i for i in range(len(h)) if i not in frozen]
         vals,vec = np.linalg.eigh(h[np.ix_(active,active)])
         fermi=(e[o-1]+e[o])/2
-        selected=np.flatnonzero(vals<fermi)[::-1][:nroots]
+        occend = o//2 if block else o
+        first=occend-nroots
+        ehf=e[::2] if block else e
+        while first>(nc//2 if block else nc) and abs(ehf[first-1]-ehf[occend-nroots])<1e-7:
+            first-=1
+        targets=[active.index(i) for i in range(first,occend)]
+        score=vec[targets,:]**2
+        score[:,vals>=fermi]=-1.
+        matched=dense_assignment(score)
+        selected=matched[np.argsort(vals[matched])[::-1]][:nroots]
         outputs=[arr(np.zeros(nroots)) for _ in range(3)]
         info=np.zeros(1,dtype=np.int32)
         eri = v if spatial is None else spatial
@@ -435,13 +460,15 @@ end subroutine
         for nc,nr in [(0,0),(1,0),(0,1),(1,1)]:
             check_roots(e,v,o,1 if nc else 2,nc,nr,adc2=adc2)
         for nroots in [2,3,4]:
-            check_roots(e,v,o,nroots,adc2=adc2)
+            if nroots<=o:
+                check_roots(e,v,o,nroots,adc2=adc2)
             check_roots(eg,vg,og,nroots,adc2=adc2)
-            check_roots(eg,vg,og,nroots,block=1,spatial=v,adc2=adc2)
+            if nroots<=o:
+                check_roots(eg,vg,og,nroots,block=1,spatial=v,adc2=adc2)
         rk=r_kernels(0,0); dims=[len(rk[i]) for i in [0,2,3,4,5]]
-        expected=check_roots(eg,vg,og,3,block=1,spatial=v,adc2=adc2,reg=True)
-        outputs=[arr(np.zeros(3)) for _ in range(3)]; info=np.zeros(1,dtype=np.int32)
-        call('r_tda_faddeev_ip_roots',3,adc2,True,.7,n,0,o,0,*dims,e,e,v,*rk,*outputs,info)
+        expected=check_roots(eg,vg,og,2,block=1,spatial=v,adc2=adc2,reg=True)
+        outputs=[arr(np.zeros(2)) for _ in range(3)]; info=np.zeros(1,dtype=np.int32)
+        call('r_tda_faddeev_ip_roots',2,adc2,True,.7,n,0,o,0,*dims,e,e,v,*rk,*outputs,info)
         assert info[0]==0
         for got,ref in zip(outputs[:2],expected[:2]):
             np.testing.assert_allclose(got,ref,atol=1e-9)
@@ -458,11 +485,24 @@ end subroutine
     outputs=[arr(np.zeros(3)) for _ in range(3)]; info=np.zeros(1,dtype=np.int32)
     call('controlled_roots',nstress,ostress,16,6,6,3,16,256,es,vs,*ws,*outputs,info)
     assert info[0]==0 and max(outputs[2])<1e-8, (outputs,info)
-    selected=np.flatnonzero(vals<(es[ostress-1]+es[ostress])/2)[::-1][:3]
+    matched=dense_assignment(vecs[ostress-3:ostress,:]**2)
+    selected=matched[np.argsort(vals[matched])[::-1]]
     np.testing.assert_allclose(outputs[0],vals[selected],atol=1e-9)
     call('controlled_roots',nstress,ostress,16,6,6,3,16,1,es,vs,*ws,*outputs,info)
     assert info[0]!=0
-    print('PASS multiple IP roots vs dense spectrum: R/G, ADC(2)/ADC(3), active spaces, satellites, degeneracies, SRG, restart and failure status')
+    # Place two dark satellites at lower IP than both HF holes. HF guesses
+    # plus energy ordering would still fail here; character selection must win.
+    zero_v=arr(np.zeros_like(v))
+    dark_w=[arr(np.zeros((4,4))),arr([[-1.8]]),arr([[0.]])]
+    dark=check_roots(e,zero_v,o,2,wk=dark_w)
+    np.testing.assert_allclose(dark[0],e[:o][::-1],atol=1e-12)
+    np.testing.assert_allclose(dark[1],1.,atol=1e-12)
+    # Also test weakly bright satellites, frozen occupied/removed virtuals,
+    # and a requested boundary cutting through a degenerate HF manifold.
+    check_roots(e,v,o,2,wk=dark_w)
+    check_roots(es,vs,ostress,3,nc=1,nr=1)
+    check_roots(edeg,v,o,2)
+    print('PASS HF-targeted IP roots vs dense orbital-character assignment: R/G, ADC(2)/ADC(3), active spaces, degeneracies, SRG, restart, satellite rejection and failure status')
     print('All algebraic TDA Faddeev checks passed.')
 
 
