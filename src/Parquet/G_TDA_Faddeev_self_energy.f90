@@ -18,31 +18,6 @@ subroutine G_TDA_Faddeev_self_energy(reg_PA,eta,nOrb,nC,nO,nR,nS,nOO,nVV, &
   call G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 
-subroutine TDA_Faddeev_selector(TDAeh,TDApp,do_ADC,do_Faddeev)
-! Experimental opt-in without changing the legacy methods/options format.
-  implicit none
-  logical,intent(in) :: TDAeh,TDApp
-  logical,intent(inout) :: do_ADC
-  logical,intent(out) :: do_Faddeev
-  character(len=32) :: method
-  integer :: status
-  call get_environment_variable('QUACK_PARQUET_SELF_ENERGY',method,status=status)
-  do_Faddeev=.false.
-  if(status==1) return
-  if(status/=0) error stop 'Invalid QUACK_PARQUET_SELF_ENERGY value'
-  select case(trim(method))
-  case('TDA_FADDEEV')
-    if(.not.TDAeh.or..not.TDApp) error stop 'TDA_FADDEEV requires both TDAeh=T and TDApp=T'
-    do_Faddeev=.true.
-  case('ADC')
-    do_ADC=.true.
-  case('NATIVE')
-    do_ADC=.false.
-  case default
-    error stop 'QUACK_PARQUET_SELF_ENERGY must be ADC, NATIVE or TDA_FADDEEV'
-  end select
-end subroutine
-
 subroutine TDA_Faddeev_strip_pair(nOrb,first,last,equal_pair,removal,nPair,e,shift,K)
   implicit none
   integer,intent(in) :: nOrb,first,last,nPair

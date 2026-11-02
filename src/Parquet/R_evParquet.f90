@@ -10,7 +10,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
   logical                       :: print_phLR = .false. ! Print the eh two-body excitations at each two-body iterations
   logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
-  logical                       :: do_ADC_self_energy = .true. ! Use Hermitian PSD ADC-Parquet
+  logical                       :: do_ADC_self_energy = .false. ! Use Hermitian PSD ADC-Parquet
+  logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet with ADC(3) couplings
   
 ! Input variables
 
@@ -30,7 +31,6 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   
 ! Local variables
 
-  logical                       :: do_Faddeev
   double precision,allocatable  :: F_eh(:,:),F_hh(:,:),F_ee(:,:)
   double precision,allocatable  :: F_eht(:,:),F_hht(:,:),F_eet(:,:)
   double precision              :: F_shift
@@ -131,13 +131,15 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   nVVs = (nOrb-nR-nO)*(nOrb-nR-nO+1)/2
   nOOt = (nO-nC)*(nO-nC-1)/2
   nVVt = (nOrb-nR-nO)*(nOrb-nR-nO-1)/2
-  call TDA_Faddeev_selector(TDAeh,TDApp,do_ADC_self_energy,do_Faddeev)
-  if(do_Faddeev) then
+  if(do_ADC_self_energy.and.do_Faddeev_self_energy) &
+    error stop 'Select only one of ADC-Parquet and TDA Faddeev-Parquet'
+  if(do_Faddeev_self_energy) then
+    if(.not.TDAeh.or..not.TDApp) error stop 'TDA Faddeev-Parquet requires both TDAeh=T and TDApp=T'
     if(max_it_1b<1.or.max_it_2b<1.or.max_diis_1b<1.or.max_diis_2b<1) &
       error stop 'TDA Faddeev requires positive iteration and DIIS limits'
   end if
   F_shift=0d0
-  if(do_Faddeev) then
+  if(do_Faddeev_self_energy) then
     allocate(F_eh(nS,nS),F_hh(nOOs,nOOs),F_ee(nVVs,nVVs))
     allocate(F_eht(nS,nS),F_hht(nOOt,nOOt),F_eet(nVVt,nVVt))
     inquire(file='use_chem_pot_in_ppRPA',exist=F_chem_pot)
@@ -271,7 +273,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
     ! Initialization
     
-    if(do_Faddeev) then
+    if(do_Faddeev_self_energy) then
       F_shift=0d0
       if(F_chem_pot) F_shift=eOld(nO)+eOld(nO+1)
     end if
@@ -334,7 +336,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Aph(:,:) = Aph(:,:) + eh_sing_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_sing_Gam_B(:,:)  
 
-      if(do_Faddeev) then
+      if(do_Faddeev_self_energy) then
         F_eh=Aph
         pqrs=0
         do p=nC+1,nO
@@ -402,7 +404,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Aph(:,:) = Aph(:,:) + eh_trip_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_trip_Gam_B(:,:)
 
-      if(do_Faddeev) then
+      if(do_Faddeev_self_energy) then
         F_eht=Aph
         pqrs=0
         do p=nC+1,nO
@@ -477,14 +479,14 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
       
       
-      if(do_Faddeev) then
+      if(do_Faddeev_self_energy) then
         F_hh=Dpp; F_ee=Cpp
         call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,.true.,.true.,nOOs,eOld,F_shift,F_hh)
         call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,.true.,.false.,nVVs,eOld,F_shift,F_ee)
       end if
 
       call ppRLR(TDApp,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,Ec_pp(ispin))
-      if(do_Faddeev) then
+      if(do_Faddeev_self_energy) then
         ! Phi is evaluated at an absolute frequency: undo any pp reference
         ! shift before the pair poles enter the parquet feedback.
         ee_sing_Om=ee_sing_Om+F_shift
@@ -553,14 +555,14 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Cpp(:,:) = Cpp(:,:) + pp_trip_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_trip_Gam_D(:,:)
       
-      if(do_Faddeev) then
+      if(do_Faddeev_self_energy) then
         F_hht=Dpp; F_eet=Cpp
         call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,.false.,.true.,nOOt,eOld,F_shift,F_hht)
         call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,.false.,.false.,nVVt,eOld,F_shift,F_eet)
       end if
 
       call ppRLR(TDApp,nOOt,nVVt,Bpp,Cpp,Dpp,ee_trip_Om,X1t,Y1t,hh_trip_Om,X2t,Y2t,Ec_pp(ispin))
-      if(do_Faddeev) then
+      if(do_Faddeev_self_energy) then
         ee_trip_Om=ee_trip_Om+F_shift
         hh_trip_Om=hh_trip_Om+F_shift
       end if
@@ -869,9 +871,9 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     mem = mem + size(eQPlin) + size(Z) + size(SigC)
     write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
-    if(do_Faddeev.or.do_ADC_self_energy) then
+    if(do_Faddeev_self_energy.or.do_ADC_self_energy) then
 
-      if(do_Faddeev) then
+      if(do_Faddeev_self_energy) then
         call R_TDA_Faddeev_self_energy(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                                         eHF,eOld,ERI,F_eh,F_eht,F_hh,F_hht,F_ee,F_eet,eADC,ZADC)
       else

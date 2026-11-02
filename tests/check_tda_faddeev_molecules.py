@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """R/G molecular integration tests; requires built QuAcK and PySCF.
+Build with do_Faddeev_self_energy=.true. and do_ADC_self_energy=.false.
+in both R_evParquet.f90 and G_evParquet.f90.
 python tests/check_tda_faddeev_molecules.py --workdir /tmp/new-faddeev-molecules
 """
 import argparse
@@ -41,7 +43,7 @@ def main():
     work.mkdir(parents=True, exist_ok=False)
     root = Path(__file__).resolve().parents[1]
     binary = root / 'bin/QuAcK'
-    env = dict(os.environ, QUACK_ROOT=str(root), QUACK_PARQUET_SELF_ENERGY='TDA_FADDEEV',
+    env = dict(os.environ, QUACK_ROOT=str(root),
                OPENBLAS_NUM_THREADS='1', OMP_NUM_THREADS='1')
     base_methods = (root / 'input/methods.default').read_text()
     base_options = (root / 'input/options.default').read_text()
@@ -56,9 +58,9 @@ def main():
         (case / 'input/methods').write_text(methods)
         (case / 'input/options').write_text(options)
 
-    def run(case, name, command=None, expect_failure=False, extra_env=None):
+    def run(case, name, command=None, expect_failure=False):
         result = subprocess.run(command or [str(binary), str(case)], cwd=case,
-                                env=env | (extra_env or {}), text=True, stdout=subprocess.PIPE,
+                                env=env, text=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT, timeout=300)
         text = result.stdout
         (work / f'{name}.log').write_text(text)
@@ -144,11 +146,6 @@ def main():
     data_g = poles(run(hydrogen, 'hydrogen-G'))
     assert max(abs(a[2]-b[2]) for a,b in zip(data,data_g[::2])) < 2e-6
     print('PASS H2/STO-3G R/G with empty spatial triplet pair sectors', flush=True)
-    inputs(hydrogen, 'R')
-    text = run(hydrogen, 'legacy-ADC', extra_env={'QUACK_PARQUET_SELF_ENERGY':'ADC'})
-    assert 'TDA Faddeev-Parquet with ADC(3)' not in text
-    assert 'Building full Hermitian spin-adapted PSD ADC-Parquet matrix' in text
-    print('PASS existing ADC selection retained', flush=True)
     print(f'All molecular TDA Faddeev checks passed. Logs: {work}')
 
 

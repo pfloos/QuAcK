@@ -16,17 +16,17 @@ Build QuAcK normally. In the calculation's `input` directory use:
   `tests/inp/methods.GTDAFaddeev` for GHF;
 - `tests/inp/options.TDAFaddeev` as `options`.
 
-Enable the new self-energy when launching QuAcK or PyDuck:
+The self-energy is selected by the hard-coded logical switches near the
+start of `src/Parquet/R_evParquet.f90` and `src/Parquet/G_evParquet.f90`,
+just like the previous ADC-Parquet switch:
 
-```sh
-QUACK_PARQUET_SELF_ENERGY=TDA_FADDEEV python PyDuck.py [your usual arguments]
+```fortran
+logical :: do_ADC_self_energy = .false.
+logical :: do_Faddeev_self_energy = .true.
 ```
 
-For an existing integral directory:
-
-```sh
-QUACK_PARQUET_SELF_ENERGY=TDA_FADDEEV /path/to/QuAcK/bin/QuAcK /path/to/calculation
-```
+TDA Faddeev-Parquet is enabled by default in both drivers. Rebuild QuAcK
+after changing either switch, then launch PyDuck or QuAcK normally.
 
 Both `TDAeh` and `TDApp` must be `T`; the driver rejects other values.
 The method uses the existing `evParquet` switch and its pair iterations,
@@ -44,10 +44,11 @@ the existing eigenvalue-self-consistent parquet loop. For one evaluation,
 the inherited driver may report one-body nonconvergence because an energy
 update was intentionally not iterated.
 
-Leaving the environment variable unset retains the existing ADC-Parquet
-selection. Explicit `ADC` and `NATIVE` values select the legacy ADC and
-native self-energy paths, respectively. This selector applies to the R/G
-`evParquet` drivers, not `qsParquet` or `R_GW_Parquet`.
+To select the previous ADC-Parquet self-energy, set
+`do_ADC_self_energy=.true.` and `do_Faddeev_self_energy=.false.`.
+Set both to `.false.` for the native parquet self-energy. Setting both to
+`.true.` is rejected. These switches apply to the R/G `evParquet` drivers,
+not `qsParquet` or `R_GW_Parquet`.
 
 ## Matrix and conventions
 
