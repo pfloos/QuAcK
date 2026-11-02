@@ -30,6 +30,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   
 ! Local variables
 
+  logical                       :: do_Faddeev
+  double precision,allocatable  :: F_eh(:,:),F_hh(:,:),F_ee(:,:)
+  double precision,allocatable  :: F_eht(:,:),F_hht(:,:),F_eet(:,:)
+  double precision              :: F_shift
+  logical                       :: F_chem_pot
+
   integer                       :: ispin
   double precision              :: alpha
   logical                       :: plot_self = .false.
@@ -121,10 +127,21 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     
 ! Useful parameters
 
-  nOOs = nO*(nO + 1)/2
-  nVVs = nV*(nV + 1)/2
-  nOOt = nO*(nO - 1)/2
-  nVVt = nV*(nV - 1)/2
+  nOOs = (nO-nC)*(nO-nC+1)/2
+  nVVs = (nOrb-nR-nO)*(nOrb-nR-nO+1)/2
+  nOOt = (nO-nC)*(nO-nC-1)/2
+  nVVt = (nOrb-nR-nO)*(nOrb-nR-nO-1)/2
+  call TDA_Faddeev_selector(TDAeh,TDApp,do_ADC_self_energy,do_Faddeev)
+  if(do_Faddeev) then
+    if(max_it_1b<1.or.max_it_2b<1.or.max_diis_1b<1.or.max_diis_2b<1) &
+      error stop 'TDA Faddeev requires positive iteration and DIIS limits'
+  end if
+  F_shift=0d0
+  if(do_Faddeev) then
+    allocate(F_eh(nS,nS),F_hh(nOOs,nOOs),F_ee(nVVs,nVVs))
+    allocate(F_eht(nS,nS),F_hht(nOOt,nOOt),F_eet(nVVt,nVVt))
+    inquire(file='use_chem_pot_in_ppRPA',exist=F_chem_pot)
+  end if
 
   allocate(eQP(nOrb),eOld(nOrb),eADC(nOrb),ZADC(nOrb))
 
@@ -254,6 +271,10 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
     ! Initialization
     
+    if(do_Faddeev) then
+      F_shift=0d0
+      if(F_chem_pot) F_shift=eOld(nO)+eOld(nO+1)
+    end if
     n_it_2b = 0 
     err_2b  = 1d0
     
@@ -313,6 +334,17 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Aph(:,:) = Aph(:,:) + eh_sing_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_sing_Gam_B(:,:)  
 
+      if(do_Faddeev) then
+        F_eh=Aph
+        pqrs=0
+        do p=nC+1,nO
+          do q=nO+1,nOrb-nR
+            pqrs=pqrs+1
+            F_eh(pqrs,pqrs)=F_eh(pqrs,pqrs)-eOld(q)+eOld(p)
+          end do
+        end do
+      end if
+
       call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_sing_Om,sing_XpY,sing_XmY)
 
       call wall_time(end_t)
@@ -369,6 +401,17 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       
       Aph(:,:) = Aph(:,:) + eh_trip_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_trip_Gam_B(:,:)
+
+      if(do_Faddeev) then
+        F_eht=Aph
+        pqrs=0
+        do p=nC+1,nO
+          do q=nO+1,nOrb-nR
+            pqrs=pqrs+1
+            F_eht(pqrs,pqrs)=F_eht(pqrs,pqrs)-eOld(q)+eOld(p)
+          end do
+        end do
+      end if
 
       call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_trip_Om,trip_XpY,trip_XmY)
 
@@ -434,7 +477,19 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
       
       
+      if(do_Faddeev) then
+        F_hh=Dpp; F_ee=Cpp
+        call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,.true.,.true.,nOOs,eOld,F_shift,F_hh)
+        call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,.true.,.false.,nVVs,eOld,F_shift,F_ee)
+      end if
+
       call ppRLR(TDApp,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,Ec_pp(ispin))
+      if(do_Faddeev) then
+        ! Phi is evaluated at an absolute frequency: undo any pp reference
+        ! shift before the pair poles enter the parquet feedback.
+        ee_sing_Om=ee_sing_Om+F_shift
+        hh_sing_Om=hh_sing_Om+F_shift
+      end if
       call wall_time(end_t)
       t = end_t - start_t
 
@@ -498,7 +553,17 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Cpp(:,:) = Cpp(:,:) + pp_trip_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_trip_Gam_D(:,:)
       
+      if(do_Faddeev) then
+        F_hht=Dpp; F_eet=Cpp
+        call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,.false.,.true.,nOOt,eOld,F_shift,F_hht)
+        call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,.false.,.false.,nVVt,eOld,F_shift,F_eet)
+      end if
+
       call ppRLR(TDApp,nOOt,nVVt,Bpp,Cpp,Dpp,ee_trip_Om,X1t,Y1t,hh_trip_Om,X2t,Y2t,Ec_pp(ispin))
+      if(do_Faddeev) then
+        ee_trip_Om=ee_trip_Om+F_shift
+        hh_trip_Om=hh_trip_Om+F_shift
+      end if
 
       call wall_time(end_t)
       t = end_t - start_t
@@ -804,26 +869,32 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     mem = mem + size(eQPlin) + size(Z) + size(SigC)
     write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
-    if(do_ADC_self_energy) then
+    if(do_Faddeev.or.do_ADC_self_energy) then
 
-      write(*,*) 'Building full Hermitian spin-adapted PSD ADC-Parquet matrix...'
-      write(*,*)
+      if(do_Faddeev) then
+        call R_TDA_Faddeev_self_energy(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+                                        eHF,eOld,ERI,F_eh,F_eht,F_hh,F_hht,F_ee,F_eet,eADC,ZADC)
+      else
+        write(*,*) 'Building full Hermitian spin-adapted PSD ADC-Parquet matrix...'
+        write(*,*)
 
-      call wall_time(start_t)
-      call R_ADC_Parquet(reg_PA,eta_1b,                           &
-                         nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
-                         eHF,eOld,ERI,                            &
-                         old_eh_sing_Om,eh_sing_rho,              &
-                         old_eh_trip_Om,eh_trip_rho,              &
-                         old_ee_sing_Om,ee_sing_rho,              &
-                         old_ee_trip_Om,ee_trip_rho,              &
-                         old_hh_sing_Om,hh_sing_rho,              &
-                         old_hh_trip_Om,hh_trip_rho,              &
-                         eADC,ZADC)
-      call wall_time(end_t)
-      t = end_t - start_t
-      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'
-      write(*,*)
+        call wall_time(start_t)
+        call R_ADC_Parquet(reg_PA,eta_1b,                           &
+                           nOrb,nC,nO,nV,nR,nS,nOOs,nVVs,nOOt,nVVt, &
+                           eHF,eOld,ERI,                            &
+                           old_eh_sing_Om,eh_sing_rho,              &
+                           old_eh_trip_Om,eh_trip_rho,              &
+                           old_ee_sing_Om,ee_sing_rho,              &
+                           old_ee_trip_Om,ee_trip_rho,              &
+                           old_hh_sing_Om,hh_sing_rho,              &
+                           old_hh_trip_Om,hh_trip_rho,              &
+                           eADC,ZADC)
+        call wall_time(end_t)
+        t = end_t - start_t
+        write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'
+        write(*,*)
+
+      end if
 
       eQP(:)    = eADC(:)
       Z(:)      = ZADC(:)

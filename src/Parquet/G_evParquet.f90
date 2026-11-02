@@ -30,6 +30,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
 ! Local variables
 
+  logical                       :: do_Faddeev
+  double precision,allocatable  :: F_eh(:,:),F_hh(:,:),F_ee(:,:)
+
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
   double precision              :: err_eh, err_pp
@@ -84,8 +87,14 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 ! None
   
 ! Useful parameters
-  nOO = nO*(nO - 1)/2
-  nVV = nV*(nV - 1)/2
+  nOO = (nO-nC)*(nO-nC-1)/2
+  nVV = (nOrb-nR-nO)*(nOrb-nR-nO-1)/2
+  call TDA_Faddeev_selector(TDAeh,TDApp,do_ADC_self_energy,do_Faddeev)
+  if(do_Faddeev) then
+    if(max_it_1b<1.or.max_it_2b<1.or.max_diis_1b<1.or.max_diis_2b<1) &
+      error stop 'TDA Faddeev requires positive iteration and DIIS limits'
+  end if
+  if(do_Faddeev) allocate(F_eh(nS,nS),F_hh(nOO,nOO),F_ee(nVV,nVV))
 
 ! Start
  
@@ -102,7 +111,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   write(*,*)'---------------------------------------------------------------'
   write(*,'(1X,A50,1X,I5)')    'Maximum number of one-body iteration:',max_it_1b
   write(*,'(1X,A50,1X,E10.5)') 'Convergence threshold for one-body energies:',conv_1b
-  write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',conv_1b
+  write(*,'(1X,A50,1X,L5)')    'Linearization of quasiparticle equation?',linearize
   write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG one-body regularization:',eta_1b
   write(*,'(1X,A50,1X,E10.5)') 'Strength of SRG two-body regularization:',eta_2b
   write(*,'(1X,A50,1X,I5)')    'Maximum length of DIIS expansion:',max_diis_1b
@@ -244,6 +253,17 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Aph(:,:) = Aph(:,:) + eh_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_Gam_B(:,:) 
       
+      if(do_Faddeev) then
+        F_eh=Aph
+        pqrs=0
+        do p=nC+1,nO
+          do q=nO+1,nOrb-nR
+            pqrs=pqrs+1
+            F_eh(pqrs,pqrs)=F_eh(pqrs,pqrs)-eOld(q)+eOld(p)
+          end do
+        end do
+      end if
+
       call phGLR(TDAeh,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
 
  !     call matout(nS,nS,XpY)
@@ -258,9 +278,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       err_eig_eh = maxval(abs(old_eh_Om - eh_Om))
 
+      mem = mem - size(Aph) - size(Bph) - size(eh_Gam_A) - size(eh_Gam_B)
       deallocate(Aph,Bph,eh_Gam_A,eh_Gam_B)
 
-      mem = mem - size(Aph) - size(Bph) - size(eh_Gam_A) - size(eh_Gam_B)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       !-----------------!
@@ -308,6 +328,12 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Cpp(:,:) = Cpp(:,:) + pp_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_Gam_D(:,:)
       
+      if(do_Faddeev) then
+        F_hh=Dpp; F_ee=Cpp
+        call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,.false.,.true.,nOO,eOld,0d0,F_hh)
+        call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,.false.,.false.,nVV,eOld,0d0,F_ee)
+      end if
+
       call ppGLR(TDApp,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,Ec_pp)
       call wall_time(end_t)
       t = end_t - start_t
@@ -322,10 +348,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       err_eig_hh = maxval(abs(old_hh_Om - hh_Om))
       err_eig_pp = max(err_eig_ee,err_eig_hh)
 
-      deallocate(Bpp,Cpp,Dpp,pp_Gam_B,pp_Gam_C,pp_Gam_D)
-
       mem = mem - size(Bpp) - size(Cpp) - size(Dpp) &
                 - size(pp_Gam_B) - size(pp_Gam_C) - size(pp_Gam_D)
+      deallocate(Bpp,Cpp,Dpp,pp_Gam_B,pp_Gam_C,pp_Gam_D)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       !----------!
@@ -336,9 +361,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       old_ee_Om(:) = ee_Om(:)
       old_hh_Om(:) = hh_Om(:)
 
+      mem = mem - size(eh_Om) - size(ee_Om) - size(hh_Om)
       deallocate(eh_Om,ee_Om,hh_Om)
 
-      mem = mem - size(eh_Om) - size(ee_Om) - size(hh_Om)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
       
       !----------------------------!
@@ -346,9 +371,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       !----------------------------!
 
       ! Free memory
+      mem = mem - size(eh_rho) - size(ee_rho) - size(hh_rho)
       deallocate(eh_rho,ee_rho,hh_rho)
 
-      mem = mem - size(eh_rho) - size(ee_rho) - size(hh_rho)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
       ! TODO Once we will compute the blocks of kernel starting from the 4-tensors we can move the freeing up
@@ -485,9 +510,9 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       
       ! Free memory
 
+      mem = mem - size(eh_Phi) - size(pp_Phi)
       deallocate(eh_Phi,pp_Phi)
 
-      mem = mem - size(eh_Phi) - size(pp_Phi)
       write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
       
       write(*,*) '------------------------------------------------'
@@ -541,22 +566,28 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     mem = mem + size(eQPlin) + size(Z) + size(SigC)
     write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
-    if(do_ADC_self_energy) then
+    if(do_Faddeev.or.do_ADC_self_energy) then
 
-      write(*,*) 'Building full Hermitian PSD ADC-Parquet matrix...'
-      write(*,*)
+      if(do_Faddeev) then
+        call G_TDA_Faddeev_self_energy(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOO,nVV, &
+                                        eHF,eOld,ERI,F_eh,F_hh,F_ee,eADC,ZADC)
+      else
+        write(*,*) 'Building full Hermitian PSD ADC-Parquet matrix...'
+        write(*,*)
 
-      call wall_time(start_t)
-      call G_ADC_Parquet(reg_PA,eta_1b,                                &
-                         nOrb,nC,nO,nV,nR,nS,nOO,nVV,                  &
-                         eHF,eOld,ERI,                                 &
-                         old_eh_Om,eh_rho,                             &
-                         old_ee_Om,ee_rho,old_hh_Om,hh_rho,            &
-                         eADC,ZADC)
-      call wall_time(end_t)
-      t = end_t - start_t
-      write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'
-      write(*,*)
+        call wall_time(start_t)
+        call G_ADC_Parquet(reg_PA,eta_1b,                                &
+                           nOrb,nC,nO,nV,nR,nS,nOO,nVV,                  &
+                           eHF,eOld,ERI,                                 &
+                           old_eh_Om,eh_rho,                             &
+                           old_ee_Om,ee_rho,old_hh_Om,hh_rho,            &
+                           eADC,ZADC)
+        call wall_time(end_t)
+        t = end_t - start_t
+        write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'
+        write(*,*)
+
+      end if
 
       eQP(:)    = eADC(:)
       Z(:)      = ZADC(:)
@@ -617,9 +648,8 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     
     call G_print_parquet_1b(nOrb,nC,nO,nV,nR,eHF,SigC,eQP,Z,n_it_1b,err_1b,ENuc,EGHF,EcGM,Ec_eh,Ec_pp)
 
-    deallocate(eQPlin,Z,SigC)
-
     mem = mem - size(eQPlin) - size(Z) - size(SigC)
+    deallocate(eQPlin,Z,SigC)
     write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in GParquet =',mem*dp_in_GB,' GB'
 
     call wall_time(end_1b)

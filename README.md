@@ -311,3 +311,8 @@ and old methods files. `tests/gw_parquet_checks.f90` additionally checks
 finite-difference derivatives, legacy entry-point compatibility, and the
 GW-kernel/half-vertex normalization. It links against the built QuAcK
 libraries and the same BLAS/LAPACK libraries used by QuAcK.
+
+## TDA Faddeev-Parquet
+
+Restricted and generalized TDA self-energies with ADC(3) external couplings
+are available through `evParquet`. See [usage, equations, and checks](docs/TDA_Faddeev_Parquet.md).

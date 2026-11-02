@@ -73,15 +73,19 @@ subroutine R_pp_triplet_screened_integral(nOrb,nC,nO,nR,nOO,nVV,ERI,eh_sing_Phi,
 
   ! rho1 = Gamma_pp_cd * X1(cd,ab) + Gamma_pp_kl * Y1(kl,ab)
 
-  call dgemm('N','N', nOrb*nOrb, nVV, nVV, 1d0, Gamma_pp_cd(1,1,1), nOrb * nOrb, X1(1,1), nVV, 0d0, rho1(1,1,1), nOrb*nOrb)
+  if(nVV > 0) &
+    call dgemm('N','N', nOrb*nOrb, nVV, nVV, 1d0, Gamma_pp_cd(1,1,1), nOrb * nOrb, X1(1,1), nVV, 0d0, rho1(1,1,1), nOrb*nOrb)
 
-  call dgemm('N','N', nOrb*nOrb, nVV, nOO, 1d0, Gamma_pp_kl(1,1,1), nOrb * nOrb, Y1(1,1), nOO, 1d0, rho1(1,1,1), nOrb*nOrb)
+  if(nVV > 0 .and. nOO > 0) &
+    call dgemm('N','N', nOrb*nOrb, nVV, nOO, 1d0, Gamma_pp_kl(1,1,1), nOrb * nOrb, Y1(1,1), nOO, 1d0, rho1(1,1,1), nOrb*nOrb)
   
   ! rho2 = Gamma_pp_cd * X2(cd,ij) + Gamma_pp_kl * Y1(kl,ij)
 
-  call dgemm('N','N', nOrb*nOrb, nOO, nVV, 1d0, Gamma_pp_cd(1,1,1), nOrb * nOrb, X2(1,1), nVV, 0d0, rho2(1,1,1), nOrb*nOrb)
+  if(nOO > 0 .and. nVV > 0) &
+    call dgemm('N','N', nOrb*nOrb, nOO, nVV, 1d0, Gamma_pp_cd(1,1,1), nOrb * nOrb, X2(1,1), nVV, 0d0, rho2(1,1,1), nOrb*nOrb)
 
-  call dgemm('N','N', nOrb*nOrb, nOO, nOO, 1d0, Gamma_pp_kl(1,1,1), nOrb * nOrb, Y2(1,1), nOO, 1d0, rho2(1,1,1), nOrb*nOrb)
+  if(nOO > 0) &
+    call dgemm('N','N', nOrb*nOrb, nOO, nOO, 1d0, Gamma_pp_kl(1,1,1), nOrb * nOrb, Y2(1,1), nOO, 1d0, rho2(1,1,1), nOrb*nOrb)
   
   deallocate(Gamma_pp_cd,Gamma_pp_kl)
 
