@@ -12,9 +12,9 @@ module TDA_Faddeev_IP_operator
     double precision,allocatable :: phx(:,:),phy(:,:),ppx(:,:),ppy(:,:)
   end type
 contains
-  subroutine initialize(op,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
+  subroutine initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
     type(Faddeev_operator),intent(out) :: op
-    logical,intent(in) :: reg
+    logical,intent(in) :: adc2,reg
     integer,intent(in) :: block,nERI,nOrb,nC,nO,nR,ns,noo,nvv
     double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
     double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv)
@@ -77,7 +77,7 @@ contains
       if(block==1) p=2*q-1
       op%phys(q)=p; op%f(q)=eHF(p)
     end do
-    call G_TDA_Faddeev_vertices(reg,eta,nERI,nOrb,nC,nO,nR,op%nphys,op%nm,op%np, &
+    call G_TDA_Faddeev_vertices(adc2,reg,eta,nERI,nOrb,nC,nO,nR,op%nphys,op%nm,op%np, &
                                 op%phys,op%minus,op%plus,eQP,ERI,op%Um,op%Up)
     op%diag(1:op%nphys)=op%f
     do r=1,op%nm
@@ -377,12 +377,12 @@ contains
   end subroutine
 end module
 
-subroutine G_TDA_Faddeev_IP(reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
+subroutine G_TDA_Faddeev_IP(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
                            eHF,eQP,ERI,Weh,Whh,Wee,omega,Z,homo_weight,residual,info)
   use TDA_Faddeev_IP_operator
   implicit none
   include 'parameters.h'
-  logical,intent(in) :: reg
+  logical,intent(in) :: adc2,reg
   integer,intent(in) :: block,nERI,nOrb,nC,nO,nR,ns,noo,nvv
   double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
   double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv)
@@ -392,9 +392,13 @@ subroutine G_TDA_Faddeev_IP(reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
   integer :: nocc,iterations
   double precision :: start,finish
   call wall_time(start)
-  call initialize(op,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
+  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
   call wall_time(finish)
-  write(*,*) 'Matrix-free TDA Faddeev-Parquet principal IP with ADC(3) couplings'
+  if(adc2) then
+    write(*,*) 'Matrix-free TDA Faddeev-Parquet principal IP with ADC(2) couplings'
+  else
+    write(*,*) 'Matrix-free TDA Faddeev-Parquet principal IP with ADC(3) couplings'
+  end if
   write(*,*) 'Physical upfolded dimension = ',op%n
   write(*,'(A,F12.3,A)') ' Faddeev operator setup: ',finish-start,' seconds'
   nocc=nO
@@ -411,19 +415,19 @@ subroutine G_TDA_Faddeev_IP(reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
   if(homo_weight<0.5d0) write(*,*) 'HOMO character is fragmented; compare nearby poles with the full spectrum.'
 end subroutine
 
-subroutine G_TDA_Faddeev_IP_action(reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,n,nvec, &
+subroutine G_TDA_Faddeev_IP_action(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,n,nvec, &
                                   eHF,eQP,ERI,Weh,Whh,Wee,x,y,diag)
 ! Regression interface: compare the operator with the dense construction.
   use TDA_Faddeev_IP_operator
   implicit none
-  logical,intent(in) :: reg
+  logical,intent(in) :: adc2,reg
   integer,intent(in) :: block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,n,nvec
   double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
   double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv),x(n,nvec)
   double precision,intent(out) :: y(n,nvec),diag(n)
   type(Faddeev_operator) :: op
   integer :: j
-  call initialize(op,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
+  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
   if(n/=op%n) error stop 'Faddeev IP action: incorrect dimension'
   diag=op%diag
   do j=1,nvec

@@ -1,10 +1,10 @@
-subroutine G_TDA_Faddeev_self_energy(reg_PA,eta,nOrb,nC,nO,nR,nS,nOO,nVV, &
+subroutine G_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOO,nVV, &
                                     eHF,eQP,ERI,Weh,Whh,Wee,ePA,ZPA)
 ! Complete-TDA physical reduction of faddeev_parquet_notes.tex.
 ! Weh=Aeh-diag(ea-ei), Whh=Dpp+diag(ei+ej), Wee=Cpp-diag(ea+eb).
-! External vertices are U^(1)+U^(2) of ADC(3), with bare ERIs.
+! External vertices use bare ERIs: ADC(2) U^(1) or ADC(3) U^(1)+U^(2).
   implicit none
-  logical,intent(in) :: reg_PA
+  logical,intent(in) :: adc2,reg_PA
   integer,intent(in) :: nOrb,nC,nO,nR,nS,nOO,nVV
   double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in) :: Weh(nS,nS),Whh(nOO,nOO),Wee(nVV,nVV)
@@ -14,8 +14,8 @@ subroutine G_TDA_Faddeev_self_energy(reg_PA,eta,nOrb,nC,nO,nR,nS,nOO,nVV, &
   if(nC<0.or.nR<0.or.nO<=nC.or.nOrb-nR<=nO) error stop 'G TDA Faddeev: invalid active space'
   nH=nOrb+nOO*(nOrb-nR-nO)+nVV*(nO-nC)
   allocate(H(nH,nH))
-  call G_TDA_Faddeev_build(reg_PA,eta,0,nOrb,nC,nO,nR,nS,nOO,nVV,nH,eHF,eQP,ERI,Weh,Whh,Wee,H)
-  call G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
+  call G_TDA_Faddeev_build(adc2,reg_PA,eta,0,nOrb,nC,nO,nR,nS,nOO,nVV,nH,eHF,eQP,ERI,Weh,Whh,Wee,H)
+  call G_TDA_Faddeev_spectrum(adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 
 subroutine TDA_Faddeev_strip_pair(nOrb,first,last,equal_pair,removal,nPair,e,shift,K)
@@ -40,7 +40,7 @@ subroutine TDA_Faddeev_strip_pair(nOrb,first,last,equal_pair,removal,nPair,e,shi
   if(r/=nPair) error stop 'TDA Faddeev: inconsistent pair stripping dimension'
 end subroutine
 
-subroutine G_TDA_Faddeev_build(reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH, &
+subroutine G_TDA_Faddeev_build(adc2,reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH, &
                               eHF,eQP,ERI,Weh,Whh,Wee,H)
 ! spin_block=0: general spin orbitals; 1: alpha charged block, with
 ! interleaved alpha/beta orbitals (used by the restricted wrapper).
@@ -48,7 +48,7 @@ subroutine G_TDA_Faddeev_build(reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH
 ! four-index crossing ambiguities. Pair bases must be complete.
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
-  logical,intent(in) :: reg_PA
+  logical,intent(in) :: adc2,reg_PA
   integer,intent(in) :: spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH
   double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in) :: Weh(nS,nS),Whh(nOO,nOO),Wee(nVV,nVV)
@@ -115,14 +115,14 @@ subroutine G_TDA_Faddeev_build(reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH
     if(spin_block==1) phys(p)=2*p-1
   end do
   allocate(Um(nm,nphys),Up(np,nphys))
-  call G_TDA_Faddeev_vertices(reg_PA,eta,nOrb,nOrb,nC,nO,nR,nphys,nm,np, &
+  call G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nOrb,nOrb,nC,nO,nR,nphys,nm,np, &
                               phys,minus,plus,eQP,ERI,Um,Up)
   H=0d0
   do p=1,nphys
     H(p,p)=eHF(phys(p))
   end do
 
-! Removal block and the three ADC(3) endpoint terms, notes Eq. UR2_minus.
+! Removal block with the selected external couplings.
   do r=1,nm
     i=minus(1,r); j=minus(2,r); a=minus(3,r); ij=hh(i,j)
     H(nphys+r,nphys+r)=eQP(i)+eQP(j)-eQP(a)
@@ -142,7 +142,7 @@ subroutine G_TDA_Faddeev_build(reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH
     end do
   end do
 
-! Addition block and Eq. UR2_plus. Ordered pair sums absorb the 1/2.
+! Addition block with the selected external couplings.
   do r=1,np
     i=plus(1,r); a=plus(2,r); b=plus(3,r); ab=ee(a,b)
     H(nphys+nm+r,nphys+nm+r)=eQP(a)+eQP(b)-eQP(i)
@@ -175,12 +175,13 @@ contains
 
 end subroutine
 
-subroutine G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
+subroutine G_TDA_Faddeev_spectrum(adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 ! The upfolded matrix realizes Sigma=U^T (omega I-Mbar)^(-1) U.
 ! Dominant poles use orbital-specific weights summed over degeneracies.
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   include 'parameters.h'
+  logical,intent(in) :: adc2
   integer,intent(in) :: nOrb,nC,nR,nH
   double precision,intent(in) :: eHF(nOrb)
   double precision,intent(inout) :: H(nH,nH)
@@ -189,7 +190,11 @@ subroutine G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
   double precision :: best,w
   integer :: p,s,t,idx
   allocate(poles(nH),weight(nH))
-  write(*,*) 'TDA Faddeev-Parquet with ADC(3) external couplings'
+  if(adc2) then
+    write(*,*) 'TDA Faddeev-Parquet with ADC(2) external couplings'
+  else
+    write(*,*) 'TDA Faddeev-Parquet with ADC(3) external couplings'
+  end if
   write(*,*) 'Physical upfolded dimension = ',nH
   call diagonalize_matrix(nH,H,poles)
   if(.not.all(ieee_is_finite(poles))) error stop 'TDA Faddeev: nonfinite spectrum'
@@ -223,15 +228,15 @@ subroutine G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
   end do
 end subroutine
 
-subroutine G_TDA_Faddeev_vertices(reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np, &
+subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np, &
                                  phys,minus,plus,eQP,ERI,Um,Up)
-! ADC(3) endpoints shared by the dense and matrix-free implementations.
+! ADC(2)/ADC(3) endpoints shared by dense and matrix-free implementations.
 ! nERI=nOrb: general spin-orbital ERIs; 2*nERI=nOrb: spatial Coulomb
 ! integrals with interleaved alpha/beta spin indices. Cache MP2 amplitudes
 ! once instead of evaluating the same denominators for every external p.
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
-  logical,intent(in) :: reg_PA
+  logical,intent(in) :: adc2,reg_PA
   integer,intent(in) :: nERI,nOrb,nC,nO,nR,nphys,nm,np
   integer,intent(in) :: phys(nphys),minus(3,nm),plus(3,np)
   double precision,intent(in) :: eta,eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
@@ -240,6 +245,20 @@ subroutine G_TDA_Faddeev_vertices(reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np, &
   double precision :: x
   integer :: i,j,k,l,a,b,c,d,p,q,r
   if(nERI/=nOrb.and.2*nERI/=nOrb) error stop 'Faddeev vertices: invalid ERI dimension'
+  Um=0d0; Up=0d0
+  if(adc2) then
+    do q=1,nphys
+      p=phys(q)
+      if(p<=nC.or.p>nOrb-nR) cycle
+      do r=1,nm
+        Um(r,q)=v(minus(1,r),minus(2,r),p,minus(3,r))
+      end do
+      do r=1,np
+        Up(r,q)=v(plus(2,r),plus(3,r),p,plus(1,r))
+      end do
+    end do
+    return
+  end if
   if(reg_PA.and.(eta<=0d0.or..not.ieee_is_finite(eta))) error stop 'Faddeev vertices: invalid SRG flow'
   allocate(t2(nC+1:nO,nC+1:nO,nO+1:nOrb-nR,nO+1:nOrb-nR))
   do b=nO+1,nOrb-nR

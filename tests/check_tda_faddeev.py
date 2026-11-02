@@ -49,7 +49,7 @@ double precision,intent(out) :: omega,z,hw,residual
 integer,intent(out) :: info
 integer :: iterations
 type(Faddeev_operator) :: op
-call initialize(op,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,Whh,Wee)
+call initialize(op,.false.,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,Whh,Wee)
 call davidson(op,nO,omega,z,hw,residual,iterations,info,maxspace,maxiter)
 end subroutine
 '''
@@ -85,7 +85,7 @@ end subroutine
                 arr([[v[i, j, k, l] - v[i, j, l, k] for k, l in hh] for i, j in hh]).reshape((len(hh),)*2, order='F'),
                 arr([[v[a, b, c, d] - v[a, b, d, c] for c, d in ee] for a, b in ee]).reshape((len(ee),)*2, order='F')]
 
-    def build(e, v, o, nc=0, nr=0, reg=False, flow=1., block=0, wk=None):
+    def build(e, v, o, nc=0, nr=0, reg=False, flow=1., block=0, wk=None, adc2=False):
         n = len(e); occ = range(nc, o); vir = range(o, n-nr)
         hh, ee = pairs(occ), pairs(vir)
         minus = [(i, j, a) for i, j in hh for a in vir]
@@ -97,26 +97,26 @@ end subroutine
         nh = (n//2 if block else n) + len(minus) + len(plus)
         h = np.zeros((nh, nh), order='F')
         wk = kernels(v, occ, vir) if wk is None else wk
-        call('g_tda_faddeev_build', reg, flow, block, n, nc, o, nr, len(occ)*len(vir),
+        call('g_tda_faddeev_build', adc2, reg, flow, block, n, nc, o, nr, len(occ)*len(vir),
              len(hh), len(ee), nh, e, e, v, *wk, h)
         return h, minus, plus
 
-    def check_action(e, v, o, h, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1.):
+    def check_action(e, v, o, h, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1., adc2=False):
         n = len(e); no = o-nc; nv = n-nr-o
         eri = v if spatial is None else spatial
         vectors = arr(rng.normal(size=(len(h), 5)))
         got = np.zeros_like(vectors, order='F'); diag = arr(np.zeros(len(h)))
-        call('g_tda_faddeev_ip_action', reg, flow, block, len(eri), n, nc, o, nr,
+        call('g_tda_faddeev_ip_action', adc2, reg, flow, block, len(eri), n, nc, o, nr,
              no*nv, no*(no-1)//2, nv*(nv-1)//2, len(h), 5, e, e, eri, *wk, vectors, got, diag)
         np.testing.assert_allclose(got, h @ vectors, atol=3e-13, rtol=1e-12)
         np.testing.assert_allclose(diag, np.diag(h), atol=2e-13)
 
-    def solve_ip(e, v, o, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1.):
+    def solve_ip(e, v, o, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1., adc2=False):
         n = len(e); no = o-nc; nv = n-nr-o
         eri = v if spatial is None else spatial
         omega, z, hw, residual = [arr(np.zeros(1)) for _ in range(4)]
         info = np.zeros(1, dtype=np.int32)
-        call('g_tda_faddeev_ip', reg, flow, block, len(eri), n, nc, o, nr,
+        call('g_tda_faddeev_ip', adc2, reg, flow, block, len(eri), n, nc, o, nr,
              no*nv, no*(no-1)//2, nv*(nv-1)//2, e, e, eri, *wk, omega, z, hw, residual, info)
         assert info[0] == 0, (omega, residual, info)
         assert residual[0] < 1e-8
@@ -145,6 +145,45 @@ end subroutine
         np.testing.assert_allclose(omega, values[principal], atol=1e-10)
         np.testing.assert_allclose(z, sum(vec[:n,principal]**2), atol=1e-9)
     print('PASS bare-kernel matrices and ADC(3) endpoints vs existing G_IPEA_ADC3, including active spaces')
+
+    # ADC(2) changes only the external vertices. Check each element directly
+    # against bare antisymmetrized integrals, including frozen external lines.
+    def check_adc2(e, v, o, nc=0, nr=0, block=0, spatial=None, wk=None):
+        h3, _, _ = build(e, v, o, nc, nr, block=block, wk=wk)
+        h2, minus, plus = build(e, v, o, nc, nr, block=block, wk=wk, adc2=True)
+        nphys = len(e)//2 if block else len(e)
+        expected = np.zeros((len(minus)+len(plus), nphys))
+        for q in range(nphys):
+            p = 2*q if block else q
+            if p < nc or p >= len(e)-nr:
+                continue
+            for r, (i,j,a) in enumerate(minus):
+                expected[r,q] = v[i,j,p,a]-v[i,j,a,p]
+            for r, (i,a,b) in enumerate(plus):
+                expected[len(minus)+r,q] = v[a,b,p,i]-v[a,b,i,p]
+        np.testing.assert_allclose(h2[nphys:,:nphys], expected, atol=1e-14)
+        np.testing.assert_allclose(h2[:nphys,nphys:], expected.T, atol=1e-14)
+        np.testing.assert_array_equal(h2[nphys:,nphys:], h3[nphys:,nphys:])
+        np.testing.assert_array_equal(h2[:nphys,:nphys], h3[:nphys,:nphys])
+        wk = kernels(v, range(nc,o), range(o,len(e)-nr)) if wk is None else wk
+        check_action(e,v,o,h2,wk,nc,nr,block,spatial,adc2=True)
+        omega,z,hw = solve_ip(e,v,o,wk,nc,nr,block,spatial,adc2=True)
+        vals,vec = np.linalg.eigh(h2)
+        homo = o//2-1 if block else o-1
+        target = np.argmax(vec[homo,:]**2)
+        np.testing.assert_allclose(omega,vals[target],atol=1e-10)
+        np.testing.assert_allclose(z,sum(vec[:nphys,target]**2),atol=1e-9)
+        return omega,z
+
+    for nc,nr in [(0,0),(1,0),(0,1),(1,1)]:
+        check_adc2(e,v,o,nc,nr)
+    # No MP2 denominators may be evaluated in ADC(2), even if all are zero.
+    hzero,_,_ = build(arr(np.zeros(n)),v,o,adc2=True)
+    hzreg,_,_ = build(arr(np.zeros(n)),v,o,reg=True,flow=.7,adc2=True)
+    np.testing.assert_array_equal(hzero,hzreg)
+    assert np.isfinite(hzero).all()
+    print('PASS ADC(2) bare endpoints, unchanged charged blocks, active spaces, Davidson and zero denominators')
+
 
     # Spin-adapted bare pair kernels. Verify the R lift against direct Coulomb
     # spin expansion, including equal spatial pairs and all three triplets.
@@ -187,7 +226,7 @@ end subroutine
         check_action(eg, vg, og, ha, lifted, 2*nc, 2*nr, block=1, spatial=v)
         ip,zprincipal,hwp = solve_ip(eg, vg, og, lifted, 2*nc, 2*nr, block=1, spatial=v)
         er = np.zeros(n, order='F'); zr = er.copy(order='F')
-        call('r_tda_faddeev_self_energy', False, 1., n, nc, o, nr, *dims, e, e, v, *rk, er, zr)
+        call('r_tda_faddeev_self_energy', False, False, 1., n, nc, o, nr, *dims, e, e, v, *rk, er, zr)
         np.testing.assert_allclose(ip, er[o-1], atol=1e-10)
         np.testing.assert_allclose(zprincipal, zr[o-1], atol=1e-9)
         omega,z,hw = solve_ip(eg, vg, og, lifted, 2*nc, 2*nr)
@@ -202,6 +241,24 @@ end subroutine
             np.testing.assert_allclose(zr[p], np.sum(u[2*p, group]**2), atol=1e-11)
     print('PASS R singlet/triplet lift, spin conservation, R/G poles and weights, empty triplet sectors')
 
+    for nc,nr in [(0,0),(1,0),(0,1),(1,1)]:
+        rk = r_kernels(nc,nr)
+        gk = kernels(vg,range(2*nc,og),range(og,ng-2*nr))
+        dims = [len(rk[i]) for i in [0,2,3,4,5]]
+        ip,z = check_adc2(eg,vg,og,2*nc,2*nr,block=1,spatial=v,wk=gk)
+        er = arr(np.zeros(n)); zr = arr(np.zeros(n))
+        call('r_tda_faddeev_self_energy', True,False,1.,n,nc,o,nr,*dims,e,e,v,*rk,er,zr)
+        np.testing.assert_allclose(ip,er[o-1],atol=1e-10)
+        np.testing.assert_allclose(z,zr[o-1],atol=1e-9)
+        outputs = [arr(np.zeros(1)) for _ in range(4)]
+        info = np.zeros(1,dtype=np.int32)
+        call('r_tda_faddeev_ip', True,False,1.,n,nc,o,nr,*dims,e,e,v,*rk,*outputs,info)
+        assert info[0] == 0 and outputs[3][0] < 1e-8
+        np.testing.assert_allclose(outputs[0][0],ip,atol=1e-10)
+        np.testing.assert_allclose(outputs[1][0],z,atol=1e-9)
+    print('PASS ADC(2) restricted full spectrum and Davidson vs generalized spin reconstruction')
+
+
     # Independent ordered-amplitude Faddeev construction: derive V_r on the
     # full ordered tensor space, diagonalize its pair Hamiltonians, and test
     # P M_F = Mbar P for dense, dressed kernels in both branches.
@@ -211,6 +268,7 @@ end subroutine
     for size in [len(ph), len(hh), len(ee)]:
         w = rng.normal(size=(size, size))*.03
         wk.append(arr((w+w.T)/2))
+    check_adc2(e,v,o,wk=wk)
     h, minus, plus = build(e, v, o, wk=wk)
     check_action(e, v, o, h, wk)
     omega,z,hw = solve_ip(e, v, o, wk)

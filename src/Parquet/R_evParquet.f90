@@ -11,7 +11,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical                       :: print_phLR = .false. ! Print the eh two-body excitations at each two-body iterations
   logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
   logical                       :: do_ADC_self_energy = .false. ! Use Hermitian PSD ADC-Parquet
-  logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet with ADC(3) couplings
+  logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet
+  logical                       :: do_Faddeev_ADC2 = .false. ! ADC(2) endpoints; false keeps ADC(3) (full and Davidson)
   logical                       :: do_principal_IP = .true. ! Matrix-free HOMO-targeted Davidson; fixed one-body energies
   
 ! Input variables
@@ -881,7 +882,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       if(do_Faddeev_self_energy) then
         if(do_principal_IP) then
-          call R_TDA_Faddeev_IP(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+          call R_TDA_Faddeev_IP(do_Faddeev_ADC2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                                 eHF,eOld,ERI,F_eh,F_eht,F_hh,F_hht,F_ee,F_eet, &
                                 ip_omega,ip_Z,ip_homo,ip_residual,ip_info)
           if(ip_info/=0) error stop 'Principal-IP Davidson failed to converge; use the full-spectrum mode'
@@ -889,7 +890,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
           write(*,*) 'Principal-IP evaluation complete; one-body energies kept fixed.'
           return
         end if
-        call R_TDA_Faddeev_self_energy(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+        call R_TDA_Faddeev_self_energy(do_Faddeev_ADC2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                                         eHF,eOld,ERI,F_eh,F_eht,F_hh,F_hht,F_ee,F_eet,eADC,ZADC)
       else
         write(*,*) 'Building full Hermitian spin-adapted PSD ADC-Parquet matrix...'

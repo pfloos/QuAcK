@@ -1,13 +1,13 @@
-subroutine R_TDA_Faddeev_self_energy(reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+subroutine R_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                                     eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,ePA,ZPA)
-! Restricted complete-TDA Faddeev-Parquet, ADC(3) endpoints.
+! Restricted complete-TDA Faddeev-Parquet, ADC(2) or ADC(3) endpoints.
 ! Lift singlet/triplet static pair interactions to spin orbitals and retain
 ! only the alpha charged determinant block (Ms=1/2). This is an exact spin
 ! representation, including dark quartet states; no numerical projection
 ! or duplicate physical 1p states. The external orbitals remain spatial.
 ! Inputs contain interactions only, with all free pair energies removed.
   implicit none
-  logical,intent(in) :: reg_PA
+  logical,intent(in) :: adc2,reg_PA
   integer,intent(in) :: nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt
   double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in) :: Wehs(nS,nS),Weht(nS,nS),Whhs(nOOs,nOOs),Whht(nOOt,nOOt)
@@ -40,17 +40,17 @@ subroutine R_TDA_Faddeev_self_energy(reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,
   end do
   call R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                          Wehs,Weht,Whhs,Whht,Wees,Weet,Weh,Whh,Wee)
-  call G_TDA_Faddeev_build(reg_PA,eta,1,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG,nH,fg,eg,vg,Weh,Whh,Wee,H)
+  call G_TDA_Faddeev_build(adc2,reg_PA,eta,1,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG,nH,fg,eg,vg,Weh,Whh,Wee,H)
   write(*,*) 'Restricted TDA Faddeev-Parquet: alpha charged determinant block'
-  call G_TDA_Faddeev_spectrum(nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
+  call G_TDA_Faddeev_spectrum(adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 
-subroutine R_TDA_Faddeev_IP(reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+subroutine R_TDA_Faddeev_IP(adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                            eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,omega,Z,homo_weight,residual,info)
 ! Matrix-free restricted principal IP. Spatial ERIs are passed directly;
 ! the shared endpoint builder applies spin deltas without expanding ERIs.
   implicit none
-  logical,intent(in) :: reg
+  logical,intent(in) :: adc2,reg
   integer,intent(in) :: nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt
   double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(in) :: Wehs(nS,nS),Weht(nS,nS),Whhs(nOOs,nOOs),Whht(nOOt,nOOt)
@@ -70,7 +70,7 @@ subroutine R_TDA_Faddeev_IP(reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
   end do
   call R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                          Wehs,Weht,Whhs,Whht,Wees,Weet,Weh,Whh,Wee)
-  call G_TDA_Faddeev_IP(reg,eta,1,nOrb,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG, &
+  call G_TDA_Faddeev_IP(adc2,reg,eta,1,nOrb,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG, &
                        fg,eg,ERI,Weh,Whh,Wee,omega,Z,homo_weight,residual,info)
 end subroutine
 

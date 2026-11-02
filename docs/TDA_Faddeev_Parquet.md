@@ -1,11 +1,12 @@
-# TDA Faddeev-Parquet with ADC(3) external couplings
+# TDA Faddeev-Parquet with ADC(2) or ADC(3) external couplings
 
 Both restricted (`R_TDA_Faddeev_self_energy`) and generalized
 (`G_TDA_Faddeev_self_energy`) routines are available in `src/Parquet`.
 They implement the complete-TDA physical reduction in
 `faddeev_parquet_notes.tex`, using one physical 2h1p space and one physical
 2p1h space. The external vertices are the bare-integral ADC(3)
-`U = U^(1) + U^(2)` at the current one-particle energies. The one-particle
+`U = U^(1) + U^(2)` at the current one-particle energies by default.
+An optional switch selects ADC(2) endpoints, `U = U^(1)`. The one-particle
 block contains HF orbital energies. No gauge parameters are introduced.
 
 ## Run
@@ -23,8 +24,17 @@ just like the previous ADC-Parquet switch:
 ```fortran
 logical :: do_ADC_self_energy = .false.
 logical :: do_Faddeev_self_energy = .true.
+logical :: do_Faddeev_ADC2 = .false.
 logical :: do_principal_IP = .true.
 ```
+
+`do_Faddeev_ADC2=.true.` selects ADC(2) external coupling blocks in both
+the full-spectrum and matrix-free Davidson solvers, for both R and G.
+The default `.false.` retains ADC(3). The switch changes only the external
+vertices: the HF one-particle block and dressed Faddeev charged blocks stay
+the same. It therefore does not turn the entire model into ordinary ADC(2).
+ADC(2) endpoints require no MP2 amplitudes or denominators; endpoint SRG
+regularization has no effect on them.
 
 The matrix-free principal-IP mode is enabled by default in both drivers.
 Set `do_principal_IP=.false.` for the full spectrum. Rebuild QuAcK after
@@ -57,7 +67,7 @@ not `qsParquet` or `R_GW_Parquet`.
 `TDA_Faddeev_IP.f90` applies the same physical upfolded matrix using pair
 contractions. Both 2h1p and 2p1h branches and the full one-particle block
 are retained. The charged matrix is never built. Endpoint vertices are
-cached, and their MP2 denominators are evaluated once. The R solver passes
+cached; in ADC(3) mode their MP2 denominators are evaluated once. The R solver passes
 spatial ERIs directly and applies spin deltas without constructing a
 four-index spin-orbital ERI tensor.
 
@@ -100,7 +110,7 @@ extracting these interactions, and the pp mode energies are restored to
 absolute energies before parquet feedback. The R routine receives separate
 singlet/triplet interactions with QuAcK's normalized spatial pair bases.
 
-`G_TDA_Faddeev_build` forms the physical matrices and ADC(3) couplings;
+`G_TDA_Faddeev_build` forms the physical matrices and selected ADC(2)/ADC(3) couplings;
 `G_TDA_Faddeev_spectrum` diagonalizes the resulting matrix
 
 ```
@@ -145,8 +155,8 @@ unregularized result.
 
 ## Scope and checks
 
-This implements the static complete-TDA Faddeev model with ADC(3)
-endpoints. Identity with the full parquet Schwinger-Dyson self-energy has
+This implements the static complete-TDA Faddeev model with selectable
+ADC(2) or ADC(3) endpoints. Identity with the full parquet Schwinger-Dyson self-energy has
 not been established. It is a separate self-energy approximation to test.
 
 The older standalone `G_TDA_Faddeev_Parquet.f90` prototype is not called by
@@ -159,7 +169,9 @@ spaces and empty triplet sectors, the exact Faddeev intertwining identity
 for both branches with dense dressed kernels, and SRG limits. They also
 compare matrix-free products and diagonals with the dense construction,
 principal roots and residues with dense eigenpairs, split HOMO manifolds,
-forced thick restart, and explicit nonconvergence:
+forced thick restart, and explicit nonconvergence. ADC(2) checks verify
+bare endpoint elements, unchanged charged blocks, zero-denominator safety,
+and R/G full-spectrum and Davidson agreement:
 
 ```sh
 python tests/check_tda_faddeev.py --workdir /tmp/new-algebraic-checks
