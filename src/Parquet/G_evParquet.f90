@@ -13,7 +13,8 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical                       :: do_ADC_self_energy = .false. ! Use Hermitian PSD ADC-Parquet
   logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet
   logical                       :: do_Faddeev_ADC2 = .false. ! ADC(2) endpoints; false keeps ADC(3) (full and Davidson)
-  logical                       :: do_principal_IP = .true. ! Matrix-free HOMO-targeted Davidson; fixed one-body energies
+  logical                       :: do_principal_IP = .true. ! Matrix-free IP Davidson; fixed one-body energies
+  integer                       :: n_IP_roots = 1 ! Davidson roots; 1 retains the principal HOMO IP
   
 ! Input variables
 
@@ -33,7 +34,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
 ! Local variables
 
-  double precision              :: ip_omega,ip_Z,ip_homo,ip_residual
+  double precision,allocatable  :: ip_omega(:),ip_Z(:),ip_residual(:)
   integer                       :: ip_info
 
   double precision,allocatable  :: F_eh(:,:),F_hh(:,:),F_ee(:,:)
@@ -98,6 +99,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     error stop 'Select only one of ADC-Parquet and TDA Faddeev-Parquet'
   if(do_Faddeev_self_energy) then
     if(.not.TDAeh.or..not.TDApp) error stop 'TDA Faddeev-Parquet requires both TDAeh=T and TDApp=T'
+    if(do_principal_IP.and.n_IP_roots<1) error stop 'Faddeev IP: n_IP_roots must be positive'
     if(do_principal_IP.and.max_it_1b/=1) &
       error stop 'Principal-IP mode requires max_it_1b=1 (fixed one-body energies)'
     if(max_it_1b<1.or.max_it_2b<1.or.max_diis_1b<1.or.max_diis_2b<1) &
@@ -579,11 +581,12 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
       if(do_Faddeev_self_energy) then
         if(do_principal_IP) then
-          call G_TDA_Faddeev_IP(do_Faddeev_ADC2,reg_PA,eta_1b,0,nOrb,nOrb,nC,nO,nR,nS,nOO,nVV, &
-                                eHF,eOld,ERI,F_eh,F_hh,F_ee,ip_omega,ip_Z,ip_homo,ip_residual,ip_info)
-          if(ip_info/=0) error stop 'Principal-IP Davidson failed to converge; use the full-spectrum mode'
+          allocate(ip_omega(n_IP_roots),ip_Z(n_IP_roots),ip_residual(n_IP_roots))
+          call G_TDA_Faddeev_IP_roots(n_IP_roots,do_Faddeev_ADC2,reg_PA,eta_1b,0,nOrb,nOrb,nC,nO,nR,nS,nOO,nVV, &
+                                eHF,eOld,ERI,F_eh,F_hh,F_ee,ip_omega,ip_Z,ip_residual,ip_info)
+          if(ip_info/=0) error stop 'IP Davidson failed to converge; use the full-spectrum mode'
           ! No partial quasiparticle array is returned to the one-body loop.
-          write(*,*) 'Principal-IP evaluation complete; one-body energies kept fixed.'
+          write(*,*) 'IP evaluation complete; one-body energies kept fixed.'
           return
         end if
         call G_TDA_Faddeev_self_energy(do_Faddeev_ADC2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOO,nVV, &

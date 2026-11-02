@@ -17,7 +17,7 @@ Build QuAcK normally. In the calculation's `input` directory use:
   `tests/inp/methods.GTDAFaddeev` for GHF;
 - `tests/inp/options.TDAFaddeev` as `options`.
 
-The self-energy is selected by the hard-coded logical switches near the
+The self-energy is selected by the hard-coded settings near the
 start of `src/Parquet/R_evParquet.f90` and `src/Parquet/G_evParquet.f90`,
 just like the previous ADC-Parquet switch:
 
@@ -26,6 +26,7 @@ logical :: do_ADC_self_energy = .false.
 logical :: do_Faddeev_self_energy = .true.
 logical :: do_Faddeev_ADC2 = .false.
 logical :: do_principal_IP = .true.
+integer :: n_IP_roots = 1
 ```
 
 `do_Faddeev_ADC2=.true.` selects ADC(2) external coupling blocks in both
@@ -37,6 +38,8 @@ ADC(2) endpoints require no MP2 amplitudes or denominators; endpoint SRG
 regularization has no effect on them.
 
 The matrix-free principal-IP mode is enabled by default in both drivers.
+Set `n_IP_roots` to the number of IP eigenpairs wanted, for example `5`,
+in either driver. This setting is used only in Davidson mode.
 Set `do_principal_IP=.false.` for the full spectrum. Rebuild QuAcK after
 changing these switches, then launch PyDuck or QuAcK normally.
 
@@ -62,7 +65,7 @@ Set both to `.false.` for the native parquet self-energy. Setting both to
 `.true.` is rejected. These switches apply to the R/G `evParquet` drivers,
 not `qsParquet` or `R_GW_Parquet`.
 
-## Matrix-free principal IP
+## Matrix-free IP roots
 
 `TDA_Faddeev_IP.f90` applies the same physical upfolded matrix using pair
 contractions. Both 2h1p and 2p1h branches and the full one-particle block
@@ -88,6 +91,26 @@ It does not search every cation state: if orbital ordering changes or HOMO
 character fragments strongly, compare the full spectrum. A degenerate or
 split HOMO manifold is treated as a block; the smallest IP among its
 converged selected roots is reported.
+
+For `n_IP_roots>1`, a block harmonic Davidson search returns the requested
+number of ionization eigenpairs in increasing IP order. Its fixed target is
+the HF gap midpoint; poles above that midpoint are excluded. Initial guesses
+include occupied orbitals and low-IP charged configurations. The restart
+retains the requested roots and extra candidates. The default subspace is
+`max(96,4*n_IP_roots+8)` vectors (capped by the matrix dimension), with the
+same 256-iteration limit and `1e-8` Ha residual tolerance. Every returned
+root is checked with a fresh matrix-vector product. Nonconvergence of any
+requested root fails explicitly.
+
+The output table gives root index, IP, pole energy, total one-particle
+weight Z, and residual. These are eigenpairs, so satellites and dark states
+with small or zero Z can appear among the higher IPs. Degeneracies count
+as separate roots: G includes spin partners, while R uses the alpha charged
+block. Request enough G roots to include the desired distinct IPs. Root
+count 1 retains the original HOMO-character selection described above;
+it is not an energy-only search. Multiple-root mode does not filter by Z.
+As with an iterative interior eigensolver, strongly rearranged spectra or
+missing disconnected configurations warrant comparison with a full spectrum.
 
 At fixed subspace and orbital counts, solver storage grows linearly with
 the charged dimension, rather than quadratically. Pair kernels and cached
@@ -171,7 +194,9 @@ compare matrix-free products and diagonals with the dense construction,
 principal roots and residues with dense eigenpairs, split HOMO manifolds,
 forced thick restart, and explicit nonconvergence. ADC(2) checks verify
 bare endpoint elements, unchanged charged blocks, zero-denominator safety,
-and R/G full-spectrum and Davidson agreement:
+and R/G full-spectrum and Davidson agreement. Multiple-root checks cover
+ordered eigenpairs and weights against dense spectra, satellites, spin
+degeneracies, bounded-subspace restarts, and explicit nonconvergence:
 
 ```sh
 python tests/check_tda_faddeev.py --workdir /tmp/new-algebraic-checks

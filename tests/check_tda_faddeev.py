@@ -53,6 +53,20 @@ call initialize(op,.false.,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,W
 call davidson(op,nO,omega,z,hw,residual,iterations,info,maxspace,maxiter)
 end subroutine
 '''
+    restart_wrapper += """
+subroutine controlled_roots(nOrb,nO,nS,nOO,nVV,nroots,maxspace,maxiter,e,v,Weh,Whh,Wee,omega,z,residual,info)
+use TDA_Faddeev_IP_operator
+implicit none
+integer,intent(in) :: nOrb,nO,nS,nOO,nVV,nroots,maxspace,maxiter
+double precision,intent(in) :: e(nOrb),v(nOrb,nOrb,nOrb,nOrb),Weh(nS,nS),Whh(nOO,nOO),Wee(nVV,nVV)
+double precision,intent(out) :: omega(nroots),z(nroots),residual(nroots)
+integer,intent(out) :: info
+integer :: iterations
+type(Faddeev_operator) :: op
+call initialize(op,.false.,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,Whh,Wee)
+call davidson_roots(op,nO,nroots,omega,z,residual,iterations,info,maxspace,maxiter)
+end subroutine
+"""
     (work / 'controlled.f90').write_text(restart_wrapper)
     shared = work / ('checks.dylib' if sys.platform == 'darwin' else 'checks.so')
     command = shlex.split(os.environ.get('FC', 'gfortran')) + [
@@ -388,6 +402,67 @@ end subroutine
     call('controlled_ip', nstress,ostress,16,6,6,12,1,es,vs,*ws,*outputs,info)
     assert info[0] != 0 and outputs[3][0] > 1e-8
     print('PASS thick restart vs dense root and explicit nonconvergence status')
+    # Multiple IP eigenpairs ordered by increasing IP, including satellites
+    # and spin degeneracies. Exclude the deliberately uncoupled frozen 1p rows.
+    def check_roots(e,v,o,nroots,nc=0,nr=0,block=0,spatial=None,wk=None,adc2=False,reg=False):
+        n = len(e); no=o-nc; nv=n-nr-o
+        wk = kernels(v,range(nc,o),range(o,n-nr)) if wk is None else wk
+        h,_,_ = build(e,v,o,nc,nr,block=block,wk=wk,adc2=adc2,reg=reg,flow=.7)
+        nphys = n//2 if block else n
+        frozen = list(range(nc//2 if block else nc))
+        frozen += list(range(nphys-(nr//2 if block else nr),nphys))
+        active = [i for i in range(len(h)) if i not in frozen]
+        vals,vec = np.linalg.eigh(h[np.ix_(active,active)])
+        fermi=(e[o-1]+e[o])/2
+        selected=np.flatnonzero(vals<fermi)[::-1][:nroots]
+        outputs=[arr(np.zeros(nroots)) for _ in range(3)]
+        info=np.zeros(1,dtype=np.int32)
+        eri = v if spatial is None else spatial
+        call('g_tda_faddeev_ip_roots',nroots,adc2,reg,.7,block,len(eri),n,nc,o,nr,
+             no*nv,no*(no-1)//2,nv*(nv-1)//2,e,e,eri,*wk,*outputs,info)
+        assert info[0]==0 and max(outputs[2])<1e-8, (outputs,info)
+        np.testing.assert_allclose(outputs[0],vals[selected],atol=1e-9)
+        # Sum over degenerate eigenspaces rather than arbitrary eigenvectors.
+        for energy in outputs[0]:
+            group=abs(outputs[0]-energy)<1e-8
+            exact=abs(vals-energy)<1e-8
+            if sum(group)==sum(exact):
+                rows=[i for i,j in enumerate(active) if j<nphys]
+                np.testing.assert_allclose(sum(outputs[1][group]),np.sum(vec[np.ix_(rows,exact)]**2),atol=1e-8)
+        return outputs
+
+    for adc2 in [False,True]:
+        for nc,nr in [(0,0),(1,0),(0,1),(1,1)]:
+            check_roots(e,v,o,1 if nc else 2,nc,nr,adc2=adc2)
+        for nroots in [2,3,4]:
+            check_roots(e,v,o,nroots,adc2=adc2)
+            check_roots(eg,vg,og,nroots,adc2=adc2)
+            check_roots(eg,vg,og,nroots,block=1,spatial=v,adc2=adc2)
+        rk=r_kernels(0,0); dims=[len(rk[i]) for i in [0,2,3,4,5]]
+        expected=check_roots(eg,vg,og,3,block=1,spatial=v,adc2=adc2,reg=True)
+        outputs=[arr(np.zeros(3)) for _ in range(3)]; info=np.zeros(1,dtype=np.int32)
+        call('r_tda_faddeev_ip_roots',3,adc2,True,.7,n,0,o,0,*dims,e,e,v,*rk,*outputs,info)
+        assert info[0]==0
+        for got,ref in zip(outputs[:2],expected[:2]):
+            np.testing.assert_allclose(got,ref,atol=1e-9)
+        # Count 1 must retain the existing principal-HOMO result.
+        outputs=[arr(np.zeros(1)) for _ in range(3)]
+        wk=kernels(v,range(o),range(o,n))
+        principal=solve_ip(e,v,o,wk,adc2=adc2)
+        call('g_tda_faddeev_ip_roots',1,adc2,False,1.,0,n,n,0,o,0,o*(n-o),1,1,
+             e,e,v,*wk,*outputs,info)
+        assert info[0]==0
+        np.testing.assert_allclose(outputs[0][0],principal[0],atol=1e-10)
+    # A wider dressed problem exercises a bounded multi-root thick restart.
+    check_roots(es,vs,ostress,3,wk=ws)
+    outputs=[arr(np.zeros(3)) for _ in range(3)]; info=np.zeros(1,dtype=np.int32)
+    call('controlled_roots',nstress,ostress,16,6,6,3,16,256,es,vs,*ws,*outputs,info)
+    assert info[0]==0 and max(outputs[2])<1e-8, (outputs,info)
+    selected=np.flatnonzero(vals<(es[ostress-1]+es[ostress])/2)[::-1][:3]
+    np.testing.assert_allclose(outputs[0],vals[selected],atol=1e-9)
+    call('controlled_roots',nstress,ostress,16,6,6,3,16,1,es,vs,*ws,*outputs,info)
+    assert info[0]!=0
+    print('PASS multiple IP roots vs dense spectrum: R/G, ADC(2)/ADC(3), active spaces, satellites, degeneracies, SRG, restart and failure status')
     print('All algebraic TDA Faddeev checks passed.')
 
 

@@ -4,7 +4,7 @@ module TDA_Faddeev_IP_operator
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   private
-  public :: Faddeev_operator,initialize,apply,davidson
+  public :: Faddeev_operator,initialize,apply,davidson,davidson_roots
   type Faddeev_operator
     integer :: n,nphys,nm,np,no,nv,ns,noo,nvv,nC,nOccEnd
     integer,allocatable :: minus(:,:),plus(:,:),im(:,:,:),ip(:,:,:),hh(:,:),ee(:,:),phys(:)
@@ -362,6 +362,143 @@ contains
     if(.not.ieee_is_finite(omega).or..not.ieee_is_finite(residual)) info=2
   end subroutine
 
+  subroutine davidson_roots(op,nocc,nroots,omega,Z,residual,iterations,info,max_space,max_iterations)
+! Lowest IPs = largest eigenvalues below the HF gap midpoint. Keep the
+! shift in the gap so deeper roots cannot displace the upper ionization edge.
+    type(Faddeev_operator),intent(inout) :: op
+    integer,intent(in) :: nocc,nroots
+    double precision,intent(out) :: omega(nroots),Z(nroots),residual(nroots)
+    integer,intent(out) :: iterations,info
+    integer,intent(in),optional :: max_space,max_iterations
+    double precision,parameter :: tolerance=1d-8
+    double precision,allocatable :: V(:,:),AV(:,:),coef(:,:),x(:,:),ax(:,:), &
+                                    theta(:),pole(:),rn(:),t(:),keep(:,:)
+    integer,allocatable :: order(:),seeds(:)
+    integer :: n,limit,maxiter,nt,m,i,j,k,nseed,ncand,nkeep,nmv,added
+    double precision :: fermi,norm,den
+    n=op%n; limit=min(n,max(96,4*nroots+8)); maxiter=256
+    if(present(max_space)) limit=min(n,max_space)
+    if(present(max_iterations)) maxiter=max_iterations
+    if(nocc<1.or.nocc>=op%nphys) error stop 'Faddeev IP roots: invalid HOMO index'
+    if(nroots<1.or.nroots>=n.or.limit<min(n,nroots+2).or.maxiter<1) &
+      error stop 'Faddeev IP roots: invalid root count or solver limits'
+    fermi=0.5d0*(op%f(nocc)+op%f(nocc+1))
+    nt=min(limit-1,max(nroots+4,2*nroots))
+    allocate(V(n,limit),AV(n,limit),coef(limit,limit),x(n,limit),ax(n,limit), &
+             theta(limit),pole(limit),rn(limit),t(n),keep(n,nt),order(limit),seeds(n))
+! Include removal configurations as guesses as well as occupied orbitals:
+! otherwise an exactly uncoupled satellite cannot enter the search space.
+    nseed=0
+    do i=1,n
+      if(i<=op%nphys) then
+        if(op%phys(i)<=op%nC.or.i>nocc) cycle
+      end if
+      if(op%diag(i)>=fermi) cycle
+      nseed=nseed+1; seeds(nseed)=i
+    end do
+    if(nseed<nroots) error stop 'Faddeev IP roots: too few ionization guesses'
+    m=min(nseed,nt)
+    do i=1,m
+      do j=i+1,nseed
+        if(op%diag(seeds(j))>op%diag(seeds(i))) then
+          k=seeds(i); seeds(i)=seeds(j); seeds(j)=k
+        end if
+      end do
+    end do
+    V=0d0; nmv=0
+    do j=1,m
+      V(seeds(j),j)=1d0
+      call apply(op,V(:,j),AV(:,j)); nmv=nmv+1
+    end do
+    info=1; omega=fermi; Z=0d0; residual=huge(1d0)
+    do iterations=1,maxiter
+      call harmonic(m,V(:,1:m),AV(:,1:m),fermi,coef(1:m,1:m))
+      call dgemm('N','N',n,m,m,1d0,V,n,coef,limit,0d0,x,n)
+      call dgemm('N','N',n,m,m,1d0,AV,n,coef,limit,0d0,ax,n)
+      ncand=0; residual=huge(1d0)
+      do k=1,m
+        norm=sqrt(sum(x(:,k)**2)); x(:,k)=x(:,k)/norm; ax(:,k)=ax(:,k)/norm
+        theta(k)=dot_product(x(:,k),ax(:,k))
+        rn(k)=sqrt(sum((ax(:,k)-theta(k)*x(:,k))**2))
+        t=ax(:,k)-fermi*x(:,k); den=dot_product(x(:,k),t)
+        if(abs(den)<1d-28) cycle
+        ! Rank harmonic poles rather than Rayleigh quotients: an unconverged
+        ! vector mixing IP and EA states can have a misleading Rayleigh value.
+        pole(k)=fermi+dot_product(t,t)/den
+        if(pole(k)>=fermi) cycle
+        ncand=ncand+1; order(ncand)=k
+      end do
+      do i=1,ncand-1
+        do j=i+1,ncand
+          if(pole(order(j))>pole(order(i))) then
+            k=order(i); order(i)=order(j); order(j)=k
+          end if
+        end do
+      end do
+      do j=1,min(nroots,ncand)
+        k=order(j); omega(j)=theta(k); Z(j)=sum(x(1:op%nphys,k)**2); residual(j)=rn(k)
+      end do
+      if(ncand>=nroots) then
+        if(all(residual<=tolerance)) then
+          ! Verify every root with a fresh action, including degenerate roots.
+          do j=1,nroots
+            k=order(j)
+            call apply(op,x(:,k),t); nmv=nmv+1
+            residual(j)=sqrt(sum((t-omega(j)*x(:,k))**2))
+          end do
+          if(all(residual<=tolerance)) info=0
+          exit
+        end if
+      end if
+      nkeep=min(nt,ncand)
+      if(m+min(nroots,ncand)>limit) then
+        do j=1,nkeep
+          keep(:,j)=x(:,order(j))
+        end do
+        m=0
+        do j=1,nkeep
+          t=keep(:,j)
+          call orthogonalize(n,m,V,t,norm)
+          if(norm<1d-10) cycle
+          m=m+1; V(:,m)=t/norm
+          call apply(op,V(:,m),AV(:,m)); nmv=nmv+1
+        end do
+      end if
+      added=0
+      do j=1,min(nroots,ncand)
+        k=order(j)
+        if(rn(k)<=tolerance) cycle
+        t=ax(:,k)-theta(k)*x(:,k)
+        do i=1,n
+          den=theta(k)-op%diag(i)
+          if(abs(den)<0.05d0) den=sign(0.05d0,den)
+          t(i)=t(i)/den
+        end do
+        call orthogonalize(n,m,V,t,norm)
+        if(norm<1d-10) cycle
+        m=m+1; V(:,m)=t/norm
+        call apply(op,V(:,m),AV(:,m)); nmv=nmv+1; added=added+1
+        if(m==limit) exit
+      end do
+      if(added==0) then
+        ! Recover a missing or linearly dependent direction from remaining
+        ! ionization guesses; this also resolves exact spin degeneracies.
+        do j=1,nseed
+          t=0d0; t(seeds(j))=1d0
+          call orthogonalize(n,m,V,t,norm)
+          if(norm<1d-10.or.m==limit) cycle
+          m=m+1; V(:,m)=t/norm
+          call apply(op,V(:,m),AV(:,m)); nmv=nmv+1; added=1
+          exit
+        end do
+        if(added==0) exit
+      end if
+    end do
+    write(*,'(A,I5,A,I6)') ' Faddeev IP Davidson iterations: ',min(iterations,maxiter),'; matrix-vector products: ',nmv
+    write(*,'(A,ES12.4)') ' Largest Faddeev IP residual (Ha): ',maxval(residual)
+    if(.not.all(ieee_is_finite(omega)).or..not.all(ieee_is_finite(residual))) info=2
+  end subroutine
+
   subroutine orthogonalize(n,m,V,t,norm)
     integer,intent(in) :: n,m
     double precision,intent(in) :: V(:,:)
@@ -413,6 +550,47 @@ subroutine G_TDA_Faddeev_IP(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
   write(*,'(A,F20.10)') ' Principal pole 1p weight Z: ',Z
   write(*,'(A,F20.10)') ' Principal pole HOMO-subspace weight: ',homo_weight
   if(homo_weight<0.5d0) write(*,*) 'HOMO character is fragmented; compare nearby poles with the full spectrum.'
+end subroutine
+
+subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
+                           eHF,eQP,ERI,Weh,Whh,Wee,omega,Z,residual,info)
+  use TDA_Faddeev_IP_operator
+  implicit none
+  include 'parameters.h'
+  logical,intent(in) :: adc2,reg
+  integer,intent(in) :: nroots,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv
+  double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
+  double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv)
+  double precision,intent(out) :: omega(nroots),Z(nroots),residual(nroots)
+  integer,intent(out) :: info
+  type(Faddeev_operator) :: op
+  integer :: nocc,iterations,j
+  double precision :: start,finish,homo_weight
+  call wall_time(start)
+  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
+  call wall_time(finish)
+  if(adc2) then
+    write(*,*) 'Matrix-free TDA Faddeev-Parquet IP roots with ADC(2) couplings'
+  else
+    write(*,*) 'Matrix-free TDA Faddeev-Parquet IP roots with ADC(3) couplings'
+  end if
+  write(*,*) 'Physical upfolded dimension = ',op%n
+  write(*,'(A,F12.3,A)') ' Faddeev operator setup: ',finish-start,' seconds'
+  nocc=nO
+  if(block==1) nocc=nO/2
+  call wall_time(start)
+  if(nroots==1) then
+    call davidson(op,nocc,omega(1),Z(1),homo_weight,residual(1),iterations,info)
+  else
+    call davidson_roots(op,nocc,nroots,omega,Z,residual,iterations,info)
+  end if
+  call wall_time(finish)
+  write(*,'(A,F12.3,A)') ' Faddeev Davidson solve: ',finish-start,' seconds'
+  if(info/=0) return
+  write(*,*) 'Faddeev-Parquet IP roots: root, IP (eV), pole (eV), 1p weight Z, residual (Ha)'
+  do j=1,nroots
+    write(*,'(I7,3F20.10,ES14.4)') j,-omega(j)*HaToeV,omega(j)*HaToeV,Z(j),residual(j)
+  end do
 end subroutine
 
 subroutine G_TDA_Faddeev_IP_action(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,n,nvec, &
