@@ -49,7 +49,8 @@ double precision,intent(out) :: omega,z,hw,residual
 integer,intent(out) :: info
 integer :: iterations
 type(Faddeev_operator) :: op
-call initialize(op,.false.,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,Whh,Wee)
+call initialize(op,.false.,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,Whh,Wee, &
+ .false.,spread(spread(0d0,1,nS),2,nS),spread(spread(0d0,1,nOO),2,nVV),spread(spread(0d0,1,nOO),2,nVV))
 call davidson(op,nO,omega,z,hw,residual,iterations,info,maxspace,maxiter)
 end subroutine
 '''
@@ -63,7 +64,8 @@ double precision,intent(out) :: omega(nroots),z(nroots),residual(nroots)
 integer,intent(out) :: info
 integer :: iterations
 type(Faddeev_operator) :: op
-call initialize(op,.false.,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,Whh,Wee)
+call initialize(op,.false.,.false.,1d0,0,nOrb,nOrb,0,nO,0,nS,nOO,nVV,e,e,v,Weh,Whh,Wee, &
+ .false.,spread(spread(0d0,1,nS),2,nS),spread(spread(0d0,1,nOO),2,nVV),spread(spread(0d0,1,nOO),2,nVV))
 call davidson_roots(op,nO,nroots,omega,z,residual,iterations,info,maxspace,maxiter)
 end subroutine
 """
@@ -80,7 +82,20 @@ end subroutine
     subprocess.run(command, check=True, cwd=work)
     lib = ct.CDLL(str(shared))
 
-    def call(name, *args):
+    def call(name, *args, dressed=False, sources=None):
+        if name.startswith(('g_tda_faddeev_', 'r_tda_faddeev_')) and name not in (
+                'r_tda_faddeev_lift', 'r_tda_faddeev_lift_sources'):
+            offset = int(name.endswith('_roots'))
+            if name.startswith('r_'):
+                n, nc, o, nr = args[3+offset:7+offset]
+                no, nv = 2*(o-nc), 2*(n-nr-o)
+                ns, nh, ne = no*nv, no*(no-1)//2, nv*(nv-1)//2
+            else:
+                pos = (8 if name.endswith('_build') else 9) + offset
+                ns, nh, ne = args[pos:pos+3]
+            if sources is None:
+                sources = [np.zeros(shape, order='F') for shape in [(ns,ns),(nh,ne),(nh,ne)]]
+            args += (dressed, *sources)
         keep = [ct.c_int(int(a)) if isinstance(a, (int, bool, np.integer)) else
                 ct.c_double(a) if isinstance(a, float) else a for a in args]
         getattr(lib, name + '_')(*[a.ctypes.data_as(ct.c_void_p) if isinstance(a, np.ndarray)
@@ -99,7 +114,7 @@ end subroutine
                 arr([[v[i, j, k, l] - v[i, j, l, k] for k, l in hh] for i, j in hh]).reshape((len(hh),)*2, order='F'),
                 arr([[v[a, b, c, d] - v[a, b, d, c] for c, d in ee] for a, b in ee]).reshape((len(ee),)*2, order='F')]
 
-    def build(e, v, o, nc=0, nr=0, reg=False, flow=1., block=0, wk=None, adc2=False):
+    def build(e, v, o, nc=0, nr=0, reg=False, flow=1., block=0, wk=None, adc2=False, sources=None):
         n = len(e); occ = range(nc, o); vir = range(o, n-nr)
         hh, ee = pairs(occ), pairs(vir)
         minus = [(i, j, a) for i, j in hh for a in vir]
@@ -112,26 +127,26 @@ end subroutine
         h = np.zeros((nh, nh), order='F')
         wk = kernels(v, occ, vir) if wk is None else wk
         call('g_tda_faddeev_build', adc2, reg, flow, block, n, nc, o, nr, len(occ)*len(vir),
-             len(hh), len(ee), nh, e, e, v, *wk, h)
+             len(hh), len(ee), nh, e, e, v, *wk, h, dressed=sources is not None, sources=sources)
         return h, minus, plus
 
-    def check_action(e, v, o, h, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1., adc2=False):
+    def check_action(e, v, o, h, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1., adc2=False, sources=None):
         n = len(e); no = o-nc; nv = n-nr-o
         eri = v if spatial is None else spatial
         vectors = arr(rng.normal(size=(len(h), 5)))
         got = np.zeros_like(vectors, order='F'); diag = arr(np.zeros(len(h)))
         call('g_tda_faddeev_ip_action', adc2, reg, flow, block, len(eri), n, nc, o, nr,
-             no*nv, no*(no-1)//2, nv*(nv-1)//2, len(h), 5, e, e, eri, *wk, vectors, got, diag)
+             no*nv, no*(no-1)//2, nv*(nv-1)//2, len(h), 5, e, e, eri, *wk, vectors, got, diag, dressed=sources is not None, sources=sources)
         np.testing.assert_allclose(got, h @ vectors, atol=3e-13, rtol=1e-12)
         np.testing.assert_allclose(diag, np.diag(h), atol=2e-13)
 
-    def solve_ip(e, v, o, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1., adc2=False):
+    def solve_ip(e, v, o, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1., adc2=False, sources=None):
         n = len(e); no = o-nc; nv = n-nr-o
         eri = v if spatial is None else spatial
         omega, z, hw, residual = [arr(np.zeros(1)) for _ in range(4)]
         info = np.zeros(1, dtype=np.int32)
         call('g_tda_faddeev_ip', adc2, reg, flow, block, len(eri), n, nc, o, nr,
-             no*nv, no*(no-1)//2, nv*(nv-1)//2, e, e, eri, *wk, omega, z, hw, residual, info)
+             no*nv, no*(no-1)//2, nv*(nv-1)//2, e, e, eri, *wk, omega, z, hw, residual, info, dressed=sources is not None, sources=sources)
         assert info[0] == 0, (omega, residual, info)
         assert residual[0] < 1e-8
         return omega[0], z[0], hw[0]
@@ -420,10 +435,10 @@ end subroutine
 
     # HF-hole targeted IPs: compare with the distinct dense poles maximizing
     # occupied HF orbital character, rather than the energy-ordered satellites.
-    def check_roots(e,v,o,nroots,nc=0,nr=0,block=0,spatial=None,wk=None,adc2=False,reg=False):
+    def check_roots(e,v,o,nroots,nc=0,nr=0,block=0,spatial=None,wk=None,adc2=False,reg=False,sources=None):
         n = len(e); no=o-nc; nv=n-nr-o
         wk = kernels(v,range(nc,o),range(o,n-nr)) if wk is None else wk
-        h,_,_ = build(e,v,o,nc,nr,block=block,wk=wk,adc2=adc2,reg=reg,flow=.7)
+        h,_,_ = build(e,v,o,nc,nr,block=block,wk=wk,adc2=adc2,reg=reg,flow=.7,sources=sources)
         nphys = n//2 if block else n
         frozen = list(range(nc//2 if block else nc))
         frozen += list(range(nphys-(nr//2 if block else nr),nphys))
@@ -444,7 +459,7 @@ end subroutine
         info=np.zeros(1,dtype=np.int32)
         eri = v if spatial is None else spatial
         call('g_tda_faddeev_ip_roots',nroots,adc2,reg,.7,block,len(eri),n,nc,o,nr,
-             no*nv,no*(no-1)//2,nv*(nv-1)//2,e,e,eri,*wk,*outputs,info)
+             no*nv,no*(no-1)//2,nv*(nv-1)//2,e,e,eri,*wk,*outputs,info, dressed=sources is not None,sources=sources)
         assert info[0]==0 and max(outputs[2])<1e-8, (outputs,info)
         np.testing.assert_allclose(outputs[0],vals[selected],atol=1e-9)
         # Sum over degenerate eigenspaces rather than arbitrary eigenvectors.
@@ -505,6 +520,88 @@ end subroutine
     print('PASS HF-targeted IP roots vs dense orbital-character assignment: R/G, ADC(2)/ADC(3), active spaces, degeneracies, SRG, restart, satellite rejection and failure status')
     print('All algebraic TDA Faddeev checks passed.')
 
+
+    # New static source approximation: independently solve the linear equations.
+    def source(e,o,wk,bph,bpp,nc=0,nr=0,equal=False,reg=False,flow=1.):
+        ns,nh,ne=len(wk[0]),len(wk[1]),len(wk[2])
+        out=[arr(np.zeros(sh)) for sh in [(ns,ns),(nh,ne),(nh,ne)]]
+        call('tda_faddeev_sources',reg,flow,len(e),nc,o,nr,ns,nh,ne,equal,e,*wk,bph,bpp,*out)
+        return out
+
+    for nc,nr in [(0,0),(1,0),(0,1),(1,1)]:
+        occ=list(range(nc,o)); vir=list(range(o,n-nr)); ph=list(it.product(occ,vir))
+        hh=pairs(occ); ee=pairs(vir)
+        bare=kernels(v,occ,vir)
+        bph=arr([[v[c,a,k,i]-v[c,a,i,k] for i,a in ph] for k,c in ph])
+        bpp=arr([[v[a,b,i,j]-v[a,b,j,i] for i,j in hh] for a,b in ee]).reshape((len(ee),len(hh)),order='F')
+        wk=[]
+        for w in bare:
+            delta=arr(rng.normal(size=w.shape)*.003)
+            wk.append(arr(w+(delta+delta.T)/2))
+        ts=source(e,o,wk,bph,bpp,nc,nr)
+        dp=np.diag([e[a]-e[i] for i,a in ph]); dh=np.diag([e[i]+e[j] for i,j in hh])
+        de=np.diag([e[a]+e[b] for a,b in ee])
+        for got,ref in [(dp@ts[0]+ts[0]@(dp+wk[0]),-bph),
+                        ((dh-wk[1])@ts[1]-ts[1]@de,bpp.T),
+                        (dh@ts[2]-ts[2]@(de+wk[2]),bpp.T)]:
+            np.testing.assert_allclose(got,ref,atol=2e-14)
+        h,minus,plus=build(e,v,o,nc,nr,wk=wk,sources=ts)
+        old,_,_=build(e,v,o,nc,nr,wk=wk)
+        np.testing.assert_array_equal(h[n:,n:],old[n:,n:])
+        np.testing.assert_array_equal(h[:n,:n],old[:n,:n])
+        check_action(e,v,o,h,wk,nc,nr,sources=ts)
+        check_roots(e,v,o,o-nc,nc,nr,wk=wk,sources=ts)
+        vals,vec=np.linalg.eigh(h)
+        ip,z,_=solve_ip(e,v,o,wk,nc,nr,sources=ts)
+        idx=np.argmax(vec[o-1]**2)
+        np.testing.assert_allclose(ip,vals[idx],atol=1e-10)
+        np.testing.assert_allclose(z,np.sum(vec[:n,idx]**2),atol=1e-9)
+        # The first dressed correction differs from ADC(3) at cubic order.
+        errors=[]
+        for g in [.04,.02,.01]:
+            gs=source(e,o,[arr(g*w) for w in bare],arr(g*bph),arr(g*bpp),nc,nr)
+            new,_,_=build(e,arr(g*v),o,nc,nr,wk=[arr(g*w) for w in bare],sources=gs)
+            adc,_,_=build(e,arr(g*v),o,nc,nr,wk=[arr(g*w) for w in bare])
+            errors.append(np.linalg.norm(new[n:,:n]-adc[n:,:n]))
+        if errors[-1]>1e-18:
+            np.testing.assert_allclose(np.array(errors[:-1])/errors[1:],8,rtol=.03)
+        smooth=source(e,o,wk,bph,bpp,nc,nr,reg=True,flow=1e8)
+        for got,ref in zip(smooth,ts):np.testing.assert_allclose(got,ref,atol=1e-13)
+    zero=source(arr(np.zeros(n)),o,[arr(np.zeros((4,4))),arr(np.zeros((1,1))),arr(np.zeros((1,1)))],
+                arr(np.ones((4,4))),arr(np.ones((1,1))),reg=True)
+    for tensor in zero:np.testing.assert_array_equal(tensor,0.)
+    print('PASS static dressed sources: Sylvester residuals, ADC(3) limit, unchanged charged blocks, dense/Davidson and SRG')
+
+    # Restricted spin reconstruction, including empty triplet sectors.
+    for nc,nr in [(0,0),(1,0),(0,1),(1,1)]:
+        rk=r_kernels(nc,nr); dims=[len(rk[i]) for i in [0,2,3,4,5]]
+        ss=[]
+        for trip in [False,True]:
+            sp=list(it.combinations(range(nc,o),2)) if trip else list(it.combinations_with_replacement(range(nc,o),2))
+            vp=list(it.combinations(range(o,n-nr),2)) if trip else list(it.combinations_with_replacement(range(o,n-nr),2))
+            ph=list(it.product(range(nc,o),range(o,n-nr)))
+            bph=arr([[(0 if trip else 2*v[a,b,i,j])-v[a,b,j,i] for j,b in ph] for i,a in ph])
+            bpp=arr([[(v[a,b,i,j]+(-1 if trip else 1)*v[a,b,j,i])/np.sqrt((1+(i==j))*(1+(a==b)))
+                       for i,j in sp] for a,b in vp]).reshape((len(vp),len(sp)),order='F')
+            k=[rk[int(trip)],rk[2+int(trip)],rk[4+int(trip)]]
+            ss.append(source(e,o,k,bph,bpp,nc,nr,equal=not trip))
+        no,nv=2*(o-nc),2*(n-nr-o)
+        lifted=[arr(np.zeros(sh)) for sh in [(no*nv,no*nv),(no*(no-1)//2,nv*(nv-1)//2),(no*(no-1)//2,nv*(nv-1)//2)]]
+        call('r_tda_faddeev_lift_sources',n,nc,o,nr,*dims,ss[0][0],ss[1][0],ss[0][1],ss[1][1],ss[0][2],ss[1][2],*lifted)
+        go=list(range(2*nc,og)); gv=list(range(og,ng-2*nr)); gp=list(it.product(go,gv))
+        gh=pairs(go); ge=pairs(gv); gk=kernels(vg,go,gv)
+        bph=arr([[vg[c,a,k,i]-vg[c,a,i,k] for i,a in gp] for k,c in gp])
+        bpp=arr([[vg[a,b,i,j]-vg[a,b,j,i] for i,j in gh] for a,b in ge]).reshape((len(ge),len(gh)),order='F')
+        expected=source(eg,og,gk,bph,bpp,2*nc,2*nr)
+        for got,ref in zip(lifted,expected):np.testing.assert_allclose(got,ref,atol=1e-13)
+        ha,_,_=build(eg,vg,og,2*nc,2*nr,block=1,wk=gk,sources=lifted)
+        check_action(eg,vg,og,ha,gk,2*nc,2*nr,block=1,spatial=v,sources=lifted)
+        er=arr(np.zeros(n));zr=er.copy(order='F')
+        call('r_tda_faddeev_self_energy',False,False,1.,n,nc,o,nr,*dims,e,e,v,*rk,er,zr,dressed=True,sources=lifted)
+        ip,z,_=solve_ip(eg,vg,og,gk,2*nc,2*nr,block=1,spatial=v,sources=lifted)
+        np.testing.assert_allclose(ip,er[o-1],atol=1e-10)
+        np.testing.assert_allclose(z,zr[o-1],atol=1e-9)
+    print('PASS restricted dressed sources vs full spin-orbital calculation, active spaces and empty triplet sectors')
 
 if __name__ == '__main__':
     main()

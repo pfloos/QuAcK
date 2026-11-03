@@ -13,6 +13,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical                       :: do_ADC_self_energy = .false. ! Use Hermitian PSD ADC-Parquet
   logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet
   logical                       :: do_Faddeev_ADC2 = .false. ! ADC(2) endpoints; false keeps ADC(3) (full and Davidson)
+  logical :: do_Faddeev_dressed = .false. ! Static one-sided dressed source couplings
   logical                       :: do_principal_IP = .true. ! Matrix-free IP Davidson; fixed one-body energies
   integer                       :: n_IP_roots = 1 ! HF-hole targets, HOMO downward; 1 keeps the principal HOMO IP
   
@@ -38,6 +39,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   integer                       :: ip_info
 
   double precision,allocatable  :: F_eh(:,:),F_hh(:,:),F_ee(:,:)
+  double precision,allocatable :: F_Beh(:,:),F_Bpp(:,:),F_Teh(:,:),F_Thh(:,:),F_Tee(:,:)
 
   integer                       :: n_it_1b,n_it_2b
   double precision              :: err_1b,err_2b
@@ -97,6 +99,8 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   nVV = (nOrb-nR-nO)*(nOrb-nR-nO-1)/2
   if(do_ADC_self_energy.and.do_Faddeev_self_energy) &
     error stop 'Select only one of ADC-Parquet and TDA Faddeev-Parquet'
+  if(do_Faddeev_self_energy.and.do_Faddeev_ADC2.and.do_Faddeev_dressed) &
+    error stop 'Select either ADC(2) or dressed Faddeev couplings'
   if(do_Faddeev_self_energy) then
     if(.not.TDAeh.or..not.TDApp) error stop 'TDA Faddeev-Parquet requires both TDAeh=T and TDApp=T'
     if(do_principal_IP.and.(n_IP_roots<1.or.n_IP_roots>nO-nC)) &
@@ -107,6 +111,10 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       error stop 'TDA Faddeev requires positive iteration and DIIS limits'
   end if
   if(do_Faddeev_self_energy) allocate(F_eh(nS,nS),F_hh(nOO,nOO),F_ee(nVV,nVV))
+  if(do_Faddeev_self_energy) then
+    allocate(F_Beh(nS,nS),F_Bpp(nVV,nOO),F_Teh(nS,nS),F_Thh(nOO,nVV),F_Tee(nOO,nVV))
+    F_Teh=0d0; F_Thh=0d0; F_Tee=0d0
+  end if
 
 ! Start
  
@@ -276,6 +284,13 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
         end do
       end if
 
+      if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
+        call phGLR_B(.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,F_Beh)
+        if(n_it_1b/=1.or.n_it_2b/=1) then
+          call G_eh_Gamma_B(nOrb,nC,nO,nR,nS,old_eh_Phi,old_pp_Phi,eh_Gam_B)
+          F_Beh=F_Beh+eh_Gam_B
+        end if
+      end if
       call phGLR(TDAeh,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
 
  !     call matout(nS,nS,XpY)
@@ -346,6 +361,13 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
         call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,.false.,.false.,nVV,eOld,0d0,F_ee)
       end if
 
+      if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
+        call ppGLR_B(nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,F_Bpp)
+        if(n_it_1b/=1.or.n_it_2b/=1) then
+          call G_pp_Gamma_B(nOrb,nC,nO,nR,nOO,nVV,old_eh_Phi,pp_Gam_B)
+          F_Bpp=F_Bpp+pp_Gam_B
+        end if
+      end if
       call ppGLR(TDApp,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,Ec_pp)
       call wall_time(end_t)
       t = end_t - start_t
@@ -581,17 +603,21 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     if(do_Faddeev_self_energy.or.do_ADC_self_energy) then
 
       if(do_Faddeev_self_energy) then
+        if(do_Faddeev_dressed) call TDA_Faddeev_sources(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOO,nVV, &
+          .false.,eOld,F_eh,F_hh,F_ee,F_Beh,F_Bpp,F_Teh,F_Thh,F_Tee)
         if(do_principal_IP) then
           allocate(ip_omega(n_IP_roots),ip_Z(n_IP_roots),ip_residual(n_IP_roots))
           call G_TDA_Faddeev_IP_roots(n_IP_roots,do_Faddeev_ADC2,reg_PA,eta_1b,0,nOrb,nOrb,nC,nO,nR,nS,nOO,nVV, &
-                                eHF,eOld,ERI,F_eh,F_hh,F_ee,ip_omega,ip_Z,ip_residual,ip_info)
+                                eHF,eOld,ERI,F_eh,F_hh,F_ee,ip_omega,ip_Z,ip_residual,ip_info, &
+            do_Faddeev_dressed,F_Teh,F_Thh,F_Tee)
           if(ip_info/=0) error stop 'IP Davidson failed to converge; use the full-spectrum mode'
           ! No partial quasiparticle array is returned to the one-body loop.
           write(*,*) 'IP evaluation complete; one-body energies kept fixed.'
           return
         end if
         call G_TDA_Faddeev_self_energy(do_Faddeev_ADC2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOO,nVV, &
-                                        eHF,eOld,ERI,F_eh,F_hh,F_ee,eADC,ZADC)
+                                        eHF,eOld,ERI,F_eh,F_hh,F_ee,eADC,ZADC, &
+            do_Faddeev_dressed,F_Teh,F_Thh,F_Tee)
       else
         write(*,*) 'Building full Hermitian PSD ADC-Parquet matrix...'
         write(*,*)

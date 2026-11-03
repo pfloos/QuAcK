@@ -1,8 +1,9 @@
 subroutine G_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOO,nVV, &
-                                    eHF,eQP,ERI,Weh,Whh,Wee,ePA,ZPA)
+                                    eHF,eQP,ERI,Weh,Whh,Wee,ePA,ZPA, &
+    dressed,Teh,Thh,Tee)
 ! Complete-TDA physical reduction of faddeev_parquet_notes.tex.
 ! Weh=Aeh-diag(ea-ei), Whh=Dpp+diag(ei+ej), Wee=Cpp-diag(ea+eb).
-! External vertices use bare ERIs: ADC(2) U^(1) or ADC(3) U^(1)+U^(2).
+! Endpoints: ADC(2), ADC(3), or static one-sided dressed sources.
   implicit none
   logical,intent(in) :: adc2,reg_PA
   integer,intent(in) :: nOrb,nC,nO,nR,nS,nOO,nVV
@@ -10,12 +11,15 @@ subroutine G_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOO,nVV, &
   double precision,intent(in) :: Weh(nS,nS),Whh(nOO,nOO),Wee(nVV,nVV)
   double precision,intent(out) :: ePA(nOrb),ZPA(nOrb)
   integer :: nH
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
   double precision,allocatable :: H(:,:)
   if(nC<0.or.nR<0.or.nO<=nC.or.nOrb-nR<=nO) error stop 'G TDA Faddeev: invalid active space'
   nH=nOrb+nOO*(nOrb-nR-nO)+nVV*(nO-nC)
   allocate(H(nH,nH))
-  call G_TDA_Faddeev_build(adc2,reg_PA,eta,0,nOrb,nC,nO,nR,nS,nOO,nVV,nH,eHF,eQP,ERI,Weh,Whh,Wee,H)
-  call G_TDA_Faddeev_spectrum(adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
+  call G_TDA_Faddeev_build(adc2,reg_PA,eta,0,nOrb,nC,nO,nR,nS,nOO,nVV,nH,eHF,eQP,ERI,Weh,Whh,Wee,H, &
+    dressed,Teh,Thh,Tee)
+  call G_TDA_Faddeev_spectrum(dressed,adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 
 subroutine TDA_Faddeev_strip_pair(nOrb,first,last,equal_pair,removal,nPair,e,shift,K)
@@ -41,7 +45,8 @@ subroutine TDA_Faddeev_strip_pair(nOrb,first,last,equal_pair,removal,nPair,e,shi
 end subroutine
 
 subroutine G_TDA_Faddeev_build(adc2,reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,nVV,nH, &
-                              eHF,eQP,ERI,Weh,Whh,Wee,H)
+                              eHF,eQP,ERI,Weh,Whh,Wee,H, &
+    dressed,Teh,Thh,Tee)
 ! spin_block=0: general spin orbitals; 1: alpha charged block, with
 ! interleaved alpha/beta orbitals (used by the restricted wrapper).
 ! Kernel signs follow the actual QuAcK TDA pair Hamiltonians, avoiding
@@ -54,6 +59,8 @@ subroutine G_TDA_Faddeev_build(adc2,reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,n
   double precision,intent(in) :: Weh(nS,nS),Whh(nOO,nOO),Wee(nVV,nVV)
   double precision,intent(out) :: H(nH,nH)
   integer :: noact,nvact,nphys,nm,np,p,q,i,j,k,l,a,b,c,d,r,s,ij,kl,ab,cd
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
   integer,allocatable :: ph(:,:),hh(:,:),ee(:,:),minus(:,:),plus(:,:),phys(:)
   double precision :: x,asym
   double precision,allocatable :: Um(:,:),Up(:,:)
@@ -116,7 +123,8 @@ subroutine G_TDA_Faddeev_build(adc2,reg_PA,eta,spin_block,nOrb,nC,nO,nR,nS,nOO,n
   end do
   allocate(Um(nm,nphys),Up(np,nphys))
   call G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nOrb,nOrb,nC,nO,nR,nphys,nm,np, &
-                              phys,minus,plus,eQP,ERI,Um,Up)
+                              phys,minus,plus,eQP,ERI,Um,Up, &
+    dressed,Teh,Thh,Tee)
   H=0d0
   do p=1,nphys
     H(p,p)=eHF(phys(p))
@@ -175,13 +183,13 @@ contains
 
 end subroutine
 
-subroutine G_TDA_Faddeev_spectrum(adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
+subroutine G_TDA_Faddeev_spectrum(dressed,adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 ! The upfolded matrix realizes Sigma=U^T (omega I-Mbar)^(-1) U.
 ! Dominant poles use orbital-specific weights summed over degeneracies.
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   include 'parameters.h'
-  logical,intent(in) :: adc2
+  logical,intent(in) :: dressed,adc2
   integer,intent(in) :: nOrb,nC,nR,nH
   double precision,intent(in) :: eHF(nOrb)
   double precision,intent(inout) :: H(nH,nH)
@@ -190,7 +198,9 @@ subroutine G_TDA_Faddeev_spectrum(adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
   double precision :: best,w
   integer :: p,s,t,idx
   allocate(poles(nH),weight(nH))
-  if(adc2) then
+  if(dressed) then
+    write(*,*) 'TDA Faddeev-Parquet: static dressed source approximation'
+  else if(adc2) then
     write(*,*) 'TDA Faddeev-Parquet with ADC(2) external couplings'
   else
     write(*,*) 'TDA Faddeev-Parquet with ADC(3) external couplings'
@@ -229,8 +239,9 @@ subroutine G_TDA_Faddeev_spectrum(adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 
 subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np, &
-                                 phys,minus,plus,eQP,ERI,Um,Up)
-! ADC(2)/ADC(3) endpoints shared by dense and matrix-free implementations.
+                                 phys,minus,plus,eQP,ERI,Um,Up, &
+    dressed,Teh,Thh,Tee)
+! ADC(2), ADC(3), or dressed endpoints shared by dense and matrix-free solvers.
 ! nERI=nOrb: general spin-orbital ERIs; 2*nERI=nOrb: spatial Coulomb
 ! integrals with interleaved alpha/beta spin indices. Cache MP2 amplitudes
 ! once instead of evaluating the same denominators for every external p.
@@ -241,12 +252,18 @@ subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np
   integer,intent(in) :: phys(nphys),minus(3,nm),plus(3,np)
   double precision,intent(in) :: eta,eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
   double precision,intent(out) :: Um(nm,nphys),Up(np,nphys)
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh((nO-nC)*(nOrb-nR-nO),(nO-nC)*(nOrb-nR-nO))
+  double precision,intent(in) :: Thh((nO-nC)*(nO-nC-1)/2,(nOrb-nR-nO)*(nOrb-nR-nO-1)/2)
+  double precision,intent(in) :: Tee((nO-nC)*(nO-nC-1)/2,(nOrb-nR-nO)*(nOrb-nR-nO-1)/2)
   double precision,allocatable :: t2(:,:,:,:)
   double precision :: x
-  integer :: i,j,k,l,a,b,c,d,p,q,r
+  integer :: i,j,k,l,a,b,c,d,p,q,r,ns,nh,ne
+  integer,allocatable :: ph(:,:),hh(:,:),ee(:,:)
+  if(adc2.and.dressed) error stop 'Faddeev vertices: incompatible coupling selections'
   if(nERI/=nOrb.and.2*nERI/=nOrb) error stop 'Faddeev vertices: invalid ERI dimension'
   Um=0d0; Up=0d0
-  if(adc2) then
+  if(adc2.and..not.dressed) then
     do q=1,nphys
       p=phys(q)
       if(p<=nC.or.p>nOrb-nR) cycle
@@ -260,6 +277,29 @@ subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np
     return
   end if
   if(reg_PA.and.(eta<=0d0.or..not.ieee_is_finite(eta))) error stop 'Faddeev vertices: invalid SRG flow'
+  if(dressed) then
+    ns=(nO-nC)*(nOrb-nR-nO); nh=(nO-nC)*(nO-nC-1)/2
+    ne=(nOrb-nR-nO)*(nOrb-nR-nO-1)/2
+    allocate(ph(nOrb,nOrb),hh(nOrb,nOrb),ee(nOrb,nOrb))
+    ph=0; hh=0; ee=0; r=0
+    do i=nC+1,nO
+      do a=nO+1,nOrb-nR
+        r=r+1; ph(i,a)=r
+      end do
+    end do
+    r=0
+    do i=nC+1,nO
+      do j=i+1,nO
+        r=r+1; hh(i,j)=r
+      end do
+    end do
+    r=0
+    do a=nO+1,nOrb-nR
+      do b=a+1,nOrb-nR
+        r=r+1; ee(a,b)=r
+      end do
+    end do
+  else
   allocate(t2(nC+1:nO,nC+1:nO,nO+1:nOrb-nR,nO+1:nOrb-nR))
   do b=nO+1,nOrb-nR
     do a=nO+1,nOrb-nR
@@ -270,6 +310,7 @@ subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np
       end do
     end do
   end do
+  end if
   Um=0d0; Up=0d0
   do q=1,nphys
     p=phys(q)
@@ -279,12 +320,20 @@ subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np
       x=v(i,j,p,a)
       do c=nO+1,nOrb-nR
         do d=c+1,nOrb-nR
-          x=x+v(c,d,p,a)*t2(i,j,c,d)
+          if(dressed) then
+            x=x+v(c,d,p,a)*Thh(hh(i,j),ee(c,d))
+          else
+            x=x+v(c,d,p,a)*t2(i,j,c,d)
+          end if
         end do
       end do
       do k=nC+1,nO
         do c=nO+1,nOrb-nR
-          x=x-v(c,j,p,k)*t2(i,k,c,a)+v(c,i,p,k)*t2(j,k,c,a)
+          if(dressed) then
+            x=x+v(c,j,p,k)*Teh(ph(k,c),ph(i,a))-v(c,i,p,k)*Teh(ph(k,c),ph(j,a))
+          else
+            x=x-v(c,j,p,k)*t2(i,k,c,a)+v(c,i,p,k)*t2(j,k,c,a)
+          end if
         end do
       end do
       Um(r,q)=x
@@ -294,12 +343,20 @@ subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np
       x=v(a,b,p,i)
       do k=nC+1,nO
         do l=k+1,nO
-          x=x+v(k,l,p,i)*t2(k,l,a,b)
+          if(dressed) then
+            x=x+v(k,l,p,i)*Tee(hh(k,l),ee(a,b))
+          else
+            x=x+v(k,l,p,i)*t2(k,l,a,b)
+          end if
         end do
       end do
       do k=nC+1,nO
         do c=nO+1,nOrb-nR
-          x=x-v(k,b,p,c)*t2(k,i,a,c)+v(k,a,p,c)*t2(k,i,b,c)
+          if(dressed) then
+            x=x+v(k,b,p,c)*Teh(ph(k,c),ph(i,a))-v(k,a,p,c)*Teh(ph(k,c),ph(i,b))
+          else
+            x=x-v(k,b,p,c)*t2(k,i,a,c)+v(k,a,p,c)*t2(k,i,b,c)
+          end if
         end do
       end do
       Up(r,q)=x
@@ -328,6 +385,107 @@ contains
       end if
     else
       if(abs(den)<1d-12) error stop 'Faddeev vertices: singular ADC(3) denominator'
+      inv=1d0/den
+    end if
+  end function
+end subroutine
+
+subroutine TDA_Faddeev_sources(reg,eta,nOrb,nC,nO,nR,ns,nh,ne,equal_pair,e,Wph,Wh,We,Bph,Bpp,Teh,Thh,Tee)
+! Static one-sided source approximation. B matrices are sources only:
+! no backward amplitudes are included in the TDA charged propagator.
+! Dph T + T Aph = -Bph; Kh Th - Th De = Bpp^T;
+! Dh Te - Te Ke = Bpp^T. With SRG, regularize each spectral denominator.
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+  implicit none
+  logical,intent(in) :: reg,equal_pair
+  integer,intent(in) :: nOrb,nC,nO,nR,ns,nh,ne
+  double precision,intent(in) :: eta,e(nOrb),Wph(ns,ns),Wh(nh,nh),We(ne,ne),Bph(ns,ns),Bpp(ne,nh)
+  double precision,intent(out) :: Teh(ns,ns),Thh(nh,ne),Tee(nh,ne)
+  double precision :: X(ns,ns),Y(nh,nh),Z(ne,ne),om(ns),oh(nh),oe(ne),dp(ns),dh(nh),de(ne)
+  double precision :: tmp(ns,ns),tmph(nh,ne),tmpe(nh,ne)
+  integer :: i,j,a,b,r,s,offset
+  if(reg.and.(eta<=0d0.or..not.ieee_is_finite(eta))) error stop 'Faddeev source: invalid SRG flow'
+  call check_kernel(ns,Wph)
+  call check_kernel(nh,Wh)
+  call check_kernel(ne,We)
+  if(.not.all(ieee_is_finite(Bph)).or..not.all(ieee_is_finite(Bpp))) &
+    error stop 'Faddeev source: nonfinite source kernel'
+  r=0
+  do i=nC+1,nO
+    do a=nO+1,nOrb-nR
+      r=r+1; dp(r)=e(a)-e(i)
+    end do
+  end do
+  if(r/=ns) error stop 'Faddeev source: incomplete eh space'
+  offset=1
+  if(equal_pair) offset=0
+  r=0
+  do i=nC+1,nO
+    do j=i+offset,nO
+      r=r+1; dh(r)=e(i)+e(j)
+    end do
+  end do
+  if(r/=nh) error stop 'Faddeev source: incomplete hh space'
+  r=0
+  do a=nO+1,nOrb-nR
+    do b=a+offset,nOrb-nR
+      r=r+1; de(r)=e(a)+e(b)
+    end do
+  end do
+  if(r/=ne) error stop 'Faddeev source: incomplete ee space'
+  X=Wph; Y=-Wh; Z=We
+  do r=1,ns
+    X(r,r)=X(r,r)+dp(r)
+  end do
+  do r=1,nh
+    Y(r,r)=Y(r,r)+dh(r)
+  end do
+  do r=1,ne
+    Z(r,r)=Z(r,r)+de(r)
+  end do
+  call diagonalize_matrix(ns,X,om)
+  if(nh>0) call diagonalize_matrix(nh,Y,oh)
+  if(ne>0) call diagonalize_matrix(ne,Z,oe)
+  tmp=matmul(Bph,X)
+  do s=1,ns
+    do r=1,ns
+      tmp(r,s)=-tmp(r,s)*inv(dp(r)+om(s))
+    end do
+  end do
+  Teh=matmul(tmp,transpose(X))
+  tmph=matmul(transpose(Y),transpose(Bpp))
+  tmpe=matmul(transpose(Bpp),Z)
+  do s=1,ne
+    do r=1,nh
+      tmph(r,s)=tmph(r,s)*inv(oh(r)-de(s))
+      tmpe(r,s)=tmpe(r,s)*inv(dh(r)-oe(s))
+    end do
+  end do
+  Thh=matmul(Y,tmph); Tee=matmul(tmpe,transpose(Z))
+  if(.not.all(ieee_is_finite(Teh)).or..not.all(ieee_is_finite(Thh)).or. &
+     .not.all(ieee_is_finite(Tee))) error stop 'Faddeev source: nonfinite amplitude'
+contains
+  subroutine check_kernel(n,W)
+    integer,intent(in) :: n
+    double precision,intent(in) :: W(n,n)
+    if(n==0) return
+    if(.not.all(ieee_is_finite(W))) error stop 'Faddeev source: nonfinite pair kernel'
+    if(maxval(abs(W-transpose(W)))>1d-9*max(1d0,maxval(abs(W)))) &
+      error stop 'Faddeev source requires symmetric static pair kernels'
+  end subroutine
+  double precision function inv(den)
+    double precision,intent(in) :: den
+    double precision :: y
+    if(.not.ieee_is_finite(den)) error stop 'Faddeev source: nonfinite denominator'
+    if(reg) then
+      y=2d0*eta*den**2
+      if(y<1d-5) then
+        inv=2d0*eta*den*(1d0-y/2d0+y*y/6d0)
+      else
+        inv=(1d0-exp(-y))/den
+      end if
+    else
+      if(abs(den)<1d-12) error stop 'Faddeev source: singular static denominator'
       inv=1d0/den
     end if
   end function

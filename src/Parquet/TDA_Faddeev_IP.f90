@@ -12,12 +12,15 @@ module TDA_Faddeev_IP_operator
     double precision,allocatable :: phx(:,:),phy(:,:),ppx(:,:),ppy(:,:)
   end type
 contains
-  subroutine initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
+  subroutine initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee, &
+    dressed,Teh,Thh,Tee)
     type(Faddeev_operator),intent(out) :: op
     logical,intent(in) :: adc2,reg
     integer,intent(in) :: block,nERI,nOrb,nC,nO,nR,ns,noo,nvv
     double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
     double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv)
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
     integer :: i,j,a,b,r,s,q,p,ii,jj,aa,bb
     if(nC<0.or.nR<0.or.nO<=nC.or.nOrb-nR<=nO) error stop 'Faddeev IP: invalid active space'
     op%no=nO-nC; op%nv=nOrb-nR-nO
@@ -78,7 +81,8 @@ contains
       op%phys(q)=p; op%f(q)=eHF(p)
     end do
     call G_TDA_Faddeev_vertices(adc2,reg,eta,nERI,nOrb,nC,nO,nR,op%nphys,op%nm,op%np, &
-                                op%phys,op%minus,op%plus,eQP,ERI,op%Um,op%Up)
+                                op%phys,op%minus,op%plus,eQP,ERI,op%Um,op%Up, &
+    dressed,Teh,Thh,Tee)
     op%diag(1:op%nphys)=op%f
     do r=1,op%nm
       i=op%minus(1,r); j=op%minus(2,r); a=op%minus(3,r)
@@ -576,7 +580,8 @@ contains
 end module
 
 subroutine G_TDA_Faddeev_IP(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
-                           eHF,eQP,ERI,Weh,Whh,Wee,omega,Z,homo_weight,residual,info)
+                           eHF,eQP,ERI,Weh,Whh,Wee,omega,Z,homo_weight,residual,info, &
+    dressed,Teh,Thh,Tee)
   use TDA_Faddeev_IP_operator
   implicit none
   include 'parameters.h'
@@ -586,13 +591,18 @@ subroutine G_TDA_Faddeev_IP(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
   double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv)
   double precision,intent(out) :: omega,Z,homo_weight,residual
   integer,intent(out) :: info
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
   type(Faddeev_operator) :: op
   integer :: nocc,iterations
   double precision :: start,finish
   call wall_time(start)
-  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
+  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee, &
+    dressed,Teh,Thh,Tee)
   call wall_time(finish)
-  if(adc2) then
+  if(dressed) then
+    write(*,*) 'TDA Faddeev-Parquet: static dressed source approximation'
+  else if(adc2) then
     write(*,*) 'Matrix-free TDA Faddeev-Parquet principal IP with ADC(2) couplings'
   else
     write(*,*) 'Matrix-free TDA Faddeev-Parquet principal IP with ADC(3) couplings'
@@ -614,7 +624,8 @@ subroutine G_TDA_Faddeev_IP(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
 end subroutine
 
 subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
-                           eHF,eQP,ERI,Weh,Whh,Wee,omega,Z,residual,info)
+                           eHF,eQP,ERI,Weh,Whh,Wee,omega,Z,residual,info, &
+    dressed,Teh,Thh,Tee)
   use TDA_Faddeev_IP_operator
   implicit none
   include 'parameters.h'
@@ -624,13 +635,18 @@ subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,n
   double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv)
   double precision,intent(out) :: omega(nroots),Z(nroots),residual(nroots)
   integer,intent(out) :: info
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
   type(Faddeev_operator) :: op
   integer :: nocc,iterations,j
   double precision :: start,finish,homo_weight
   call wall_time(start)
-  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
+  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee, &
+    dressed,Teh,Thh,Tee)
   call wall_time(finish)
-  if(adc2) then
+  if(dressed) then
+    write(*,*) 'TDA Faddeev-Parquet: static dressed source approximation'
+  else if(adc2) then
     write(*,*) 'Matrix-free TDA Faddeev-Parquet IP roots with ADC(2) couplings'
   else
     write(*,*) 'Matrix-free TDA Faddeev-Parquet IP roots with ADC(3) couplings'
@@ -655,7 +671,8 @@ subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,n
 end subroutine
 
 subroutine G_TDA_Faddeev_IP_action(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,n,nvec, &
-                                  eHF,eQP,ERI,Weh,Whh,Wee,x,y,diag)
+                                  eHF,eQP,ERI,Weh,Whh,Wee,x,y,diag, &
+    dressed,Teh,Thh,Tee)
 ! Regression interface: compare the operator with the dense construction.
   use TDA_Faddeev_IP_operator
   implicit none
@@ -664,9 +681,12 @@ subroutine G_TDA_Faddeev_IP_action(adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,
   double precision,intent(in) :: eta,eHF(nOrb),eQP(nOrb),ERI(nERI,nERI,nERI,nERI)
   double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv),x(n,nvec)
   double precision,intent(out) :: y(n,nvec),diag(n)
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
   type(Faddeev_operator) :: op
   integer :: j
-  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee)
+  call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee, &
+    dressed,Teh,Thh,Tee)
   if(n/=op%n) error stop 'Faddeev IP action: incorrect dimension'
   diag=op%diag
   do j=1,nvec

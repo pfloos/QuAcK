@@ -1,5 +1,6 @@
 subroutine R_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
-                                    eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,ePA,ZPA)
+                                    eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,ePA,ZPA, &
+    dressed,Teh,Thh,Tee)
 ! Restricted complete-TDA Faddeev-Parquet, ADC(2) or ADC(3) endpoints.
 ! Lift singlet/triplet static pair interactions to spin orbitals and retain
 ! only the alpha charged determinant block (Ms=1/2). This is an exact spin
@@ -14,6 +15,10 @@ subroutine R_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,
   double precision,intent(in) :: Wees(nVVs,nVVs),Weet(nVVt,nVVt)
   double precision,intent(out) :: ePA(nOrb),ZPA(nOrb)
   integer :: ng,nsG,nooG,nvvG,noact,nv,nH,p,q,r,s
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(4*nS,4*nS)
+  double precision,intent(in) :: Thh((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
+  double precision,intent(in) :: Tee((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
   double precision,allocatable :: eg(:),fg(:),vg(:,:,:,:),Weh(:,:),Whh(:,:),Wee(:,:),H(:,:)
   noact=nO-nC; nv=nOrb-nR-nO
   if(nC<0.or.nR<0.or.noact<1.or.nv<1) error stop 'R TDA Faddeev: invalid active space'
@@ -40,13 +45,15 @@ subroutine R_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,
   end do
   call R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                          Wehs,Weht,Whhs,Whht,Wees,Weet,Weh,Whh,Wee)
-  call G_TDA_Faddeev_build(adc2,reg_PA,eta,1,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG,nH,fg,eg,vg,Weh,Whh,Wee,H)
+  call G_TDA_Faddeev_build(adc2,reg_PA,eta,1,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG,nH,fg,eg,vg,Weh,Whh,Wee,H, &
+    dressed,Teh,Thh,Tee)
   write(*,*) 'Restricted TDA Faddeev-Parquet: alpha charged determinant block'
-  call G_TDA_Faddeev_spectrum(adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
+  call G_TDA_Faddeev_spectrum(dressed,adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 
 subroutine R_TDA_Faddeev_IP(adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
-                           eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,omega,Z,homo_weight,residual,info)
+                           eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,omega,Z,homo_weight,residual,info, &
+    dressed,Teh,Thh,Tee)
 ! Matrix-free restricted principal IP. Spatial ERIs are passed directly;
 ! the shared endpoint builder applies spin deltas without expanding ERIs.
   implicit none
@@ -58,6 +65,10 @@ subroutine R_TDA_Faddeev_IP(adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
   double precision,intent(out) :: omega,Z,homo_weight,residual
   integer,intent(out) :: info
   integer :: ng,nsG,nooG,nvvG,noact,nv,p
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(4*nS,4*nS)
+  double precision,intent(in) :: Thh((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
+  double precision,intent(in) :: Tee((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
   double precision,allocatable :: eg(:),fg(:),Weh(:,:),Whh(:,:),Wee(:,:)
   noact=nO-nC; nv=nOrb-nR-nO
   if(nC<0.or.nR<0.or.noact<1.or.nv<1) error stop 'R Faddeev IP: invalid active space'
@@ -71,11 +82,13 @@ subroutine R_TDA_Faddeev_IP(adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
   call R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                          Wehs,Weht,Whhs,Whht,Wees,Weet,Weh,Whh,Wee)
   call G_TDA_Faddeev_IP(adc2,reg,eta,1,nOrb,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG, &
-                       fg,eg,ERI,Weh,Whh,Wee,omega,Z,homo_weight,residual,info)
+                       fg,eg,ERI,Weh,Whh,Wee,omega,Z,homo_weight,residual,info, &
+    dressed,Teh,Thh,Tee)
 end subroutine
 
 subroutine R_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
-                           eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,omega,Z,residual,info)
+                           eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,omega,Z,residual,info, &
+    dressed,Teh,Thh,Tee)
 ! Matrix-free restricted IP roots. Spatial ERIs are passed directly;
 ! the shared endpoint builder applies spin deltas without expanding ERIs.
   implicit none
@@ -87,6 +100,10 @@ subroutine R_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt
   double precision,intent(out) :: omega(nroots),Z(nroots),residual(nroots)
   integer,intent(out) :: info
   integer :: ng,nsG,nooG,nvvG,noact,nv,p
+  logical,intent(in) :: dressed
+  double precision,intent(in) :: Teh(4*nS,4*nS)
+  double precision,intent(in) :: Thh((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
+  double precision,intent(in) :: Tee((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
   double precision,allocatable :: eg(:),fg(:),Weh(:,:),Whh(:,:),Wee(:,:)
   noact=nO-nC; nv=nOrb-nR-nO
   if(nC<0.or.nR<0.or.noact<1.or.nv<1) error stop 'R Faddeev IP: invalid active space'
@@ -100,7 +117,8 @@ subroutine R_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt
   call R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                          Wehs,Weht,Whhs,Whht,Wees,Weet,Weh,Whh,Wee)
   call G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,1,nOrb,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG, &
-                       fg,eg,ERI,Weh,Whh,Wee,omega,Z,residual,info)
+                       fg,eg,ERI,Weh,Whh,Wee,omega,Z,residual,info, &
+    dressed,Teh,Thh,Tee)
 end subroutine
 
 subroutine R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
@@ -185,6 +203,82 @@ contains
       do s=1,ng
         if(sid(r)>0.and.sid(s)>0) Wg(r,s)=cs(r)*cs(s)*Ws(sid(r),sid(s))
         if(tid(r)>0.and.tid(s)>0.and.m(r)==m(s)) Wg(r,s)=Wg(r,s)+ct(r)*ct(s)*Wt(tid(r),tid(s))
+      end do
+    end do
+  end subroutine
+end subroutine
+
+subroutine R_TDA_Faddeev_lift_sources(nOrb,nC,nO,nR,ns,nhs,nht,nes,net,Ts,Tt,Hs,Ht,Es,Et,T,H,E)
+! Source tensors: eh columns are a second excitation, so spin-flip
+! columns are reversed relative to the usual eh propagation transform.
+  implicit none
+  integer,intent(in) :: nOrb,nC,nO,nR,ns,nhs,nht,nes,net
+  double precision,intent(in) :: Ts(ns,ns),Tt(ns,ns),Hs(nhs,nes),Ht(nht,net),Es(nhs,nes),Et(nht,net)
+  double precision,intent(out) :: T(4*ns,4*ns)
+  double precision,intent(out) :: H((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
+  double precision,intent(out) :: E((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
+  double precision :: Ch(size(H,1),nhs+3*nht),Ce(size(H,2),nes+3*net)
+  integer :: i,a,j,b,r,s,u,v,si,sa,sj,sb,nv
+  nv=nOrb-nR-nO; T=0d0; r=0
+  do i=2*nC+1,2*nO
+    do a=2*nO+1,2*(nOrb-nR)
+      r=r+1; u=((i+1)/2-nC-1)*nv+(a+1)/2-nO
+      si=mod(i-1,2); sa=mod(a-1,2); s=0
+      do j=2*nC+1,2*nO
+        do b=2*nO+1,2*(nOrb-nR)
+          s=s+1; v=((j+1)/2-nC-1)*nv+(b+1)/2-nO
+          sj=mod(j-1,2); sb=mod(b-1,2)
+          if(si==sa.and.sj==sb) then
+            if(si==sj) then
+              T(r,s)=0.5d0*(Ts(u,v)+Tt(u,v))
+            else
+              T(r,s)=0.5d0*(Ts(u,v)-Tt(u,v))
+            end if
+          else if(si/=sa.and.si==sb.and.sa==sj) then
+            T(r,s)=Tt(u,v)
+          end if
+        end do
+      end do
+    end do
+  end do
+  call transform(nC+1,nO,nhs,nht,size(H,1),Ch)
+  call transform(nO+1,nOrb-nR,nes,net,size(H,2),Ce)
+  H=matmul(matmul(Ch(:,:nhs),Hs),transpose(Ce(:,:nes)))
+  E=matmul(matmul(Ch(:,:nhs),Es),transpose(Ce(:,:nes)))
+  do i=0,2
+    H=H+matmul(matmul(Ch(:,nhs+i*nht+1:nhs+(i+1)*nht),Ht), &
+              transpose(Ce(:,nes+i*net+1:nes+(i+1)*net)))
+    E=E+matmul(matmul(Ch(:,nhs+i*nht+1:nhs+(i+1)*nht),Et), &
+              transpose(Ce(:,nes+i*net+1:nes+(i+1)*net)))
+  end do
+contains
+  subroutine transform(first,last,ns,nt,ng,C)
+    integer,intent(in) :: first,last,ns,nt,ng
+    double precision,intent(out) :: C(ng,ns+3*nt)
+    integer :: smap(last,last),tmap(last,last),u,v,p,q,r,s,m
+    smap=0; tmap=0; r=0; s=0; C=0d0
+    do u=first,last
+      do v=u,last
+        r=r+1; smap(u,v)=r
+        if(u/=v) then
+          s=s+1; tmap(u,v)=s
+        end if
+      end do
+    end do
+    r=0
+    do p=2*first-1,2*last
+      do q=p+1,2*last
+        r=r+1; u=(p+1)/2; v=(q+1)/2; m=1-mod(p-1,2)-mod(q-1,2)
+        if(m==0) then
+          if(u==v) then
+            C(r,smap(u,v))=1d0
+          else
+            C(r,smap(u,v))=dble(1-2*mod(p-1,2))/sqrt(2d0)
+            C(r,ns+nt+tmap(u,v))=1d0/sqrt(2d0)
+          end if
+        else
+          C(r,ns+(1-m)*nt+tmap(u,v))=1d0
+        end if
       end do
     end do
   end subroutine

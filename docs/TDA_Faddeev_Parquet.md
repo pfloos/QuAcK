@@ -25,6 +25,7 @@ just like the previous ADC-Parquet switch:
 logical :: do_ADC_self_energy = .false.
 logical :: do_Faddeev_self_energy = .true.
 logical :: do_Faddeev_ADC2 = .false.
+logical :: do_Faddeev_dressed = .false.
 logical :: do_principal_IP = .true.
 integer :: n_IP_roots = 1
 ```
@@ -36,6 +37,53 @@ vertices: the HF one-particle block and dressed Faddeev charged blocks stay
 the same. It therefore does not turn the entire model into ordinary ADC(2).
 ADC(2) endpoints require no MP2 amplitudes or denominators; endpoint SRG
 regularization has no effect on them.
+
+`do_Faddeev_dressed=.true.` selects the proposed static dressed source
+couplings in both solvers and both spin representations. Keep
+`do_Faddeev_ADC2=.false.`; selecting both is rejected. The default
+`do_Faddeev_dressed=.false.` retains the existing ADC(3) couplings.
+This option is a one-sided source approximation. Its equivalence to the
+native parquet self-energy beyond third order has not been established.
+
+The source matrices are the occupation-changing eh and pp kernels (`Bph`
+and `Bpp`, including the bare interaction). They are evaluated separately
+from the TDA propagator, from the same old reducible-vertex snapshot as
+the charged pair kernels. They do not introduce backward TDA amplitudes.
+Writing `Dph=diag(e_a-e_i)`, `Dh=diag(e_i+e_j)`, and
+`De=diag(e_a+e_b)`, the unregularized amplitudes solve
+
+```
+Dph Teh + Teh (Dph+Weh) = -Bph
+(Dh-Whh) Thh - Thh De = transpose(Bpp)
+Dh Tee - Tee (De+Wee) = transpose(Bpp)
+```
+
+The endpoints are (ordered hh and ee pair sums)
+
+```
+U-_{ija,p} = <ij||pa> + sum_cd <cd||pa> Thh_{ij,cd}
+            + sum_kc [<cj||pk> Teh_{kc,ia} - <ci||pk> Teh_{kc,ja}]
+U+_{iab,p} = <ab||pi> + sum_kl <kl||pi> Tee_{kl,ab}
+            + sum_kc [<kb||pc> Teh_{kc,ia} - <ka||pc> Teh_{kc,ib}]
+```
+
+The spectral denominators are `-(e_c-e_k+Omega_eh)`,
+`Omega_hh-e_c-e_d`, and `e_k+e_l-Omega_ee`. The eigenvectors are used
+directly, avoiding division by the transition-density reconstruction
+factors. With `reg_PA=T`, the existing SRG inverse is applied to these
+spectral denominators; the linear equations above then describe only the
+unregularized limit. Without regularization singular denominators fail
+explicitly. The source approximation reduces to the ADC(3) endpoints
+through second order in the interaction, with differences starting at
+third order in the endpoints (fourth order in the self-energy). Bare
+pair kernels at finite interaction therefore need not give exactly ADC(3).
+The charged blocks and HF one-particle block are independent of this switch.
+
+R constructs separate singlet/triplet source amplitudes and transforms them
+to the same spin-orbital determinant basis used by G. The eh source
+transformation reverses the spin-flip column relative to the propagation
+transformation. Pair source tensors use rectangular normalized
+Clebsch-Gordan transformations. Empty triplet pair sectors are supported.
 
 The matrix-free principal-IP mode is enabled by default in both drivers.
 Set `n_IP_roots` to the number of IP eigenpairs wanted, for example `5`,
