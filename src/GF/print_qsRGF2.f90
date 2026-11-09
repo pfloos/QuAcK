@@ -48,11 +48,7 @@ subroutine print_qsRGF2(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,thresh,eHF,eGF,c,SigC,Z,
 ! Dump results
 
   write(*,*)'-------------------------------------------------------------------------------'
-  if(nSCF < 10) then
-    write(*,'(1X,A21,I1,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
-  else
-    write(*,'(1X,A21,I2,A2,A12)')'  Self-consistent qsG',nSCF,'F2',' calculation'
-  end if
+  write(*,'(1X,A,I0,A)') 'Self-consistent qsG',nSCF,'F2 calculation'
   write(*,*)'-------------------------------------------------------------------------------'
   write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X)') &
             '|','#','|','e_HF (eV)','|','Sig_c (eV)','|','Z','|','e_QP (eV)','|'

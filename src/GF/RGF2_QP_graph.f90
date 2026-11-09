@@ -1,4 +1,4 @@
-subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z)
+subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF,Z,root_ok)
 
 ! Compute the graphical solution of the GF2 QP equation
 
@@ -31,12 +31,13 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
   double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
-  logical                       :: converged
   
 ! Output variables
 
   double precision,intent(out)  :: eGF(nBas)
   double precision,intent(inout):: Z(nBas)
+
+  logical,intent(out)           :: root_ok(nBas)
 
 ! Run Newton's algorithm to find the root
  
@@ -44,11 +45,12 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
   write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GFlin (eV)','e_GF (eV)','Z'
   write(*,*)'-----------------------------------------------------'
 
+  root_ok(:) = .true.
   eGF(:) = eGFlin(:)
   do p=nC+1,nBas-nR
 
     w = eGFlin(p)
-    converged = .false.
+    root_ok(p) = .false.
 
     do nIt=1,maxIt
       if(.not.ieee_is_finite(w)) exit
@@ -67,7 +69,7 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
       if(abs(df) <= epsilon(1d0)) exit
 
       if(abs(f) <= thresh) then
-        converged = .true.
+        root_ok(p) = .true.
         exit
       end if
 
@@ -75,10 +77,10 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
 
     end do
 
-    if(.not.converged) then
+    if(.not.root_ok(p)) then
 
       nIt = min(nIt,maxIt)
-      write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGFlin(p)*HaToeV,eGF(p)*HaToeV,Z(p),'Cvg Failed!'
+      write(*,'(I5,1X,I3,1X,A)') p,nIt,'Cvg Failed!'
 
     else
 

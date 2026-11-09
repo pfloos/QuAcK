@@ -3,6 +3,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
 ! Perform a one-shot second-order Green function calculation
 
+  use, intrinsic :: ieee_arithmetic
   implicit none
   include 'parameters.h'
 
@@ -36,6 +37,9 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
 ! Local variables
 
+  logical                       :: root_ok(nOrb)
+  double precision              :: missing_qp
+
   double precision              :: Ec
   double precision              :: flow
   double precision              :: EcBSE(nspin)
@@ -59,6 +63,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
   if(doSRG) then
 
     write(*,*) '*** SRG regularized G0F2 scheme ***'
+    write(*,'(A,ES24.16)') 'GF2 SRG flow = ',flow
     write(*,*)
 
   end if
@@ -79,6 +84,9 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
   end if
   
+  missing_qp = ieee_value(0d0,ieee_quiet_nan)
+  root_ok(:) = .true.
+
   eGFlin(:) = eHF(:) + Z(:)*SigC(:)
 
   if(linearize) then
@@ -92,13 +100,15 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
     write(*,*) ' *** Quasiparticle energies obtained by root search *** '
     write(*,*)
 
-    call RGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z)
+    call RGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eGFlin,eHF,eGF,Z,root_ok)
 
   end if
 
   ! Print results
 
-  call print_RG0F2(nOrb,nC,nO,nV,nR,eHF,SigC,eGF,Z,ENuc,ERHF,Ec)
+  call print_RG0F2(nOrb,nC,nO,nV,nR,eHF,SigC,merge(eGF,missing_qp,root_ok), &
+                   merge(Z,missing_qp,root_ok),ENuc,ERHF,Ec)
+  write(*,'(A)') 'GF2 status: G0F2 complete'
 
 ! Perform BSE@GF2 calculation
 
