@@ -13,7 +13,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   logical                       :: do_ADC_self_energy = .false. ! Use Hermitian PSD ADC-Parquet
   logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet
   logical                       :: do_Faddeev_ADC2 = .false. ! ADC(2) endpoints; false keeps ADC(3) (full and Davidson)
-  logical :: do_Faddeev_dressed = .false. ! Static one-sided dressed source couplings
+  logical                       :: do_Faddeev_dressed = .true. ! Static one-sided dressed source couplings
   logical                       :: do_principal_IP = .true. ! Matrix-free IP Davidson; fixed one-body energies
   integer                       :: n_IP_roots = 1 ! HF-hole targets, HOMO downward; 1 keeps the principal HOMO IP
   

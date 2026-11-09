@@ -107,7 +107,10 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
     ! Solve the quasi-particle equation
  
     if(linearize) then
- 
+
+      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+      eGF(:) = eHF(:) + SigC(:)
+
     else
  
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '

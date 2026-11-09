@@ -2,6 +2,7 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
 
 ! Compute the graphical solution of the GF2 QP equation
 
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   include 'parameters.h'
 
@@ -30,11 +31,12 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
   double precision              :: SigC,dSigC
   double precision              :: f,df
   double precision              :: w
+  logical                       :: converged
   
 ! Output variables
 
   double precision,intent(out)  :: eGF(nBas)
-  double precision,intent(out)  :: Z(nBas)
+  double precision,intent(inout):: Z(nBas)
 
 ! Run Newton's algorithm to find the root
  
@@ -42,15 +44,14 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
   write(*,'(A5,1X,A3,1X,A15,1X,A15,1X,A10)') 'Orb.','It.','e_GFlin (eV)','e_GF (eV)','Z'
   write(*,*)'-----------------------------------------------------'
 
+  eGF(:) = eGFlin(:)
   do p=nC+1,nBas-nR
 
     w = eGFlin(p)
-    nIt = 0
-    f = 1d0
-    
-    do while (abs(f) > thresh .and. nIt < maxIt)
-    
-      nIt = nIt + 1
+    converged = .false.
+
+    do nIt=1,maxIt
+      if(.not.ieee_is_finite(w)) exit
 
       if(doSRG) then
         SigC  = RGF2_SRG_SigC(p,w,flow,nBas,nC,nO,nV,nR,eOld,ERI)
@@ -61,21 +62,28 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
       end if
 
       f  = w - eHF(p) - SigC
-      df = 1d0/(1d0 - dSigC)
-    
-      w = w - df*f
-    
-    end do
- 
-    if(nIt == maxIt) then 
+      df = 1d0 - dSigC
+      if(.not.ieee_is_finite(f) .or. .not.ieee_is_finite(df)) exit
+      if(abs(df) <= epsilon(1d0)) exit
 
-      eGF(p) = eGFlin(p)
+      if(abs(f) <= thresh) then
+        converged = .true.
+        exit
+      end if
+
+      w = w - f/df
+
+    end do
+
+    if(.not.converged) then
+
+      nIt = min(nIt,maxIt)
       write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6,1X,A12)') p,nIt,eGFlin(p)*HaToeV,eGF(p)*HaToeV,Z(p),'Cvg Failed!'
 
     else
 
       eGF(p) = w
-      Z(p)   = df
+      Z(p)   = 1d0/df
 
       write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,eGFlin(p)*HaToeV,eGF(p)*HaToeV,Z(p)
 
