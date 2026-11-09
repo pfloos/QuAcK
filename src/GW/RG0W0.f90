@@ -1,4 +1,4 @@
-subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, & 
+subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet, &
                  linearize,eta,doSRG,do_linDM_GW,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eGW_out)
 
 ! Perform G0W0 calculation
@@ -71,6 +71,15 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
+! GW-based COT: toggle locally, without changing QuAcK's input format.
+! The dense COT diagonalization is intended only for small systems.
+
+  logical,parameter             :: doCOT = .false.
+  integer                       :: infoCOT
+  double precision,allocatable  :: hCOT(:,:)
+  double precision,allocatable  :: hCOTH(:,:)
+  double precision,allocatable  :: eCOT(:)
+
 ! Output variables
 
   double precision,intent(out)  :: eGW_out(nOrb)
@@ -88,7 +97,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   isp_W = 1
   dRPA_W = .true.
 
-  if(TDA_W) then 
+  if(TDA_W) then
     write(*,*) 'Tamm-Dancoff approximation for dynamical screening!'
     write(*,*)
   end if
@@ -98,15 +107,13 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   flow = 500d0
 
   if(doSRG) then
-
     write(*,*) '*** SRG regularized G0W0 scheme ***'
     write(*,*)
-
   end if
 
 ! Memory allocation
 
-  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), & 
+  allocate(Aph(nS,nS),Bph(nS,nS),SigC(nOrb),Z(nOrb),Om(nS),XpY(nS,nS),XmY(nS,nS),rho(nOrb,nOrb,nS), &
            eGW(nOrb),eGWlin(nOrb))
 
 !-------------------!
@@ -125,6 +132,31 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !--------------------------!
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+
+!-------------------------------!
+! GW-based COT (one-shot G0W0) !
+!-------------------------------!
+!
+! Use exactly the same RPA eigenvalues and transition densities as G0W0.
+! hCOT  = non-Hermitian Bloch effective Hamiltonian
+! hCOTH = equivalent Hermitian Hamiltonian for comparison with static qsGW
+! eCOT  = selected quasiparticle energies
+!
+! The current dense implementation is a reference calculation, not a
+! scalable solver. RGW_COT returns infoCOT /= 0 when it cannot proceed.
+
+  if(doCOT) then
+
+    allocate(hCOT(nOrb,nOrb),hCOTH(nOrb,nOrb),eCOT(nOrb))
+    call RGW_COT(nOrb,nC,nO,nR,nS,eHF,Om,rho,hCOT,hCOTH,eCOT,infoCOT)
+
+    if(infoCOT /= 0) then
+      write(*,'(A,I0)') 'Warning: GW-COT did not complete successfully; info = ',infoCOT
+    end if
+
+    deallocate(hCOT,hCOTH,eCOT)
+
+  end if
 
 !--------------------------------------!
 ! Linearized density matrix correction !
@@ -157,16 +189,16 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
      call vecout(nOrb,occ_nb)
      write(*,*)
      deallocate(occ_nb)
-     
+
      deallocate(J,K,F)
   end if
   deallocate(linDM)
-  
+
 !------------------------!
 ! Compute GW self-energy !
 !------------------------!
 
-  if(doSRG) then 
+  if(doSRG) then
 
     call RGW_SRG_self_energy_diag(flow,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
@@ -175,7 +207,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     call RGW_self_energy_diag(eta,nBas,nOrb,nC,nO,nV,nR,nS,eHF,Om,rho,EcGM,SigC,Z)
 
   end if
-  
+
 !-----------------------------------!
 ! Solve the quasi-particle equation !
 !-----------------------------------!
@@ -187,15 +219,15 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   else
      eGWlin(:) = eHF(:) + Z(:)*SigC(:)
   end if
-  
-  if(linearize) then 
- 
+
+  if(linearize) then
+
     write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
     write(*,*)
 
     eGW(:) = eGWlin(:)
 
-  else 
+  else
 
      write(*,*) ' *** Quasiparticle energies obtained by root search *** '
      write(*,*)
@@ -208,15 +240,15 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   end if
 
   deallocate(eHFlinDM)
-  
+
 ! Plot self-energy, renormalization factor, and spectral function
 
   if(plot_self) call RGW_plot_self_energy(nOrb,eta,nC,nO,nV,nR,nS,eHF,eGW,Om,rho)
-  
-! Cumulant expansion 
+
+! Cumulant expansion
 
 ! call RGWC(dotest,eta,nOrb,nC,nO,nV,nR,nS,Om,rho,eHF,eHF,eGW,Z)
-  
+
 ! Compute the RPA correlation energy
 
                  call phRLR_A(isp_W,dRPA_W,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,Aph)
@@ -231,18 +263,18 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   call print_RG0W0(nOrb,nC,nO,nV,nR,eHF,ENuc,ERHF,SigC,Z,eGW,EcRPA,EcGM)
 
   eGW_out(:) = eGW(:)
-  
+
 !---------------------------!
 ! Perform phBSE calculation !
 !---------------------------!
 
   if(dophBSE) then
 
-    call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+    call RGW_phBSE(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, &
                    nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-    ! call RGW_phBSE_omegazero(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+    ! call RGW_phBSE_omegazero(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, &
     !                nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
-    ! call RGW_phBSE_qs(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, & 
+    ! call RGW_phBSE_qs(dophBSE2,exchange_kernel,TDA_W,TDA,dBSE,dTDA,singlet,triplet,eta, &
     !                nOrb,nC,nO,nV,nR,nS,ERI,dipole_int,eHF,eGW,EcBSE)
 
     write(*,*)
@@ -293,7 +325,7 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
     write(*,*)
 
   end if
-  
+
 ! Testing zone
 
   if(dotest) then
@@ -304,4 +336,4 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 
   end if
 
-end subroutine 
+end subroutine

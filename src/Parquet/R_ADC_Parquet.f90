@@ -6,35 +6,25 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
                          hh_sing_Om,hh_sing_rho,hh_trip_Om,hh_trip_rho,      &
                          eADC,ZADC)
 
-! Hermitian / PSD completion of the ADC-Parquet construction in
-! restricted spin-adapted form.
+! Hermitian / PSD ADC-Parquet construction in restricted spin-adapted form.
 !
-! The bare 2h1p/2p1h space is represented by the three spin-adapted doublet
-! sectors used in restricted IP/EA-ADC.  The dressed eh and pp auxiliary
-! sectors are resolved into singlet and triplet components.
+! This version is perturbatively matched through third order.  The dressed
+! eh/hh/ee sectors already generate one quarter of the third-order channel
+! correction in the symmetric alpha=1/2 gauge.  The explicit D and C pieces
+! therefore supply only the remaining three quarters.
 !
-! The parent parquet self-energy is one-sided.  We first use the symmetric
-! representation
+! Hence
 !
-!   Sigma_gamma = V^T R V
-!               + 1/2 V^T R D + 1/2 D^T R V.
-!
-! The restricted routine uses the same equal-weight convention as the
-! generalized routine,
-!
-!   U_gamma = alpha_U1 V_gamma + beta_U2 D_gamma,
 !   alpha_U1 = 1/2,
-!   beta_U2  = 1,
+!   beta_U2  = 3/4,
+!   C(new)   = 3/4 C(old),
 !
-! so alpha_U1*beta_U2 = 1/2.  Thus the factor-1/2 symmetrization is already
-! present through the leading coupling.  The D correction must NOT be halved
-! again.  In a convention with alpha_U1=1, the equivalent choice would be
-! beta_U2=1/2.
+! corresponding to the generalized-gauge values beta=3/4 and c=3/2.
+! The leading GF2 couplings are unchanged.
 !
-! IMPORTANT: the full Hermitian resolvent additionally generates quadratic
-! D-D terms, higher powers of the inter-sector C couplings, and mixed C-D
-! terms.  These are PSD completion terms beyond the parent Schwinger-Dyson
-! parquet self-energy.
+! IMPORTANT: this removes the spurious 5/4 factor at third order only.
+! The full Hermitian matrix still generates fourth- and higher-order PSD
+! completion terms which are not guaranteed to coincide with parquet.
 !
 ! Internal response denominators entering the higher-order U corrections can
 ! be regularized with the same one-body SRG prescription as the parent parquet
@@ -92,7 +82,8 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
 ! Symmetrized ADC half-amplitude factors
 
   double precision,parameter    :: alphaU1 = 0.5d0
-  double precision,parameter    :: betaU2  = 1d0
+  double precision,parameter    :: betaU2  = 0.75d0
+  double precision,parameter    :: cScale  = 0.75d0
 
   nOcc = nO - nC
   nVir = nOrb - nR - nO
@@ -170,6 +161,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
   write(*,'(1X,A24,I10)') 'Total dimension    =',nH
   write(*,'(1X,A24,F10.6)') 'alpha_U1           =',alphaU1
   write(*,'(1X,A24,F10.6)') 'beta_U2            =',betaU2
+  write(*,'(1X,A24,F10.6)') 'C scale             =',cScale
   write(*,*)
 
 ! ======================================================================
@@ -441,6 +433,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
           jb = jb + 1
           val = 0d0
           if(i == k) val = -sqrt(2d0)*eh_sing_rho(i,a,n)
+          val = cScale*val
           H(ib,jb) = val
           H(jb,ib) = val
         end do
@@ -452,6 +445,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
           jb = jb + 1
           val = 0d0
           if(i == k) val = sqrt(6d0)*eh_trip_rho(i,a,n)
+          val = cScale*val
           H(ib,jb) = val
           H(jb,ib) = val
         end do
@@ -476,6 +470,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             val = 0d0
             if(j == k) val = val + sqrt(3d0)*eh_sing_rho(i,a,n)
             if(i == k) val = val - sqrt(3d0)*eh_sing_rho(j,a,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -488,6 +483,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             val = 0d0
             if(j == k) val = val + eh_trip_rho(i,a,n)
             if(i == k) val = val - eh_trip_rho(j,a,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -513,6 +509,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             val = 0d0
             if(j == k) val = val - eh_sing_rho(i,a,n)
             if(i == k) val = val - eh_sing_rho(j,a,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -525,6 +522,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             val = 0d0
             if(j == k) val = val + sqrt(3d0)*eh_trip_rho(i,a,n)
             if(i == k) val = val + sqrt(3d0)*eh_trip_rho(j,a,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -549,6 +547,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
           jb = jb + 1
           val = 0d0
           if(a == b) val = -sqrt(2d0)*hh_sing_rho(i,i,n)
+          val = cScale*val
           H(ib,jb) = val
           H(jb,ib) = val
         end do
@@ -569,6 +568,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             jb = jb + 1
             val = 0d0
             if(a == b) val = -2d0*hh_trip_rho(i,j,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -590,6 +590,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             jb = jb + 1
             val = 0d0
             if(a == b) val = -2d0*hh_sing_rho(i,j,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -613,6 +614,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
           jb = jb + 1
           val = 0d0
           if(a == c) val = sqrt(2d0)*eh_sing_rho(i,a,n)
+          val = cScale*val
           H(ib,jb) = val
           H(jb,ib) = val
         end do
@@ -624,6 +626,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
           jb = jb + 1
           val = 0d0
           if(a == c) val = -sqrt(6d0)*eh_trip_rho(i,a,n)
+          val = cScale*val
           H(ib,jb) = val
           H(jb,ib) = val
         end do
@@ -648,6 +651,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             val = 0d0
             if(a == c) val = val + sqrt(3d0)*eh_sing_rho(i,b,n)
             if(b == c) val = val - sqrt(3d0)*eh_sing_rho(i,a,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -660,6 +664,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             val = 0d0
             if(a == c) val = val + eh_trip_rho(i,b,n)
             if(b == c) val = val - eh_trip_rho(i,a,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -685,6 +690,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             val = 0d0
             if(a == c) val = val + eh_sing_rho(i,b,n)
             if(b == c) val = val + eh_sing_rho(i,a,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -697,6 +703,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             val = 0d0
             if(a == c) val = val - sqrt(3d0)*eh_trip_rho(i,b,n)
             if(b == c) val = val - sqrt(3d0)*eh_trip_rho(i,a,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -721,6 +728,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
           jb = jb + 1
           val = 0d0
           if(i == j) val = sqrt(2d0)*ee_sing_rho(a,a,n)
+          val = cScale*val
           H(ib,jb) = val
           H(jb,ib) = val
         end do
@@ -741,6 +749,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             jb = jb + 1
             val = 0d0
             if(i == j) val = 2d0*ee_trip_rho(a,b,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
@@ -762,6 +771,7 @@ subroutine R_ADC_Parquet(reg_PA,eta_1b,                                      &
             jb = jb + 1
             val = 0d0
             if(i == j) val = 2d0*ee_sing_rho(a,b,n)
+            val = cScale*val
             H(ib,jb) = val
             H(jb,ib) = val
           end do
