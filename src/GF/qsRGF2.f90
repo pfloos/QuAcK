@@ -90,7 +90,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
 ! SRG regularization
 
-  flow = 500d0
+  flow = 1d0
 
   if(doSRG) then
 

@@ -63,7 +63,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
 ! SRG regularization
 
-  flow = 500d0
+  flow = 1d0
 
   if(doSRG) then
 

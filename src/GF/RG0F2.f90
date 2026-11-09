@@ -54,7 +54,7 @@ subroutine RG0F2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,singlet,triplet,linearize,
 
 ! SRG regularization
 
-  flow = 500d0
+  flow = 1d0
 
   if(doSRG) then
 
