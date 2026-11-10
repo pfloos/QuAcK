@@ -13,6 +13,7 @@ subroutine read_options(working_dir,                                            
                         temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                         TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                         reg_1b,reg_2b,reg_PA,                                                                &
+                  parquet_method,faddeev_coupling,faddeev_solver,n_IP_roots, &
                         do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                         eweight,eforward)
 
@@ -117,6 +118,9 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: reg_1b,reg_2b
   logical,intent(out)           :: lin_parquet,reg_PA
 
+  character(len=16),intent(out) :: parquet_method,faddeev_coupling,faddeev_solver
+  integer,intent(out) :: n_IP_roots
+
   logical,intent(out)           :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(out)  :: eta_ADC
 
@@ -127,7 +131,7 @@ subroutine read_options(working_dir,                                            
 
   character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8
   integer                       :: status
-  character(len=256)            :: file_path
+  character(len=256)            :: file_path,option_line
 
 ! Open file with method specification
 
@@ -380,6 +384,31 @@ subroutine read_options(working_dir,                                            
 
       if(ans1 == 'T') eforward = .true.
  
+      ! Optional trailing section for evParquet self-energy selection.
+      parquet_method = 'faddeev'
+      faddeev_coupling = 'default'
+      faddeev_solver = 'davidson'
+      n_IP_roots = 1
+      do
+        read(1,'(A)',iostat=status) option_line
+        if(status < 0) exit
+        if(status /= 0) error stop 'Error reading Parquet self-energy options'
+        if(index(adjustl(option_line),'# Parquet self-energy:') /= 1) cycle
+        read(1,'(A)',iostat=status) option_line
+        if(status /= 0) error stop 'Missing Parquet self-energy option values'
+        read(option_line,*,iostat=status) parquet_method,faddeev_coupling,faddeev_solver,n_IP_roots
+        if(status /= 0) error stop 'Expected Parquet method, Faddeev coupling, solver and IP root count'
+        if(parquet_method /= 'native'.and.parquet_method /= 'adc'.and.parquet_method /= 'faddeev') &
+          error stop 'Parquet method must be native, adc or faddeev'
+        if(faddeev_coupling /= 'default'.and.faddeev_coupling /= 'adc2'.and. &
+           faddeev_coupling /= 'adc3'.and.faddeev_coupling /= 'dressed') &
+          error stop 'Faddeev coupling must be default, adc2, adc3 or dressed'
+        if(faddeev_solver /= 'dense'.and.faddeev_solver /= 'davidson') &
+          error stop 'Faddeev solver must be dense or davidson'
+        if(n_IP_roots < 1) error stop 'Faddeev IP root count must be positive'
+        exit
+      end do
+
     endif
 
   ! Close file with options

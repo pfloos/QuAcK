@@ -17,6 +17,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
+                  parquet_method,faddeev_coupling,faddeev_solver,n_IP_roots, &
                   nfreqs,ntimes,wcoord,wweight,                                                                             &
                   do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)      
 
@@ -128,6 +129,9 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   double precision,intent(in)   :: reg_1b,reg_2b
   logical,intent(in)            :: lin_parquet,reg_PA
   
+  character(len=16),intent(in) :: parquet_method,faddeev_coupling,faddeev_solver
+  integer,intent(in) :: n_IP_roots
+
   logical,intent(in)            :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(in)   :: eta_ADC
 
@@ -781,7 +785,8 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
   if(doevParquet) then
     call wall_time(start_Parquet)
     call R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
-                  nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO)
+                  nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO, &
+                     parquet_method,faddeev_coupling,faddeev_solver,n_IP_roots)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet

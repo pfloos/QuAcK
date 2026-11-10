@@ -17,33 +17,23 @@ Build QuAcK normally. In the calculation's `input` directory use:
   `tests/inp/methods.GTDAFaddeev` for GHF;
 - `tests/inp/options.TDAFaddeev` as `options`.
 
-The self-energy is selected by the hard-coded settings near the
-start of `src/Parquet/R_evParquet.f90` and `src/Parquet/G_evParquet.f90`,
-just like the previous ADC-Parquet switch:
+Append this optional section at the end of the calculation's `input/options`:
 
-```fortran
-logical :: do_ADC_self_energy = .false.
-logical :: do_Faddeev_self_energy = .true.
-logical :: do_Faddeev_ADC2 = .false.
-logical :: do_Faddeev_dressed = .false.
-logical :: do_principal_IP = .true.
-integer :: n_IP_roots = 1
+```text
+# Parquet self-energy: method coupling solver n_IP_roots
+faddeev adc3 davidson 4
 ```
 
-`do_Faddeev_ADC2=.true.` selects ADC(2) external coupling blocks in both
-the full-spectrum and matrix-free Davidson solvers, for both R and G.
-The default `.false.` retains ADC(3). The switch changes only the external
-vertices: the HF one-particle block and dressed Faddeev charged blocks stay
-the same. It therefore does not turn the entire model into ordinary ADC(2).
-ADC(2) endpoints require no MP2 amplitudes or denominators; endpoint SRG
-regularization has no effect on them.
+The method is `native`, `adc` (ADC-Parquet), or `faddeev`.
+Faddeev coupling choices are `adc2`, `adc3`, and `dressed`.
+The solver is `dense` or `davidson`. The root count is used in Davidson
+mode. Coupling and solver selections apply to Faddeev only.
 
-`do_Faddeev_dressed=.true.` selects the proposed static dressed source
-couplings in both solvers and both spin representations. Keep
-`do_Faddeev_ADC2=.false.`; selecting both is rejected. The default
-`do_Faddeev_dressed=.false.` retains the existing ADC(3) couplings.
-This option is a one-sided source approximation. Its equivalence to the
-native parquet self-energy beyond third order has not been established.
+Use `faddeev dressed davidson 4` to compare static dressed couplings
+with the ADC(3) couplings above. Both runs use the same charged pair
+kernels. Omitting the section, or using `faddeev default davidson 1`,
+retains the previous defaults: dressed couplings for R and ADC(3)
+couplings for G.
 
 The source matrices are the occupation-changing eh and pp kernels (`Bph`
 and `Bpp`, including the bare interaction). They are evaluated separately
@@ -88,15 +78,16 @@ Clebsch-Gordan transformations. Empty triplet pair sectors are supported.
 The matrix-free principal-IP mode is enabled by default in both drivers.
 Set `n_IP_roots` to the number of IP eigenpairs wanted, for example `5`,
 in either driver. This setting is used only in Davidson mode.
-Set `do_principal_IP=.false.` for the full spectrum. Rebuild QuAcK after
-changing these switches, then launch PyDuck or QuAcK normally.
+Set the solver to `dense` for the full spectrum. Launch PyDuck or QuAcK normally after editing the input.
 
 Both `TDAeh` and `TDApp` must be `T`; the driver rejects other values.
 The method uses the existing `evParquet` switch and its pair iterations,
 convergence thresholds, and DIIS settings. The supplied example requests
 one one-body evaluation and up to 64 pair iterations. With `max_it_2b=1`
-at the HF reference the kernels are bare, giving the ordinary ADC(3)
-limit. A dressed-parquet test requires further pair iterations and checking
+at the HF reference the pair kernels are bare. With ADC(3) couplings
+and endpoint regularization disabled this gives the ordinary ADC(3) limit.
+For a bare-kernel comparison use `max_it_2b=1` in both runs. The
+`dressed` couplings still use the TDA pair modes from that single iteration. A dressed-parquet test requires further pair iterations and checking
 the reported pair convergence. Fixed unconverged snapshots can differ
 between R and G when DIIS uses different residual metrics; compare fixed
 snapshots with `max_diis_2b=1`.
@@ -107,11 +98,7 @@ energy array into one-body self-consistency. Pair iterations are unchanged.
 In full-spectrum mode, more than one one-body iteration feeds all dominant
 poles into the existing eigenvalue-self-consistent parquet loop.
 
-To select the previous ADC-Parquet self-energy, set
-`do_ADC_self_energy=.true.` and `do_Faddeev_self_energy=.false.`.
-Set both to `.false.` for the native parquet self-energy. Setting both to
-`.true.` is rejected. These switches apply to the R/G `evParquet` drivers,
-not `qsParquet` or `R_GW_Parquet`.
+These options apply to the R/G `evParquet` drivers.
 
 ## Matrix-free IP roots
 
@@ -259,7 +246,7 @@ python tests/check_tda_faddeev.py --workdir /tmp/new-algebraic-checks
 
 Build QuAcK first; the check requires NumPy and gfortran. Set `FC` and
 `LAPACK_LIBS` if necessary. The full-spectrum molecular test script requires
-PySCF and a build with `do_principal_IP=.false.` in both drivers. It runs
+PySCF and selects the dense solver in the input file. It runs
 H2O/6-31G and H2/STO-3G, with logs retained:
 
 ```sh

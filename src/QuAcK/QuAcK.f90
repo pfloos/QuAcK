@@ -120,6 +120,9 @@ program QuAcK
   double precision              :: reg_1b,reg_2b 
   logical                       :: lin_parquet, reg_PA
    
+  character(len=16) :: parquet_method,faddeev_coupling,faddeev_solver
+  integer :: n_IP_roots
+
   logical                       :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision              :: eta_ADC
 
@@ -255,6 +258,7 @@ program QuAcK
                     temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                     reg_1b,reg_2b,reg_PA,                                                                &
+                  parquet_method,faddeev_coupling,faddeev_solver,n_IP_roots, &
                     do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                     eweight,eforward)
 
@@ -440,6 +444,7 @@ program QuAcK
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
+                  parquet_method,faddeev_coupling,faddeev_solver,n_IP_roots, &
                   nfreqs,ntimes,wcoord,wweight,                                                                             &
                   do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
     endif
@@ -484,6 +489,7 @@ program QuAcK
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                        &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,     &
                 reg_1b,reg_2b,reg_PA,                                                                    &
+                  parquet_method,faddeev_coupling,faddeev_solver,n_IP_roots, &
                 do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
 
 !-------------------------!
