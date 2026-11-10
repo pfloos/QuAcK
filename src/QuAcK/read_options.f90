@@ -13,7 +13,7 @@ subroutine read_options(working_dir,                                            
                         temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                         TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                         reg_1b,reg_2b,reg_PA,                                                                &
-                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3, &
+                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_faddeev, &
                         do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                         eweight,eforward)
 
@@ -119,7 +119,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: lin_parquet,reg_PA
 
   integer,intent(out) :: parquet_method,faddeev_coupling,n_IP_roots
-  logical,intent(out) :: faddeev_davidson,faddeev_static3
+  logical,intent(out) :: faddeev_davidson,faddeev_static3,gw_faddeev
 
   logical,intent(out)           :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(out)  :: eta_ADC
@@ -390,10 +390,20 @@ subroutine read_options(working_dir,                                            
       faddeev_davidson = .true.
       n_IP_roots = 1
       faddeev_static3 = .false.
+      gw_faddeev = .false.
       do
         read(1,'(A)',iostat=status) option_line
         if(status < 0) exit
         if(status /= 0) error stop 'Error reading Parquet self-energy options'
+        if(index(adjustl(option_line),'# GWParquet Faddeev:') == 1) then
+          read(1,'(A)',iostat=status) option_line
+          if(status /= 0) error stop 'Missing GWParquet Faddeev flag'
+          ans1 = ' '
+          read(option_line,*,iostat=status) ans1
+          if(status /= 0.or.(ans1 /= 'T'.and.ans1 /= 'F')) error stop 'GWParquet Faddeev flag must be T or F'
+          gw_faddeev = ans1 == 'T'
+          cycle
+        end if
         if(index(adjustl(option_line),'# Faddeev static self-energy:') == 1) then
           read(1,'(A)',iostat=status) option_line
           if(status /= 0) error stop 'Missing Faddeev static self-energy flag'

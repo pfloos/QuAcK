@@ -251,3 +251,36 @@ H2O/6-31G and H2/STO-3G, with logs retained:
 ```sh
 python tests/check_tda_faddeev_molecules.py --workdir /tmp/new-molecular-checks
 ```
+
+## Frozen GW energies and BSE pair kernels
+
+The restricted `GWParquet` driver can run TDA Faddeev by setting its method
+switch to `T` and appending this optional record to `input/options`.
+
+```text
+# GWParquet Faddeev: use TDA Faddeev with frozen GW energies and BSE kernels
+T
+```
+
+The default is `F`, which selects the existing native GW-Parquet calculation.
+With this flag enabled, `TDAeh` and `TDApp` must both be `T`. The existing
+`Parquet self-energy` record selects the coupling (2, 3, or 4), dense versus
+Davidson solution, and the number of IP roots. Coupling 0 uses dressed sources,
+as in the restricted evParquet driver.
+
+The one-body block uses HF energies. Frozen G0W0 energies enter the free charged
+configuration energies, BSE gaps, ADC(3)-form denominators, and dressed source
+equations. The pair interactions are the singlet/triplet eh and pp/hh BSE
+matrices with their GW free pair energies removed. G0W0 and the BSE kernels use
+the same W0 response constructed from HF. W0 can use full RPA even when the
+Faddeev pair propagation uses TDA.
+
+The optional third-order static correction retains its canonical HF density
+expansion. It is added once to the external block. No GW energy shift is added
+to that block. Full-spectrum mode returns orbital energies and weights;
+Davidson mode reports the IP roots and HF assignments in its printed tables.
+
+Run `python tests/check_gw_faddeev.py --workdir /tmp/new-gw-ftda-checks` after
+building QuAcK. It compares dense and Davidson results for all five coupling
+and static-correction combinations on STO-3G water and H2, and checks the pp
+chemical-potential convention and the required TDA options.

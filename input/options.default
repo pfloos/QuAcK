@@ -32,3 +32,5 @@
                        2 0 T 1
 # Faddeev static self-energy: third-order HF density correction
                        F
+# GWParquet Faddeev: use TDA Faddeev with frozen GW energies and BSE kernels
+                       F

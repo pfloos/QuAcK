@@ -1,11 +1,12 @@
 subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize, &
                         eta_1b,eta_2b,reg_PA,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF, &
-                        ERI,dipole_int,eHF,eGW,ePA,ZPA)
+                        ERI,dipole_int,eHF,eGW,ePA,ZPA, &
+                        gw_faddeev,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3)
 
-! Frozen-input, native parquet calculation from G0W0 and static BSE@G0W0.
+! Frozen-input native parquet or TDA Faddeev calculation from G0W0/BSE.
 ! W0 is built from the HF dRPA response, as in RG0W0/RGW_phBSE/RGW_ppBSE.
 ! Both BSE gaps and every internal self-energy energy use the frozen eGW.
-! There are no parquet one-body/two-body iterations and no ADC completion.
+! Native PA and Faddeev share the same frozen GW/BSE inputs.
 
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
@@ -16,6 +17,14 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   double precision,intent(in)  :: eta_GW,eta_1b,eta_2b,ENuc,ERHF
   double precision,intent(in)  :: ERI(nOrb,nOrb,nOrb,nOrb),dipole_int(nOrb,nOrb,ncart),eHF(nOrb)
   double precision,intent(out) :: eGW(nOrb),ePA(nOrb),ZPA(nOrb)
+  logical,intent(in) :: gw_faddeev,faddeev_davidson,faddeev_static3
+  integer,intent(in) :: faddeev_coupling,n_IP_roots
+
+  type pair_interactions
+    double precision,allocatable :: eh(:,:),hh(:,:),ee(:,:),Beh(:,:),Bpp(:,:)
+  end type
+  type(pair_interactions) :: pair(2)
+  logical :: adc2,dressed
 
   integer :: nOcc,nVir,nOOs,nVVs,nOOt,nVVt,p,q,r,s,m,it,ls
   integer,parameter :: max_root_it=128,max_backtrack=24
@@ -35,6 +44,15 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   if(eta_GW < 0d0) error stop 'R_GW_Parquet: GW broadening must be nonnegative'
   if(reg_PA .and. (eta_1b <= 0d0 .or. eta_2b <= 0d0)) &
     error stop 'R_GW_Parquet: positive reg_1b and reg_2b are required for SRG'
+  adc2=faddeev_coupling == 2
+  dressed=faddeev_coupling == 0.or.faddeev_coupling == 4
+  if(gw_faddeev) then
+    if(.not.TDAeh.or..not.TDApp) error stop 'GW Faddeev requires TDAeh=T and TDApp=T'
+    if(faddeev_coupling/=0.and.(faddeev_coupling<2.or.faddeev_coupling>4)) &
+      error stop 'GW Faddeev coupling must be 0, 2, 3 or 4'
+    if(faddeev_davidson.and.(n_IP_roots<1.or.n_IP_roots>nOcc)) &
+      error stop 'GW Faddeev IP root count exceeds the active occupied space'
+  end if
   nOOs=nOcc*(nOcc+1)/2
   nVVs=nVir*(nVir+1)/2
   nOOt=nOcc*(nOcc-1)/2
@@ -116,6 +134,11 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   call pp_bse(2,nOOt,nVVt,OmPT,rhoPT,OmHT,rhoHT,Ec_pp(2))
   deallocate(W0,rhoW,OmW)
 
+  if(gw_faddeev) then
+    call faddeev_spectrum()
+    return
+  end if
+
 ! The BSE poles and Gamma_BSE times eigenvectors are the spectral vertices
 ! needed by the native PA contraction. No four-index Phi feedback is made.
 
@@ -185,6 +208,7 @@ contains
     integer,intent(in) :: ispin
     double precision,intent(out) :: Om(nS),rho(nOrb,nOrb,nS),Ec
     double precision,allocatable :: aa(:,:),bb(:,:),ka(:,:),kb(:,:),xp(:,:),xm(:,:)
+    integer :: i,a,ia
     allocate(aa(nS,nS),bb(nS,nS),ka(nS,nS),kb(nS,nS),xp(nS,nS),xm(nS,nS))
     bb=0d0
     kb=0d0
@@ -196,6 +220,21 @@ contains
     end if
     aa=aa+ka
     bb=bb+kb
+    if(gw_faddeev) then
+      pair(ispin)%eh=aa
+      ia=0
+      do i=nC+1,nO
+        do a=nO+1,nOrb-nR
+          ia=ia+1
+          pair(ispin)%eh(ia,ia)=pair(ispin)%eh(ia,ia)-eGW(a)+eGW(i)
+        end do
+      end do
+      if(dressed) then
+        call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,bb)
+        call RGW_phBSE_static_kernel_B(eta_GW,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmW,rhoW,kb)
+        pair(ispin)%Beh=bb+kb
+      end if
+    end if
     call phRLR(TDAeh,nS,aa,bb,Ec,Om,xp,xm)
     if(.not.all(ieee_is_finite(Om)) .or. any(Om <= 0d0)) &
       error stop 'R_GW_Parquet: unstable ehBSE@G0W0 response'
@@ -208,12 +247,19 @@ contains
     integer,intent(in) :: ispin,nOO,nVV
     double precision,intent(out) :: Om1(nVV),rho1(nOrb,nOrb,nVV),Om2(nOO),rho2(nOrb,nOrb,nOO),Ec
     logical :: shifted_pp
+    double precision :: pair_shift
     double precision,allocatable :: bb(:,:),cc(:,:),dd(:,:),kb(:,:),kc(:,:),kd(:,:)
     double precision,allocatable :: x1(:,:),y1(:,:),x2(:,:),y2(:,:)
     rho1=0d0
     rho2=0d0
     Ec=0d0
-    if(nOO+nVV == 0) return
+    if(nOO+nVV == 0) then
+      if(gw_faddeev) then
+        allocate(pair(ispin)%hh(0,0),pair(ispin)%ee(0,0))
+        if(dressed) allocate(pair(ispin)%Bpp(0,0))
+      end if
+      return
+    end if
     allocate(bb(nVV,nOO),cc(nVV,nVV),dd(nOO,nOO),kb(nVV,nOO),kc(nVV,nVV),kd(nOO,nOO))
     allocate(x1(nVV,nVV),y1(nOO,nVV),x2(nVV,nOO),y2(nOO,nOO))
     bb=0d0
@@ -234,6 +280,21 @@ contains
     cc=cc+kc
     dd=dd+kd
     bb=bb+kb
+    if(gw_faddeev) then
+      pair(ispin)%hh=dd
+      pair(ispin)%ee=cc
+      pair_shift=0d0
+      inquire(file='use_chem_pot_in_ppRPA',exist=shifted_pp)
+      if(shifted_pp) pair_shift=eGW(nO)+eGW(nO+1)
+      call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,ispin==1,.true.,nOO,eGW,pair_shift,pair(ispin)%hh)
+      call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,ispin==1,.false.,nVV,eGW,pair_shift,pair(ispin)%ee)
+      if(dressed) then
+        call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,bb)
+        if(nOO*nVV>0) call RGW_ppBSE_static_kernel_B(ispin,eta_GW,nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
+                                                   1d0,ERI,OmW,rhoW,kb)
+        pair(ispin)%Bpp=bb+kb
+      end if
+    end if
     call ppRLR(TDApp,nOO,nVV,bb,cc,dd,Om1,x1,y1,Om2,x2,y2,Ec)
     ! ppRLR optionally uses poles measured from twice the chemical potential.
     ! Native PA denominators require absolute pair energies, so undo that shift.
@@ -253,6 +314,42 @@ contains
       if(nOO > 0) call print_excitation_energies('ppBSE@G0W0','2h triplet',nOO,Om2)
     end if
   end subroutine pp_bse
+
+  subroutine faddeev_spectrum()
+    double precision,allocatable :: Tehs(:,:),Teht(:,:),Thhs(:,:),Thht(:,:),Tees(:,:),Teet(:,:)
+    double precision,allocatable :: Teh(:,:),Thh(:,:),Tee(:,:),ip_omega(:),ip_Z(:),ip_residual(:)
+    integer :: info
+    write(*,*) 'GW-BSE FTDA: HF external block; frozen GW internal energies'
+    write(*,*) 'GW-BSE FTDA: static TDA eh/pp BSE interactions'
+    if(faddeev_static3) write(*,*) 'Static correction uses the canonical HF density expansion'
+    allocate(Teh(4*nS,4*nS),Thh(nOcc*(2*nOcc-1),nVir*(2*nVir-1)),Tee(nOcc*(2*nOcc-1),nVir*(2*nVir-1)))
+    Teh=0d0
+    Thh=0d0
+    Tee=0d0
+    if(dressed) then
+      allocate(Tehs(nS,nS),Teht(nS,nS),Thhs(nOOs,nVVs),Thht(nOOt,nVVt),Tees(nOOs,nVVs),Teet(nOOt,nVVt))
+      call TDA_Faddeev_sources(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nVVs,.true.,eGW, &
+           pair(1)%eh,pair(1)%hh,pair(1)%ee,pair(1)%Beh,pair(1)%Bpp,Tehs,Thhs,Tees)
+      call TDA_Faddeev_sources(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOt,nVVt,.false.,eGW, &
+           pair(2)%eh,pair(2)%hh,pair(2)%ee,pair(2)%Beh,pair(2)%Bpp,Teht,Thht,Teet)
+      call R_TDA_Faddeev_lift_sources(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+           Tehs,Teht,Thhs,Thht,Tees,Teet,Teh,Thh,Tee)
+    end if
+    if(faddeev_davidson) then
+      allocate(ip_omega(n_IP_roots),ip_Z(n_IP_roots),ip_residual(n_IP_roots))
+      call R_TDA_Faddeev_IP_roots(n_IP_roots,adc2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+           eHF,eGW,ERI,pair(1)%eh,pair(2)%eh,pair(1)%hh,pair(2)%hh,pair(1)%ee,pair(2)%ee, &
+           ip_omega,ip_Z,ip_residual,info,dressed,Teh,Thh,Tee,faddeev_static3)
+      if(info/=0) error stop 'GW-BSE FTDA Davidson failed to converge'
+      ! Only the printed IP root table is a calculated spectrum in this mode.
+      ePA=eHF
+      ZPA=0d0
+    else
+      call R_TDA_Faddeev_self_energy(adc2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
+           eHF,eGW,ERI,pair(1)%eh,pair(2)%eh,pair(1)%hh,pair(2)%hh,pair(1)%ee,pair(2)%ee, &
+           ePA,ZPA,dressed,Teh,Thh,Tee,faddeev_static3)
+    end if
+  end subroutine faddeev_spectrum
 
   subroutine evaluate(orb,freq,sig,deriv)
     integer,intent(in) :: orb
