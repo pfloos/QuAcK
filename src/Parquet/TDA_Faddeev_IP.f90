@@ -468,7 +468,15 @@ contains
           call apply(op,x(:,k),t); nmv=nmv+1
           residual(j)=sqrt(sum((t-omega(j)*x(:,k))**2))
         end do
-        if(all(residual<=tolerance)) info=0
+        if(all(residual<=tolerance)) then
+          info=0
+          write(*,*) 'Faddeev HF assignments: root, HF orbital, orbital weight'
+          do j=1,nroots
+            k=reported(j)
+            i=findloc(assigned,k,dim=1)
+            write(*,'(2I7,F20.10)') j,target(i),weight(i,k)
+          end do
+        end if
         exit
       end if
       if(m+nh>limit) then
@@ -664,6 +672,10 @@ subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,n
   call wall_time(finish)
   write(*,'(A,F12.3,A)') ' Faddeev Davidson solve: ',finish-start,' seconds'
   if(info/=0) return
+  if(nroots==1) then
+    write(*,*) 'Faddeev HF assignments: root, HF orbital, orbital weight'
+    write(*,'(2I7,F20.10)') 1,nocc,homo_weight
+  end if
   write(*,*) 'Faddeev-Parquet IP roots: root, IP (eV), pole (eV), 1p weight Z, residual (Ha)'
   do j=1,nroots
     write(*,'(I7,3F20.10,ES14.4)') j,-omega(j)*HaToeV,omega(j)*HaToeV,Z(j),residual(j)
