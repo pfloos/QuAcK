@@ -161,8 +161,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   if(do_Faddeev_self_energy) then
     allocate(F_eh(nS,nS),F_hh(nOOs,nOOs),F_ee(nVVs,nVVs))
     allocate(F_eht(nS,nS),F_hht(nOOt,nOOt),F_eet(nVVt,nVVt))
-    allocate(F_Beh(nS,nS),F_Bpp(nVVs,nOOs),F_Teh(nS,nS),F_Thh(nOOs,nVVs),F_Tee(nOOs,nVVs))
-    allocate(F_Beht(nS,nS),F_Bppt(nVVt,nOOt),F_Teht(nS,nS),F_Thht(nOOt,nVVt),F_Teet(nOOt,nVVt))
+    allocate(F_Teh(nS,nS),F_Thh(nOOs,nVVs),F_Tee(nOOs,nVVs))
+    allocate(F_Teht(nS,nS),F_Thht(nOOt,nVVt),F_Teet(nOOt,nVVt))
     allocate(F_Tg(4*nS,4*nS),F_Hg((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1)))
     allocate(F_Eg(size(F_Hg,1),size(F_Hg,2)))
     F_Tg=0d0; F_Hg=0d0; F_Eg=0d0
@@ -372,11 +372,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       end if
 
       if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
+        if(.not.allocated(F_Beh)) allocate(F_Beh(nS,nS))
         call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,F_Beh)
         if(n_it_1b/=1.or.n_it_2b/=1) then
           call R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS, &
             old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi,eh_sing_Gam_B)
-          F_Beh=F_Beh+eh_sing_Gam_B
+          F_Beh(:,:)=F_Beh(:,:)+eh_sing_Gam_B
         end if
       end if
       call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_sing_Om,sing_XpY,sing_XmY)
@@ -448,11 +449,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       end if
 
       if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
+        if(.not.allocated(F_Beht)) allocate(F_Beht(nS,nS))
         call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,F_Beht)
         if(n_it_1b/=1.or.n_it_2b/=1) then
           call R_eh_triplet_Gamma_B(nOrb,nC,nO,nR,nS, &
             old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi,eh_trip_Gam_B)
-          F_Beht=F_Beht+eh_trip_Gam_B
+          F_Beht(:,:)=F_Beht(:,:)+eh_trip_Gam_B
         end if
       end if
       call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_trip_Om,trip_XpY,trip_XmY)
@@ -526,11 +528,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       end if
 
       if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
+        if(.not.allocated(F_Bpp)) allocate(F_Bpp(nVVs,nOOs))
         call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,F_Bpp)
         if(n_it_1b/=1.or.n_it_2b/=1) then
           call R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs, &
             old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_B)
-          F_Bpp=F_Bpp+pp_sing_Gam_B
+          F_Bpp(:,:)=F_Bpp(:,:)+pp_sing_Gam_B
         end if
       end if
       call ppRLR(TDApp,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,Ec_pp(ispin))
@@ -610,11 +613,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       end if
 
       if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
+        if(.not.allocated(F_Bppt)) allocate(F_Bppt(nVVt,nOOt))
         call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,F_Bppt)
         if(n_it_1b/=1.or.n_it_2b/=1) then
           call R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt, &
             old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_B)
-          F_Bppt=F_Bppt+pp_trip_Gam_B
+          F_Bppt(:,:)=F_Bppt(:,:)+pp_trip_Gam_B
         end if
       end if
       call ppRLR(TDApp,nOOt,nVVt,Bpp,Cpp,Dpp,ee_trip_Om,X1t,Y1t,hh_trip_Om,X2t,Y2t,Ec_pp(ispin))

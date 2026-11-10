@@ -114,7 +114,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   end if
   if(do_Faddeev_self_energy) allocate(F_eh(nS,nS),F_hh(nOO,nOO),F_ee(nVV,nVV))
   if(do_Faddeev_self_energy) then
-    allocate(F_Beh(nS,nS),F_Bpp(nVV,nOO),F_Teh(nS,nS),F_Thh(nOO,nVV),F_Tee(nOO,nVV))
+    allocate(F_Teh(nS,nS),F_Thh(nOO,nVV),F_Tee(nOO,nVV))
     F_Teh=0d0; F_Thh=0d0; F_Tee=0d0
   end if
 
@@ -287,10 +287,11 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       end if
 
       if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
+        if(.not.allocated(F_Beh)) allocate(F_Beh(nS,nS))
         call phGLR_B(.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,F_Beh)
         if(n_it_1b/=1.or.n_it_2b/=1) then
           call G_eh_Gamma_B(nOrb,nC,nO,nR,nS,old_eh_Phi,old_pp_Phi,eh_Gam_B)
-          F_Beh=F_Beh+eh_Gam_B
+          F_Beh(:,:)=F_Beh(:,:)+eh_Gam_B
         end if
       end if
       call phGLR(TDAeh,nS,Aph,Bph,Ec_eh,eh_Om,XpY,XmY)
@@ -364,10 +365,11 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       end if
 
       if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
+        if(.not.allocated(F_Bpp)) allocate(F_Bpp(nVV,nOO))
         call ppGLR_B(nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,F_Bpp)
         if(n_it_1b/=1.or.n_it_2b/=1) then
           call G_pp_Gamma_B(nOrb,nC,nO,nR,nOO,nVV,old_eh_Phi,pp_Gam_B)
-          F_Bpp=F_Bpp+pp_Gam_B
+          F_Bpp(:,:)=F_Bpp(:,:)+pp_Gam_B
         end if
       end if
       call ppGLR(TDApp,nOO,nVV,Bpp,Cpp,Dpp,ee_Om,X1,Y1,hh_Om,X2,Y2,Ec_pp)
