@@ -20,20 +20,19 @@ Build QuAcK normally. In the calculation's `input` directory use:
 Append this optional section at the end of the calculation's `input/options`:
 
 ```text
-# Parquet self-energy: method coupling solver n_IP_roots
-faddeev adc3 davidson 4
+# Parquet self-energy: method(0=native,1=ADC,2=Faddeev) coupling(0=default,2=ADC2,3=ADC3,4=dressed) Davidson n_IP_roots
+2 3 T 4
 ```
 
-The method is `native`, `adc` (ADC-Parquet), or `faddeev`.
-Faddeev coupling choices are `adc2`, `adc3`, and `dressed`.
-The solver is `dense` or `davidson`. The root count is used in Davidson
-mode. Coupling and solver selections apply to Faddeev only.
+Use method `0` for native Parquet, `1` for ADC-Parquet, or `2` for
+Faddeev. The Faddeev coupling codes are `2` for ADC(2), `3` for ADC(3),
+and `4` for dressed. Davidson takes `T` or `F` (dense). The final integer
+is the Davidson root count. Place the header directly after the preceding
+option row and put the values on the next line.
 
-Use `faddeev dressed davidson 4` to compare static dressed couplings
-with the ADC(3) couplings above. Both runs use the same charged pair
-kernels. Omitting the section, or using `faddeev default davidson 1`,
-retains the previous defaults: dressed couplings for R and ADC(3)
-couplings for G.
+Use `2 4 T 4` for the corresponding dressed calculation. Omitting the
+section, or using `2 0 T 1`, retains the previous defaults of dressed
+couplings for R and ADC(3) couplings for G.
 
 The source matrices are the occupation-changing eh and pp kernels (`Bph`
 and `Bpp`, including the bare interaction). They are evaluated separately
@@ -78,7 +77,7 @@ Clebsch-Gordan transformations. Empty triplet pair sectors are supported.
 The matrix-free principal-IP mode is enabled by default in both drivers.
 Set `n_IP_roots` to the number of IP eigenpairs wanted, for example `5`,
 in either driver. This setting is used only in Davidson mode.
-Set the solver to `dense` for the full spectrum. Launch PyDuck or QuAcK normally after editing the input.
+Set Davidson to `F` for the full spectrum. Launch PyDuck or QuAcK normally after editing the input.
 
 Both `TDAeh` and `TDApp` must be `T`; the driver rejects other values.
 The method uses the existing `evParquet` switch and its pair iterations,

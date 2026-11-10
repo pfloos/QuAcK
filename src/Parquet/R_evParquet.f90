@@ -1,6 +1,6 @@
 subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                        nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI, &
-                       parquet_method,faddeev_coupling,faddeev_solver,n_IP_roots)
+                       parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots)
 
 ! Parquet approximation with eigenvalue self-consistency based on spatial orbitals
 
@@ -16,8 +16,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
 ! Input variables
 
-  character(len=16),intent(in) :: parquet_method,faddeev_coupling,faddeev_solver
-  integer,intent(in) :: n_IP_roots
+  integer,intent(in) :: parquet_method,faddeev_coupling,n_IP_roots
+  logical,intent(in) :: faddeev_davidson
 
   logical,intent(in)            :: TDAeh     
   logical,intent(in)            :: TDApp     
@@ -141,12 +141,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   nVVs = (nOrb-nR-nO)*(nOrb-nR-nO+1)/2
   nOOt = (nO-nC)*(nO-nC-1)/2
   nVVt = (nOrb-nR-nO)*(nOrb-nR-nO-1)/2
-  do_ADC_self_energy = parquet_method == 'adc'
-  do_Faddeev_self_energy = parquet_method == 'faddeev'
-  do_Faddeev_ADC2 = faddeev_coupling == 'adc2'
-  do_Faddeev_dressed = faddeev_coupling == 'dressed'
-  if(faddeev_coupling == 'default') do_Faddeev_dressed = .true.
-  do_principal_IP = faddeev_solver == 'davidson'
+  do_ADC_self_energy = parquet_method == 1
+  do_Faddeev_self_energy = parquet_method == 2
+  do_Faddeev_ADC2 = faddeev_coupling == 2
+  do_Faddeev_dressed = faddeev_coupling == 4
+  if(faddeev_coupling == 0) do_Faddeev_dressed = .true.
+  do_principal_IP = faddeev_davidson
 
   if(do_Faddeev_self_energy) then
     if(.not.TDAeh.or..not.TDApp) error stop 'TDA Faddeev-Parquet requires both TDAeh=T and TDApp=T'

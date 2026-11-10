@@ -28,6 +28,5 @@
        T     F           F       F   F   0.0
 # Ensemble: weight_N  N+1[for N-1 use F]
 	    0.00000   T
-
-# Parquet self-energy: method coupling solver n_IP_roots
-                       faddeev default davidson 1
+# Parquet self-energy: method(0=native,1=ADC,2=Faddeev) coupling(0=default,2=ADC2,3=ADC3,4=dressed) Davidson n_IP_roots
+                       2 0 T 1

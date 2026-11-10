@@ -54,7 +54,7 @@ def main():
                          {0: 'T', 1: 'T', 2: '1', 3: '1e-8', 4: str(iterations),
                           5: '1e-6', 6: '1', 7: '1', 9: '1000', 10: '1000', 11: reg})
         (case / 'input/methods').write_text(methods)
-        options = modify(options, '# Parquet self-energy:', {0: 'faddeev', 1: 'adc3', 2: 'dense', 3: '1'})
+        options = modify(options, '# Parquet self-energy:', {0: '2', 1: '3', 2: 'F', 3: '1'})
         (case / 'input/options').write_text(options)
 
     def run(case, name, command=None, expect_failure=False):
