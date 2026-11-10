@@ -1,6 +1,6 @@
 subroutine G_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOO,nVV, &
                                     eHF,eQP,ERI,Weh,Whh,Wee,ePA,ZPA, &
-    dressed,Teh,Thh,Tee)
+    dressed,Teh,Thh,Tee,static3)
 ! Complete-TDA physical reduction of faddeev_parquet_notes.tex.
 ! Weh=Aeh-diag(ea-ei), Whh=Dpp+diag(ei+ej), Wee=Cpp-diag(ea+eb).
 ! Endpoints: ADC(2), ADC(3), or static one-sided dressed sources.
@@ -11,14 +11,19 @@ subroutine G_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOO,nVV, &
   double precision,intent(in) :: Weh(nS,nS),Whh(nOO,nOO),Wee(nVV,nVV)
   double precision,intent(out) :: ePA(nOrb),ZPA(nOrb)
   integer :: nH
-  logical,intent(in) :: dressed
+  logical,intent(in) :: dressed,static3
   double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
-  double precision,allocatable :: H(:,:)
+  double precision,allocatable :: H(:,:),sigma(:,:)
   if(nC<0.or.nR<0.or.nO<=nC.or.nOrb-nR<=nO) error stop 'G TDA Faddeev: invalid active space'
   nH=nOrb+nOO*(nOrb-nR-nO)+nVV*(nO-nC)
   allocate(H(nH,nH))
   call G_TDA_Faddeev_build(adc2,reg_PA,eta,0,nOrb,nC,nO,nR,nS,nOO,nVV,nH,eHF,eQP,ERI,Weh,Whh,Wee,H, &
     dressed,Teh,Thh,Tee)
+  if(static3) then
+    allocate(sigma(nOrb,nOrb))
+    call TDA_Faddeev_static3(nOrb,nOrb,nOrb,nC,nO,nR,eHF,ERI,sigma)
+    H(1:nOrb,1:nOrb)=H(1:nOrb,1:nOrb)+sigma
+  end if
   call G_TDA_Faddeev_spectrum(dressed,adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 

@@ -13,7 +13,7 @@ subroutine read_options(working_dir,                                            
                         temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                         TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                         reg_1b,reg_2b,reg_PA,                                                                &
-                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots, &
+                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3, &
                         do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                         eweight,eforward)
 
@@ -119,7 +119,7 @@ subroutine read_options(working_dir,                                            
   logical,intent(out)           :: lin_parquet,reg_PA
 
   integer,intent(out) :: parquet_method,faddeev_coupling,n_IP_roots
-  logical,intent(out) :: faddeev_davidson
+  logical,intent(out) :: faddeev_davidson,faddeev_static3
 
   logical,intent(out)           :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(out)  :: eta_ADC
@@ -389,10 +389,20 @@ subroutine read_options(working_dir,                                            
       faddeev_coupling = 0
       faddeev_davidson = .true.
       n_IP_roots = 1
+      faddeev_static3 = .false.
       do
         read(1,'(A)',iostat=status) option_line
         if(status < 0) exit
         if(status /= 0) error stop 'Error reading Parquet self-energy options'
+        if(index(adjustl(option_line),'# Faddeev static self-energy:') == 1) then
+          read(1,'(A)',iostat=status) option_line
+          if(status /= 0) error stop 'Missing Faddeev static self-energy flag'
+          ans1 = ' '
+          read(option_line,*,iostat=status) ans1
+          if(status /= 0.or.(ans1 /= 'T'.and.ans1 /= 'F')) error stop 'Faddeev static self-energy flag must be T or F'
+          faddeev_static3 = ans1 == 'T'
+          cycle
+        end if
         if(index(adjustl(option_line),'# Parquet self-energy:') /= 1) cycle
         read(1,'(A)',iostat=status) option_line
         if(status /= 0) error stop 'Missing Parquet self-energy option values'
@@ -405,7 +415,6 @@ subroutine read_options(working_dir,                                            
         if(ans1 /= 'T'.and.ans1 /= 'F') error stop 'Faddeev Davidson flag must be T or F'
         faddeev_davidson = ans1 == 'T'
         if(n_IP_roots < 1) error stop 'Faddeev IP root count must be positive'
-        exit
       end do
 
     endif

@@ -30,3 +30,5 @@
 	    0.00000   T
 # Parquet self-energy: method(0=native,1=ADC,2=Faddeev) coupling(0=default,2=ADC2,3=ADC3,4=dressed) Davidson n_IP_roots
                        2 0 T 1
+# Faddeev static self-energy: third-order HF density correction
+                       F

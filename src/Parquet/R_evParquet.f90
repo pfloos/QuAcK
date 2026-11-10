@@ -1,6 +1,6 @@
 subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                        nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI, &
-                       parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots)
+                       parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3)
 
 ! Parquet approximation with eigenvalue self-consistency based on spatial orbitals
 
@@ -17,7 +17,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 ! Input variables
 
   integer,intent(in) :: parquet_method,faddeev_coupling,n_IP_roots
-  logical,intent(in) :: faddeev_davidson
+  logical,intent(in) :: faddeev_davidson,faddeev_static3
 
   logical,intent(in)            :: TDAeh     
   logical,intent(in)            :: TDApp     
@@ -143,6 +143,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   nVVt = (nOrb-nR-nO)*(nOrb-nR-nO-1)/2
   do_ADC_self_energy = parquet_method == 1
   do_Faddeev_self_energy = parquet_method == 2
+  if(faddeev_static3.and..not.do_Faddeev_self_energy) error stop 'Static third order requires the TDA Faddeev method'
   do_Faddeev_ADC2 = faddeev_coupling == 2
   do_Faddeev_dressed = faddeev_coupling == 4
   if(faddeev_coupling == 0) do_Faddeev_dressed = .true.
@@ -947,7 +948,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
           call R_TDA_Faddeev_IP_roots(n_IP_roots,do_Faddeev_ADC2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                                 eHF,eOld,ERI,F_eh,F_eht,F_hh,F_hht,F_ee,F_eet, &
                                 ip_omega,ip_Z,ip_residual,ip_info, &
-            do_Faddeev_dressed,F_Tg,F_Hg,F_Eg)
+            do_Faddeev_dressed,F_Tg,F_Hg,F_Eg,faddeev_static3)
           if(ip_info/=0) error stop 'IP Davidson failed to converge; use the full-spectrum mode'
           ! No partial quasiparticle array is returned to the one-body loop.
           write(*,*) 'IP evaluation complete; one-body energies kept fixed.'
@@ -955,7 +956,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
         end if
         call R_TDA_Faddeev_self_energy(do_Faddeev_ADC2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                                         eHF,eOld,ERI,F_eh,F_eht,F_hh,F_hht,F_ee,F_eet,eADC,ZADC, &
-            do_Faddeev_dressed,F_Tg,F_Hg,F_Eg)
+            do_Faddeev_dressed,F_Tg,F_Hg,F_Eg,faddeev_static3)
       else
         write(*,*) 'Building full Hermitian spin-adapted PSD ADC-Parquet matrix...'
         write(*,*)

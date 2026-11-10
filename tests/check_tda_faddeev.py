@@ -76,13 +76,14 @@ end subroutine
         '-fcheck=all', '-fbacktrace', '-ffree-line-length-none', '-I' + str(root / 'include'),
         str(root / 'src/Parquet/G_TDA_Faddeev_self_energy.f90'),
         str(root / 'src/Parquet/TDA_Faddeev_IP.f90'),
+        str(root / 'src/Parquet/TDA_Faddeev_static3.f90'),
         str(root / 'src/Parquet/R_TDA_Faddeev_self_energy.f90'), str(work / 'reference.f90'), str(work / 'controlled.f90'),
         str(root / 'lib/utils.a'), '-o', str(shared)]
     command += shlex.split(os.environ.get('LAPACK_LIBS', '-lblas -llapack'))
     subprocess.run(command, check=True, cwd=work)
     lib = ct.CDLL(str(shared))
 
-    def call(name, *args, dressed=False, sources=None):
+    def call(name, *args, dressed=False, sources=None, static3=False):
         if name.startswith(('g_tda_faddeev_', 'r_tda_faddeev_')) and name not in (
                 'r_tda_faddeev_lift', 'r_tda_faddeev_lift_sources'):
             offset = int(name.endswith('_roots'))
@@ -96,6 +97,8 @@ end subroutine
             if sources is None:
                 sources = [np.zeros(shape, order='F') for shape in [(ns,ns),(nh,ne),(nh,ne)]]
             args += (dressed, *sources)
+            if name.endswith(('_ip_roots', '_self_energy')):
+                args += (static3,)
         keep = [ct.c_int(int(a)) if isinstance(a, (int, bool, np.integer)) else
                 ct.c_double(a) if isinstance(a, float) else a for a in args]
         getattr(lib, name + '_')(*[a.ctypes.data_as(ct.c_void_p) if isinstance(a, np.ndarray)
@@ -435,11 +438,16 @@ end subroutine
 
     # HF-hole targeted IPs: compare with the distinct dense poles maximizing
     # occupied HF orbital character, rather than the energy-ordered satellites.
-    def check_roots(e,v,o,nroots,nc=0,nr=0,block=0,spatial=None,wk=None,adc2=False,reg=False,sources=None):
+    def check_roots(e,v,o,nroots,nc=0,nr=0,block=0,spatial=None,wk=None,adc2=False,reg=False,sources=None,static3=False):
         n = len(e); no=o-nc; nv=n-nr-o
         wk = kernels(v,range(nc,o),range(o,n-nr)) if wk is None else wk
         h,_,_ = build(e,v,o,nc,nr,block=block,wk=wk,adc2=adc2,reg=reg,flow=.7,sources=sources)
         nphys = n//2 if block else n
+        eri = v if spatial is None else spatial
+        if static3:
+            sigma = arr(np.zeros((nphys,nphys)))
+            call('tda_faddeev_static3',len(v),n,nphys,nc,o,nr,e,v,sigma)
+            h[:nphys,:nphys] += sigma
         frozen = list(range(nc//2 if block else nc))
         frozen += list(range(nphys-(nr//2 if block else nr),nphys))
         active = [i for i in range(len(h)) if i not in frozen]
@@ -457,9 +465,8 @@ end subroutine
         selected=matched[np.argsort(vals[matched])[::-1]][:nroots]
         outputs=[arr(np.zeros(nroots)) for _ in range(3)]
         info=np.zeros(1,dtype=np.int32)
-        eri = v if spatial is None else spatial
         call('g_tda_faddeev_ip_roots',nroots,adc2,reg,.7,block,len(eri),n,nc,o,nr,
-             no*nv,no*(no-1)//2,nv*(nv-1)//2,e,e,eri,*wk,*outputs,info, dressed=sources is not None,sources=sources)
+             no*nv,no*(no-1)//2,nv*(nv-1)//2,e,e,eri,*wk,*outputs,info, dressed=sources is not None,sources=sources,static3=static3)
         assert info[0]==0 and max(outputs[2])<1e-8, (outputs,info)
         np.testing.assert_allclose(outputs[0],vals[selected],atol=1e-9)
         # Sum over degenerate eigenspaces rather than arbitrary eigenvectors.
@@ -470,6 +477,9 @@ end subroutine
                 rows=[i for i,j in enumerate(active) if j<nphys]
                 np.testing.assert_allclose(sum(outputs[1][group]),np.sum(vec[np.ix_(rows,exact)]**2),atol=1e-8)
         return outputs
+
+    check_roots(e,v,o,2,static3=True)
+    check_roots(eg,vg,og,2,block=1,spatial=v,static3=True)
 
     for adc2 in [False,True]:
         for nc,nr in [(0,0),(1,0),(0,1),(1,1)]:

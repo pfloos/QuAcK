@@ -9,6 +9,7 @@ module TDA_Faddeev_IP_operator
     integer :: n,nphys,nm,np,no,nv,ns,noo,nvv,nC,nOccEnd
     integer,allocatable :: minus(:,:),plus(:,:),im(:,:,:),ip(:,:,:),hh(:,:),ee(:,:),phys(:)
     double precision,allocatable :: f(:),free_m(:),free_p(:),diag(:),Um(:,:),Up(:,:),Weh(:,:),Whh(:,:),Wee(:,:)
+    double precision,allocatable :: sigma_static(:,:)
     double precision,allocatable :: phx(:,:),phy(:,:),ppx(:,:),ppy(:,:)
   end type
 contains
@@ -129,6 +130,7 @@ contains
     integer :: m,p,i,j,a,b,r,s,idx
     m=op%nphys; p=m+op%nm
     y(1:m)=op%f*x(1:m)
+    if(allocated(op%sigma_static)) call dgemv('N',m,m,1d0,op%sigma_static,m,x,1,1d0,y,1)
     if(op%nm>0) then
       call dgemv('T',op%nm,m,1d0,op%Um,op%nm,x(m+1),1,1d0,y,1)
       y(m+1:p)=op%free_m*x(m+1:p)
@@ -633,7 +635,7 @@ end subroutine
 
 subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
                            eHF,eQP,ERI,Weh,Whh,Wee,omega,Z,residual,info, &
-    dressed,Teh,Thh,Tee)
+    dressed,Teh,Thh,Tee,static3)
   use TDA_Faddeev_IP_operator
   implicit none
   include 'parameters.h'
@@ -643,7 +645,7 @@ subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,n
   double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv)
   double precision,intent(out) :: omega(nroots),Z(nroots),residual(nroots)
   integer,intent(out) :: info
-  logical,intent(in) :: dressed
+  logical,intent(in) :: dressed,static3
   double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
   type(Faddeev_operator) :: op
   integer :: nocc,iterations,j
@@ -651,6 +653,13 @@ subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,n
   call wall_time(start)
   call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee, &
     dressed,Teh,Thh,Tee)
+  if(static3) then
+    allocate(op%sigma_static(op%nphys,op%nphys))
+    call TDA_Faddeev_static3(nERI,nOrb,op%nphys,nC,nO,nR,eHF,ERI,op%sigma_static)
+    do j=1,op%nphys
+      op%diag(j)=op%diag(j)+op%sigma_static(j,j)
+    end do
+  end if
   call wall_time(finish)
   if(dressed) then
     write(*,*) 'TDA Faddeev-Parquet: static dressed source approximation'
