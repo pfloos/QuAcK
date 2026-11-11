@@ -1,7 +1,7 @@
 subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize, &
                         eta_1b,eta_2b,reg_PA,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF, &
                         ERI,dipole_int,eHF,eGW,ePA,ZPA, &
-                        gw_faddeev,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_external)
+                        gw_faddeev,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_external,frpa,ccd_t)
 
 ! Frozen-input native parquet or TDA Faddeev calculation from G0W0/BSE.
 ! W0 is built from the HF dRPA response, as in RG0W0/RGW_phBSE/RGW_ppBSE.
@@ -17,8 +17,11 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   double precision,intent(in)  :: eta_GW,eta_1b,eta_2b,ENuc,ERHF
   double precision,intent(in)  :: ERI(nOrb,nOrb,nOrb,nOrb),dipole_int(nOrb,nOrb,ncart),eHF(nOrb)
   double precision,intent(out) :: eGW(nOrb),ePA(nOrb),ZPA(nOrb)
-  logical,intent(in) :: gw_faddeev,faddeev_davidson,faddeev_static3,gw_external
+  logical,intent(in) :: gw_faddeev,faddeev_davidson,faddeev_static3,gw_external,frpa
   integer,intent(in) :: faddeev_coupling,n_IP_roots
+
+  double precision,intent(in) :: ccd_t(merge(nO-nC,1,faddeev_coupling==5),merge(nO-nC,1,faddeev_coupling==5), &
+                                      merge(nV-nR,1,faddeev_coupling==5),merge(nV-nR,1,faddeev_coupling==5))
 
   type pair_interactions
     double precision,allocatable :: eh(:,:),hh(:,:),ee(:,:),Beh(:,:),Bpp(:,:)
@@ -48,9 +51,9 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   adc2=faddeev_coupling == 2
   dressed=faddeev_coupling == 0.or.faddeev_coupling == 4
   if(gw_faddeev) then
-    if(.not.TDAeh.or..not.TDApp) error stop 'GW Faddeev requires TDAeh=T and TDApp=T'
-    if(faddeev_coupling/=0.and.(faddeev_coupling<2.or.faddeev_coupling>4)) &
-      error stop 'GW Faddeev coupling must be 0, 2, 3 or 4'
+    if(.not.frpa.and.(.not.TDAeh.or..not.TDApp)) error stop 'GW Faddeev requires TDAeh=T and TDApp=T'
+    if(faddeev_coupling/=0.and.(faddeev_coupling<2.or.faddeev_coupling>5)) &
+      error stop 'GW Faddeev coupling must be 0, 2, 3, 4 or 5'
     if(faddeev_davidson.and.(n_IP_roots<1.or.n_IP_roots>nOcc)) &
       error stop 'GW Faddeev IP root count exceeds the active occupied space'
   end if
@@ -230,7 +233,8 @@ contains
           pair(ispin)%eh(ia,ia)=pair(ispin)%eh(ia,ia)-eGW(a)+eGW(i)
         end do
       end do
-      if(dressed) then
+      if(frpa) pair(ispin)%Beh=bb
+      if(dressed.and..not.frpa) then
         call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,bb)
         call RGW_phBSE_static_kernel_B(eta_GW,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmW,rhoW,kb)
         pair(ispin)%Beh=bb+kb
@@ -257,7 +261,7 @@ contains
     if(nOO+nVV == 0) then
       if(gw_faddeev) then
         allocate(pair(ispin)%hh(0,0),pair(ispin)%ee(0,0))
-        if(dressed) allocate(pair(ispin)%Bpp(0,0))
+        if(dressed.or.frpa) allocate(pair(ispin)%Bpp(0,0))
       end if
       return
     end if
@@ -289,7 +293,8 @@ contains
       if(shifted_pp) pair_shift=eGW(nO)+eGW(nO+1)
       call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,ispin==1,.true.,nOO,eGW,pair_shift,pair(ispin)%hh)
       call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,ispin==1,.false.,nVV,eGW,pair_shift,pair(ispin)%ee)
-      if(dressed) then
+      if(frpa) pair(ispin)%Bpp=bb
+      if(dressed.and..not.frpa) then
         call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,bb)
         if(nOO*nVV>0) call RGW_ppBSE_static_kernel_B(ispin,eta_GW,nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
                                                    1d0,ERI,OmW,rhoW,kb)
@@ -320,12 +325,14 @@ contains
     double precision,allocatable :: Tehs(:,:),Teht(:,:),Thhs(:,:),Thht(:,:),Tees(:,:),Teet(:,:)
     double precision,allocatable :: Teh(:,:),Thh(:,:),Tee(:,:),ip_omega(:),ip_Z(:),ip_residual(:)
     integer :: info
-    if(gw_external) then
+    if(frpa) then
+      write(*,*) 'GW-BSE FRPA: frozen GW internal energies'
+    else if(gw_external) then
       write(*,*) 'GW-BSE FTDA: GW external block; frozen GW internal energies'
     else
       write(*,*) 'GW-BSE FTDA: HF external block; frozen GW internal energies'
     end if
-    write(*,*) 'GW-BSE FTDA: static TDA eh/pp BSE interactions'
+    if(.not.frpa) write(*,*) 'GW-BSE FTDA: static TDA eh/pp BSE interactions'
     if(faddeev_static3) write(*,*) 'Static correction uses the canonical HF density expansion'
     allocate(Teh(4*nS,4*nS),Thh(nOcc*(2*nOcc-1),nVir*(2*nVir-1)),Tee(nOcc*(2*nOcc-1),nVir*(2*nVir-1)))
     Teh=0d0
@@ -340,11 +347,21 @@ contains
       call R_TDA_Faddeev_lift_sources(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
            Tehs,Teht,Thhs,Thht,Tees,Teet,Teh,Thh,Tee)
     end if
-    if(faddeev_davidson) then
+    if(faddeev_coupling==5) then
+      call R_Faddeev_ccd_sources(nOcc,nVir,ccd_t,Teh,Thh)
+      Tee=Thh
+      write(*,*) 'Faddeev: CCD-amplitude couplings on the HF reference'
+    end if
+    if(frpa) then
+      call R_FRPA_BSE(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt,eHF,eGW,ERI, &
+                     pair(1)%eh,pair(2)%eh,pair(1)%hh,pair(2)%hh,pair(1)%ee,pair(2)%ee, &
+                     pair(1)%Beh,pair(2)%Beh,pair(1)%Bpp,pair(2)%Bpp,Teh,Thh,Tee, &
+                     faddeev_coupling,faddeev_static3,gw_external,faddeev_davidson,n_IP_roots,reg_PA,eta_1b,ePA,ZPA)
+    else if(faddeev_davidson) then
       allocate(ip_omega(n_IP_roots),ip_Z(n_IP_roots),ip_residual(n_IP_roots))
       call R_TDA_Faddeev_IP_roots(n_IP_roots,adc2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
            eHF,eGW,ERI,pair(1)%eh,pair(2)%eh,pair(1)%hh,pair(2)%hh,pair(1)%ee,pair(2)%ee, &
-           ip_omega,ip_Z,ip_residual,info,dressed,Teh,Thh,Tee,faddeev_static3,gw_external)
+           ip_omega,ip_Z,ip_residual,info,dressed.or.faddeev_coupling==5,Teh,Thh,Tee,faddeev_static3,gw_external)
       if(info/=0) error stop 'GW-BSE FTDA Davidson failed to converge'
       ! Only the printed IP root table is a calculated spectrum in this mode.
       ePA=eHF
@@ -352,7 +369,7 @@ contains
     else
       call R_TDA_Faddeev_self_energy(adc2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
            eHF,eGW,ERI,pair(1)%eh,pair(2)%eh,pair(1)%hh,pair(2)%hh,pair(1)%ee,pair(2)%ee, &
-           ePA,ZPA,dressed,Teh,Thh,Tee,faddeev_static3,gw_external)
+           ePA,ZPA,dressed.or.faddeev_coupling==5,Teh,Thh,Tee,faddeev_static3,gw_external)
     end if
   end subroutine faddeev_spectrum
 

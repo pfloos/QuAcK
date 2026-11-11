@@ -12,7 +12,7 @@ subroutine read_methods(working_dir,                                            
                         doscGW,doscGF2,                                               & 
                         doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                        &
                         doG0T0eh,doevGTeh,doqsGTeh,                                   &
-                        doevParquet,doqsParquet,doGWParquet,                          &
+                        doevParquet,doqsParquet,doGWParquet,doFTDA,doFRPA,                          &
                         do_IPEA_ADC2,do_IPEA_ADC3,                                    &
                         do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                        &
                         do_ADC_GW,do_ADC_2SOSEX,                                      &
@@ -40,7 +40,7 @@ subroutine read_methods(working_dir,                                            
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doscGW
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
-  logical,intent(out)           :: doevParquet,doqsParquet,doGWParquet
+  logical,intent(out)           :: doevParquet,doqsParquet,doGWParquet,doFTDA,doFRPA
   logical,intent(out)           :: do_IPEA_ADC2,do_IPEA_ADC3
   logical,intent(out)           :: do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2
   logical,intent(out)           :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2
@@ -52,7 +52,7 @@ subroutine read_methods(working_dir,                                            
   character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8,ans9
   integer                       :: status
   character(len=256)            :: file_path
-  character(len=1024)           :: parquet_line
+  character(len=1024)           :: parquet_line,method_line
 
 
   file_path = trim(working_dir) // '/input/methods'
@@ -293,6 +293,21 @@ subroutine read_methods(working_dir,                                            
       if(ans3 == 'T') doGtest = .true.
 
     endif
+
+  doFTDA=.false.
+  doFRPA=.false.
+  do
+    read(1,'(A)',iostat=status) method_line
+    if(status<0) exit
+    if(status/=0) error stop 'Error reading Faddeev methods'
+    if(index(adjustl(method_line),'# FTDA FRPA')/=1) cycle
+    read(1,*,iostat=status) ans1,ans2
+    if(status/=0) error stop 'Expected FTDA and FRPA flags'
+    if((ans1/='T'.and.ans1/='F').or.(ans2/='T'.and.ans2/='F')) error stop 'FTDA and FRPA flags must be T or F'
+    doFTDA=ans1=='T'
+    doFRPA=ans2=='T'
+  end do
+  if(doFTDA.and.doFRPA) error stop 'Select either FTDA or FRPA'
 
   ! Close file
   close(unit=1)

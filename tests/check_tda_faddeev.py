@@ -74,10 +74,10 @@ end subroutine
     command = shlex.split(os.environ.get('FC', 'gfortran')) + [
         '-dynamiclib' if sys.platform == 'darwin' else '-shared', '-fPIC',
         '-fcheck=all', '-fbacktrace', '-ffree-line-length-none', '-I' + str(root / 'include'),
-        str(root / 'src/Parquet/G_TDA_Faddeev_self_energy.f90'),
-        str(root / 'src/Parquet/TDA_Faddeev_IP.f90'),
-        str(root / 'src/Parquet/TDA_Faddeev_static3.f90'),
-        str(root / 'src/Parquet/R_TDA_Faddeev_self_energy.f90'), str(work / 'reference.f90'), str(work / 'controlled.f90'),
+        str(root / 'src/Faddeev/G_TDA_Faddeev_self_energy.f90'),
+        str(root / 'src/Faddeev/TDA_Faddeev_IP.f90'),
+        str(root / 'src/Faddeev/TDA_Faddeev_static3.f90'),
+        str(root / 'src/Faddeev/R_TDA_Faddeev_self_energy.f90'), str(work / 'reference.f90'), str(work / 'controlled.f90'),
         str(root / 'lib/utils.a'), '-o', str(shared)]
     command += shlex.split(os.environ.get('LAPACK_LIBS', '-lblas -llapack'))
     subprocess.run(command, check=True, cwd=work)

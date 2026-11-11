@@ -19,7 +19,7 @@ program QuAcK
   logical                       :: docG0W0,docG0F2,doscGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
-  logical                       :: doevParquet,doqsParquet,doGWParquet
+  logical                       :: doevParquet,doqsParquet,doGWParquet,doFTDA,doFRPA
   logical                       :: do_IPEA_ADC2,do_IPEA_ADC3
   logical                       :: do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2
   logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2
@@ -209,7 +209,7 @@ program QuAcK
                     doscGW,doscGF2,                                               &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                        &
                     doG0T0eh,doevGTeh,doqsGTeh,                                   &
-                    doevParquet,doqsParquet,doGWParquet,                          &
+                    doevParquet,doqsParquet,doGWParquet,doFTDA,doFRPA,                          &
                     do_IPEA_ADC2,do_IPEA_ADC3,                                    & 
                     do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                        & 
                     do_ADC_GW,do_ADC_2SOSEX,                                      &
@@ -398,6 +398,11 @@ program QuAcK
       error stop 'GW-Parquet requires RHF and the standard restricted driver'
   end if
 
+  if(doFTDA.or.doFRPA) then
+    if(.not.doRHF.or.docRHF.or.doROHF.or.doeRHF.or.doOO.or.switch_hpc) &
+      error stop 'Standalone Faddeev requires the standard canonical RHF driver'
+  end if
+
 !-----------------!
 ! Initialize Test !
 !-----------------!
@@ -429,7 +434,8 @@ program QuAcK
                   doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                            &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doG0W0,doevGW,doqsGW,                                     &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet,     &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet, &
+                  doFTDA,doFRPA, &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          &

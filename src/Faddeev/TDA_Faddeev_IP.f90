@@ -4,8 +4,14 @@ module TDA_Faddeev_IP_operator
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   private
-  public :: Faddeev_operator,initialize,apply,davidson,davidson_roots
+  public :: Faddeev_operator,initialize,apply,davidson,davidson_roots,FRPA_channel,apply_channels
+  type FRPA_channel
+    integer,allocatable :: configs(:,:)
+    double precision,allocatable :: metric(:,:),hamiltonian(:,:),shift(:)
+  end type
   type Faddeev_operator
+    type(FRPA_channel),allocatable :: removal(:),addition(:)
+    double precision,allocatable :: metric_diag(:)
     integer :: n,nphys,nm,np,no,nv,ns,noo,nvv,nC,nOccEnd
     integer,allocatable :: minus(:,:),plus(:,:),im(:,:,:),ip(:,:,:),hh(:,:),ee(:,:),phys(:)
     double precision,allocatable :: f(:),free_m(:),free_p(:),diag(:),Um(:,:),Up(:,:),Weh(:,:),Whh(:,:),Wee(:,:)
@@ -141,6 +147,13 @@ contains
       y(p+1:)=op%free_p*x(p+1:)
       call dgemv('N',op%np,m,1d0,op%Up,op%np,x,1,1d0,y(p+1),1)
     end if
+    if(allocated(op%removal)) then
+      y(m+1:p)=y(m+1:p)-3d0*op%free_m*x(m+1:p)
+      y(p+1:)=y(p+1:)-3d0*op%free_p*x(p+1:)
+      call apply_channels(op%removal,x(m+1:p),y(m+1:p),.false.)
+      call apply_channels(op%addition,x(p+1:),y(p+1:),.false.)
+      return
+    end if
 ! Removal: -Whh on the ordered pair, -Weh on each of the two eh pairs.
     op%phx=0d0; op%ppx=0d0
     do j=1,op%no
@@ -189,6 +202,52 @@ contains
         y(p+r)=y(p+r)+op%ppy(op%ee(a,b),i)
       end do
     end if
+  end subroutine
+
+  subroutine apply_channels(channels,x,y,metric_only)
+    type(FRPA_channel),intent(in) :: channels(:)
+    double precision,intent(in) :: x(:)
+    double precision,intent(inout) :: y(:)
+    logical,intent(in) :: metric_only
+    integer :: c,j,k,r,n
+    double precision,allocatable :: u(:),v(:),g(:)
+    do c=1,size(channels)
+      associate(ch=>channels(c))
+        n=size(ch%configs,1)
+        allocate(u(n),v(n),g(n))
+        do j=1,size(ch%configs,2)
+          u=0d0
+          do k=1,n
+            r=ch%configs(k,j)
+            if(r/=0) u(k)=sign(1,r)*x(abs(r))
+          end do
+          call dgemv('N',n,n,1d0,ch%metric,n,u,1,0d0,g,1)
+          v=g
+          if(.not.metric_only) then
+            v=ch%shift(j)*g
+            call dgemv('N',n,n,1d0,ch%hamiltonian,n,u,1,1d0,v,1)
+          end if
+          do k=1,n
+            r=ch%configs(k,j)
+            if(r/=0) y(abs(r))=y(abs(r))+sign(1,r)*v(k)
+          end do
+        end do
+        deallocate(u,v,g)
+      end associate
+    end do
+  end subroutine
+
+  subroutine apply_metric(op,x,y)
+    type(Faddeev_operator),intent(in) :: op
+    double precision,intent(in) :: x(op%n)
+    double precision,intent(out) :: y(op%n)
+    integer :: m,p
+    y=x
+    if(.not.allocated(op%removal)) return
+    m=op%nphys; p=m+op%nm
+    y(m+1:)=-2d0*x(m+1:)
+    call apply_channels(op%removal,x(m+1:p),y(m+1:p),.true.)
+    call apply_channels(op%addition,x(p+1:),y(p+1:),.true.)
   end subroutine
 
   subroutine harmonic(m,V,AV,shift,coeff)
@@ -380,10 +439,11 @@ contains
     double precision,parameter :: tolerance=1d-8
     double precision,allocatable :: V(:,:),AV(:,:),coef(:,:),x(:,:),ax(:,:), &
                                     theta(:),rn(:),weight(:,:),character(:),t(:),keep(:,:)
+    double precision,allocatable :: BV(:,:),bx(:,:),projected_metric(:,:),work(:)
     integer,allocatable :: order(:),assigned(:),target(:),reported(:)
-    integer :: n,limit,maxiter,nt,m,i,j,k,first_occ,first_target,nh,nkeep,nmv,added
+    integer :: n,limit,maxiter,nt,m,i,j,k,first_occ,first_target,nh,nkeep,nmv,added,lapack_info
     double precision :: fermi,norm,den
-    logical :: converged
+    logical :: converged,generalized
     n=op%n; maxiter=256
     first_occ=count(op%phys<=op%nC)+1
     if(nocc<first_occ.or.nocc>=op%nphys) error stop 'Faddeev IP roots: invalid HOMO index'
@@ -405,6 +465,8 @@ contains
     allocate(V(n,limit),AV(n,limit),coef(limit,limit),x(n,limit),ax(n,limit), &
              theta(limit),rn(limit),weight(nh,limit),character(limit),t(n),keep(n,nt), &
              order(limit),assigned(nh),target(nh),reported(nh))
+    generalized=allocated(op%metric_diag)
+    if(generalized) allocate(BV(n,limit),bx(n,limit),projected_metric(limit,limit),work(3*limit))
     V=0d0; m=nh; nmv=0
     do j=1,nh
       target(j)=nocc-j+1
@@ -417,6 +479,7 @@ contains
     end do
     do j=1,m
       call apply(op,V(:,j),AV(:,j)); nmv=nmv+1
+      if(generalized) call apply_metric(op,V(:,j),BV(:,j))
     end do
     info=1; omega=op%f(nocc); Z=0d0; residual=huge(1d0)
     do iterations=1,maxiter
@@ -424,11 +487,19 @@ contains
 ! including deeper ionizations far from the HOMO or the gap midpoint.
       call dgemm('T','N',m,m,n,1d0,V,n,AV,n,0d0,coef,limit)
       coef(1:m,1:m)=0.5d0*(coef(1:m,1:m)+transpose(coef(1:m,1:m)))
-      call diagonalize_matrix(m,coef(1:m,1:m),theta(1:m))
+      if(generalized) then
+        call dgemm('T','N',m,m,n,1d0,V,n,BV,n,0d0,projected_metric,limit)
+        call dsygv(1,'V','U',m,coef,limit,projected_metric,limit,theta,work,size(work),lapack_info)
+        if(lapack_info/=0) error stop 'FRPA: projected Davidson metric or eigensolver failed'
+        call dgemm('N','N',n,m,m,1d0,BV,n,coef,limit,0d0,bx,n)
+      else
+        call diagonalize_matrix(m,coef(1:m,1:m),theta(1:m))
+      end if
       call dgemm('N','N',n,m,m,1d0,V,n,coef,limit,0d0,x,n)
       call dgemm('N','N',n,m,m,1d0,AV,n,coef,limit,0d0,ax,n)
       do k=1,m
         rn(k)=sqrt(sum((ax(:,k)-theta(k)*x(:,k))**2))
+        if(generalized) rn(k)=norm2(ax(:,k)-theta(k)*bx(:,k))
         weight(:,k)=x(target,k)**2
         character(k)=sum(weight(:,k))
         if(theta(k)>=fermi) weight(:,k)=-1d0
@@ -468,7 +539,12 @@ contains
         do j=1,nroots
           k=reported(j)
           call apply(op,x(:,k),t); nmv=nmv+1
-          residual(j)=sqrt(sum((t-omega(j)*x(:,k))**2))
+          if(generalized) then
+            call apply_metric(op,x(:,k),bx(:,k))
+            residual(j)=norm2(t-omega(j)*bx(:,k))
+          else
+            residual(j)=norm2(t-omega(j)*x(:,k))
+          end if
         end do
         if(all(residual<=tolerance)) then
           info=0
@@ -493,6 +569,7 @@ contains
           if(norm<1d-10) cycle
           m=m+1; V(:,m)=t/norm
           call apply(op,V(:,m),AV(:,m)); nmv=nmv+1
+          if(generalized) call apply_metric(op,V(:,m),BV(:,m))
         end do
       end if
       added=0
@@ -500,8 +577,10 @@ contains
         k=assigned(j)
         if(rn(k)<=tolerance) cycle
         t=ax(:,k)-theta(k)*x(:,k)
+        if(generalized) t=ax(:,k)-theta(k)*bx(:,k)
         do i=1,n
           den=theta(k)-op%diag(i)
+          if(generalized) den=theta(k)*op%metric_diag(i)-op%diag(i)
           if(abs(den)<0.05d0) den=sign(0.05d0,den)
           t(i)=t(i)/den
         end do
@@ -509,15 +588,18 @@ contains
         if(norm<1d-10) cycle
         m=m+1; V(:,m)=t/norm
         call apply(op,V(:,m),AV(:,m)); nmv=nmv+1; added=added+1
+        if(generalized) call apply_metric(op,V(:,m),BV(:,m))
         if(m==limit) exit
       end do
       if(added==0) then
         do j=1,nh
           k=assigned(j); t=ax(:,k)-theta(k)*x(:,k)
+          if(generalized) t=ax(:,k)-theta(k)*bx(:,k)
           call orthogonalize(n,m,V,t,norm)
           if(norm<1d-12.or.m==limit) cycle
           m=m+1; V(:,m)=t/norm
           call apply(op,V(:,m),AV(:,m)); nmv=nmv+1; added=1
+          if(generalized) call apply_metric(op,V(:,m),BV(:,m))
           exit
         end do
         if(added==0) exit

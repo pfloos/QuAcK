@@ -1,5 +1,16 @@
 subroutine R_CCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF)
 
+  implicit none
+  logical,intent(in) :: dotest
+  integer,intent(in) :: maxSCF,max_diis,nBas,nC,nO,nV,nR
+  double precision,intent(in) :: thresh,ENuc,ERHF,eHF(nBas),ERI(nBas,nBas,nBas,nBas)
+  double precision,allocatable :: t(:,:,:,:)
+  allocate(t(nO-nC,nO-nC,nV-nR,nV-nR))
+  call R_CCD_amplitudes(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,t)
+end subroutine R_CCD
+
+subroutine R_CCD_amplitudes(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eHF,t)
+
 ! Spin-adapted closed-shell CCD module
 
   implicit none
@@ -43,7 +54,7 @@ subroutine R_CCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
   double precision,allocatable  :: Wvovo(:,:,:,:)
 
   double precision,allocatable  :: r(:,:,:,:)
-  double precision,allocatable  :: t(:,:,:,:)
+  double precision,intent(out)  :: t(nO-nC,nO-nC,nV-nR,nV-nR)
 
   double precision,allocatable  :: error_diis(:,:)
   double precision,allocatable  :: t_diis(:,:)
@@ -74,7 +85,6 @@ subroutine R_CCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
 ! MP2 guess amplitudes.  t(i,j,a,b) is the alpha-beta (spin-free)
 ! amplitude; the remaining spin blocks follow from spin symmetry.
 
-  allocate(t(nOcc,nOcc,nVir,nVir))
   call RCCD_guess(nBas,nC,nO,nV,nR,ERI,delta_OOVV,t)
 
   call RCCD_correlation_energy(nBas,nC,nO,nV,nR,ERI,t,EcMP2)
@@ -162,7 +172,7 @@ subroutine R_CCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    stop
+    error stop 'Restricted CCD did not converge'
 
   end if
 
@@ -186,7 +196,7 @@ subroutine R_CCD(dotest,maxSCF,thresh,max_diis,nBas,nC,nO,nV,nR,ERI,ENuc,ERHF,eH
 
   end if
 
-end subroutine R_CCD
+end subroutine R_CCD_amplitudes
 
 
 subroutine RCCD_guess(nBas,nC,nO,nV,nR,ERI,delta,t)

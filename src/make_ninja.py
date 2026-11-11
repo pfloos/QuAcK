@@ -221,7 +221,11 @@ else:
 def create_ninja_in_libdir(directory):
     def write_rule(f, source_file, replace):
         obj_file = os.path.join("obj", source_file.replace(replace, ".o"))
-        f.write("build {0}: fc {1}\n".format(obj_file, source_file))
+        dependencies = {
+            "R_FRPA.f90": " | obj/TDA_Faddeev_IP.o",
+            "R_Faddeev.f90": " | obj/R_FRPA.o",
+        } if directory == "Faddeev" else {}
+        f.write("build {0}: fc {1}{2}\n".format(obj_file, source_file, dependencies.get(source_file, "")))
         return obj_file
 
     with open(os.path.join(directory, "build.ninja"), "w") as f:
