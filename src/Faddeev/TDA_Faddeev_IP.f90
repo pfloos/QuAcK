@@ -441,7 +441,7 @@ contains
                                     theta(:),rn(:),weight(:,:),character(:),t(:),keep(:,:)
     double precision,allocatable :: BV(:,:),bx(:,:),projected_metric(:,:),work(:)
     integer,allocatable :: order(:),assigned(:),target(:),reported(:)
-    integer :: n,limit,maxiter,nt,m,i,j,k,first_occ,first_target,nh,nkeep,nmv,added,lapack_info
+    integer :: n,limit,maxiter,nt,m,i,j,k,first_occ,first_target,nh,nkeep,nmv,added,lapack_info,metric_space
     double precision :: fermi,norm,den
     logical :: converged,generalized
     n=op%n; maxiter=256
@@ -466,7 +466,10 @@ contains
              theta(limit),rn(limit),weight(nh,limit),character(limit),t(n),keep(n,nt), &
              order(limit),assigned(nh),target(nh),reported(nh))
     generalized=allocated(op%metric_diag)
-    if(generalized) allocate(BV(n,limit),bx(n,limit),projected_metric(limit,limit),work(3*limit))
+! Zero-sized metric workspace in the ordinary FTDA eigenproblem.
+    metric_space=merge(limit,0,generalized)
+    allocate(BV(n,metric_space),bx(n,metric_space), &
+             projected_metric(metric_space,metric_space),work(3*metric_space))
     V=0d0; m=nh; nmv=0
     do j=1,nh
       target(j)=nocc-j+1

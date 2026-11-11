@@ -69,6 +69,8 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
       if(abs(df) <= epsilon(1d0)) exit
 
       if(abs(f) <= thresh) then
+        eGF(p) = w
+        Z(p) = 1d0/df
         root_ok(p) = .true.
         exit
       end if
@@ -83,9 +85,6 @@ subroutine RGF2_QP_graph(doSRG,eta,flow,nBas,nC,nO,nV,nR,eHF,ERI,eGFlin,eOld,eGF
       write(*,'(I5,1X,I3,1X,A)') p,nIt,'Cvg Failed!'
 
     else
-
-      eGF(p) = w
-      Z(p)   = 1d0/df
 
       write(*,'(I5,1X,I3,1X,F15.9,1X,F15.9,1X,F10.6)') p,nIt,eGFlin(p)*HaToeV,eGF(p)*HaToeV,Z(p)
 
