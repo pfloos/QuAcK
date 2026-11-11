@@ -137,6 +137,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     
 ! Useful parameters
 
+  if(parquet_method==3) then
+    allocate(eADC(nOrb),ZADC(nOrb))
+    call R_FRPA(nOrb,nC,nO,nR,eHF,ERI,eADC,ZADC)
+    return
+  end if
+
   nOOs = (nO-nC)*(nO-nC+1)/2
   nVVs = (nOrb-nR-nO)*(nOrb-nR-nO+1)/2
   nOOt = (nO-nC)*(nO-nC-1)/2

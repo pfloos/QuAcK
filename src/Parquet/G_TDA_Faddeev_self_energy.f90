@@ -189,12 +189,29 @@ contains
 end subroutine
 
 subroutine G_TDA_Faddeev_spectrum(dressed,adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
+  implicit none
+  logical,intent(in) :: dressed,adc2
+  integer,intent(in) :: nOrb,nC,nR,nH
+  double precision,intent(in) :: eHF(nOrb)
+  double precision,intent(inout) :: H(nH,nH)
+  double precision,intent(out) :: ePA(nOrb),ZPA(nOrb)
+  if(dressed) then
+    write(*,*) 'TDA Faddeev-Parquet: static dressed source approximation'
+  else if(adc2) then
+    write(*,*) 'TDA Faddeev-Parquet with ADC(2) external couplings'
+  else
+    write(*,*) 'TDA Faddeev-Parquet with ADC(3) external couplings'
+  end if
+  call Faddeev_spectrum('TDA Faddeev-Parquet',nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
+end subroutine
+
+subroutine Faddeev_spectrum(label,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 ! The upfolded matrix realizes Sigma=U^T (omega I-Mbar)^(-1) U.
 ! Dominant poles use orbital-specific weights summed over degeneracies.
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   include 'parameters.h'
-  logical,intent(in) :: dressed,adc2
+  character(*),intent(in) :: label
   integer,intent(in) :: nOrb,nC,nR,nH
   double precision,intent(in) :: eHF(nOrb)
   double precision,intent(inout) :: H(nH,nH)
@@ -203,20 +220,13 @@ subroutine G_TDA_Faddeev_spectrum(dressed,adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
   double precision :: best,w
   integer :: p,s,t,idx
   allocate(poles(nH),weight(nH))
-  if(dressed) then
-    write(*,*) 'TDA Faddeev-Parquet: static dressed source approximation'
-  else if(adc2) then
-    write(*,*) 'TDA Faddeev-Parquet with ADC(2) external couplings'
-  else
-    write(*,*) 'TDA Faddeev-Parquet with ADC(3) external couplings'
-  end if
   write(*,*) 'Physical upfolded dimension = ',nH
   call diagonalize_matrix(nH,H,poles)
-  if(.not.all(ieee_is_finite(poles))) error stop 'TDA Faddeev: nonfinite spectrum'
+  if(.not.all(ieee_is_finite(poles))) error stop 'Faddeev: nonfinite spectrum'
   weight=sum(H(nC+1:nOrb-nR,:)**2,dim=1)
   write(*,'(A,F18.10)') ' Sum of active 1p weights = ',sum(weight)
-  if(abs(sum(weight)-dble(nOrb-nC-nR))>1d-7) error stop 'TDA Faddeev: spectral sum rule failed'
-  write(*,*) 'TDA Faddeev-Parquet poles: index, energy (eV), active 1p weight'
+  if(abs(sum(weight)-dble(nOrb-nC-nR))>1d-7) error stop 'Faddeev: spectral sum rule failed'
+  write(*,*) label// ' poles: index, energy (eV), active 1p weight'
   do s=1,nH
     if(weight(s)>1d-3) write(*,'(I7,2F20.10)') s,poles(s)*HaToeV,weight(s)
   end do
@@ -237,7 +247,7 @@ subroutine G_TDA_Faddeev_spectrum(dressed,adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
     end do
     ePA(p)=poles(idx); ZPA(p)=best
   end do
-  write(*,*) 'TDA Faddeev-Parquet dominant poles: orbital, HF (eV), QP (eV), Z'
+  write(*,*) label// ' dominant poles: orbital, HF (eV), QP (eV), Z'
   do p=nC+1,nOrb-nR
     write(*,'(I7,3F20.10)') p,eHF(p)*HaToeV,ePA(p)*HaToeV,ZPA(p)
   end do

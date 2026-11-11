@@ -429,7 +429,7 @@ subroutine read_options(working_dir,                                            
         ans1 = " "
         read(option_line,*,iostat=status) parquet_method,faddeev_coupling,ans1,n_IP_roots
         if(status /= 0) error stop 'Expected Parquet method, Faddeev coupling, Davidson flag and IP root count'
-        if(parquet_method < 0.or.parquet_method > 2) error stop 'Parquet method must be 0, 1 or 2'
+        if(parquet_method < 0.or.parquet_method > 3) error stop 'Parquet method must be 0, 1, 2 or 3'
         if(faddeev_coupling /= 0.and.(faddeev_coupling < 2.or.faddeev_coupling > 4)) &
           error stop 'Faddeev coupling must be 0, 2, 3 or 4'
         if(ans1 /= 'T'.and.ans1 /= 'F') error stop 'Faddeev Davidson flag must be T or F'

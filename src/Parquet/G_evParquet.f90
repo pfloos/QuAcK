@@ -97,6 +97,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 ! Useful parameters
   nOO = (nO-nC)*(nO-nC-1)/2
   nVV = (nOrb-nR-nO)*(nOrb-nR-nO-1)/2
+  if(parquet_method==3) error stop 'FRPA is available only for restricted HF'
   do_ADC_self_energy = parquet_method == 1
   do_Faddeev_self_energy = parquet_method == 2
   if(faddeev_static3.and..not.do_Faddeev_self_energy) error stop 'Static third order requires the TDA Faddeev method'
