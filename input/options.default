@@ -34,3 +34,5 @@
                        F
 # GWParquet Faddeev: use TDA Faddeev with frozen GW energies and BSE kernels
                        F
+# GWParquet Faddeev external GW: use frozen GW energies in the one-body block
+                       F

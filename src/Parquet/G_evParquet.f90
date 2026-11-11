@@ -614,7 +614,7 @@ subroutine G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
           allocate(ip_omega(n_IP_roots),ip_Z(n_IP_roots),ip_residual(n_IP_roots))
           call G_TDA_Faddeev_IP_roots(n_IP_roots,do_Faddeev_ADC2,reg_PA,eta_1b,0,nOrb,nOrb,nC,nO,nR,nS,nOO,nVV, &
                                 eHF,eOld,ERI,F_eh,F_hh,F_ee,ip_omega,ip_Z,ip_residual,ip_info, &
-            do_Faddeev_dressed,F_Teh,F_Thh,F_Tee,faddeev_static3)
+            do_Faddeev_dressed,F_Teh,F_Thh,F_Tee,faddeev_static3,.false.)
           if(ip_info/=0) error stop 'IP Davidson failed to converge; use the full-spectrum mode'
           ! No partial quasiparticle array is returned to the one-body loop.
           write(*,*) 'IP evaluation complete; one-body energies kept fixed.'

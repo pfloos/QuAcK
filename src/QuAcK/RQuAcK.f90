@@ -17,7 +17,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_faddeev, &
+                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_faddeev,gw_external, &
                   nfreqs,ntimes,wcoord,wweight,                                                                             &
                   do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)      
 
@@ -130,7 +130,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   logical,intent(in)            :: lin_parquet,reg_PA
   
   integer,intent(in) :: parquet_method,faddeev_coupling,n_IP_roots
-  logical,intent(in) :: faddeev_davidson,faddeev_static3,gw_faddeev
+  logical,intent(in) :: faddeev_davidson,faddeev_static3,gw_faddeev,gw_external
 
   logical,intent(in)            :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(in)   :: eta_ADC
@@ -775,7 +775,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
     call R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,lin_parquet, &
                       reg_1b,reg_2b,reg_PA,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF, &
                       ERI_MO,dipole_int_MO,eHF,eGW,eGWPA,ZGWPA, &
-                      gw_faddeev,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3)
+                      gw_faddeev,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_external)
     deallocate(eGWPA,ZGWPA)
     call wall_time(end_Parquet)
     t_Parquet=end_Parquet-start_Parquet

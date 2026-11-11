@@ -32,6 +32,7 @@ def table(text, marker, columns):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--workdir', type=Path, required=True)
+    parser.add_argument('--gw-external', action='store_true')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     work = args.workdir.resolve()
@@ -44,6 +45,8 @@ def main():
                      {3: 'T', 4: '0.0', 5: 'F', 6: 'F'})
     options = modify(options, '# Parquet:', {0: 'T', 1: 'T', 11: 'F'})
     options = modify(options, '# GWParquet Faddeev:', {0: 'T'})
+    external = 'GW' if args.gw_external else 'HF'
+    options = modify(options, '# GWParquet Faddeev external GW:', {0: 'T' if args.gw_external else 'F'})
 
     def run(case, name, command, success=True):
         result = subprocess.run(command, cwd=case, env=env, text=True,
@@ -86,7 +89,7 @@ def main():
             (case / 'input/options').write_text(modify(opts, '# Parquet self-energy:', {2: 'T'}))
             text = run(case, name + '-' + variant + '-davidson', [str(binary), str(case)])
             assert text.count('* Restricted G0W0 Calculation *') == 1
-            assert 'GW-BSE FTDA: HF external block; frozen GW internal energies' in text
+            assert f'GW-BSE FTDA: {external} external block; frozen GW internal energies' in text
             assert ('FTDA: third-order static self-energy enabled' in text) == (static == 'T')
             assignments = table(text, 'Faddeev HF assignments:', 3)
             poles = table(text, 'Faddeev-Parquet IP roots:', 5)

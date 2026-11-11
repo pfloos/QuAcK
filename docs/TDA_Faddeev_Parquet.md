@@ -276,8 +276,16 @@ the same W0 response constructed from HF. W0 can use full RPA even when the
 Faddeev pair propagation uses TDA.
 
 The optional third-order static correction retains its canonical HF density
-expansion. It is added once to the external block. No GW energy shift is added
-to that block. Full-spectrum mode returns orbital energies and weights;
+expansion. It is added once to the external block. The external one-body diagonal defaults to HF. Set the following optional
+record to `T` to use the frozen GW quasiparticle energies in that diagonal.
+
+```text
+# GWParquet Faddeev external GW: use frozen GW energies in the one-body block
+T
+```
+
+This option directly replaces the HF diagonal. The Faddeev self-energy is
+then applied on top of those GW energies, without a GW subtraction. Full-spectrum mode returns orbital energies and weights;
 Davidson mode reports the IP roots and HF assignments in its printed tables.
 
 Run `python tests/check_gw_faddeev.py --workdir /tmp/new-gw-ftda-checks` after

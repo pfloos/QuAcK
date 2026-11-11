@@ -1,7 +1,7 @@
 subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize, &
                         eta_1b,eta_2b,reg_PA,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF, &
                         ERI,dipole_int,eHF,eGW,ePA,ZPA, &
-                        gw_faddeev,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3)
+                        gw_faddeev,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_external)
 
 ! Frozen-input native parquet or TDA Faddeev calculation from G0W0/BSE.
 ! W0 is built from the HF dRPA response, as in RG0W0/RGW_phBSE/RGW_ppBSE.
@@ -17,7 +17,7 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   double precision,intent(in)  :: eta_GW,eta_1b,eta_2b,ENuc,ERHF
   double precision,intent(in)  :: ERI(nOrb,nOrb,nOrb,nOrb),dipole_int(nOrb,nOrb,ncart),eHF(nOrb)
   double precision,intent(out) :: eGW(nOrb),ePA(nOrb),ZPA(nOrb)
-  logical,intent(in) :: gw_faddeev,faddeev_davidson,faddeev_static3
+  logical,intent(in) :: gw_faddeev,faddeev_davidson,faddeev_static3,gw_external
   integer,intent(in) :: faddeev_coupling,n_IP_roots
 
   type pair_interactions
@@ -44,6 +44,7 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   if(eta_GW < 0d0) error stop 'R_GW_Parquet: GW broadening must be nonnegative'
   if(reg_PA .and. (eta_1b <= 0d0 .or. eta_2b <= 0d0)) &
     error stop 'R_GW_Parquet: positive reg_1b and reg_2b are required for SRG'
+  if(gw_external.and..not.gw_faddeev) error stop 'External GW requires GWParquet Faddeev'
   adc2=faddeev_coupling == 2
   dressed=faddeev_coupling == 0.or.faddeev_coupling == 4
   if(gw_faddeev) then
@@ -319,7 +320,11 @@ contains
     double precision,allocatable :: Tehs(:,:),Teht(:,:),Thhs(:,:),Thht(:,:),Tees(:,:),Teet(:,:)
     double precision,allocatable :: Teh(:,:),Thh(:,:),Tee(:,:),ip_omega(:),ip_Z(:),ip_residual(:)
     integer :: info
-    write(*,*) 'GW-BSE FTDA: HF external block; frozen GW internal energies'
+    if(gw_external) then
+      write(*,*) 'GW-BSE FTDA: GW external block; frozen GW internal energies'
+    else
+      write(*,*) 'GW-BSE FTDA: HF external block; frozen GW internal energies'
+    end if
     write(*,*) 'GW-BSE FTDA: static TDA eh/pp BSE interactions'
     if(faddeev_static3) write(*,*) 'Static correction uses the canonical HF density expansion'
     allocate(Teh(4*nS,4*nS),Thh(nOcc*(2*nOcc-1),nVir*(2*nVir-1)),Tee(nOcc*(2*nOcc-1),nVir*(2*nVir-1)))
@@ -339,7 +344,7 @@ contains
       allocate(ip_omega(n_IP_roots),ip_Z(n_IP_roots),ip_residual(n_IP_roots))
       call R_TDA_Faddeev_IP_roots(n_IP_roots,adc2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
            eHF,eGW,ERI,pair(1)%eh,pair(2)%eh,pair(1)%hh,pair(2)%hh,pair(1)%ee,pair(2)%ee, &
-           ip_omega,ip_Z,ip_residual,info,dressed,Teh,Thh,Tee,faddeev_static3)
+           ip_omega,ip_Z,ip_residual,info,dressed,Teh,Thh,Tee,faddeev_static3,gw_external)
       if(info/=0) error stop 'GW-BSE FTDA Davidson failed to converge'
       ! Only the printed IP root table is a calculated spectrum in this mode.
       ePA=eHF
@@ -347,7 +352,7 @@ contains
     else
       call R_TDA_Faddeev_self_energy(adc2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
            eHF,eGW,ERI,pair(1)%eh,pair(2)%eh,pair(1)%hh,pair(2)%hh,pair(1)%ee,pair(2)%ee, &
-           ePA,ZPA,dressed,Teh,Thh,Tee,faddeev_static3)
+           ePA,ZPA,dressed,Teh,Thh,Tee,faddeev_static3,gw_external)
     end if
   end subroutine faddeev_spectrum
 

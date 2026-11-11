@@ -83,7 +83,7 @@ end subroutine
     subprocess.run(command, check=True, cwd=work)
     lib = ct.CDLL(str(shared))
 
-    def call(name, *args, dressed=False, sources=None, static3=False):
+    def call(name, *args, dressed=False, sources=None, static3=False, gw_external=False):
         if name.startswith(('g_tda_faddeev_', 'r_tda_faddeev_')) and name not in (
                 'r_tda_faddeev_lift', 'r_tda_faddeev_lift_sources'):
             offset = int(name.endswith('_roots'))
@@ -99,6 +99,8 @@ end subroutine
             args += (dressed, *sources)
             if name.endswith(('_ip_roots', '_self_energy')):
                 args += (static3,)
+            if name.endswith('_ip_roots') or name == 'r_tda_faddeev_self_energy':
+                args += (gw_external,)
         keep = [ct.c_int(int(a)) if isinstance(a, (int, bool, np.integer)) else
                 ct.c_double(a) if isinstance(a, float) else a for a in args]
         getattr(lib, name + '_')(*[a.ctypes.data_as(ct.c_void_p) if isinstance(a, np.ndarray)
@@ -117,7 +119,7 @@ end subroutine
                 arr([[v[i, j, k, l] - v[i, j, l, k] for k, l in hh] for i, j in hh]).reshape((len(hh),)*2, order='F'),
                 arr([[v[a, b, c, d] - v[a, b, d, c] for c, d in ee] for a, b in ee]).reshape((len(ee),)*2, order='F')]
 
-    def build(e, v, o, nc=0, nr=0, reg=False, flow=1., block=0, wk=None, adc2=False, sources=None):
+    def build(e, v, o, nc=0, nr=0, reg=False, flow=1., block=0, wk=None, adc2=False, sources=None, eqp=None):
         n = len(e); occ = range(nc, o); vir = range(o, n-nr)
         hh, ee = pairs(occ), pairs(vir)
         minus = [(i, j, a) for i, j in hh for a in vir]
@@ -129,8 +131,9 @@ end subroutine
         nh = (n//2 if block else n) + len(minus) + len(plus)
         h = np.zeros((nh, nh), order='F')
         wk = kernels(v, occ, vir) if wk is None else wk
+        eqp = e if eqp is None else eqp
         call('g_tda_faddeev_build', adc2, reg, flow, block, n, nc, o, nr, len(occ)*len(vir),
-             len(hh), len(ee), nh, e, e, v, *wk, h, dressed=sources is not None, sources=sources)
+             len(hh), len(ee), nh, e, eqp, v, *wk, h, dressed=sources is not None, sources=sources)
         return h, minus, plus
 
     def check_action(e, v, o, h, wk, nc=0, nr=0, block=0, spatial=None, reg=False, flow=1., adc2=False, sources=None):
@@ -438,10 +441,12 @@ end subroutine
 
     # HF-hole targeted IPs: compare with the distinct dense poles maximizing
     # occupied HF orbital character, rather than the energy-ordered satellites.
-    def check_roots(e,v,o,nroots,nc=0,nr=0,block=0,spatial=None,wk=None,adc2=False,reg=False,sources=None,static3=False):
+    def check_roots(e,v,o,nroots,nc=0,nr=0,block=0,spatial=None,wk=None,adc2=False,reg=False,sources=None,static3=False,eqp=None,gw_external=False):
         n = len(e); no=o-nc; nv=n-nr-o
         wk = kernels(v,range(nc,o),range(o,n-nr)) if wk is None else wk
-        h,_,_ = build(e,v,o,nc,nr,block=block,wk=wk,adc2=adc2,reg=reg,flow=.7,sources=sources)
+        eqp = e if eqp is None else eqp
+        external = eqp if gw_external else e
+        h,_,_ = build(external,v,o,nc,nr,block=block,wk=wk,adc2=adc2,reg=reg,flow=.7,sources=sources,eqp=eqp)
         nphys = n//2 if block else n
         eri = v if spatial is None else spatial
         if static3:
@@ -466,7 +471,8 @@ end subroutine
         outputs=[arr(np.zeros(nroots)) for _ in range(3)]
         info=np.zeros(1,dtype=np.int32)
         call('g_tda_faddeev_ip_roots',nroots,adc2,reg,.7,block,len(eri),n,nc,o,nr,
-             no*nv,no*(no-1)//2,nv*(nv-1)//2,e,e,eri,*wk,*outputs,info, dressed=sources is not None,sources=sources,static3=static3)
+             no*nv,no*(no-1)//2,nv*(nv-1)//2,e,eqp,eri,*wk,*outputs,info,
+             dressed=sources is not None,sources=sources,static3=static3,gw_external=gw_external)
         assert info[0]==0 and max(outputs[2])<1e-8, (outputs,info)
         np.testing.assert_allclose(outputs[0],vals[selected],atol=1e-9)
         # Sum over degenerate eigenspaces rather than arbitrary eigenvectors.
@@ -480,6 +486,8 @@ end subroutine
 
     check_roots(e,v,o,2,static3=True)
     check_roots(eg,vg,og,2,block=1,spatial=v,static3=True)
+    eqp = arr(eg + np.repeat(np.linspace(-.04,.06,len(eg)//2),2))
+    check_roots(eg,vg,og,2,block=1,spatial=v,static3=True,eqp=eqp,gw_external=True)
 
     for adc2 in [False,True]:
         for nc,nr in [(0,0),(1,0),(0,1),(1,1)]:

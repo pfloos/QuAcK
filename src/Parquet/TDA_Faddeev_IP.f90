@@ -635,7 +635,7 @@ end subroutine
 
 subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv, &
                            eHF,eQP,ERI,Weh,Whh,Wee,omega,Z,residual,info, &
-    dressed,Teh,Thh,Tee,static3)
+    dressed,Teh,Thh,Tee,static3,gw_external)
   use TDA_Faddeev_IP_operator
   implicit none
   include 'parameters.h'
@@ -645,7 +645,7 @@ subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,n
   double precision,intent(in) :: Weh(ns,ns),Whh(noo,noo),Wee(nvv,nvv)
   double precision,intent(out) :: omega(nroots),Z(nroots),residual(nroots)
   integer,intent(out) :: info
-  logical,intent(in) :: dressed,static3
+  logical,intent(in) :: dressed,static3,gw_external
   double precision,intent(in) :: Teh(nS,nS),Thh(nOO,nVV),Tee(nOO,nVV)
   type(Faddeev_operator) :: op
   integer :: nocc,iterations,j
@@ -653,10 +653,13 @@ subroutine G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,n
   call wall_time(start)
   call initialize(op,adc2,reg,eta,block,nERI,nOrb,nC,nO,nR,ns,noo,nvv,eHF,eQP,ERI,Weh,Whh,Wee, &
     dressed,Teh,Thh,Tee)
-  if(static3) then
+  if(static3.or.gw_external) then
     allocate(op%sigma_static(op%nphys,op%nphys))
-    call TDA_Faddeev_static3(nERI,nOrb,op%nphys,nC,nO,nR,eHF,ERI,op%sigma_static)
+    op%sigma_static=0d0
+    if(static3) call TDA_Faddeev_static3(nERI,nOrb,op%nphys,nC,nO,nR,eHF,ERI,op%sigma_static)
+    ! Add the diagonal shift to the operator while retaining HF orbital targets.
     do j=1,op%nphys
+      if(gw_external) op%sigma_static(j,j)=op%sigma_static(j,j)+eQP(op%phys(j))-eHF(op%phys(j))
       op%diag(j)=op%diag(j)+op%sigma_static(j,j)
     end do
   end if
