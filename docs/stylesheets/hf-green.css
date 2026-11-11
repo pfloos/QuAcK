@@ -39,3 +39,8 @@ h1, h2, h3, h4 {
     --bs-btn-hover-bg: var(--hf-green-dark);
     --bs-btn-hover-border-color: var(--hf-green-dark);
 }
+
+.quack-brand-logo {
+    flex: none;
+    border-radius: 0.3rem;
+}

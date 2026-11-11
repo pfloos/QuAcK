@@ -5,6 +5,7 @@ repo_url: https://github.com/pfloos/QuAcK
 repo_name: pfloos/QuAcK
 theme:
   name: mkdocs
+  custom_dir: docs/overrides
   navigation_depth: 2
 extra_css:
   - stylesheets/hf-green.css
@@ -14,6 +15,7 @@ markdown_extensions:
       permalink: true
 exclude_docs: |
   /methods.tsv
+  /overrides/
 nav:
   - Home: index.md
   - Install and run: quickstart.md
