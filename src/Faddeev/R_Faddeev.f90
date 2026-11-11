@@ -23,9 +23,9 @@ subroutine R_Faddeev(working_dir,backward,dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
   end if
   if(pairs==1) then
     if(.not.allocated(t)) allocate(t(1,1,1,1),source=0d0)
-    call R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,.not.backward,.not.backward,.false., &
-                       eta,eta_screen,reg,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole,eHF,qp,ePA,ZPA, &
-                       .true.,coupling,iterative,nroots,static3,external_gw,backward,t)
+    call R_GW_Faddeev(dotest,TDA_W,lin_GW,eta_GW,reg_GW,backward,eta,eta_screen,reg, &
+                       nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole,eHF,qp,ePA,ZPA, &
+                       coupling,iterative,nroots,static3,external_gw,t)
     return
   end if
 

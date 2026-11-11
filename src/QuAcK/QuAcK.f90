@@ -120,8 +120,7 @@ program QuAcK
   double precision              :: reg_1b,reg_2b 
   logical                       :: lin_parquet, reg_PA
    
-  integer :: parquet_method,faddeev_coupling,n_IP_roots
-  logical :: faddeev_davidson,faddeev_static3,gw_faddeev,gw_external
+  integer :: parquet_method
 
   logical                       :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision              :: eta_ADC
@@ -258,7 +257,7 @@ program QuAcK
                     temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                     reg_1b,reg_2b,reg_PA,                                                                &
-                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_faddeev,gw_external, &
+                  parquet_method,doevParquet,doGWParquet, &
                     do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                     eweight,eforward)
 
@@ -398,6 +397,8 @@ program QuAcK
       error stop 'GW-Parquet requires RHF and the standard restricted driver'
   end if
 
+  if(doGWParquet.and.(doFTDA.or.doFRPA)) &
+    error stop 'Select either GWParquet or standalone FTDA/FRPA in input/methods'
   if(doFTDA.or.doFRPA) then
     if(.not.doRHF.or.docRHF.or.doROHF.or.doeRHF.or.doOO.or.switch_hpc) &
       error stop 'Standalone Faddeev requires the standard canonical RHF driver'
@@ -450,7 +451,7 @@ program QuAcK
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_faddeev,gw_external, &
+                  parquet_method, &
                   nfreqs,ntimes,wcoord,wweight,                                                                             &
                   do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
     endif
@@ -495,7 +496,7 @@ program QuAcK
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                        &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,     &
                 reg_1b,reg_2b,reg_PA,                                                                    &
-                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3, &
+                  parquet_method, &
                 do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
 
 !-------------------------!

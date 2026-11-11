@@ -13,7 +13,7 @@ subroutine read_options(working_dir,                                            
                         temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                         TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                         reg_1b,reg_2b,reg_PA,                                                                &
-                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3,gw_faddeev,gw_external, &
+                  parquet_method,doevParquet,doGWParquet, &
                         do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                         eweight,eforward)
 
@@ -118,8 +118,8 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: reg_1b,reg_2b
   logical,intent(out)           :: lin_parquet,reg_PA
 
-  integer,intent(out) :: parquet_method,faddeev_coupling,n_IP_roots
-  logical,intent(out) :: faddeev_davidson,faddeev_static3,gw_faddeev,gw_external
+  integer,intent(out) :: parquet_method
+  logical,intent(in) :: doevParquet,doGWParquet
 
   logical,intent(out)           :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(out)  :: eta_ADC
@@ -385,56 +385,30 @@ subroutine read_options(working_dir,                                            
       if(ans1 == 'T') eforward = .true.
  
       ! Optional trailing section for evParquet self-energy selection.
-      parquet_method = 2
-      faddeev_coupling = 0
-      faddeev_davidson = .true.
-      n_IP_roots = 1
-      faddeev_static3 = .false.
-      gw_faddeev = .false.
-      gw_external = .false.
+      parquet_method = 0
       do
         read(1,'(A)',iostat=status) option_line
         if(status < 0) exit
         if(status /= 0) error stop 'Error reading Parquet self-energy options'
-        if(index(adjustl(option_line),'# GWParquet Faddeev external GW:') == 1) then
+        if(doGWParquet.and.(index(adjustl(option_line),'# GWParquet Faddeev:')==1.or. &
+                           index(adjustl(option_line),'# GWParquet Faddeev external GW:')==1)) then
           read(1,'(A)',iostat=status) option_line
-          if(status /= 0) error stop 'Missing GWParquet Faddeev external GW flag'
-          ans1 = ' '
+          if(status/=0) error stop 'Missing value for retired GWParquet option'
           read(option_line,*,iostat=status) ans1
-          if(status /= 0.or.(ans1 /= 'T'.and.ans1 /= 'F')) error stop 'External GW flag must be T or F'
-          gw_external = ans1 == 'T'
+          if(status/=0) error stop 'Invalid value for retired GWParquet option'
+          if(ans1=='T') error stop 'GW/BSE Faddeev moved to standalone FTDA/FRPA. Set reference=1 and pairs=1.'
           cycle
         end if
-        if(index(adjustl(option_line),'# GWParquet Faddeev:') == 1) then
-          read(1,'(A)',iostat=status) option_line
-          if(status /= 0) error stop 'Missing GWParquet Faddeev flag'
-          ans1 = ' '
-          read(option_line,*,iostat=status) ans1
-          if(status /= 0.or.(ans1 /= 'T'.and.ans1 /= 'F')) error stop 'GWParquet Faddeev flag must be T or F'
-          gw_faddeev = ans1 == 'T'
-          cycle
-        end if
-        if(index(adjustl(option_line),'# Faddeev static self-energy:') == 1) then
-          read(1,'(A)',iostat=status) option_line
-          if(status /= 0) error stop 'Missing Faddeev static self-energy flag'
-          ans1 = ' '
-          read(option_line,*,iostat=status) ans1
-          if(status /= 0.or.(ans1 /= 'T'.and.ans1 /= 'F')) error stop 'Faddeev static self-energy flag must be T or F'
-          faddeev_static3 = ans1 == 'T'
-          cycle
-        end if
-        if(index(adjustl(option_line),'# Parquet self-energy:') /= 1) cycle
+        if(index(adjustl(option_line),'# Parquet self-energy:')/=1) cycle
         read(1,'(A)',iostat=status) option_line
-        if(status /= 0) error stop 'Missing Parquet self-energy option values'
-        ans1 = " "
-        read(option_line,*,iostat=status) parquet_method,faddeev_coupling,ans1,n_IP_roots
-        if(status /= 0) error stop 'Expected Parquet method, Faddeev coupling, Davidson flag and IP root count'
-        if(parquet_method < 0.or.parquet_method > 3) error stop 'Parquet method must be 0, 1, 2 or 3'
-        if(faddeev_coupling /= 0.and.(faddeev_coupling < 2.or.faddeev_coupling > 4)) &
-          error stop 'Faddeev coupling must be 0, 2, 3 or 4'
-        if(ans1 /= 'T'.and.ans1 /= 'F') error stop 'Faddeev Davidson flag must be T or F'
-        faddeev_davidson = ans1 == 'T'
-        if(n_IP_roots < 1) error stop 'Faddeev IP root count must be positive'
+        if(status/=0) error stop 'Missing Parquet self-energy option'
+        read(option_line,*,iostat=status) parquet_method
+        if(status/=0) error stop 'Expected a Parquet self-energy method'
+        if(parquet_method==2.or.parquet_method==3) then
+          if(doevParquet) error stop 'Faddeev moved to standalone FTDA/FRPA. Disable evParquet and use the Faddeev row.'
+          parquet_method=0
+        end if
+        if(parquet_method<0.or.parquet_method>1) error stop 'Parquet method must be 0 (native) or 1 (ADC)'
       end do
 
     endif

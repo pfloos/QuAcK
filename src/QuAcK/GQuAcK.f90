@@ -15,7 +15,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,doMOM,dostab,dosearch,readFCIDUMP,doM
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
-                  parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3, &
+                  parquet_method, &
                   do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
 
   implicit none
@@ -108,8 +108,7 @@ subroutine GQuAcK(working_dir,dotest,doGHF,doMOM,dostab,dosearch,readFCIDUMP,doM
   double precision,intent(in)   :: reg_1b,reg_2b
   logical,intent(in)            :: lin_parquet,reg_PA
   
-  integer,intent(in) :: parquet_method,faddeev_coupling,n_IP_roots
-  logical,intent(in) :: faddeev_davidson,faddeev_static3
+  integer,intent(in) :: parquet_method
 
   logical,intent(in)            :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(in)   :: eta_ADC
@@ -498,7 +497,7 @@ end if
     call wall_time(start_Parquet)
     call G_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
                   nBas2,nC,nO,nV,nR,nS,EGHF,eHF,ERI_MO, &
-                     parquet_method,faddeev_coupling,faddeev_davidson,n_IP_roots,faddeev_static3)
+                     parquet_method)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet

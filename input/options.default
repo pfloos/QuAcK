@@ -28,13 +28,7 @@
        T     F           F       F   F   0.0
 # Ensemble: weight_N  N+1[for N-1 use F]
 	    0.00000   T
-# Parquet self-energy: method(0=native,1=ADC,2=FTDA,3=FRPA) coupling(0=default,2=ADC2,3=ADC3,4=dressed) Davidson n_IP_roots
-                       2 0 T 1
-# Faddeev static self-energy: third-order HF density correction
-                       F
-# GWParquet Faddeev: use TDA Faddeev with frozen GW energies and BSE kernels
-                       F
-# GWParquet Faddeev external GW: use frozen GW energies in the one-body block
-                       F
+# Parquet self-energy: method(0=native,1=ADC)
+                       0
 # Faddeev: reference(0=HF,1=GW) pairs(0=bare,1=BSE,2=CCD) coupling(2=ADC2,3=ADC3,4=dressed,5=CCD) static3 external_GW Davidson n_IP_roots
            0 0 3 T F T 1

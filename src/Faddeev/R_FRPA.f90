@@ -371,7 +371,7 @@ contains
     case(5)
       write(*,*) 'Faddeev: CCD-amplitude couplings'
     end select
-    if(static3) write(*,*) 'Faddeev: third-order static self-energy enabled'
+    if(static3) write(*,*) label//': third-order static self-energy enabled'
     call build_FRPA(nOrb,nC,nO,nR,eHF,ERI,backward,H,op,qp,kernels,coupling,static3,external_gw,iterative,reg,eta,Teh,Thh,Tee, &
                     external_energies,ccd_ph,ccd_pp)
     if(iterative) then

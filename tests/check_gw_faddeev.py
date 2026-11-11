@@ -40,13 +40,12 @@ def main():
     binary = root / 'bin/QuAcK'
     env = dict(os.environ, QUACK_ROOT=str(root), OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
     methods = modify((root / 'input/methods.default').read_text(), '# RHF ', {0: 'T'})
-    methods = modify(methods, '# evParquet ', {0: 'F', 1: 'F', 2: 'T'})
+    methods = modify(methods, '# FTDA FRPA', {0: 'T', 1: 'F'})
     options = modify((root / 'input/options.default').read_text(), '# GW:',
                      {3: 'T', 4: '0.0', 5: 'F', 6: 'F'})
     options = modify(options, '# Parquet:', {0: 'T', 1: 'T', 11: 'F'})
-    options = modify(options, '# GWParquet Faddeev:', {0: 'T'})
     external = 'GW' if args.gw_external else 'HF'
-    options = modify(options, '# GWParquet Faddeev external GW:', {0: 'T' if args.gw_external else 'F'})
+    options = modify(options, '# Faddeev:', {0: '1', 1: '1', 4: 'T' if args.gw_external else 'F'})
 
     def run(case, name, command, success=True):
         result = subprocess.run(command, cwd=case, env=env, text=True,
@@ -75,18 +74,17 @@ def main():
         basis.write_text('\n'.join(convert_basis_to_nwchem(el, gto.basis.load('sto-3g', el)) for el in elements))
         (case / 'mol/target.xyz').write_text(geometry)
         (case / 'input/options').write_text(options)
-        (case / 'input/methods').write_text(modify(methods, '# evParquet ', {2: 'F'}))
+        (case / 'input/methods').write_text(modify(methods, '# FTDA FRPA', {0: 'F'}))
         run(case, name + '-integrals', [sys.executable, str(root / 'PyDuck.py'), '--working_dir',
                                       str(case), '-x', 'target', '-b', str(basis), '-nc'])
         (case / 'input/methods').write_text(methods)
         for variant, coupling, static in variants:
-            opts = modify(options, '# Faddeev static self-energy:', {0: static})
-            opts = modify(opts, '# Parquet self-energy:', {0: '2', 1: str(coupling), 2: 'F', 3: str(nroots)})
+            opts = modify(options, '# Faddeev:', {2: str(coupling), 3: static, 5: 'F', 6: str(nroots)})
             (case / 'input/options').write_text(opts)
             dense = run(case, name + '-' + variant + '-dense', [str(binary), str(case)])
             exact = {int(row[0]): row for row in table(dense, 'TDA Faddeev-Parquet dominant poles:', 4)}
             spectrum = table(dense, 'TDA Faddeev-Parquet poles:', 3)
-            (case / 'input/options').write_text(modify(opts, '# Parquet self-energy:', {2: 'T'}))
+            (case / 'input/options').write_text(modify(opts, '# Faddeev:', {5: 'T'}))
             text = run(case, name + '-' + variant + '-davidson', [str(binary), str(case)])
             assert text.count('* Restricted G0W0 Calculation *') == 1
             assert f'GW-BSE FTDA: {external} external block; frozen GW internal energies' in text
@@ -111,15 +109,14 @@ def main():
                 (case / 'use_chem_pot_in_ppRPA').unlink()
             print('PASS', name, variant, 'dense/Davidson agreement')
         nonlinear = modify(opts, '# GW:', {3: 'F'})
-        nonlinear = modify(nonlinear, '# Parquet self-energy:', {2: 'T'})
+        nonlinear = modify(nonlinear, '# Faddeev:', {5: 'T'})
         (case / 'input/options').write_text(nonlinear)
         text = run(case, name + '-gw-root-search', [str(binary), str(case)])
         assert 'Quasiparticle energies obtained by root search' in text
         assert len(table(text, 'Faddeev-Parquet IP roots:', 5)) == nroots
-        invalid = modify(opts, '# Parquet:', {0: 'F'})
-        (case / 'input/options').write_text(invalid)
-        text = run(case, name + '-invalid-tda', [str(binary), str(case)], success=False)
-        assert 'GW Faddeev requires TDAeh=T and TDApp=T' in text
+        (case / 'input/methods').write_text(modify(methods, '# evParquet ', {2: 'T'}))
+        text = run(case, name + '-reject-mixed-methods', [str(binary), str(case)], success=False)
+        assert 'Select either GWParquet or standalone FTDA/FRPA' in text
     print('All GW/BSE FTDA checks passed. Logs:', work)
 
 
