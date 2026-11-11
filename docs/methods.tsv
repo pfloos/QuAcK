@@ -1,0 +1,48 @@
+Method or input flag	R	U	G	Source	Scope
+RHF	yes	—	—	src/QuAcK/RQuAcK.f90	Canonical restricted reference
+UHF	—	yes	—	src/QuAcK/UQuAcK.f90	Unrestricted reference
+GHF	—	—	yes	src/QuAcK/GQuAcK.f90	Generalized reference
+ROHF	R path	—	—	src/QuAcK/RQuAcK.f90	Dedicated SCF solver. Check each post-HF method separately
+HFB	B path	—	—	src/QuAcK/BQuAcK.f90	Restricted Hartree–Fock–Bogoliubov
+cRHF	R path	—	—	src/QuAcK/RQuAcK.f90	Complex orbitals use dedicated post-HF branches
+cUHF	—	U path	—	src/QuAcK/UQuAcK.f90	Complex orbitals use dedicated post-HF branches
+eRHF	R path	—	—	src/QuAcK/RQuAcK.f90	Ensemble RHF inside the restricted driver. Select a restricted reference to enter this driver
+scGHF	B path	—	—	src/QuAcK/BQuAcK.f90	Branch inside the B driver. See the driver-selection conditions
+MP2	yes	yes	yes	src/MP	Second-order energy
+MP3	yes	—	yes	src/MP	Third-order energy
+CCD	yes	—	yes	src/CC	Doubles
+pCCD	yes	—	—	src/CC	Pair doubles
+DCD	yes	—	—	src/CC	Distinguishable cluster doubles
+CCSD	yes	—	yes	src/CC	Singles and doubles
+CCSD(T)	yes	—	yes	src/CC	Perturbative triples
+drCCD, rCCD, crCCD, lCCD	yes	—	yes	src/CC	Ring and ladder variants
+CIS	yes	yes	—	src/CI	Neutral excitations
+CIS(D)	yes	—	—	src/CI/RCI.f90	Enable CIS as well
+CID, CISD	yes	—	—	src/CI	Neutral excitations
+FCI	—	—	—	src/CI	Input slot with no active solver
+phRPA, phRPAx	yes	yes	yes	src/RPA	Particle–hole response
+crRPA	yes	—	yes	src/RPA	Crossed-ring RPA
+ppRPA	yes	yes	yes	src/RPA	Particle–particle response
+BRPA	B path	—	—	src/QuAcK/BQuAcK.f90	Bogoliubov RPA
+OORPA	yes	—	yes	src/QuAcK	Orbital-optimized workflow
+G0F2, evGF2	yes	yes	yes	src/GF	Single-shot and eigenvalue-self-consistent GF2
+qsGF2	yes	yes	—	src/GF/GGF.f90	The generalized solver call is inactive
+G0F3, psdG0F3	yes	—	yes	src/GF	Third-order self-energy variants
+evGF3	yes	—	—	src/GF	Eigenvalue-self-consistent GF3
+scGF2	yes	—	—	src/QuAcK	Bogoliubov variant also dispatched in B
+G0W0, evGW, qsGW	yes	yes	yes	src/GW	BSE support depends on the parent method and channel
+scGW	yes	—	—	src/QuAcK	Bogoliubov variant also dispatched in B
+G0T0pp	yes	yes	yes	src/GT	Single-shot particle–particle T-matrix
+evGTpp, qsGTpp	yes	yes	—	src/GT	Particle–particle T-matrix with self-consistency
+ufG0T0pp	yes	—	—	src/GT	Upfolded particle–particle T-matrix
+G0T0eh	yes	—	yes	src/GT	Single-shot electron–hole T-matrix
+evGTeh, qsGTeh	yes	—	—	src/GT	Electron–hole T-matrix with self-consistency
+evParquet, qsParquet	yes	—	yes	src/Parquet	See method-specific options for the one- and two-body iterations
+GWParquet	yes	—	—	src/Parquet/R_GW_Parquet.f90	Standard canonical RHF driver
+IPEA-ADC2, IPEA-ADC3	yes	—	yes	src/ADC	Dyson implementations. Check alternate formulations separately
+SOSEX, 2SOSEX	yes	—	—	src/ADC	Generalized branches are inactive
+G3W2, psdG3W2	yes	—	yes	src/ADC	Frequency-dependent vertex corrections
+ADC-GW, ADC(3x)-G3W2, ADC-G3W2	yes	—	—	src/ADC	ADC representations
+ADC-2SOSEX, ADC(3)-G3W2	yes	—	diag	src/ADC/G_ADC.f90	GHF calls the diagonal Dyson implementation only
+FTDA, FRPA	yes	—	—	src/Faddeev/R_Faddeev.f90	Standalone flags require standard canonical RHF
+Rtest, Utest, Gtest	test	test	test	tests	Each test flag selects its corresponding reference

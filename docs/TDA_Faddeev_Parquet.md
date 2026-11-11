@@ -1,5 +1,7 @@
 # TDA Faddeev-Parquet with ADC(2) or ADC(3) external couplings
 
+**Archive.** The inputs and driver calls below apply to revisions before `63ca470b`. Use the [standalone Faddeev guide](faddeev.md) for the current driver and input format.
+
 Both restricted (`R_TDA_Faddeev_self_energy`) and generalized
 (`G_TDA_Faddeev_self_energy`) routines are available in `src/Parquet`.
 They implement the complete-TDA physical reduction in

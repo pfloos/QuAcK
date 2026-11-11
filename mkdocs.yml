@@ -1,0 +1,33 @@
+site_name: QuAcK documentation
+site_url: https://pfloos.github.io/QuAcK/
+use_directory_urls: false
+repo_url: https://github.com/pfloos/QuAcK
+repo_name: pfloos/QuAcK
+theme:
+  name: mkdocs
+  navigation_depth: 2
+extra_css:
+  - stylesheets/hf-green.css
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+exclude_docs: |
+  /methods.tsv
+nav:
+  - Home: index.md
+  - Install and run: quickstart.md
+  - Methods:
+      - Availability: generated/methods.md
+      - Hartree–Fock and correlation: electronic-structure.md
+      - Green's functions and response: greens-functions.md
+      - Single-shot GW–Parquet: gw-parquet.md
+      - Standalone Faddeev: faddeev.md
+      - Historical Faddeev–Parquet notes: TDA_Faddeev_Parquet.md
+  - Reference:
+      - Calculation inputs: input-guide.md
+      - CLI and default files: generated/inputs.md
+      - Fortran source index: generated/routines.md
+  - Development:
+      - Validation and documentation: development.md
+      - Proposed methods: roadmap.md
