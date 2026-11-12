@@ -70,14 +70,14 @@
       <div class="container example-inner">
         <div class="example-copy">
           <h2 id="example-title">Ionizing water</h2>
-          <p>Run standalone TDA Faddeev with the bundled water geometry and 6-31G basis. Davidson follows the dominant poles associated with the four highest occupied Hartree–Fock orbitals.</p>
-          <pre><code>python docs/examples/run.py water-ftda</code></pre>
+          <p>Run single-shot G₀W₀ on a restricted Hartree–Fock reference with the bundled water geometry and 6-31G basis.</p>
+          <pre><code>python docs/examples/run.py water-gw</code></pre>
           <a class="text-link" href="{{ 'quickstart.html#ionize-water'|url }}">Run and read the example →</a>
         </div>
         <figure class="spectrum">
-          <img src="{{ 'assets/water-ftda-spectrum.png'|url }}" width="840" height="450" loading="lazy"
-               alt="Four calculated water ionization poles at 12.22, 14.18, 18.93, and 34.27 eV.">
-          <figcaption>Four valence ionization poles from FTDA/6-31G. Stick heights show pole weights, Z.</figcaption>
+          <img src="{{ 'assets/water-gw-spectrum.png'|url }}" width="840" height="450" loading="lazy"
+               alt="Water valence ionization energies at 12.05, 14.00, 18.70, and 34.87 eV. The deepest pole has the lowest weight.">
+          <figcaption>Four valence ionizations from G₀W₀@RHF/6-31G. Stick heights show quasiparticle weights, Z.</figcaption>
         </figure>
       </div>
     </section>

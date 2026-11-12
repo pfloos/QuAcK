@@ -59,14 +59,14 @@ Check the SCF and any outer iterations, look for a completed QuAcK timing line, 
 
 ## Ionize water
 
-Run `python docs/examples/run.py water-ftda` from the repository root.
-The runner uses `mol/water.xyz` and the 6-31G basis and requests four
-Davidson roots. The sticks show the selected valence ionization energies
-and their one-particle weights.
+Run `python docs/examples/run.py water-gw` from the repository root.
+The example uses `mol/water.xyz` and the 6-31G basis. For occupied orbitals,
+the vertical ionization energy is the negative of the reported `e_GW`.
+The figure shows the four valence quasiparticles and their weights `Z`.
 
-| Root | IP (eV) | Pole weight |
+| RHF orbital | IP (eV) | Quasiparticle weight |
 |---|---:|---:|
-| 1 | 12.22 | 0.9424 |
-| 2 | 14.18 | 0.9434 |
-| 3 | 18.93 | 0.9530 |
-| 4 | 34.27 | 0.5545 |
+| 5 | 12.05 | 0.9569 |
+| 4 | 14.00 | 0.9562 |
+| 3 | 18.70 | 0.9618 |
+| 2 | 34.87 | 0.6737 |
