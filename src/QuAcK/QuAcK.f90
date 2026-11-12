@@ -126,7 +126,7 @@ program QuAcK
   double precision              :: eta_ADC
 
   character(len=256)            :: working_dir
-  character(len=100)            :: sha
+  character(len=100)            :: version,sha
   integer                       :: ios
   character(len=256)            :: line
 
@@ -169,17 +169,21 @@ program QuAcK
   write(*,*) '  Abdallah Ammar'
   write(*,*) '  Mauricio Rodriguez-Mayorga'
   write(*,*) '  Loris Burth'
+  write(*,*) '  Clotilde Marut'
+  write(*,*) '  Arjan Berger (arjanberger10)'
+  write(*,*) '  Radovan Bast'
   write(*,*) '============================================================'
   write(*,*) ' QuAcK repository: https://github.com/pfloos/QuAcK'
   write(*,*) ' License: GPLv3 or later'
   write(*,*) '============================================================'
   write(*,*)   
 
-  call gitversion(sha)
+  call gitversion(version,sha)
 
   write(*,*) '============================================================'
   write(*,*) '                       QuAcK Build Info                     '
   write(*,*) '============================================================'
+  write(*,*) '  Version  : ', trim(version)
   write(*,*) '  Git SHA  : ', trim(sha)
   write(*,*) '============================================================'
   write(*,*)

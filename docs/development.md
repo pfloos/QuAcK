@@ -8,7 +8,7 @@ PyDuck writes molecular and integral files. `src/QuAcK/QuAcK.f90` reads the calc
 
 The regular CI builds QuAcK and runs the light benchmark suite. Its [workflow](https://github.com/pfloos/QuAcK/blob/master/.github/workflows/ci.yml) shows the database and fixture setup. Method-specific scripts in `tests/` check GW–Parquet and Faddeev calculations. Read each script's arguments and fixtures before running it.
 
-The three [documentation examples](quickstart.md) are smoke tests. They check that the selected drivers produce finite results and that QuAcK finishes. Benchmark tests are the place for numerical reference comparisons.
+The four [documentation examples](quickstart.md) are smoke tests. They check that the selected drivers produce finite results and that QuAcK finishes. Benchmark tests are the place for numerical reference comparisons.
 
 ## Build the manual locally
 

@@ -14,6 +14,8 @@ python -m pip install pyscf
 make -C src
 ```
 
+For the stable release, clone with `git clone --branch v1.0 https://github.com/pfloos/QuAcK.git`. Keep the checkout path free of spaces for the build.
+
 Use `./configure -i ninja` from the repository root if Ninja needs to be bootstrapped. The build produces `bin/QuAcK`. CAP calculations also need PyOpenCAP. The examples below disable CAP integrals.
 
 ## Run H₂

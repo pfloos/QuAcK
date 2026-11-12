@@ -12,6 +12,8 @@
 
 ---
 
+The latest stable release is [QuAcK v1.0](https://github.com/pfloos/QuAcK/releases/tag/v1.0). See the [changelog](CHANGELOG.md) for changes since the 0.9 prerelease.
+
 ## 👥 Contributors
 
 - [Pierre-Francois Loos](https://pfloos.github.io/WEB_LOOS)
@@ -21,6 +23,11 @@
 - [Abdallah Ammar](https://scholar.google.com/citations?user=y437T5sAAAAJ&hl=en)
 - [Mauricio Rodriguez-Mayorga](https://scholar.google.com/citations?user=OLGOgQgAAAAJ&hl=es)
 - [Loris Burth](https://github.com/lburth)
+- Clotilde Marut
+- [Arjan Berger (arjanberger10)](https://github.com/arjanberger10)
+- [Radovan Bast](https://github.com/bast)
+
+This list includes contributors credited in the project and people identified in the [commit history](https://github.com/pfloos/QuAcK/commits/v1.0/).
 
 ---
 
@@ -47,26 +54,16 @@ For beginners in the field or those with less programming experience, we recomme
 
 ## 🛠️ Installation
 
-The QuAcK software can be downloaded on GitHub as a Git repository
-```
-git clone https://github.com/pfloos/QuAcK.git
-```
+Install the compilers, build tools, and libraries listed in the [v1.0 quickstart](https://github.com/pfloos/QuAcK/blob/v1.0/docs/quickstart.md). Clone into a path without spaces.
 
-Then, one must define the variable `QUACK_ROOT`. For example, 
-```
-export QUACK_ROOT=$HOME/Work/QuAcK
-```
-You must also install [PySCF](https://pyscf.org) (for example using `pip`)
-```
-pip install pyscf
-```
-
-PySCF is used for the computation of one- and two-electron integrals (mainly) which are dumped in files and read by QuAcK.
-Therefore, it is very easy to use other software to compute the integrals or to add other types of integrals.
-
-Then, go to the `src` directory and compile
-```
-cd src; make
+```bash
+git clone --branch v1.0 https://github.com/pfloos/QuAcK.git
+cd QuAcK
+export QUACK_ROOT="$PWD"
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install pyscf
+make -C src
 ```
 
 ## ⚡ Quick Start
@@ -75,18 +72,25 @@ See the [QuAcK manual](https://pfloos.github.io/QuAcK/manual.html) for the metho
 The [quickstart](docs/quickstart.md) shows how to run RHF, GW, and standalone FTDA.
 
 
-For example, if you want to run a calculation on water using the cc-pvdz basis set:
-```
-QuAcK 💩 % python PyDuck.py -x water -b cc-pvdz
+Run the water ionization example from the repository root.
+
+```bash
+python docs/examples/run.py water-gw
 ```
 
-QuAcK runs calculations in the `QUACK_ROOT` directory which is quite unusual but it also use the `--working_dir` option to run calculations elsewhere.
+## How to cite QuAcK
+
+Cite the version used in your work. For this release, use the citation below or export BibTeX or APA from GitHub’s **Cite this repository** menu. The machine-readable citation is in [`CITATION.cff`](CITATION.cff).
+
+> Loos, P.-F. (2026). *QuAcK: A software for emerging quantum electronic structure methods* (Version 1.0) [Computer software]. GitHub. https://github.com/pfloos/QuAcK/releases/tag/v1.0
+
+For a development build, record the Git commit printed in the calculation output. Cite the relevant method papers when reporting method-specific results.
 
 ---
 
 ## 📄 License
 
-QuAcK is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html).
+QuAcK is distributed under the GNU General Public License, version 3 or later, as stated in the program banner. See [LICENSE](LICENSE) for the GPL v3 text.
 
 ---
 

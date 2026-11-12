@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the version you used."
+title: "QuAcK: A software for emerging quantum electronic structure methods"
+type: software
+authors:
+  - family-names: Loos
+    given-names: Pierre-François
+version: "1.0"
+date-released: "2026-11-12"
+license: GPL-3.0-or-later
+repository-code: "https://github.com/pfloos/QuAcK"
+url: "https://github.com/pfloos/QuAcK/releases/tag/v1.0"
