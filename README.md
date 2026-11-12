@@ -23,8 +23,6 @@ The latest stable release is [QuAcK v1.0](https://github.com/pfloos/QuAcK/releas
 - [Abdallah Ammar](https://scholar.google.com/citations?user=y437T5sAAAAJ&hl=en)
 - [Mauricio Rodriguez-Mayorga](https://scholar.google.com/citations?user=OLGOgQgAAAAJ&hl=es)
 - [Loris Burth](https://github.com/lburth)
-- [Arjan Berger (arjanberger10)](https://github.com/arjanberger10)
-- [Radovan Bast](https://github.com/bast)
 
 This list includes contributors credited in the project and people identified in the [commit history](https://github.com/pfloos/QuAcK/commits/v1.0/).
 
