@@ -2,9 +2,23 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the version you used."
 title: "QuAcK: A software for emerging quantum electronic structure methods"
 type: software
+
 authors:
   - family-names: Loos
     given-names: Pierre-François
+  - family-names: Scemama
+    given-names: Anthony
+  - family-names: Monino
+    given-names: Enzo
+  - family-names: Marie
+    given-names: Antoine
+  - family-names: Ammar
+    given-names: Abdallah
+  - family-names: Rodriguez-Mayorga
+    given-names: Mauricio
+  - family-names: Burth
+    given-names: Loris
+
 version: "1.0"
 date-released: "2026-11-12"
 license: GPL-3.0-or-later
