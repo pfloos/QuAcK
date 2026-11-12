@@ -12,9 +12,42 @@ For a given orbital reference, QuAcK can compute one-particle poles with Green's
 | BSE | Neutral or charged two-particle response using a parent calculation | Parent self-energy, channel, static or dynamical kernel, and solver |
 | Parquet | Coupled two-particle scattering channels and a one-particle self-energy | One- and two-body iteration counts, DIIS, channel TDA switches, and convergence |
 
+## GF2 and GF3
+
+GF2 uses a second-order self-energy. The `G0F2`, `evGF2`, `qsGF2`, and
+`scGF2` flags select different levels of self-consistency. The third-order
+routes are `G0F3`, `evGF3`, and `psdG0F3`. See the catalogue for driver coverage.
+
 ## Single-shot and self-consistent GW
 
-`G0W0` uses fixed input orbitals and energies to form the starting propagator and screening. `evGW` updates quasiparticle energies while keeping the orbitals fixed. `qsGW` updates the effective one-particle Hamiltonian and its orbitals. The restricted `scGW` route uses an imaginary-axis self-consistent calculation. Compare like quantities across these schemes. For example, the pole weight associated with a frequency-dependent self-energy differs from the weight of an eigenvector of a static quasiparticle Hamiltonian.
+| Input flag | Scheme | Drivers |
+|---|---|---|
+| `G0W0` | Single-shot GW from the input orbitals and energies | R, U, G |
+| `evGW` | Eigenvalue self-consistency with fixed orbitals | R, U, G |
+| `qsGW` | Quasiparticle self-consistency with an updated effective Hamiltonian and orbitals | R, U, G |
+| `scGW` | Fully self-consistent GW on the imaginary axis | R and a dedicated Bogoliubov branch |
+
+## T-matrix
+
+The particle–particle and electron–hole T-matrix families sum repeated scattering
+in their respective channels. The catalogue lists the single-shot, eigenvalue
+and quasiparticle self-consistent paths, and the upfolded particle–particle path.
+
+## ADC and vertex corrections
+
+QuAcK includes IP/EA-ADC(2), IP/EA-ADC(3), SOSEX, 2SOSEX, and G3W2 variants.
+The catalogue lists the ADC representations and identifies generalized
+routes limited to the diagonal Dyson implementation.
+
+## Parquet
+
+`evParquet` and `qsParquet` have restricted and generalized paths.
+[`GWParquet`](gw-parquet.md) is a single-shot workflow for canonical RHF.
+
+## Experimental Faddeev
+
+[`FTDA` and `FRPA`](faddeev.md) are standalone experimental implementations
+for canonical RHF. The guide describes the pair kernels, couplings, and solver options.
 
 ## Response options
 
@@ -39,3 +72,6 @@ These entries cover the standard real-reference drivers. They indicate active ca
 | `evGTpp`, `qsGTpp` | ph | — | — |
 
 The [Fortran source index](generated/routines.md) links to the parent and response routines. The table covers the listed families and standard references. CAP, complex references, and alternate workflows require their own checks.
+
+The `phBSE2` kernel switch is used inside the restricted GW particle–hole
+BSE routines. Set `phBSE` to enter that response path.

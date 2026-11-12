@@ -25,7 +25,6 @@ The [example runner](examples/run.py) prepares a fresh calculation directory fro
 ```bash
 python docs/examples/run.py rhf
 python docs/examples/run.py g0w0
-python docs/examples/run.py ftda
 ```
 
 To keep the input, integrals, and output together, pass a new directory and redirect the log.
@@ -49,13 +48,10 @@ the local examples give the following values.
 |---|---|---:|
 | RHF | Total energy | −1.0487553440 Ha |
 | Single-shot GW | HOMO quasiparticle energy | −13.499288 eV |
-| FTDA | Principal IP | 13.8212056011 eV |
-| FTDA | Principal IP pole weight | 0.9547918004 |
 
 
 - RHF prints the total energy and HF orbital energies. Read the labels for units.
 - Single-shot GW prints quasiparticle energies and renormalization factors. For a removal pole referenced to vacuum, the ionization energy is the negative of the pole energy.
-- Standalone Faddeev in Davidson mode prints the IP, signed pole, one-particle weight, and residual. Compare the weights as well as the energies when more than one root is nearby.
 
 Check the SCF and any outer iterations, look for a completed QuAcK timing line, and check that the requested method printed results. PyDuck launches the Fortran program as a child process, so its exit status alone is insufficient to establish that the calculation finished.
 

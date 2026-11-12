@@ -9,6 +9,8 @@ theme:
   navigation_depth: 2
 extra_css:
   - stylesheets/hf-green.css
+extra_javascript:
+  - javascripts/method-filter.js
 markdown_extensions:
   - tables
   - toc:
@@ -16,21 +18,19 @@ markdown_extensions:
 exclude_docs: |
   /methods.tsv
   /overrides/
+  /roadmap.md
+  /TDA_Faddeev_Parquet.md
 nav:
   - Home: index.md
   - Documentation: manual.md
   - Install and run: quickstart.md
   - Methods:
-      - Availability: generated/methods.md
+      - Method catalogue: generated/methods.md
       - Hartree–Fock and correlation: electronic-structure.md
       - Green's functions and response: greens-functions.md
-      - Single-shot GW–Parquet: gw-parquet.md
-      - Standalone Faddeev: faddeev.md
-      - Historical Faddeev–Parquet notes: TDA_Faddeev_Parquet.md
   - Reference:
       - Calculation inputs: input-guide.md
       - CLI and default files: generated/inputs.md
       - Fortran source index: generated/routines.md
-  - Development:
-      - Validation and documentation: development.md
-      - Proposed methods: roadmap.md
+  - Development: development.md
+  - Project: project.md

@@ -1,5 +1,7 @@
 # Standalone Faddeev
 
+**Experimental implementation.** FTDA and FRPA are research methods under development.
+
 Enable canonical `RHF` and one of `FTDA` or `FRPA` in `input/methods`. The standard restricted driver dispatches the standalone calculation. FTDA uses forward pair propagation. FRPA includes backward pair amplitudes. The physical charged spaces contain 2h1p and 2p1h configurations.
 
 Run the bundled small example with `python docs/examples/run.py ftda`.
@@ -45,19 +47,10 @@ questions. For a normalized eigenvector of the Hermitian upfolded matrix,
 the weight is the norm squared of its one-particle component. The Davidson
 example also reports the residual of the selected root in hartree.
 
-## After the Parquet separation
+## Frozen GW/BSE inputs
 
-Use `FTDA` or `FRPA` with the seven-field `# Faddeev:` record above.
-For frozen GW energies and BSE pair kernels, set `reference=1` and
-`pairs=1` in that same record. This runs through the standalone restricted
-Faddeev driver with shared GW/BSE block construction.
-
-The separate `# Parquet self-energy:` record now takes one value
-(`0` for native or `1` for ADC). When migrating an input, remove the old
-GWParquet–Faddeev records and move Faddeev coupling and solver settings to
-the standalone record. The standalone reader still takes the regularization
-controls from the common Parquet options row in this revision.
+Set `reference=1` and `pairs=1` in the Faddeev record to use frozen GW energies
+and BSE pair kernels. The standalone reader takes regularization controls from
+the common Parquet options row.
 
 For a reproducible comparison, report the reference energies, pair kernel, endpoint coupling, static correction, regularization, solver, and root count. When comparing different endpoints, keep the pair kernel and external one-particle block fixed.
-
-The [historical implementation notes](TDA_Faddeev_Parquet.md) describe the superseded Parquet integration.

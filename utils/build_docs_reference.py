@@ -58,54 +58,70 @@ def build_inputs(revision):
 
 def build_methods(revision):
     lines = [
-        "# Method availability",
+        "# Method catalogue",
         "",
         f"Source revision `{revision}`",
         "",
-        "**R** = RHF, **U** = UHF, **G** = GHF in the standard drivers. "
-        "**yes** marks an active source path and **—** marks an unavailable path. "
-        "**B path** refers to the separate Bogoliubov driver. "
-        "Source coverage and numerical validation are tracked separately.",
+        "R, U, G, and B denote the restricted, unrestricted, generalized, "
+        "and Bogoliubov drivers. **yes** marks an active implementation, "
+        "**path** a dedicated branch, **diag** a diagonal approximation, and **—** an unavailable path. "
+        "Availability describes driver coverage. Numerical validation is documented in "
+        "[Validation and documentation](../development.md).",
         "",
-        "| Method or flag | R | U | G | Scope | Source |",
-        "|---|---|---|---|---|---|",
+        '<div id="method-filter" hidden>',
+        '  <label for="method-search">Filter methods</label>',
+        '  <input type="search" id="method-search" placeholder="Method, flag, or family">',
+        '  <p id="method-search-status" role="status"></p>',
+        '</div>',
+        "",
+        "For response calculations enabled through `input/options`, see the "
+        "[BSE parent-method and channel table](../greens-functions.md#bse-availability).",
+        "",
     ]
+    guides = {
+        "Mean-field references": "../electronic-structure.md",
+        "Perturbation theory and coupled cluster": "../electronic-structure.md",
+        "Configuration interaction": "../electronic-structure.md",
+        "RPA and orbital optimization": "../greens-functions.md#response-options",
+        "GF2 and GF3": "../greens-functions.md#gf2-and-gf3",
+        "GW": "../greens-functions.md#single-shot-and-self-consistent-gw",
+        "T-matrix": "../greens-functions.md#t-matrix",
+        "Parquet": "../greens-functions.md#parquet",
+        "ADC and vertex corrections": "../greens-functions.md#adc-and-vertex-corrections",
+        "Experimental Faddeev": "../greens-functions.md#experimental-faddeev",
+    }
+    bogoliubov = {"HFB", "scGHF", "MP2", "phRPA", "BRPA", "scGF2", "scGW"}
     expected = {
         flag for line in (ROOT / "input/methods.default").read_text().splitlines()
         if line.startswith("#") for flag in line[1:].split()
     }
     covered = set()
+    families = {}
     with (ROOT / "docs/methods.tsv").open(newline="") as stream:
         for row in csv.DictReader(stream, delimiter="\t"):
-            flags = row["Method or input flag"].split(", ")
-            duplicates = covered.intersection(flags)
-            if duplicates:
-                raise ValueError(f"Duplicate method flags: {sorted(duplicates)}")
-            covered.update(flags)
-            labels = ", ".join(f"`{flag}`" for flag in flags)
-            source = source_link(row["Source"], revision)
-            lines.append(
-                f"| {labels} | {row['R']} | {row['U']} | {row['G']} | "
-                f"{row['Scope']} | {source} |"
-            )
+            for flag in row["Method or input flag"].split(", "):
+                if flag in covered:
+                    raise ValueError(f"Duplicate method flag: {flag}")
+                covered.add(flag)
+                source = source_link(row["Source"], revision)
+                r = "—" if row["R"] == "B path" else row["R"]
+                b = "B path" if flag in bogoliubov else "—"
+                families.setdefault(row["Family"], []).append(
+                    f"| `{flag}` | {r} | {row['U']} | {row['G']} | {b} | {row['Scope']} | {source} |"
+                )
     if covered != expected:
         raise ValueError(f"Missing flags: {sorted(expected - covered)}. "
                          f"Obsolete flags: {sorted(covered - expected)}.")
-    lines.extend([
-        "",
-        "### Other references",
-        "",
-        "ROHF uses the restricted driver. Its post-HF coverage must be checked "
-        "method by method. Complex RHF and UHF have dedicated response paths. "
-        "The Bogoliubov driver is selected with HFB or BRPA and has its own "
-        "branches for MP2, response, scGF2 and scGW.",
-        "",
-        "### Compatibility",
-        "",
-        "FTDA and FRPA use the [standalone workflow](../faddeev.md). "
-        "For pre-separation inputs see the "
-        "[historical implementation notes](../TDA_Faddeev_Parquet.md).",
-    ])
+    for family in (*guides, "Test and inactive flags"):
+        rows = families[family]
+        lines.extend([f"## {family}", ""])
+        if family in guides:
+            lines.extend([f"[Read the {family} guide]({guides[family]}).", ""])
+        lines.extend([
+            "| Method or flag | R | U | G | B | Scope | Source |",
+            "|---|---|---|---|---|---|---|",
+            *rows, "",
+        ])
     return "\n".join(lines)
 
 

@@ -44,3 +44,14 @@ h1, h2, h3, h4 {
     flex: none;
     border-radius: 0.3rem;
 }
+
+#method-filter { margin-block: 1rem; }
+#method-search {
+    display: block;
+    width: min(100%, 30rem);
+    padding: .4rem .6rem;
+    border: 1px solid var(--hf-green);
+    border-radius: .3rem;
+}
+#method-search-status { margin-top: .35rem; }
+[hidden] { display: none !important; }

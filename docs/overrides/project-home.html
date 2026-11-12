@@ -18,8 +18,9 @@
         QuAcK
       </a>
       <nav aria-label="Main navigation">
-        <a href="#methods">Methods</a>
+        <a href="{{ 'generated/methods.html'|url }}">Methods</a>
         <a href="{{ 'manual.html'|url }}">Documentation</a>
+        <a href="{{ 'project.html'|url }}">Project</a>
         <a href="{{ config.repo_url }}">GitHub</a>
       </nav>
     </div>
@@ -34,7 +35,7 @@
           <p class="lede">Explore and develop Green’s-function, coupled-cluster, and response methods for molecular systems.</p>
           <div class="hero-actions">
             <a class="button primary" href="{{ 'quickstart.html'|url }}">Get started <span aria-hidden="true">→</span></a>
-            <a class="button secondary" href="{{ 'manual.html'|url }}">Read the documentation</a>
+            <a class="button secondary" href="{{ 'generated/methods.html'|url }}">Browse methods</a>
           </div>
         </div>
         <img class="hero-image" src="{{ 'assets/quack-hero.webp'|url }}" width="720" height="720"
@@ -45,7 +46,7 @@
     <section class="container section" id="methods" aria-labelledby="methods-title">
       <div class="section-heading">
         <h2 id="methods-title">What you can calculate</h2>
-        <a class="text-link" href="{{ 'generated/methods.html'|url }}">Method availability →</a>
+        <a class="text-link" href="{{ 'generated/methods.html'|url }}">Method catalogue →</a>
       </div>
       <div class="method-list">
         <article>
@@ -55,7 +56,7 @@
         </article>
         <article>
           <h3>Ionization and attachment</h3>
-          <p>Compute quasiparticle energies and explore charged excitations with GW, ADC, and Faddeev methods.</p>
+          <p>Compute quasiparticle energies and explore charged excitations with single-shot and self-consistent GW, Green’s-function perturbation theory, and ADC.</p>
           <a class="text-link" href="{{ 'greens-functions.html'|url }}">Green’s functions →</a>
         </article>
         <article>
@@ -87,7 +88,7 @@
       <div>
         <p>QuAcK is developed at the Laboratoire de Chimie et Physique Quantiques in Toulouse. PyDuck prepares molecular integrals with PySCF and passes them to the Fortran drivers.</p>
         <ul class="project-links">
-          <li><a class="text-link" href="{{ config.repo_url }}#-contributors">Contributors</a></li>
+          <li><a class="text-link" href="{{ 'project.html'|url }}">Contributors, citation, and funding</a></li>
           <li><a class="text-link" href="{{ config.repo_url }}">Source code</a></li>
           <li><a class="text-link" href="{{ config.repo_url }}/issues">Issue tracker</a></li>
           <li><a class="text-link" href="{{ 'development.html'|url }}">Contributing</a></li>
