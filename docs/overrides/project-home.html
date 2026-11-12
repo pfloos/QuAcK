@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="QuAcK is an open-source Fortran program for developing and testing molecular electronic-structure methods.">
+  <link rel="canonical" href="{{ page.canonical_url }}">
+  <link rel="icon" type="image/png" href="{{ 'assets/quack-logo.png'|url }}">
+  <link rel="stylesheet" href="{{ 'stylesheets/project-home.css'|url }}">
+  <title>QuAcK | Molecular electronic structure</title>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="masthead">
+    <div class="container masthead-inner">
+      <a class="brand" href="{{ 'index.html'|url }}" aria-current="page">
+        <img src="{{ 'assets/quack-logo.png'|url }}" width="36" height="36" alt="">
+        QuAcK
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#methods">Methods</a>
+        <a href="{{ 'manual.html'|url }}">Documentation</a>
+        <a href="{{ config.repo_url }}">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <p class="project-name">QuAcK</p>
+          <h1 id="hero-title">An open-source laboratory for electronic-structure methods</h1>
+          <p class="lede">Explore and develop Green’s-function, coupled-cluster, and response methods for molecular systems.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="{{ 'quickstart.html'|url }}">Get started <span aria-hidden="true">→</span></a>
+            <a class="button secondary" href="{{ 'manual.html'|url }}">Read the documentation</a>
+          </div>
+        </div>
+        <img class="hero-image" src="{{ 'assets/quack-hero.webp'|url }}" width="720" height="720"
+             alt="The QuAcK duck at a computer terminal">
+      </div>
+    </section>
+
+    <section class="container section" id="methods" aria-labelledby="methods-title">
+      <div class="section-heading">
+        <h2 id="methods-title">What you can calculate</h2>
+        <a class="text-link" href="{{ 'generated/methods.html'|url }}">Method availability →</a>
+      </div>
+      <div class="method-list">
+        <article>
+          <h3>Ground-state energies</h3>
+          <p>Build a Hartree–Fock reference and explore electron correlation with perturbation theory and coupled-cluster methods.</p>
+          <a class="text-link" href="{{ 'electronic-structure.html'|url }}">Ground-state methods →</a>
+        </article>
+        <article>
+          <h3>Ionization and attachment</h3>
+          <p>Compute quasiparticle energies and explore charged excitations with GW, ADC, and Faddeev methods.</p>
+          <a class="text-link" href="{{ 'greens-functions.html'|url }}">Green’s functions →</a>
+        </article>
+        <article>
+          <h3>Electronic excitations</h3>
+          <p>Study electronic response with the random-phase approximation and Bethe–Salpeter methods.</p>
+          <a class="text-link" href="{{ 'greens-functions.html#response-options'|url }}">Response methods →</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="example-band" aria-labelledby="example-title">
+      <div class="container example-inner">
+        <div class="example-copy">
+          <h2 id="example-title">Ionizing H₂</h2>
+          <p>Run the standalone TDA Faddeev example at the bundled H₂ geometry with the 6-31G basis. The example prepares the inputs and prints the principal ionization potential and its pole weight.</p>
+          <pre><code>python docs/examples/run.py ftda</code></pre>
+          <a class="text-link" href="{{ 'quickstart.html'|url }}">Run and read the example →</a>
+        </div>
+        <figure class="spectrum">
+          <img src="{{ 'assets/h2-ftda-pole.png'|url }}" width="840" height="450" loading="lazy"
+               alt="Stick spectrum with the H₂ FTDA principal ionization pole at 13.8212 electronvolts and weight 0.9548.">
+          <figcaption>Principal FTDA ionization pole for H₂ at 1.235 Å. The Davidson example requests one root.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="container section project" aria-labelledby="project-title">
+      <h2 id="project-title">The project</h2>
+      <div>
+        <p>QuAcK is developed at the Laboratoire de Chimie et Physique Quantiques in Toulouse. PyDuck prepares molecular integrals with PySCF and passes them to the Fortran drivers.</p>
+        <ul class="project-links">
+          <li><a class="text-link" href="{{ config.repo_url }}#-contributors">Contributors</a></li>
+          <li><a class="text-link" href="{{ config.repo_url }}">Source code</a></li>
+          <li><a class="text-link" href="{{ config.repo_url }}/issues">Issue tracker</a></li>
+          <li><a class="text-link" href="{{ 'development.html'|url }}">Contributing</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>QuAcK · LCPQ, Toulouse</span>
+      <a href="{{ config.repo_url }}/blob/master/LICENSE">GPL-3.0 license</a>
+    </div>
+  </footer>
+</body>
+</html>
