@@ -42,6 +42,7 @@ img { display: block; max-width: 100%; height: auto; }
 .brand img { border-radius: .3rem; }
 nav { flex-wrap: wrap; column-gap: clamp(.75rem, 3vw, 2rem); }
 nav a { font-size: .92rem; text-decoration: none; }
+nav a[aria-current="page"] { color: var(--green); font-weight: 700; }
 nav a:hover, .text-link:hover { text-decoration-thickness: 2px; text-decoration-line: underline; }
 
 .hero { background: var(--deep); color: var(--paper); }
@@ -84,6 +85,28 @@ figcaption { color: var(--muted); font-size: .85rem; padding-inline: .45rem; }
 .project-links { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; padding: 0; margin: 1rem 0 0; list-style: none; }
 .footer { border-top: 1px solid var(--rule); color: var(--muted); font-size: .86rem; }
 .footer-inner { min-height: 64px; flex-wrap: wrap; }
+
+.project-intro { padding-block: clamp(2.25rem, 5vw, 3.75rem); }
+.project-intro h1 { margin: 0; color: var(--deep); }
+.project-intro p { margin-top: .75rem; color: var(--muted); }
+.project-intro p a, .project-band a { color: var(--green); }
+.project-section { padding-block: clamp(2rem, 5vw, 4rem); }
+.project-band { background: var(--pale); border-block: 1px solid var(--rule); }
+.project-citation { max-width: 68ch; margin-top: .7rem; color: var(--muted); }
+.contributors-list, .support-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    gap: .85rem 1.4rem;
+    list-style: none;
+    padding: 0;
+    margin: 1.4rem 0 0;
+}
+.contributors-list a { color: var(--green); font-weight: 650; }
+.support-list { max-width: 38rem; }
+.support-list li { padding: 1rem; background: white; border: 1px solid var(--rule); border-radius: .5rem; }
+.support-list img { max-width: 120px; height: 48px; object-fit: contain; object-position: left; margin-bottom: .75rem; }
+.support-list h3 { font: 650 1rem/1.4 system-ui, sans-serif; margin-bottom: .45rem; }
+.support-list p { color: var(--muted); font-size: .9rem; }
 
 @media (max-width: 740px) {
     .hero-inner, .example-inner, .project { grid-template-columns: 1fr; }

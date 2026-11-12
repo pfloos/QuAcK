@@ -3,30 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="QuAcK is an open-source Fortran program for developing and testing molecular electronic-structure methods.">
+  <meta name="description" content="{% block description %}QuAcK is an open-source Fortran program for developing and testing molecular electronic-structure methods.{% endblock %}">
   <link rel="canonical" href="{{ page.canonical_url }}">
   <link rel="icon" type="image/png" href="{{ 'assets/quack-logo.png'|url }}">
   <link rel="stylesheet" href="{{ 'stylesheets/project-home.css'|url }}">
-  <title>QuAcK | Molecular electronic structure</title>
+  <title>{% block title %}QuAcK | Molecular electronic structure{% endblock %}</title>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header class="masthead">
     <div class="container masthead-inner">
-      <a class="brand" href="{{ 'index.html'|url }}" aria-current="page">
+      <a class="brand" href="{{ 'index.html'|url }}"{% if page.is_homepage %} aria-current="page"{% endif %}>
         <img src="{{ 'assets/quack-logo.png'|url }}" width="36" height="36" alt="">
         QuAcK
       </a>
       <nav aria-label="Main navigation">
         <a href="{{ 'generated/methods.html'|url }}">Methods</a>
         <a href="{{ 'manual.html'|url }}">Documentation</a>
-        <a href="{{ 'project.html'|url }}">Project</a>
+        <a href="{{ 'project.html'|url }}"{% if page.url == 'project.html' %} aria-current="page"{% endif %}>Project</a>
         <a href="{{ config.repo_url }}">GitHub</a>
       </nav>
     </div>
   </header>
 
   <main id="main">
+    {% block project_content %}
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-inner">
         <div class="hero-copy">
@@ -95,6 +96,7 @@
         </ul>
       </div>
     </section>
+    {% endblock %}
   </main>
 
   <footer class="footer">
