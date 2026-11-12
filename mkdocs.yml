@@ -18,6 +18,7 @@ exclude_docs: |
   /overrides/
 nav:
   - Home: index.md
+  - Documentation: manual.md
   - Install and run: quickstart.md
   - Methods:
       - Availability: generated/methods.md

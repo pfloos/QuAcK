@@ -71,7 +71,7 @@ cd src; make
 
 ## ⚡ Quick Start
 
-See the [QuAcK manual](https://pfloos.github.io/QuAcK/) for the method availability table, the PyDuck command line, and the input reference.
+See the [QuAcK manual](https://pfloos.github.io/QuAcK/manual.html) for the method availability table, the PyDuck command line, and the input reference.
 The [quickstart](docs/quickstart.md) shows how to run RHF, GW, and standalone FTDA.
 
 

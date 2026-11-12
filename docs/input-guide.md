@@ -11,7 +11,7 @@ The [generated input reference](generated/inputs.md) shows the exact templates a
 | `input/molecule` | PyDuck | Electron counts and molecular data for the Fortran driver |
 | `int/` | PyDuck | Nuclear repulsion, one-electron integrals, and electron-repulsion integrals |
 
-The Fortran readers interpret the main input records by position. Keep the template order and retain the header lines. Some optional records are recognized by their headers. A header can describe a flag even when a particular driver has no solver for it.
+The Fortran readers interpret the main input records by position. Keep the template order and retain the header lines. Some optional records are recognized by their headers. The methods template lists standalone `FTDA` and `FRPA` above the test flags. Older files can keep that row below the test flags or omit it. A header can describe a flag even when a particular driver has no solver for it.
 
 ## Common choices
 
