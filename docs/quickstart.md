@@ -56,3 +56,17 @@ the local examples give the following values.
 - Standalone Faddeev in Davidson mode prints the IP, signed pole, one-particle weight, and residual. Compare the weights as well as the energies when more than one root is nearby.
 
 Check the SCF and any outer iterations, look for a completed QuAcK timing line, and check that the requested method printed results. PyDuck launches the Fortran program as a child process, so its exit status alone is insufficient to establish that the calculation finished.
+
+## Ionize water
+
+Run `python docs/examples/run.py water-ftda` from the repository root.
+The runner uses `mol/water.xyz` and the 6-31G basis and requests four
+Davidson roots. The sticks show the selected valence ionization energies
+and their one-particle weights.
+
+| Root | IP (eV) | Pole weight |
+|---|---:|---:|
+| 1 | 12.22 | 0.9424 |
+| 2 | 14.18 | 0.9434 |
+| 3 | 18.93 | 0.9530 |
+| 4 | 34.27 | 0.5545 |

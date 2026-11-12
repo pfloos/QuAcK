@@ -74,3 +74,4 @@ jobs:
         python docs/examples/run.py rhf
         python docs/examples/run.py g0w0
         python docs/examples/run.py ftda
+        python docs/examples/run.py water-ftda

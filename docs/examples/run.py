@@ -15,6 +15,7 @@ EXAMPLES = {
     "rhf": {"RHF"},
     "g0w0": {"RHF", "G0W0"},
     "ftda": {"RHF", "FTDA"},
+    "water-ftda": {"RHF", "FTDA"},
 }
 
 
@@ -39,6 +40,16 @@ def check_result(example, output):
         "g0w0": r"G0W0@RHF HOMO\s+energy\s*=\s*(\S+)",
         "ftda": r"1p weight Z, residual \(Ha\)\s*\n\s*1\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)",
     }
+    if example == "water-ftda":
+        _, found, table = output.partition("1p weight Z, residual (Ha)")
+        rows = [line.split() for line in table.splitlines()[1:5]]
+        if not found or len(rows) != 4 or any(
+            len(row) != 5 or row[0] != str(index)
+            or not all(math.isfinite(float(value)) for value in row[1:])
+            for index, row in enumerate(rows, 1)
+        ):
+            raise ValueError("Expected four finite FTDA roots for water")
+        return
     match = re.search(expressions[example], output)
     if match is None:
         raise ValueError(f"No result found for {example}")
@@ -50,13 +61,22 @@ def run(example, directory, installation):
     (directory / "input").mkdir()
     (directory / "mol").mkdir()
     write_methods(directory / "input/methods", EXAMPLES[example])
-    shutil.copyfile(ROOT / "input/options.default", directory / "input/options")
-    shutil.copyfile(ROOT / "mol/H2.xyz", directory / "mol/H2.xyz")
+    options = (ROOT / "input/options.default").read_text()
+    molecule = "water" if example == "water-ftda" else "H2"
+    if example == "water-ftda":
+        options, count = re.subn(
+            r"(^# Faddeev:[^\n]*\n[^\n]*?)[0-9]+[ \t]*$", r"\g<1>4", options, flags=re.M
+        )
+        if count != 1:
+            raise ValueError("Expected one standalone Faddeev options record")
+    (directory / "input/options").write_text(options)
+    geometry = f"mol/{molecule}.xyz"
+    shutil.copyfile(ROOT / geometry, directory / geometry)
     env = dict(os.environ, QUACK_ROOT=str(installation))
     result = subprocess.run(
         [
             sys.executable, str(ROOT / "PyDuck.py"), "--working_dir", str(directory),
-            "-x", "H2", "-b", str(ROOT / "basis/6-31g"), "--no_cap",
+            "-x", molecule, "-b", str(ROOT / "basis/6-31g"), "--no_cap",
         ],
         cwd=directory, env=env, text=True, stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
