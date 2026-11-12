@@ -13,6 +13,7 @@ subroutine read_options(working_dir,                                            
                         temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                         TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                         reg_1b,reg_2b,reg_PA,                                                                &
+                  parquet_method,doevParquet,doGWParquet, &
                         do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                         eweight,eforward)
 
@@ -117,6 +118,9 @@ subroutine read_options(working_dir,                                            
   double precision,intent(out)  :: reg_1b,reg_2b
   logical,intent(out)           :: lin_parquet,reg_PA
 
+  integer,intent(out) :: parquet_method
+  logical,intent(in) :: doevParquet,doGWParquet
+
   logical,intent(out)           :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(out)  :: eta_ADC
 
@@ -127,7 +131,7 @@ subroutine read_options(working_dir,                                            
 
   character(len=1)              :: ans1,ans2,ans3,ans4,ans5,ans6,ans7,ans8
   integer                       :: status
-  character(len=256)            :: file_path
+  character(len=256)            :: file_path,option_line
 
 ! Open file with method specification
 
@@ -380,6 +384,33 @@ subroutine read_options(working_dir,                                            
 
       if(ans1 == 'T') eforward = .true.
  
+      ! Optional trailing section for evParquet self-energy selection.
+      parquet_method = 0
+      do
+        read(1,'(A)',iostat=status) option_line
+        if(status < 0) exit
+        if(status /= 0) error stop 'Error reading Parquet self-energy options'
+        if(doGWParquet.and.(index(adjustl(option_line),'# GWParquet Faddeev:')==1.or. &
+                           index(adjustl(option_line),'# GWParquet Faddeev external GW:')==1)) then
+          read(1,'(A)',iostat=status) option_line
+          if(status/=0) error stop 'Missing value for retired GWParquet option'
+          read(option_line,*,iostat=status) ans1
+          if(status/=0) error stop 'Invalid value for retired GWParquet option'
+          if(ans1=='T') error stop 'GW/BSE Faddeev moved to standalone FTDA/FRPA. Set reference=1 and pairs=1.'
+          cycle
+        end if
+        if(index(adjustl(option_line),'# Parquet self-energy:')/=1) cycle
+        read(1,'(A)',iostat=status) option_line
+        if(status/=0) error stop 'Missing Parquet self-energy option'
+        read(option_line,*,iostat=status) parquet_method
+        if(status/=0) error stop 'Expected a Parquet self-energy method'
+        if(parquet_method==2.or.parquet_method==3) then
+          if(doevParquet) error stop 'Faddeev moved to standalone FTDA/FRPA. Disable evParquet and use the Faddeev row.'
+          parquet_method=0
+        end if
+        if(parquet_method<0.or.parquet_method>1) error stop 'Parquet method must be 0 (native) or 1 (ADC)'
+      end do
+
     endif
 
   ! Close file with options

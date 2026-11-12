@@ -1,5 +1,7 @@
 # TDA Faddeev-Parquet with ADC(2) or ADC(3) external couplings
 
+**Archive.** The inputs and driver calls below apply to revisions before `63ca470b`. Use the [standalone Faddeev guide](faddeev.md) for the current driver and input format.
+
 Both restricted (`R_TDA_Faddeev_self_energy`) and generalized
 (`G_TDA_Faddeev_self_energy`) routines are available in `src/Parquet`.
 They implement the complete-TDA physical reduction in
@@ -17,33 +19,22 @@ Build QuAcK normally. In the calculation's `input` directory use:
   `tests/inp/methods.GTDAFaddeev` for GHF;
 - `tests/inp/options.TDAFaddeev` as `options`.
 
-The self-energy is selected by the hard-coded settings near the
-start of `src/Parquet/R_evParquet.f90` and `src/Parquet/G_evParquet.f90`,
-just like the previous ADC-Parquet switch:
+Append this optional section at the end of the calculation's `input/options`:
 
-```fortran
-logical :: do_ADC_self_energy = .false.
-logical :: do_Faddeev_self_energy = .true.
-logical :: do_Faddeev_ADC2 = .false.
-logical :: do_Faddeev_dressed = .false.
-logical :: do_principal_IP = .true.
-integer :: n_IP_roots = 1
+```text
+# Parquet self-energy: method(0=native,1=ADC,2=Faddeev) coupling(0=default,2=ADC2,3=ADC3,4=dressed) Davidson n_IP_roots
+2 3 T 4
 ```
 
-`do_Faddeev_ADC2=.true.` selects ADC(2) external coupling blocks in both
-the full-spectrum and matrix-free Davidson solvers, for both R and G.
-The default `.false.` retains ADC(3). The switch changes only the external
-vertices: the HF one-particle block and dressed Faddeev charged blocks stay
-the same. It therefore does not turn the entire model into ordinary ADC(2).
-ADC(2) endpoints require no MP2 amplitudes or denominators; endpoint SRG
-regularization has no effect on them.
+Use method `0` for native Parquet, `1` for ADC-Parquet, or `2` for
+Faddeev. The Faddeev coupling codes are `2` for ADC(2), `3` for ADC(3),
+and `4` for dressed. Davidson takes `T` or `F` (dense). The final integer
+is the Davidson root count. Place the header directly after the preceding
+option row and put the values on the next line.
 
-`do_Faddeev_dressed=.true.` selects the proposed static dressed source
-couplings in both solvers and both spin representations. Keep
-`do_Faddeev_ADC2=.false.`; selecting both is rejected. The default
-`do_Faddeev_dressed=.false.` retains the existing ADC(3) couplings.
-This option is a one-sided source approximation. Its equivalence to the
-native parquet self-energy beyond third order has not been established.
+Use `2 4 T 4` for the corresponding dressed calculation. Omitting the
+section, or using `2 0 T 1`, retains the previous defaults of dressed
+couplings for R and ADC(3) couplings for G.
 
 The source matrices are the occupation-changing eh and pp kernels (`Bph`
 and `Bpp`, including the bare interaction). They are evaluated separately
@@ -88,15 +79,16 @@ Clebsch-Gordan transformations. Empty triplet pair sectors are supported.
 The matrix-free principal-IP mode is enabled by default in both drivers.
 Set `n_IP_roots` to the number of IP eigenpairs wanted, for example `5`,
 in either driver. This setting is used only in Davidson mode.
-Set `do_principal_IP=.false.` for the full spectrum. Rebuild QuAcK after
-changing these switches, then launch PyDuck or QuAcK normally.
+Set Davidson to `F` for the full spectrum. Launch PyDuck or QuAcK normally after editing the input.
 
 Both `TDAeh` and `TDApp` must be `T`; the driver rejects other values.
 The method uses the existing `evParquet` switch and its pair iterations,
 convergence thresholds, and DIIS settings. The supplied example requests
 one one-body evaluation and up to 64 pair iterations. With `max_it_2b=1`
-at the HF reference the kernels are bare, giving the ordinary ADC(3)
-limit. A dressed-parquet test requires further pair iterations and checking
+at the HF reference the pair kernels are bare. With ADC(3) couplings
+and endpoint regularization disabled this gives the ordinary ADC(3) limit.
+For a bare-kernel comparison use `max_it_2b=1` in both runs. The
+`dressed` couplings still use the TDA pair modes from that single iteration. A dressed-parquet test requires further pair iterations and checking
 the reported pair convergence. Fixed unconverged snapshots can differ
 between R and G when DIIS uses different residual metrics; compare fixed
 snapshots with `max_diis_2b=1`.
@@ -107,11 +99,7 @@ energy array into one-body self-consistency. Pair iterations are unchanged.
 In full-spectrum mode, more than one one-body iteration feeds all dominant
 poles into the existing eigenvalue-self-consistent parquet loop.
 
-To select the previous ADC-Parquet self-energy, set
-`do_ADC_self_energy=.true.` and `do_Faddeev_self_energy=.false.`.
-Set both to `.false.` for the native parquet self-energy. Setting both to
-`.true.` is rejected. These switches apply to the R/G `evParquet` drivers,
-not `qsParquet` or `R_GW_Parquet`.
+These options apply to the R/G `evParquet` drivers.
 
 ## Matrix-free IP roots
 
@@ -259,9 +247,50 @@ python tests/check_tda_faddeev.py --workdir /tmp/new-algebraic-checks
 
 Build QuAcK first; the check requires NumPy and gfortran. Set `FC` and
 `LAPACK_LIBS` if necessary. The full-spectrum molecular test script requires
-PySCF and a build with `do_principal_IP=.false.` in both drivers. It runs
+PySCF and selects the dense solver in the input file. It runs
 H2O/6-31G and H2/STO-3G, with logs retained:
 
 ```sh
 python tests/check_tda_faddeev_molecules.py --workdir /tmp/new-molecular-checks
 ```
+
+## Frozen GW energies and BSE pair kernels
+
+The restricted `GWParquet` driver can run TDA Faddeev by setting its method
+switch to `T` and appending this optional record to `input/options`.
+
+```text
+# GWParquet Faddeev: use TDA Faddeev with frozen GW energies and BSE kernels
+T
+```
+
+The default is `F`, which selects the existing native GW-Parquet calculation.
+With this flag enabled, `TDAeh` and `TDApp` must both be `T`. The existing
+`Parquet self-energy` record selects the coupling (2, 3, or 4), dense versus
+Davidson solution, and the number of IP roots. Coupling 0 uses dressed sources,
+as in the restricted evParquet driver.
+
+The one-body block uses HF energies. Frozen G0W0 energies enter the free charged
+configuration energies, BSE gaps, ADC(3)-form denominators, and dressed source
+equations. The pair interactions are the singlet/triplet eh and pp/hh BSE
+matrices with their GW free pair energies removed. G0W0 and the BSE kernels use
+the same W0 response constructed from HF. W0 can use full RPA even when the
+Faddeev pair propagation uses TDA.
+
+The optional third-order static correction retains its canonical HF density
+expansion. It is added once to the external block. The external one-body diagonal defaults to HF. Set the following optional
+record to `T` to use the frozen GW quasiparticle energies in that diagonal.
+
+```text
+# GWParquet Faddeev external GW: use frozen GW energies in the one-body block
+T
+```
+
+This option directly replaces the HF diagonal. The Faddeev self-energy is
+then applied on top of those GW energies, without a GW subtraction. Full-spectrum mode returns orbital energies and weights;
+Davidson mode reports the IP roots and HF assignments in its printed tables.
+
+Run `python tests/check_gw_faddeev.py --workdir /tmp/new-gw-ftda-checks` after
+building QuAcK. It compares dense and Davidson results for all five coupling
+and static-correction combinations on STO-3G water and H2, and checks the pp
+chemical-potential convention and the required TDA options.

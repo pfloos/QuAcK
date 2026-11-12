@@ -19,7 +19,7 @@ program QuAcK
   logical                       :: docG0W0,docG0F2,doscGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
-  logical                       :: doevParquet,doqsParquet,doGWParquet
+  logical                       :: doevParquet,doqsParquet,doGWParquet,doFTDA,doFRPA
   logical                       :: do_IPEA_ADC2,do_IPEA_ADC3
   logical                       :: do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2
   logical                       :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2
@@ -120,11 +120,13 @@ program QuAcK
   double precision              :: reg_1b,reg_2b 
   logical                       :: lin_parquet, reg_PA
    
+  integer :: parquet_method
+
   logical                       :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision              :: eta_ADC
 
   character(len=256)            :: working_dir
-  character(len=100)            :: sha
+  character(len=100)            :: version,sha
   integer                       :: ios
   character(len=256)            :: line
 
@@ -167,17 +169,21 @@ program QuAcK
   write(*,*) '  Abdallah Ammar'
   write(*,*) '  Mauricio Rodriguez-Mayorga'
   write(*,*) '  Loris Burth'
+  write(*,*) '  Clotilde Marut'
+  write(*,*) '  Arjan Berger (arjanberger10)'
+  write(*,*) '  Radovan Bast'
   write(*,*) '============================================================'
   write(*,*) ' QuAcK repository: https://github.com/pfloos/QuAcK'
   write(*,*) ' License: GPLv3 or later'
   write(*,*) '============================================================'
   write(*,*)   
 
-  call gitversion(sha)
+  call gitversion(version,sha)
 
   write(*,*) '============================================================'
   write(*,*) '                       QuAcK Build Info                     '
   write(*,*) '============================================================'
+  write(*,*) '  Version  : ', trim(version)
   write(*,*) '  Git SHA  : ', trim(sha)
   write(*,*) '============================================================'
   write(*,*)
@@ -206,7 +212,7 @@ program QuAcK
                     doscGW,doscGF2,                                               &
                     doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,                        &
                     doG0T0eh,doevGTeh,doqsGTeh,                                   &
-                    doevParquet,doqsParquet,doGWParquet,                          &
+                    doevParquet,doqsParquet,doGWParquet,doFTDA,doFRPA,                          &
                     do_IPEA_ADC2,do_IPEA_ADC3,                                    & 
                     do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                        & 
                     do_ADC_GW,do_ADC_2SOSEX,                                      &
@@ -255,6 +261,7 @@ program QuAcK
                     temperature,sigma,chem_pot_hf,restart_hfb,error_P,                                   &
                     TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet, &
                     reg_1b,reg_2b,reg_PA,                                                                &
+                  parquet_method,doevParquet,doGWParquet, &
                     do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC,                                &
                     eweight,eforward)
 
@@ -394,6 +401,13 @@ program QuAcK
       error stop 'GW-Parquet requires RHF and the standard restricted driver'
   end if
 
+  if(doGWParquet.and.(doFTDA.or.doFRPA)) &
+    error stop 'Select either GWParquet or standalone FTDA/FRPA in input/methods'
+  if(doFTDA.or.doFRPA) then
+    if(.not.doRHF.or.docRHF.or.doROHF.or.doeRHF.or.doOO.or.switch_hpc) &
+      error stop 'Standalone Faddeev requires the standard canonical RHF driver'
+  end if
+
 !-----------------!
 ! Initialize Test !
 !-----------------!
@@ -425,7 +439,8 @@ program QuAcK
                   doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                                            &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doG0W0,doevGW,doqsGW,                                     &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet,     &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet, &
+                  doFTDA,doFRPA, &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          &
@@ -440,6 +455,7 @@ program QuAcK
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   &
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
+                  parquet_method, &
                   nfreqs,ntimes,wcoord,wweight,                                                                             &
                   do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
     endif
@@ -484,6 +500,7 @@ program QuAcK
                 dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                        &
                 TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,     &
                 reg_1b,reg_2b,reg_PA,                                                                    &
+                  parquet_method, &
                 do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)
 
 !-------------------------!

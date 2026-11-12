@@ -12,6 +12,8 @@
 
 ---
 
+The latest stable release is [QuAcK v1.0](https://github.com/pfloos/QuAcK/releases/tag/v1.0). See the [changelog](CHANGELOG.md) for changes since the 0.9 prerelease.
+
 ## 👥 Contributors
 
 - [Pierre-Francois Loos](https://pfloos.github.io/WEB_LOOS)
@@ -21,6 +23,8 @@
 - [Abdallah Ammar](https://scholar.google.com/citations?user=y437T5sAAAAJ&hl=en)
 - [Mauricio Rodriguez-Mayorga](https://scholar.google.com/citations?user=OLGOgQgAAAAJ&hl=es)
 - [Loris Burth](https://github.com/lburth)
+
+This list includes contributors credited in the project and people identified in the [commit history](https://github.com/pfloos/QuAcK/commits/v1.0/).
 
 ---
 
@@ -47,186 +51,43 @@ For beginners in the field or those with less programming experience, we recomme
 
 ## 🛠️ Installation
 
-The QuAcK software can be downloaded on GitHub as a Git repository
-```
-git clone https://github.com/pfloos/QuAcK.git
-```
+Install the compilers, build tools, and libraries listed in the [v1.0 quickstart](https://github.com/pfloos/QuAcK/blob/v1.0/docs/quickstart.md). Clone into a path without spaces.
 
-Then, one must define the variable `QUACK_ROOT`. For example, 
-```
-export QUACK_ROOT=$HOME/Work/QuAcK
-```
-You must also install [PySCF](https://pyscf.org) (for example using `pip`)
-```
-pip install pyscf
-```
-
-PySCF is used for the computation of one- and two-electron integrals (mainly) which are dumped in files and read by QuAcK.
-Therefore, it is very easy to use other software to compute the integrals or to add other types of integrals.
-
-Then, go to the `src` directory and compile
-```
-cd src; make
+```bash
+git clone --branch v1.0 https://github.com/pfloos/QuAcK.git
+cd QuAcK
+export QUACK_ROOT="$PWD"
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install pyscf
+make -C src
 ```
 
 ## ⚡ Quick Start
 
-<!-- BEGIN pyduck_help -->
-```
-~ 💩 % cd $QUACK_ROOT
-QuAcK 💩 % python PyDuck.py -h
-usage: PyDuck.py [-h] [--working_dir WORKING_DIR] -b BASIS -x XYZ [--bohr]
-                 [--cartesian] [-c CHARGE] [-m MULTIPLICITY] [--print_2e]
-                 [--formatted_2e] [--mmap_2e] [--aosym_2e] [-nc] [-dm]
+See the [QuAcK manual](https://pfloos.github.io/QuAcK/manual.html) for the method availability table, the PyDuck command line, and the input reference.
+The [quickstart](docs/quickstart.md) shows how to run RHF, GW, and standalone FTDA.
 
-This script is the main script of QuAcK, it is used to run the calculation. If
-$QUACK_ROOT is not set, $QUACK_ROOT is replaced by the current directory.
 
-options:
-  -h, --help            show this help message and exit
+Run the water ionization example from the repository root.
 
-Input files:
-  --working_dir WORKING_DIR
-                        Set a working directory to run the calculation.
-                        Default is $QUACK_ROOT, if set, otherwise the current
-                        working directory (./)
-  -b BASIS, --basis BASIS
-                        Name or path of the file containing the basis set
-                        information. If the argument is not a filepath QuAcK
-                        searches in WORKING_DIR/basis for a file matching the
-                        argument.
-  -x XYZ, --xyz XYZ     Name of the file containing the nuclear coordinates in
-                        xyz format in the WORKING_DIR/mol/ directory without
-                        the .xyz extension.
-
-Input format:
-  --bohr                By default QuAcK assumes that the xyz files are in
-                        Angstrom. Add this argument if your xyz file is in
-                        Bohr.
-  --cartesian           Add this option if you want to use cartesian basis
-                        functions.
-
-Molecule:
-  -c CHARGE, --charge CHARGE
-                        Total charge of the molecule. Specify negative charges
-                        with "m" instead of the minus sign, for example m1
-                        instead of -1. Default is 0.
-  -m MULTIPLICITY, --multiplicity MULTIPLICITY
-                        Spin multiplicity. Default is 1 (singlet).
-
-Electron integrals:
-  --print_2e            If True, print ERIs to disk.
-  --formatted_2e        Add this option if you want to print formatted ERIs.
-  --mmap_2e             If True, avoid using DRAM when generating ERIs.
-  --aosym_2e            If True, use 8-fold symmetry in ERIs.
-  -nc, --no_cap         If true, no CAP integrals are calculated and stored.If
-                        the python module pyopencap is not available, this is
-                        set automatically true.
-
-Molecular orbitals:
-  -dm, --dump_molden    Dump a molden file with the molecular orbitals. If
-                        this is true WriteMOs in the QuAcK options is
-                        automatically set to true an the molecular orbitals
-                        are dumbed.
-```
-<!-- END pyduck_help -->
-
-The two most important files are:
-- `$QUACK_ROOT/input/methods` that gathers the methods you want to use.
-- `$QUACK_ROOT/input/options` that gathers the different options associated these methods.
-
-Copy the files `methods.default` and `options.default` to `methods` and `options`, respectively.
-```
-cp $QUACK_ROOT/input/methods.default $QUACK_ROOT/input/methods
-cp $QUACK_ROOT/input/options.default $QUACK_ROOT/input/options
-```
-You can then edit these files to run the methods you'd like (by replacing `F` with `T`) with specific options.
-These files look like this
-<!-- BEGIN methods -->
-```
-QuAcK 💩 % cat input/methods
-# RHF UHF GHF ROHF HFB cRHF cUHF eRHF scGHF
-  F   F   F   F    F   F    F	 F    F
-# MP2 MP3
-  F   F
-# CCD pCCD DCD CCSD CCSD(T)
-  F   F    F   F    F
-# drCCD rCCD crCCD lCCD
-  F     F    F     F
-# CIS CIS(D) CID CISD FCI
-  F   F      F   F    F
-# phRPA phRPAx crRPA ppRPA BRPA
-  F     F      F     F     F   
-# OORPA
-  F
-# G0F2 evGF2 qsGF2 G0F3 evGF3 psdG0F3 scGF2
-  F    F     F     F    F     F     F
-# G0W0 evGW qsGW scGW
-  F    F    F    F
-# G0T0pp evGTpp qsGTpp ufG0T0pp
-  F      F        F       F
-# G0T0eh evGTeh qsGTeh
-  F      F      F
-# evParquet qsParquet GWParquet
-  F         F
-# IPEA-ADC2 IPEA-ADC3 SOSEX 2SOSEX G3W2 psdG3W2
-  F         F         F     F      F    F
-# ADC-GW ADC-2SOSEX ADC(3)-G3W2 ADC(3x)-G3W2 ADC-G3W2
-  F      F          F           F            F
-# Rtest Utest Gtest
-  F     F     F
-```
-<!-- END methods -->
-and
-<!-- BEGIN options -->
-```
-QuAcK 💩 % cat input/options
-# HF: maxSCF thresh  DIIS guess mix shift stab search aordm readFCIDUMP MOM WriteMOs
-      256    0.0000001 5    1   0.0  0.0   F     F      F      F         F    F
-# MP: reg
-      F
-# CC: maxSCF thresh  DIIS
-      64     0.00001 5
-# spin: TDA singlet triplet
-        F   T       T
-# RPA/MP2: CVS-Alpha CVS-Beta  FC-Alpha FC-Beta
-               0         0          0      0
-# OORPA:  maxIter thresh  dRPA state diagHess
-          256     0.00001 T    0     T    
-# GF: maxSCF thresh  DIIS lin eta renorm reg linDM restart_scGF2 verbose_scGF2
-      256    0.00001 5    F   0.0 0      F   F     F		 F
-# GW: maxSCF thresh  DIIS lin eta TDA_W reg nfreqs shift linDM restart_scGW verbose_scGW adjust_mu_scGW change_sign_XoB
-      256    0.00001 5    F   0.0 F     F   1      0.0   F     F            F            F              F
-# GT: maxSCF thresh  DIIS lin eta TDA_T reg linDM
-      256    0.00001 5    F   0.0 F     F   F
-# ACFDT: AC Kx  XBS
-         F  F   F
-# BSE: phBSE phBSE2 ppBSE dBSE dTDA
-       F     F      F     F    F
-# HFB: temperature  sigma chem_pot_HF restart_HFB error_P
-         0.05       1.0   F           F		  F
-# Parquet: TDAeh TDApp max_it_1b conv_1b max_it_2b conv_2b max_diis_1b max_diis_2b lin_parquet reg_1b reg_2b reg_PA
-            T     T        1      0.01     1         0.01      1            1          F       1000.0 1000.0 T
-# ADC: dyson diag_approx sig_inf lin reg eta
-       T     F           F       F   F   0.0
-# Ensemble: weight_N  N+1[for N-1 use F]
-	    0.00000   T
-
-```
-<!-- END options -->
-
-For example, if you want to run a calculation on water using the cc-pvdz basis set:
-```
-QuAcK 💩 % python PyDuck.py -x water -b cc-pvdz
+```bash
+python docs/examples/run.py water-gw
 ```
 
-QuAcK runs calculations in the `QUACK_ROOT` directory which is quite unusual but it also use the `--working_dir` option to run calculations elsewhere.
+## How to cite QuAcK
+
+Cite the version used in your work. For this release, use the citation below or export BibTeX or APA from GitHub’s **Cite this repository** menu. The machine-readable citation is in [`CITATION.cff`](CITATION.cff).
+
+> Loos, P.-F. (2026). *QuAcK: A software for emerging quantum electronic structure methods* (Version 1.0) [Computer software]. GitHub. https://github.com/pfloos/QuAcK/releases/tag/v1.0
+
+For a development build, record the Git commit printed in the calculation output. Cite the relevant method papers when reporting method-specific results.
 
 ---
 
 ## 📄 License
 
-QuAcK is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html).
+QuAcK is distributed under the GNU General Public License, version 3 or later, as stated in the program banner. See [LICENSE](LICENSE) for the GPL v3 text.
 
 ---
 
@@ -244,77 +105,4 @@ QuAcK is supported by the [PTEROSOR](https://lcpq.github.io/PTEROSOR/) project t
 
 ---
 
-
-## Single-shot GW-Parquet (restricted RHF)
-
-Set the third parquet method switch in `input/methods`:
-
-```text
-# evParquet qsParquet GWParquet
-  F         F         T
-```
-
-Old two-switch parquet records remain valid and leave GW-Parquet disabled.
-Select RHF. `R_GW_Parquet.f90` runs its own G0W0 calculation, then static
-singlet/triplet ehBSE@G0W0 and ppBSE@G0W0. A separately enabled G0W0 switch
-does not duplicate that G0W0 calculation. The BSE and internal parquet
-energies are frozen at G0W0; no parquet iteration or ADC completion is used.
-Both BSE kernels use the same HF dRPA W0, as in the existing G0W0 BSE drivers.
-Their external spectral couplings use that same static GW kernel, not a
-subsequent parquet update of the irreducible vertices.
-
-The existing GW `lin`, `eta`, `TDA_W`, and `reg` options control the initial
-G0W0 calculation. Its density-matrix correction and optional dynamic BSE or
-ACFDT calculations are not part of this workflow. The singlet/triplet BSE
-channels needed by native restricted parquet are always included.
-
-In the existing Parquet options record:
-
-- `TDAeh` and `TDApp` independently select TDA in the two BSE problems.
-- `lin_parquet=T` gives `ePA=eGW+ZPA*(eHF+SigmaPA(eGW)-eGW)`.
-- `lin_parquet=F` solves the same frozen-input Dyson equation by a damped
-  root search. This does not update any input energy, kernel, or response.
-- `reg_PA=T` applies SRG regularization: `reg_1b` is the flow in the native
-  self-energy denominators; `reg_2b` is the flow on the common W0 screening
-  modes entering both static BSE kernels and their external couplings.
-  Both flows must be positive. Large flows approach the unregularized result.
-- `reg_PA=F` disables these parquet SRG factors. GW broadening `eta` and
-  the initial GW SRG setting remain independent.
-- The parquet iteration counts, convergence tolerances, and DIIS lengths
-  have no effect on this single-shot method.
-
-The native denominator-safe self-energy is evaluated at the GW expansion
-point (or the final Dyson root), keeping all internal GW energies fixed.
-For this method, the derivative used in `ZPA` includes the derivative of the
-SRG factors. The existing `R_Parquet_self_energy_alt_diag` entry point keeps
-its historical derivative convention and calling sequence.
-
-The output reports HF, G0W0, and final parquet energies, the native
-self-energy, and its derivative-based weight. It does not report a
-Galitskii-Migdal energy, which the reused native routine does not compute.
-
-Example settings are provided in `tests/inp/methods.GWParquet` and
-`tests/inp/options.GWParquet` (linearized final Dyson equation, full BSEs,
-and SRG regularization). Copy these to the calculation's `input/methods`
-and `input/options` to use them.
-
-After building QuAcK, molecular regression checks can be run in a new
-directory with the Python environment used for PyDuck:
-
-```sh
-python tests/check_gw_parquet.py --workdir /tmp/quack-gw-parquet-tests
-```
-
-These cover independent TDA switches, regularization, both Dyson solvers,
-GW input invariance, frozen/restricted spaces, empty triplet pair spaces,
-and old methods files. `tests/gw_parquet_checks.f90` additionally checks
-finite-difference derivatives, legacy entry-point compatibility, and the
-GW-kernel/half-vertex normalization. It links against the built QuAcK
-libraries and the same BLAS/LAPACK libraries used by QuAcK.
-
-## TDA Faddeev-Parquet
-
-Restricted and generalized TDA self-energies with ADC(3) external couplings
-are available through `evParquet`. A matrix-free harmonic Davidson solver
-targets the principal IP by default; `do_principal_IP=.false.` restores the
-full spectrum. See [usage, equations, and checks](docs/TDA_Faddeev_Parquet.md).
+See the manual for [single-shot GW–Parquet](docs/gw-parquet.md) and [standalone Faddeev](docs/faddeev.md).

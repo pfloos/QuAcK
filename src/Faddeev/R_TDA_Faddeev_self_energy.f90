@@ -1,6 +1,6 @@
 subroutine R_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                                     eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,ePA,ZPA, &
-    dressed,Teh,Thh,Tee)
+    dressed,Teh,Thh,Tee,static3,gw_external)
 ! Restricted complete-TDA Faddeev-Parquet, ADC(2) or ADC(3) endpoints.
 ! Lift singlet/triplet static pair interactions to spin orbitals and retain
 ! only the alpha charged determinant block (Ms=1/2). This is an exact spin
@@ -15,11 +15,11 @@ subroutine R_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,
   double precision,intent(in) :: Wees(nVVs,nVVs),Weet(nVVt,nVVt)
   double precision,intent(out) :: ePA(nOrb),ZPA(nOrb)
   integer :: ng,nsG,nooG,nvvG,noact,nv,nH,p,q,r,s
-  logical,intent(in) :: dressed
+  logical,intent(in) :: dressed,static3,gw_external
   double precision,intent(in) :: Teh(4*nS,4*nS)
   double precision,intent(in) :: Thh((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
   double precision,intent(in) :: Tee((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
-  double precision,allocatable :: eg(:),fg(:),vg(:,:,:,:),Weh(:,:),Whh(:,:),Wee(:,:),H(:,:)
+  double precision,allocatable :: eg(:),fg(:),vg(:,:,:,:),Weh(:,:),Whh(:,:),Wee(:,:),H(:,:),sigma(:,:)
   noact=nO-nC; nv=nOrb-nR-nO
   if(nC<0.or.nR<0.or.noact<1.or.nv<1) error stop 'R TDA Faddeev: invalid active space'
   if(nS/=noact*nv.or.nOOs/=noact*(noact+1)/2.or.nOOt/=noact*(noact-1)/2.or. &
@@ -48,6 +48,16 @@ subroutine R_TDA_Faddeev_self_energy(adc2,reg_PA,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,
   call G_TDA_Faddeev_build(adc2,reg_PA,eta,1,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG,nH,fg,eg,vg,Weh,Whh,Wee,H, &
     dressed,Teh,Thh,Tee)
   write(*,*) 'Restricted TDA Faddeev-Parquet: alpha charged determinant block'
+  if(static3) then
+    allocate(sigma(nOrb,nOrb))
+    call TDA_Faddeev_static3(nOrb,ng,nOrb,2*nC,2*nO,2*nR,fg,ERI,sigma)
+    H(1:nOrb,1:nOrb)=H(1:nOrb,1:nOrb)+sigma
+  end if
+  if(gw_external) then
+    do p=1,nOrb
+      H(p,p)=H(p,p)+eQP(p)-eHF(p)
+    end do
+  end if
   call G_TDA_Faddeev_spectrum(dressed,adc2,nOrb,nC,nR,nH,eHF,H,ePA,ZPA)
 end subroutine
 
@@ -88,7 +98,7 @@ end subroutine
 
 subroutine R_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
                            eHF,eQP,ERI,Wehs,Weht,Whhs,Whht,Wees,Weet,omega,Z,residual,info, &
-    dressed,Teh,Thh,Tee)
+    dressed,Teh,Thh,Tee,static3,gw_external)
 ! Matrix-free restricted IP roots. Spatial ERIs are passed directly;
 ! the shared endpoint builder applies spin deltas without expanding ERIs.
   implicit none
@@ -100,7 +110,7 @@ subroutine R_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt
   double precision,intent(out) :: omega(nroots),Z(nroots),residual(nroots)
   integer,intent(out) :: info
   integer :: ng,nsG,nooG,nvvG,noact,nv,p
-  logical,intent(in) :: dressed
+  logical,intent(in) :: dressed,static3,gw_external
   double precision,intent(in) :: Teh(4*nS,4*nS)
   double precision,intent(in) :: Thh((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
   double precision,intent(in) :: Tee((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1))
@@ -118,7 +128,7 @@ subroutine R_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,nOrb,nC,nO,nR,nS,nOOs,nOOt
                          Wehs,Weht,Whhs,Whht,Wees,Weet,Weh,Whh,Wee)
   call G_TDA_Faddeev_IP_roots(nroots,adc2,reg,eta,1,nOrb,ng,2*nC,2*nO,2*nR,nsG,nooG,nvvG, &
                        fg,eg,ERI,Weh,Whh,Wee,omega,Z,residual,info, &
-    dressed,Teh,Thh,Tee)
+    dressed,Teh,Thh,Tee,static3,gw_external)
 end subroutine
 
 subroutine R_TDA_Faddeev_lift(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &

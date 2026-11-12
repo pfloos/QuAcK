@@ -24,7 +24,8 @@ subroutine RGF2_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,e,ERI,Ec,SigC,Z)
   double precision              :: num
 
   double precision              :: s
-  double precision              :: kappa
+  double precision              :: ratio
+  double precision,external     :: RGF2_SRG_ratio
 
 ! Output variables
 
@@ -53,11 +54,11 @@ subroutine RGF2_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,e,ERI,Ec,SigC,Z)
         do a=nO+1,nBas-nR
 
           eps = e(p) + e(a) - e(i) - e(j)
-          kappa = 1d0 - exp(-2d0*eps**2*s)
-          num = kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
+          ratio = RGF2_SRG_ratio(2d0*s,eps**2)
+          num = (2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
-          SigC(p) = SigC(p) + num/eps
-          Z(p)    = Z(p)    - num/eps**2
+          SigC(p) = SigC(p) + num*eps*ratio
+          Z(p)    = Z(p)    + num*(4d0*s*exp(-2d0*s*eps**2) - ratio)
 
         end do
       end do
@@ -70,11 +71,11 @@ subroutine RGF2_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,e,ERI,Ec,SigC,Z)
         do b=nO+1,nBas-nR
 
           eps = e(p) + e(i) - e(a) - e(b)
-          kappa = 1d0 - exp(-2d0*eps**2*s)
-          num = kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
+          ratio = RGF2_SRG_ratio(2d0*s,eps**2)
+          num = (2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
 
-          SigC(p) = SigC(p) + num/eps
-          Z(p)    = Z(p)    - num/eps**2
+          SigC(p) = SigC(p) + num*eps*ratio
+          Z(p)    = Z(p)    + num*(4d0*s*exp(-2d0*s*eps**2) - ratio)
 
         end do
       end do
@@ -95,10 +96,10 @@ subroutine RGF2_SRG_self_energy_diag(flow,nBas,nC,nO,nV,nR,e,ERI,Ec,SigC,Z)
         do b=nO+1,nBas-nR
 
           eps = e(i) + e(j) - e(a) - e(b)
-          kappa = 1d0 - exp(-2d0*s*eps**2)
-          num = kappa*(2d0*ERI(i,j,a,b) - ERI(i,j,b,a))*ERI(i,j,a,b)
+          ratio = RGF2_SRG_ratio(2d0*s,eps**2)
+          num = (2d0*ERI(i,j,a,b) - ERI(i,j,b,a))*ERI(i,j,a,b)
 
-          Ec = Ec + num/eps
+          Ec = Ec + num*eps*ratio
 
         end do
       end do

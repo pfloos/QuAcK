@@ -26,5 +26,7 @@
   F         F         F     F      F    F
 # ADC-GW ADC-2SOSEX ADC(3)-G3W2 ADC(3x)-G3W2 ADC-G3W2
   F      F          F           F            F
+# FTDA FRPA
+  F    F
 # Rtest Utest Gtest
   F     F     F

@@ -5,6 +5,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
 ! Perform a quasiparticle self-consistent GF2 calculation
 
+  use, intrinsic :: ieee_arithmetic
   implicit none
   include 'parameters.h'
 
@@ -90,11 +91,12 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
 ! SRG regularization
 
-  flow = 500d0
+  flow = 1d0
 
   if(doSRG) then
 
     write(*,*) '*** SRG regularized qsGF2 scheme ***'
+    write(*,'(A,ES24.16)') 'GF2 SRG flow = ',flow
     write(*,*)
 
   end if
@@ -155,7 +157,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 ! Main loop
 !------------------------------------------------------------------------
 
-  do while(Conv > thresh .and. nSCF < maxSCF)
+  do while(Conv > thresh .and. nSCF + 1 < maxSCF)
 
     ! Increment
 
@@ -203,7 +205,8 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
     err = matmul(F,matmul(P,S)) - matmul(matmul(S,P),F)
 
-    Conv = maxval(abs(err))
+    Conv = huge(Conv)
+    if(all(ieee_is_finite(err))) Conv = maxval(abs(err))
 
     ! Kinetic energy
 
@@ -267,7 +270,7 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
 
 ! Did it actually converge?
 
-  if(nSCF == maxSCF) then
+  if(.not.ieee_is_finite(Conv) .or. Conv > thresh) then
 
     write(*,*)
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -276,9 +279,11 @@ subroutine qsRGF2(dotest,maxSCF,thresh,max_diis,dophBSE,doppBSE,TDA,  &
     write(*,*)
 
     deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,err,err_diis,F_diis)
-    stop
+    error stop 1
 
   end if
+
+  write(*,'(A,ES24.16)') 'GF2 status: qsGF2 converged, residual = ',Conv
 
 ! Deallocate memory
 

@@ -1,17 +1,19 @@
 #!/bin/bash
 
-name=`git rev-parse HEAD`
+set -e
 
-echo "subroutine gitversion(sha)" > gitver.f90
-echo "!Arguments ------------------------------------ " >> gitver.f90
-echo "!scalars " >> gitver.f90
-echo "!arrays " >> gitver.f90
-echo "character(100),intent(inout)::sha" >> gitver.f90  >> gitver.f90
-echo "!Local variables ------------------------------ " >> gitver.f90
-echo "!scalars " >> gitver.f90
-echo "!arrays " >> gitver.f90
-echo "!************************************************************************ " >> gitver.f90
-echo " " >> gitver.f90
-echo "  write(sha,'(a)')'$name'" >> gitver.f90
-echo " " >> gitver.f90
-echo "end subroutine gitversion" >> gitver.f90
+version=$(cat ../VERSION)
+revision="unavailable (source archive)"
+if [[ -e ../.git ]]; then
+    revision=$(git -C .. rev-parse --verify HEAD)
+fi
+
+cat > gitver.f90 <<EOF
+subroutine gitversion(version,sha)
+  implicit none
+  character(len=*), intent(out) :: version,sha
+
+  version = '$version'
+  sha = '$revision'
+end subroutine gitversion
+EOF

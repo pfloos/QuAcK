@@ -2,10 +2,7 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
                         eta_1b,eta_2b,reg_PA,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF, &
                         ERI,dipole_int,eHF,eGW,ePA,ZPA)
 
-! Frozen-input, native parquet calculation from G0W0 and static BSE@G0W0.
-! W0 is built from the HF dRPA response, as in RG0W0/RGW_phBSE/RGW_ppBSE.
-! Both BSE gaps and every internal self-energy energy use the frozen eGW.
-! There are no parquet one-body/two-body iterations and no ADC completion.
+! Native frozen-input parquet from G0W0 and static BSE.
 
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
@@ -16,13 +13,12 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   double precision,intent(in)  :: eta_GW,eta_1b,eta_2b,ENuc,ERHF
   double precision,intent(in)  :: ERI(nOrb,nOrb,nOrb,nOrb),dipole_int(nOrb,nOrb,ncart),eHF(nOrb)
   double precision,intent(out) :: eGW(nOrb),ePA(nOrb),ZPA(nOrb)
-
   integer :: nOcc,nVir,nOOs,nVVs,nOOt,nVVt,p,q,r,s,m,it,ls
   integer,parameter :: max_root_it=128,max_backtrack=24
   double precision,parameter :: root_tol=1d-9
-  double precision :: EcRPA,EcGM,Ec_eh(nspin),Ec_pp(nspin),screen_factor,weight
+  double precision :: EcGM,Ec_eh(nspin),Ec_pp(nspin)
   double precision :: sigma,dsigma,w,f,step,trial,trial_sigma,trial_deriv,trial_f
-  double precision,allocatable :: A(:,:),B(:,:),OmW(:),XpY(:,:),XmY(:,:),rhoW(:,:,:),W0(:,:,:,:)
+  double precision,allocatable :: OmW(:),rhoW(:,:,:),W0(:,:,:,:)
   double precision,allocatable :: OmES(:),OmET(:),rhoES(:,:,:),rhoET(:,:,:)
   double precision,allocatable :: OmPS(:),OmHS(:),OmPT(:),OmHT(:)
   double precision,allocatable :: rhoPS(:,:,:),rhoHS(:,:,:),rhoPT(:,:,:),rhoHT(:,:,:)
@@ -53,43 +49,9 @@ subroutine R_GW_Parquet(dotest,TDA_W,lin_GW,eta_GW,reg_GW,TDAeh,TDApp,linearize,
   write(*,'(1X,A,L2)') 'Parquet SRG regularization: ',reg_PA
   if(reg_PA) write(*,'(1X,A,2ES14.5)') 'SRG flows (one-body, static screening): ',eta_1b,eta_2b
 
-! G0W0 only. Its optional BSE/density-matrix/ACFDT work is deliberately off.
-! The two BSE calculations below retain their response amplitudes for PA.
-! All arrays passed here are MO-sized, including in a rank-reduced AO basis.
-
-  call RG0W0(dotest,.false.,.false.,.false.,.false.,.false.,TDA_W,.false., &
-              .false.,.false.,.false.,.true.,.true.,lin_GW,eta_GW,reg_GW,.false., &
-              nOrb,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eGW)
-  if(.not.all(ieee_is_finite(eGW))) error stop 'R_GW_Parquet: nonfinite G0W0 energies'
-
-! Reconstruct the same HF W0 used by G0W0, not a new W[eGW] iteration.
-
-  allocate(A(nS,nS),B(nS,nS),OmW(nS),XpY(nS,nS),XmY(nS,nS),rhoW(nOrb,nOrb,nS))
-  A=0d0
-  B=0d0
-  call phRLR_A(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,A)
-  if(.not.TDA_W) call phRLR_B(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,B)
-  call phRLR(TDA_W,nS,A,B,EcRPA,OmW,XpY,XmY)
-  if(.not.all(ieee_is_finite(OmW)) .or. any(OmW <= 0d0)) &
-    error stop 'R_GW_Parquet: unstable or zero-frequency W0 response'
-  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rhoW)
-  deallocate(A,B,XpY,XmY)
-
-! An SRG factor on each screening mode regularizes the common static kernel.
-! Using sqrt(factor) on both half vertices keeps the BSE matrices and the
-! external channel couplings consistent. reg_PA=F gives the native GW kernel.
-
-  if(reg_PA) then
-    do m=1,nS
-      weight=2d0*eta_2b*OmW(m)**2
-      if(weight < 1d-5) then
-        screen_factor=weight*(1d0-weight/2d0+weight**2/6d0)
-      else
-        screen_factor=1d0-exp(-weight)
-      end if
-      rhoW(:,:,m)=sqrt(screen_factor)*rhoW(:,:,m)
-    end do
-  end if
+  allocate(OmW(nS),rhoW(nOrb,nOrb,nS))
+  call R_GW_BSE_screening(dotest,TDA_W,lin_GW,eta_GW,reg_GW,reg_PA,eta_2b, &
+                          nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,ERI,dipole_int,eHF,eGW,OmW,rhoW)
 
   allocate(W0(nOrb,nOrb,nOrb,nOrb))
   W0=ERI
@@ -184,18 +146,9 @@ contains
   subroutine eh_bse(ispin,Om,rho,Ec)
     integer,intent(in) :: ispin
     double precision,intent(out) :: Om(nS),rho(nOrb,nOrb,nS),Ec
-    double precision,allocatable :: aa(:,:),bb(:,:),ka(:,:),kb(:,:),xp(:,:),xm(:,:)
-    allocate(aa(nS,nS),bb(nS,nS),ka(nS,nS),kb(nS,nS),xp(nS,nS),xm(nS,nS))
-    bb=0d0
-    kb=0d0
-    call phRLR_A(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eGW,ERI,aa)
-    call RGW_phBSE_static_kernel_A(eta_GW,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmW,rhoW,ka)
-    if(.not.TDAeh) then
-      call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,bb)
-      call RGW_phBSE_static_kernel_B(eta_GW,nOrb,nC,nO,nV,nR,nS,1d0,ERI,OmW,rhoW,kb)
-    end if
-    aa=aa+ka
-    bb=bb+kb
+    double precision,allocatable :: aa(:,:),bb(:,:),xp(:,:),xm(:,:)
+    allocate(aa(nS,nS),bb(nS,nS),xp(nS,nS),xm(nS,nS))
+    call R_GW_BSE_eh_blocks(ispin,TDAeh,nOrb,nC,nO,nV,nR,nS,eta_GW,eGW,ERI,OmW,rhoW,aa,bb)
     call phRLR(TDAeh,nS,aa,bb,Ec,Om,xp,xm)
     if(.not.all(ieee_is_finite(Om)) .or. any(Om <= 0d0)) &
       error stop 'R_GW_Parquet: unstable ehBSE@G0W0 response'
@@ -208,32 +161,14 @@ contains
     integer,intent(in) :: ispin,nOO,nVV
     double precision,intent(out) :: Om1(nVV),rho1(nOrb,nOrb,nVV),Om2(nOO),rho2(nOrb,nOrb,nOO),Ec
     logical :: shifted_pp
-    double precision,allocatable :: bb(:,:),cc(:,:),dd(:,:),kb(:,:),kc(:,:),kd(:,:)
-    double precision,allocatable :: x1(:,:),y1(:,:),x2(:,:),y2(:,:)
+    double precision,allocatable :: bb(:,:),cc(:,:),dd(:,:),x1(:,:),y1(:,:),x2(:,:),y2(:,:)
     rho1=0d0
     rho2=0d0
     Ec=0d0
     if(nOO+nVV == 0) return
-    allocate(bb(nVV,nOO),cc(nVV,nVV),dd(nOO,nOO),kb(nVV,nOO),kc(nVV,nVV),kd(nOO,nOO))
+    allocate(bb(nVV,nOO),cc(nVV,nVV),dd(nOO,nOO))
     allocate(x1(nVV,nVV),y1(nOO,nVV),x2(nVV,nOO),y2(nOO,nOO))
-    bb=0d0
-    kb=0d0
-    kc=0d0
-    kd=0d0
-    call ppRLR_C(ispin,nOrb,nC,nO,nV,nR,nVV,1d0,eGW,ERI,cc)
-    call ppRLR_D(ispin,nOrb,nC,nO,nV,nR,nOO,1d0,eGW,ERI,dd)
-    if(nVV > 0) call RGW_ppBSE_static_kernel_C(ispin,eta_GW,nOrb,nC,nO,nV,nR,nS,nVV, &
-                                             1d0,ERI,OmW,rhoW,kc)
-    if(nOO > 0) call RGW_ppBSE_static_kernel_D(ispin,eta_GW,nOrb,nC,nO,nV,nR,nS,nOO, &
-                                             1d0,ERI,OmW,rhoW,kd)
-    if(.not.TDApp .and. nOO*nVV > 0) then
-      call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOO,nVV,1d0,ERI,bb)
-      call RGW_ppBSE_static_kernel_B(ispin,eta_GW,nOrb,nC,nO,nV,nR,nS,nOO,nVV, &
-                                     1d0,ERI,OmW,rhoW,kb)
-    end if
-    cc=cc+kc
-    dd=dd+kd
-    bb=bb+kb
+    call R_GW_BSE_pp_blocks(ispin,TDApp,nOrb,nC,nO,nV,nR,nS,nOO,nVV,eta_GW,eGW,ERI,OmW,rhoW,bb,cc,dd)
     call ppRLR(TDApp,nOO,nVV,bb,cc,dd,Om1,x1,y1,Om2,x2,y2,Ec)
     ! ppRLR optionally uses poles measured from twice the chemical potential.
     ! Native PA denominators require absolute pair energies, so undo that shift.

@@ -17,7 +17,8 @@ double precision function RGF2_SRG_SigC(p,w,flow,nBas,nC,nO,nV,nR,eHF,ERI)
 ! Local variables
 
   integer                       :: i,j,a,b
-  double precision              :: eps,s,kappa
+  double precision              :: eps,s,ratio
+  double precision,external     :: RGF2_SRG_ratio
 
   RGF2_SRG_SigC = 0d0
   s = flow
@@ -29,8 +30,9 @@ double precision function RGF2_SRG_SigC(p,w,flow,nBas,nC,nO,nV,nR,eHF,ERI)
       do a=nO+1,nBas-nR
 
         eps = w + eHF(a) - eHF(i) - eHF(j)
-        kappa = 1d0 - exp(-2d0*eps**2*s)
-        RGF2_SRG_SigC = RGF2_SRG_SigC + kappa*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)/eps
+        ratio = RGF2_SRG_ratio(2d0*s,eps**2)
+        RGF2_SRG_SigC = RGF2_SRG_SigC + &
+          (eps*ratio)*(2d0*ERI(p,a,i,j) - ERI(p,a,j,i))*ERI(p,a,i,j)
 
         end do
      end do
@@ -43,11 +45,30 @@ double precision function RGF2_SRG_SigC(p,w,flow,nBas,nC,nO,nV,nR,eHF,ERI)
       do b=nO+1,nBas-nR
 
         eps = w + eHF(i) - eHF(a) - eHF(b)
-        kappa = 1d0 - exp(-2d0*eps**2*s)
-        RGF2_SRG_SigC = RGF2_SRG_SigC + kappa*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)/eps
+        ratio = RGF2_SRG_ratio(2d0*s,eps**2)
+        RGF2_SRG_SigC = RGF2_SRG_SigC + &
+          (eps*ratio)*(2d0*ERI(p,i,a,b) - ERI(p,i,b,a))*ERI(p,i,a,b)
 
       end do
     end do
   end do
 
 end function 
+
+
+double precision function RGF2_SRG_ratio(scale,delta_sq)
+
+! Evaluate (1 - exp(-scale*delta_sq))/delta_sq, including its limit at zero.
+
+  implicit none
+  double precision,intent(in) :: scale,delta_sq
+  double precision            :: x
+
+  x = scale*delta_sq
+  if(x < 1d-5) then
+    RGF2_SRG_ratio = scale*(1d0 - x*(0.5d0 - x*(1d0/6d0 - x/24d0)))
+  else
+    RGF2_SRG_ratio = (1d0 - exp(-x))/delta_sq
+  end if
+
+end function

@@ -2,7 +2,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   dostab,dosearch,doaordm,doMP2,doMP3,doCCD,dopCCD,doDCD,doCCSD,doCCSDT,                                    &
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doG0W0,doevGW,doqsGW,                                     &
-                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet,     &
+                  doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet, &
+                  doFTDA,doFRPA, &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          & 
@@ -17,6 +18,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   maxSCF_GT,max_diis_GT,thresh_GT,TDA_T,lin_GT,reg_GT,eta_GT,do_linDM_GT,                                   & 
                   dophBSE,dophBSE2,doppBSE,dBSE,dTDA,doACFDT,exchange_kernel,doXBS,                                         &
                   TDAeh,TDApp,max_diis_1b,max_diis_2b,max_it_1b,conv_1b,max_it_2b,conv_2b,lin_parquet,reg_1b,reg_2b,reg_PA, &
+                  parquet_method, &
                   nfreqs,ntimes,wcoord,wweight,                                                                             &
                   do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC,eta_ADC)      
 
@@ -51,7 +53,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
   logical,intent(in)            :: doCAP
-  logical,intent(in)            :: doevParquet,doqsParquet,doGWParquet
+  logical,intent(in)            :: doevParquet,doqsParquet,doGWParquet,doFTDA,doFRPA
   logical,intent(in)            :: do_IPEA_ADC2,do_IPEA_ADC3
   logical,intent(in)            :: do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2
   logical,intent(in)            :: do_ADC_GW,do_ADC_2SOSEX,do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2
@@ -128,6 +130,8 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   double precision,intent(in)   :: reg_1b,reg_2b
   logical,intent(in)            :: lin_parquet,reg_PA
   
+  integer,intent(in) :: parquet_method
+
   logical,intent(in)            :: do_dyson,diag_approx,sig_inf,lin_ADC,reg_ADC
   double precision,intent(in)   :: eta_ADC
 
@@ -765,6 +769,11 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
 ! Parquet module !
 !----------------!
 
+  if(doFTDA.or.doFRPA) then
+    call R_Faddeev(working_dir,doFRPA,dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,ERHF,eHF,ERI_MO,dipole_int_MO, &
+                  maxSCF_CC,thresh_CC,max_diis_CC,TDA_W,lin_GW,eta_GW,reg_GW,reg_PA,reg_1b,reg_2b)
+  end if
+
   if(doGWParquet) then
     call wall_time(start_Parquet)
     allocate(eGWPA(nOrb),ZGWPA(nOrb))
@@ -781,7 +790,8 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
   if(doevParquet) then
     call wall_time(start_Parquet)
     call R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,lin_parquet,reg_1b,reg_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
-                  nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO)
+                  nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI_MO, &
+                     parquet_method)
     call wall_time(end_Parquet)
   
     t_Parquet = end_Parquet - start_Parquet

@@ -17,3 +17,7 @@ utils/gitver.f90
 src/utils/gitver.f90
 /*.dat
 hfb_bin
+
+# Generated documentation
+/docs/generated/
+/site/

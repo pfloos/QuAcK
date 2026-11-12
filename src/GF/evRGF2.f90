@@ -3,6 +3,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
 ! Perform eigenvalue self-consistent second-order Green function calculation
 
+  use, intrinsic :: ieee_arithmetic
   implicit none
   include 'parameters.h'
 
@@ -39,6 +40,9 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
 ! Local variables
 
+  logical                       :: root_ok(nOrb)
+  double precision              :: missing_qp
+
   integer                       :: nSCF
   integer                       :: n_diis
   double precision              :: Ec
@@ -63,11 +67,12 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
 ! SRG regularization
 
-  flow = 500d0
+  flow = 1d0
 
   if(doSRG) then
 
     write(*,*) '*** SRG regularized evGF2 scheme ***'
+    write(*,'(A,ES24.16)') 'GF2 SRG flow = ',flow
     write(*,*)
 
   end if
@@ -77,6 +82,9 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
   allocate(SigC(nOrb), Z(nOrb), eGF(nOrb), eOld(nOrb), error_diis(nOrb,max_diis), e_diis(nOrb,max_diis))
 
 ! Initialization
+
+  missing_qp = ieee_value(0d0,ieee_quiet_nan)
+  root_ok(:) = .true.
 
   Conv            = 1d0
   nSCF            = 0
@@ -107,21 +115,28 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
     ! Solve the quasi-particle equation
  
     if(linearize) then
- 
+
+      write(*,*) ' *** Quasiparticle energies obtained by linearization *** '
+      eGF(:) = eHF(:) + SigC(:)
+
     else
  
       write(*,*) ' *** Quasiparticle energies obtained by root search *** '
       write(*,*)
  
-      call RGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z)
+      call RGF2_QP_graph(doSRG,eta,flow,nOrb,nC,nO,nV,nR,eHF,ERI,eOld,eOld,eGF,Z,root_ok)
  
     end if
 
-    Conv = maxval(abs(eGF - eOld))
+    Conv = ieee_value(0d0,ieee_quiet_nan)
+    if(all(ieee_is_finite(eGF))) Conv = maxval(abs(eGF - eOld))
 
     ! Print results
 
-    call print_evRGF2(nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,SigC,Z,eGF,ENuc,ERHF,Ec)
+    call print_evRGF2(nOrb,nC,nO,nV,nR,nSCF,Conv,eHF,SigC,merge(Z,missing_qp,root_ok), &
+                     merge(eGF,missing_qp,root_ok),ENuc,ERHF,Ec)
+
+    if(.not.ieee_is_finite(Conv) .or. Conv <= thresh) exit
 
     ! DIIS extrapolation
 
@@ -143,7 +158,7 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
 
 ! Did it actually converge?
 
-  if(nSCF == maxSCF+1) then
+  if(.not.ieee_is_finite(Conv) .or. Conv > thresh) then
 
     write(*,*)
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -151,9 +166,11 @@ subroutine evRGF2(dotest,dophBSE,doppBSE,TDA,dBSE,dTDA,maxSCF,thresh,max_diis,si
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    stop
+    error stop 1
 
   end if
+
+  write(*,'(A,ES24.16)') 'GF2 status: evGF2 converged, residual = ',Conv
 
 ! Perform BSE@GF2 calculation
 

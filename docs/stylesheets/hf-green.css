@@ -1,0 +1,46 @@
+:root {
+    /* Greens and ink from the ESQC Hartree–Fock chapter. */
+    --hf-green: #00685c;
+    --hf-green-dark: #00574d;
+    --hf-green-light: #f2f8f6;
+    --hf-ink: #202a33;
+    --bs-body-color: var(--hf-ink);
+    --bs-primary: var(--hf-green);
+    --bs-primary-rgb: 0, 104, 92;
+    --bs-link-color: var(--hf-green);
+    --bs-link-color-rgb: 0, 104, 92;
+    --bs-link-hover-color: var(--hf-green-dark);
+    --bs-link-hover-color-rgb: 0, 87, 77;
+}
+
+.navbar.fixed-top {
+    background: var(--hf-green-dark) !important;
+}
+
+h1, h2, h3, h4 {
+    color: var(--hf-green-dark);
+}
+
+.table > thead {
+    --bs-table-color: var(--hf-green-dark);
+    --bs-table-bg: var(--hf-green-light);
+}
+
+.bs-sidebar.card {
+    background-color: var(--hf-green-light);
+}
+
+.dropdown-item.active,
+.dropdown-item:active,
+.btn-primary {
+    --bs-dropdown-link-active-bg: var(--hf-green-dark);
+    --bs-btn-bg: var(--hf-green);
+    --bs-btn-border-color: var(--hf-green);
+    --bs-btn-hover-bg: var(--hf-green-dark);
+    --bs-btn-hover-border-color: var(--hf-green-dark);
+}
+
+.quack-brand-logo {
+    flex: none;
+    border-radius: 0.3rem;
+}

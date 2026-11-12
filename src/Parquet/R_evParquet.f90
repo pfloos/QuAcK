@@ -1,5 +1,6 @@
 subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_2b,reg_PA,ENuc,max_it_1b,conv_1b,max_it_2b,conv_2b, & 
-                       nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI)
+                       nOrb,nC,nO,nV,nR,nS,ERHF,eHF,ERI, &
+                       parquet_method)
 
 ! Parquet approximation with eigenvalue self-consistency based on spatial orbitals
 
@@ -10,14 +11,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
   logical                       :: print_phLR = .false. ! Print the eh two-body excitations at each two-body iterations
   logical                       :: print_ppLR = .false. ! Print the pp two-body excitations at each two-body iterations
-  logical                       :: do_ADC_self_energy = .false. ! Use Hermitian PSD ADC-Parquet
-  logical                       :: do_Faddeev_self_energy = .true. ! Use TDA Faddeev-Parquet
-  logical                       :: do_Faddeev_ADC2 = .false. ! ADC(2) endpoints; false keeps ADC(3) (full and Davidson)
-  logical :: do_Faddeev_dressed = .false. ! Static one-sided dressed source couplings
-  logical                       :: do_principal_IP = .true. ! Matrix-free IP Davidson; fixed one-body energies
-  integer                       :: n_IP_roots = 1 ! HF-hole targets, HOMO downward; 1 keeps the principal HOMO IP
   
+
 ! Input variables
+
+  logical :: do_ADC_self_energy
+  integer,intent(in) :: parquet_method
 
   logical,intent(in)            :: TDAeh     
   logical,intent(in)            :: TDApp     
@@ -35,16 +34,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
   
 ! Local variables
 
-  double precision,allocatable  :: ip_omega(:),ip_Z(:),ip_residual(:)
-  integer                       :: ip_info
 
-  double precision,allocatable  :: F_eh(:,:),F_hh(:,:),F_ee(:,:)
-  double precision,allocatable :: F_Beh(:,:),F_Bpp(:,:),F_Teh(:,:),F_Thh(:,:),F_Tee(:,:)
-  double precision,allocatable :: F_Beht(:,:),F_Bppt(:,:),F_Teht(:,:),F_Thht(:,:),F_Teet(:,:)
-  double precision,allocatable :: F_Tg(:,:),F_Hg(:,:),F_Eg(:,:)
-  double precision,allocatable  :: F_eht(:,:),F_hht(:,:),F_eet(:,:)
-  double precision              :: F_shift
-  logical                       :: F_chem_pot
 
   integer                       :: ispin
   double precision              :: alpha
@@ -137,35 +127,12 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     
 ! Useful parameters
 
+
   nOOs = (nO-nC)*(nO-nC+1)/2
   nVVs = (nOrb-nR-nO)*(nOrb-nR-nO+1)/2
   nOOt = (nO-nC)*(nO-nC-1)/2
   nVVt = (nOrb-nR-nO)*(nOrb-nR-nO-1)/2
-  if(do_ADC_self_energy.and.do_Faddeev_self_energy) &
-    error stop 'Select only one of ADC-Parquet and TDA Faddeev-Parquet'
-  if(do_Faddeev_self_energy.and.do_Faddeev_ADC2.and.do_Faddeev_dressed) &
-    error stop 'Select either ADC(2) or dressed Faddeev couplings'
-  if(do_Faddeev_self_energy) then
-    if(.not.TDAeh.or..not.TDApp) error stop 'TDA Faddeev-Parquet requires both TDAeh=T and TDApp=T'
-    if(do_principal_IP.and.(n_IP_roots<1.or.n_IP_roots>nO-nC)) &
-      error stop 'Faddeev IP: n_IP_roots must be between 1 and the active occupied count'
-    if(do_principal_IP.and.max_it_1b/=1) &
-      error stop 'Principal-IP mode requires max_it_1b=1 (fixed one-body energies)'
-    if(max_it_1b<1.or.max_it_2b<1.or.max_diis_1b<1.or.max_diis_2b<1) &
-      error stop 'TDA Faddeev requires positive iteration and DIIS limits'
-  end if
-  F_shift=0d0
-  if(do_Faddeev_self_energy) then
-    allocate(F_eh(nS,nS),F_hh(nOOs,nOOs),F_ee(nVVs,nVVs))
-    allocate(F_eht(nS,nS),F_hht(nOOt,nOOt),F_eet(nVVt,nVVt))
-    allocate(F_Beh(nS,nS),F_Bpp(nVVs,nOOs),F_Teh(nS,nS),F_Thh(nOOs,nVVs),F_Tee(nOOs,nVVs))
-    allocate(F_Beht(nS,nS),F_Bppt(nVVt,nOOt),F_Teht(nS,nS),F_Thht(nOOt,nVVt),F_Teet(nOOt,nVVt))
-    allocate(F_Tg(4*nS,4*nS),F_Hg((nO-nC)*(2*(nO-nC)-1),(nOrb-nR-nO)*(2*(nOrb-nR-nO)-1)))
-    allocate(F_Eg(size(F_Hg,1),size(F_Hg,2)))
-    F_Tg=0d0; F_Hg=0d0; F_Eg=0d0
-    inquire(file='use_chem_pot_in_ppRPA',exist=F_chem_pot)
-  end if
-
+  do_ADC_self_energy = parquet_method == 1
   allocate(eQP(nOrb),eOld(nOrb),eADC(nOrb),ZADC(nOrb))
 
   mem = mem + size(eQP) + size(eOld) + size(eADC) + size(ZADC)
@@ -294,10 +261,6 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
 
     ! Initialization
     
-    if(do_Faddeev_self_energy) then
-      F_shift=0d0
-      if(F_chem_pot) F_shift=eOld(nO)+eOld(nO+1)
-    end if
     n_it_2b = 0 
     err_2b  = 1d0
     
@@ -357,25 +320,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Aph(:,:) = Aph(:,:) + eh_sing_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_sing_Gam_B(:,:)  
 
-      if(do_Faddeev_self_energy) then
-        F_eh=Aph
-        pqrs=0
-        do p=nC+1,nO
-          do q=nO+1,nOrb-nR
-            pqrs=pqrs+1
-            F_eh(pqrs,pqrs)=F_eh(pqrs,pqrs)-eOld(q)+eOld(p)
-          end do
-        end do
-      end if
 
-      if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
-        call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,F_Beh)
-        if(n_it_1b/=1.or.n_it_2b/=1) then
-          call R_eh_singlet_Gamma_B(nOrb,nC,nO,nR,nS, &
-            old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi,eh_sing_Gam_B)
-          F_Beh=F_Beh+eh_sing_Gam_B
-        end if
-      end if
       call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_sing_Om,sing_XpY,sing_XmY)
 
       call wall_time(end_t)
@@ -433,25 +378,7 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Aph(:,:) = Aph(:,:) + eh_trip_Gam_A(:,:)
       Bph(:,:) = Bph(:,:) + eh_trip_Gam_B(:,:)
 
-      if(do_Faddeev_self_energy) then
-        F_eht=Aph
-        pqrs=0
-        do p=nC+1,nO
-          do q=nO+1,nOrb-nR
-            pqrs=pqrs+1
-            F_eht(pqrs,pqrs)=F_eht(pqrs,pqrs)-eOld(q)+eOld(p)
-          end do
-        end do
-      end if
 
-      if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
-        call phRLR_B(ispin,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,F_Beht)
-        if(n_it_1b/=1.or.n_it_2b/=1) then
-          call R_eh_triplet_Gamma_B(nOrb,nC,nO,nR,nS, &
-            old_eh_sing_Phi,old_eh_trip_Phi,old_pp_sing_Phi,old_pp_trip_Phi,eh_trip_Gam_B)
-          F_Beht=F_Beht+eh_trip_Gam_B
-        end if
-      end if
       call phRLR(TDAeh,nS,Aph,Bph,Ec_eh(ispin),eh_trip_Om,trip_XpY,trip_XmY)
 
       ! Shift by 1d-12 to avoid hardcore zeros
@@ -516,27 +443,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Dpp(:,:) = Dpp(:,:) + pp_sing_Gam_D(:,:)
       
       
-      if(do_Faddeev_self_energy) then
-        F_hh=Dpp; F_ee=Cpp
-        call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,.true.,.true.,nOOs,eOld,F_shift,F_hh)
-        call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,.true.,.false.,nVVs,eOld,F_shift,F_ee)
-      end if
 
-      if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
-        call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOs,nVVs,1d0,ERI,F_Bpp)
-        if(n_it_1b/=1.or.n_it_2b/=1) then
-          call R_pp_singlet_Gamma_B(nOrb,nC,nO,nR,nOOs,nVVs, &
-            old_eh_sing_Phi,old_eh_trip_Phi,pp_sing_Gam_B)
-          F_Bpp=F_Bpp+pp_sing_Gam_B
-        end if
-      end if
       call ppRLR(TDApp,nOOs,nVVs,Bpp,Cpp,Dpp,ee_sing_Om,X1s,Y1s,hh_sing_Om,X2s,Y2s,Ec_pp(ispin))
-      if(do_Faddeev_self_energy) then
-        ! Phi is evaluated at an absolute frequency: undo any pp reference
-        ! shift before the pair poles enter the parquet feedback.
-        ee_sing_Om=ee_sing_Om+F_shift
-        hh_sing_Om=hh_sing_Om+F_shift
-      end if
       call wall_time(end_t)
       t = end_t - start_t
 
@@ -600,25 +508,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
       Cpp(:,:) = Cpp(:,:) + pp_trip_Gam_C(:,:)
       Dpp(:,:) = Dpp(:,:) + pp_trip_Gam_D(:,:)
       
-      if(do_Faddeev_self_energy) then
-        F_hht=Dpp; F_eet=Cpp
-        call TDA_Faddeev_strip_pair(nOrb,nC+1,nO,.false.,.true.,nOOt,eOld,F_shift,F_hht)
-        call TDA_Faddeev_strip_pair(nOrb,nO+1,nOrb-nR,.false.,.false.,nVVt,eOld,F_shift,F_eet)
-      end if
 
-      if(do_Faddeev_self_energy.and.do_Faddeev_dressed) then
-        call ppRLR_B(ispin,nOrb,nC,nO,nV,nR,nOOt,nVVt,1d0,ERI,F_Bppt)
-        if(n_it_1b/=1.or.n_it_2b/=1) then
-          call R_pp_triplet_Gamma_B(nOrb,nC,nO,nR,nOOt,nVVt, &
-            old_eh_sing_Phi,old_eh_trip_Phi,pp_trip_Gam_B)
-          F_Bppt=F_Bppt+pp_trip_Gam_B
-        end if
-      end if
       call ppRLR(TDApp,nOOt,nVVt,Bpp,Cpp,Dpp,ee_trip_Om,X1t,Y1t,hh_trip_Om,X2t,Y2t,Ec_pp(ispin))
-      if(do_Faddeev_self_energy) then
-        ee_trip_Om=ee_trip_Om+F_shift
-        hh_trip_Om=hh_trip_Om+F_shift
-      end if
 
       call wall_time(end_t)
       t = end_t - start_t
@@ -924,32 +815,8 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
     mem = mem + size(eQPlin) + size(Z) + size(SigC)
     write(*,'(1X,A50,4X,F6.3,A3)') 'Memory usage in RParquet =',mem*dp_in_GB,' GB'
 
-    if(do_Faddeev_self_energy.or.do_ADC_self_energy) then
+    if(do_ADC_self_energy) then
 
-      if(do_Faddeev_self_energy) then
-        if(do_Faddeev_dressed) then
-          call TDA_Faddeev_sources(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nVVs,.true., &
-            eOld,F_eh,F_hh,F_ee,F_Beh,F_Bpp,F_Teh,F_Thh,F_Tee)
-          call TDA_Faddeev_sources(reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOt,nVVt,.false., &
-            eOld,F_eht,F_hht,F_eet,F_Beht,F_Bppt,F_Teht,F_Thht,F_Teet)
-          call R_TDA_Faddeev_lift_sources(nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
-            F_Teh,F_Teht,F_Thh,F_Thht,F_Tee,F_Teet,F_Tg,F_Hg,F_Eg)
-        end if
-        if(do_principal_IP) then
-          allocate(ip_omega(n_IP_roots),ip_Z(n_IP_roots),ip_residual(n_IP_roots))
-          call R_TDA_Faddeev_IP_roots(n_IP_roots,do_Faddeev_ADC2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
-                                eHF,eOld,ERI,F_eh,F_eht,F_hh,F_hht,F_ee,F_eet, &
-                                ip_omega,ip_Z,ip_residual,ip_info, &
-            do_Faddeev_dressed,F_Tg,F_Hg,F_Eg)
-          if(ip_info/=0) error stop 'IP Davidson failed to converge; use the full-spectrum mode'
-          ! No partial quasiparticle array is returned to the one-body loop.
-          write(*,*) 'IP evaluation complete; one-body energies kept fixed.'
-          return
-        end if
-        call R_TDA_Faddeev_self_energy(do_Faddeev_ADC2,reg_PA,eta_1b,nOrb,nC,nO,nR,nS,nOOs,nOOt,nVVs,nVVt, &
-                                        eHF,eOld,ERI,F_eh,F_eht,F_hh,F_hht,F_ee,F_eet,eADC,ZADC, &
-            do_Faddeev_dressed,F_Tg,F_Hg,F_Eg)
-      else
         write(*,*) 'Building full Hermitian spin-adapted PSD ADC-Parquet matrix...'
         write(*,*)
 
@@ -969,7 +836,6 @@ subroutine R_evParquet(TDAeh,TDApp,max_diis_1b,max_diis_2b,linearize,eta_1b,eta_
         write(*,'(1X,A50,1X,F9.3,A8)') 'Wall time for full ADC-Parquet matrix =',t,' seconds'
         write(*,*)
 
-      end if
 
       eQP(:)    = eADC(:)
       Z(:)      = ZADC(:)
