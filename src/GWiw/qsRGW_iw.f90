@@ -6,7 +6,7 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 ! Quasiparticle self-consistent GW with the SRG static self-energy computed from imaginary-axis data only
 ! (RGW_SRG_iw_self_energy, no poles of W). Same structure as qsRGW; the pole-based
 ! SigC is replaced by the imaginary-axis one. EcGM (and a check of EcRPA) come from Xo(iw)
-! (EcRPA_EcGM_w_RHF, unregularised GM energy). Z is not computed here (printed as 1).
+! (EcRPA_EcGM_w_RHF, unregularised GM energy). Z is not computed (not meaningful for the static SRG self-energy).
 ! BSE and linearized-density-matrix options are not available in this variant.
 
   implicit none
@@ -103,7 +103,6 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
   double precision,allocatable  :: K(:,:)
   double precision,allocatable  :: SigC(:,:)
   double precision,allocatable  :: SigCp(:,:)
-  double precision,allocatable  :: Z(:)
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: vMAT(:,:),wweight(:),wcoord(:),eTmp(:)
   double precision              :: EcRPA_iw
@@ -144,7 +143,6 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 ! Memory allocation
 
   allocate(eGW(nOrb))
-  allocate(Z(nOrb))
 
   allocate(c(nBas,nOrb))
 
@@ -221,7 +219,6 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     ! SRG static self-energy from imaginary-axis data (no poles of W)
 
     call RGW_SRG_iw_self_energy(flow,nOrb,nC,nO,nV,nR,eGW,ERI_MO,nfreqs,SigC)
-    Z(:)  = 1d0
 
     ! GM (and RPA) correlation energies from Xo(iw): vMAT(r+(p-1)n, s+(q-1)n) = <pq|rs>
 
@@ -310,7 +307,7 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     ! Print results
 
     call dipole_moment(nBas,P,nNuc,ZNuc,rNuc,dipole_int_AO,dipole)
-    call print_qsRGW(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,thresh,eHF,eGW,c,SigC,Z, &
+    call print_qsRGW_iw(nBas,nOrb,nC,nO,nV,nR,nSCF,Conv,thresh,eHF,eGW,c,SigC, &
                      ENuc,ET,EV,EJ,EK,EcGM,EcRPA,EqsGW,dipole)
 
   end do
@@ -328,24 +325,14 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,err,err_diis,F_diis,vMAT,wweight,wcoord,eTmp)
+    deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Om,XpY,XmY,err,err_diis,F_diis,vMAT,wweight,wcoord,eTmp)
     stop
 
   end if
 
-! Total energy including the GM correlation energy (from Xo(iw))
-
-  write(*,*)
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,'(2X,A50,F20.10,A3)') 'qsGW@RHF (imag. axis) electronic + nuclear energy = ',ENuc + EqsGW,' au'
-  write(*,'(2X,A50,F20.10,A3)') 'GM correlation energy from Xo(iw)               = ',EcGM,' au'
-  write(*,'(2X,A50,F20.10,A3)') 'GM@qsGW@RHF total energy (incl. correlation)     = ',ENuc + EqsGW + EcGM,' au'
-  write(*,*)'-------------------------------------------------------------------------------'
-  write(*,*)
-
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,err,err_diis,F_diis,vMAT,wweight,wcoord,eTmp)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Om,XpY,XmY,err,err_diis,F_diis,vMAT,wweight,wcoord,eTmp)
   
 ! Testing zone
 
