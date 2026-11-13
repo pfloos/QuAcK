@@ -1,7 +1,7 @@
 subroutine RGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,                         &
                exchange_kernel,doXBS,dophBSE,dophBSE2,doppBSE,TDA_W,TDA,dBSE,dTDA,singlet,triplet, &
                linearize,eta,doSRG,do_linDM_GW,nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,  &
-               S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,FHF,cHF,eHF,eGW)
+               S,X,T,V,Hc,ERI_AO,ERI_MO,CAP_MO,dipole_int_AO,dipole_int_MO,PHF,FHF,cHF,eHF,eGW,nfreqs)
 
 ! Restricted GW module
 
@@ -12,6 +12,7 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
 
   logical,intent(in)            :: dotest
 
+  integer,intent(in)            :: nfreqs
   logical,intent(in)            :: doG0W0
   logical,intent(in)            :: doevGW
   logical,intent(in)            :: doqsGW
@@ -78,6 +79,13 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
 !------------------------------------------------------------------------
 ! Perform G0W0 calculation
 !------------------------------------------------------------------------
+
+! SRG with imaginary frequencies (nfreqs > 1): check the static SRG self-energy computed from imaginary-axis data
+! against the pole-based one at the RHF orbitals
+
+  if(doG0W0 .and. doSRG .and. nfreqs > 1) then
+    call RGW_SRG_iw_check(nOrb,nC,nO,nV,nR,nS,eHF,ERI_MO,nfreqs)
+  end if
 
   if(doG0W0) then
     
