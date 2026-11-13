@@ -121,7 +121,22 @@ subroutine RGW(dotest,doG0W0,doevGW,doqsGW,maxSCF,thresh,max_diis,doACFDT,      
 ! Perform qsGW calculation
 !------------------------------------------------------------------------
 
-  if(doqsGW) then 
+  if(doqsGW .and. doSRG .and. nfreqs > 1) then
+
+    ! SRG-qsGW with the self-energy built from imaginary-axis data only (no poles of W)
+
+    call wall_time(start_GW)
+    call qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
+                  TDA_W,TDA,dBSE,dTDA,doppBSE,singlet,triplet,eta,doSRG,do_linDM_GW,            &
+                  nNuc,ZNuc,rNuc,ENuc,nBas,nOrb,nC,nO,nV,nR,nS,ERHF,S,X,T,V,Hc,ERI_AO,ERI_MO,   &
+                  dipole_int_AO,dipole_int_MO,PHF,cHF,eHF,nfreqs)
+    call wall_time(end_GW)
+
+    t_GW = end_GW - start_GW
+    write(*,'(A65,1X,F9.3,A8)') 'Total wall time for qsGW (imaginary axis) = ',t_GW,' seconds'
+    write(*,*)
+
+  else if(doqsGW) then 
 
     call wall_time(start_GW)
     call qsRGW(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2, &
