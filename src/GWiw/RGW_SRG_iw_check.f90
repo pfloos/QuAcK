@@ -15,8 +15,8 @@ subroutine RGW_SRG_iw_check(nOrb,nC,nO,nV,nR,nS,eHF,ERI,nfreqs)
 
 ! Local variables
 
-  integer,parameter             :: ns_flow = 3
-  double precision,parameter    :: flows(ns_flow) = (/ 10d0, 100d0, 500d0 /)
+  integer,parameter             :: ns_flow = 4
+  double precision,parameter    :: flows(ns_flow) = (/ 10d0, 100d0, 500d0, 1000d0 /)
   integer                       :: is,p,q
   double precision              :: EcRPA,EcGM,gap,Omin,Omax,emax,emin,errmax,errdiag
   double precision,allocatable  :: Aph(:,:),Bph(:,:),Om(:),XpY(:,:),XmY(:,:),rho(:,:,:)
