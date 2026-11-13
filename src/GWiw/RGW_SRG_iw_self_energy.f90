@@ -70,7 +70,7 @@ subroutine RGW_SRG_iw_self_energy(flow,nOrb,nC,nO,nV,nR,eHF,ERI,nfreqs,SigC)
   Omin  = 0.5d0*gap
   Omax  = 1.3d0*(maxval(e)-minval(e))
   Rpool = max(30d0,1.5d0*(maxval(e)-minval(e)))
-  dfac  = 3d0
+  dfac  = 1d0
   call get_environment_variable('GWIW_DFAC',envval,status=envstat)
   if(envstat == 0) read(envval,*) dfac
   D     = dfac*delta
