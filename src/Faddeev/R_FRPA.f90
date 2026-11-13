@@ -97,7 +97,7 @@ contains
 
     end if
 
-    if(present(ccd_ph).and.present(ccd_pp)) then
+    if(.not.backward.and.present(ccd_ph).and.present(ccd_pp)) then
 ! Static CCD closure: Hermitian parts of the three forward Riccati blocks
 ! A+B*Tph, C+B*Tpp, and D+B^T*Tpp^T. The free energies remain unchanged.
       correction=matmul(Bph,ccd_ph)
@@ -150,12 +150,21 @@ contains
       i=holes(1,r); j=holes(2,r)
       Dhh(r,r)=Dhh(r,r)-e(i)-e(j)+2d0*mu
     end do
-    call solve_RPA('ph',Aph,Bph,Aph,X,Y,w,v)
-    call pair_pencil(X,w,Gph,Kph)
+    if(present(ccd_ph).and.present(ccd_pp)) then
+      call ccd_pair_pencil('ph',Aph,Bph,Aph,ccd_ph,Gph,Kph)
+      call ccd_pair_pencil('pp addition',Cee,Bpp,Dhh,ccd_pp,Gee,Kee)
+      call ccd_pair_pencil('pp removal',Dhh,transpose(Bpp),Cee,transpose(ccd_pp),Ghh,Khh)
+      ! Restore the absolute pair energies after projection.
+      Kee=Kee+2d0*mu*Gee
+      Khh=-Khh+2d0*mu*Ghh
+    else
+      call solve_RPA('ph',Aph,Bph,Aph,X,Y,w,v)
+      call pair_pencil(X,w,Gph,Kph)
 ! Undo the pp chemical-potential shift before adding the spectator energies.
-    call solve_RPA('pp',Cee,Bpp,Dhh,X,Y,w,v)
-    call pair_pencil(X,w+2d0*mu,Gee,Kee)
-    call pair_pencil(Y,v+2d0*mu,Ghh,Khh)
+      call solve_RPA('pp',Cee,Bpp,Dhh,X,Y,w,v)
+      call pair_pencil(X,w+2d0*mu,Gee,Kee)
+      call pair_pencil(Y,v+2d0*mu,Ghh,Khh)
+    end if
 
     allocate(op%removal(2),op%addition(2))
     call make_channels(op%im,op%hh,e(2*nO+1:2*(nOrb-nR)),e(2*nC+1:2*nO), &
@@ -229,6 +238,40 @@ contains
     call dtrsm('L','L','T','N',n,n,1d0,L,n,Z,n)
     X=Z(:na,nc+1:); w=omega(nc+1:)
     Y=Z(na+1:,:nc); v=omega(:nc)
+  end subroutine
+
+  subroutine ccd_pair_pencil(channel,A,B,C,T,G,K)
+! Project the pair Hessian and signature onto the columns of [I; T].
+! When T is an exact RPA amplitude Y*X^(-1), these are the same pair
+! matrices as in pair_pencil. With CCD T this is a projected approximation.
+    use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+    character(*),intent(in) :: channel
+    double precision,intent(in) :: A(:,:),B(:,:),C(:,:),T(:,:)
+    double precision,allocatable,intent(out) :: G(:,:),K(:,:)
+    double precision,allocatable :: check(:,:),BT(:,:)
+    integer :: n,i,info
+
+    n=size(A,1)
+    if(.not.all(ieee_is_finite(T))) error stop 'FRPA: nonfinite CCD pair amplitudes'
+    G=-matmul(transpose(T),T)
+    do i=1,n
+      G(i,i)=G(i,i)+1d0
+    end do
+    check=G
+    call dpotrf('U',n,check,n,info)
+    if(info/=0) then
+      write(*,*) 'FRPA: non-positive CCD pair metric in ',channel
+      error stop 'FRPA: CCD pair amplitudes require a positive metric'
+    end if
+    BT=matmul(B,T)
+    K=A+BT+transpose(BT)+matmul(transpose(T),matmul(C,T))
+    K=0.5d0*(K+transpose(K))
+    check=K
+    call dpotrf('U',n,check,n,info)
+    if(info/=0) then
+      write(*,*) 'FRPA: non-positive projected CCD pair Hessian in ',channel
+      error stop 'FRPA: CCD pair projection requires a stable pair spectrum'
+    end if
   end subroutine
 
   subroutine pair_pencil(X,w,G,K)

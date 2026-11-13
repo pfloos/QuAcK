@@ -18,14 +18,28 @@ The optional standalone record in `input/options` has seven positional fields. K
 | Field | Values and meaning |
 |---|---|
 | `reference` | `0` uses HF energies for internal propagation. `1` uses frozen GW energies |
-| `pairs` | `0` bare, `1` BSE, `2` static CCD interactions |
+| `pairs` | `0` bare, `1` BSE, `2` CCD-amplitude pair interactions |
 | `coupling` | `2` ADC(2), `3` ADC(3), `4` static dressed source, `5` CCD-amplitude coupling |
 | `static3` | Include the third-order static self-energy correction |
 | `external_GW` | Use GW energies in the external one-particle diagonal |
 | `Davidson` | `T` targets principal IP roots. `F` uses dense diagonalization |
 | `n_IP_roots` | Positive root count. In Davidson mode, the count is bounded by the number of active occupied orbitals |
 
-BSE pairs require `reference=1`. CCD pairs are available with FTDA and reject coupling `4`. The reader uses the displayed defaults if the standalone record is absent.
+For FRPA with `pairs=2`, QuAcK solves CCD at the HF reference and reshapes the
+converged doubles amplitudes into each pair channel. For a pair Hessian
+`S = [[A, B], [B^T, C]]` and amplitude matrix `T`, it projects onto
+`P = [I; T]`, giving the pair Hamiltonian `P^T S P` and metric `I - T^T T`.
+The removal channel interchanges the forward and backward pair spaces.
+This projection recovers the RPA pair pencil for exact RPA amplitudes.
+Using CCD amplitudes defines an approximation. QuAcK checks that the projected
+pair metric and Hessian are positive definite. FTDA retains its static
+Hermitian closure.
+
+For example, `0 2 3 T F T 1` selects CCD pairs, ADC(3) couplings and
+Davidson for one IP root. Use `5` in the coupling column to reuse the same
+CCD amplitudes for the external couplings.
+
+BSE pairs require `reference=1`. CCD pairs are available with both FTDA and FRPA and reject coupling `4`. The reader uses the displayed defaults if the standalone record is absent.
 Select one standalone flag per calculation. At this revision, the common
 Faddeev driver uses the CC convergence settings for CCD amplitudes, the GW
 settings for frozen GW energies, and `reg_PA`, `reg_1b`, and `reg_2b` from

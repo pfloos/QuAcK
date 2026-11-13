@@ -15,7 +15,6 @@ subroutine R_Faddeev(working_dir,backward,dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
 
   call read_faddeev_options(working_dir,reference,pairs,coupling,static3,external_gw,iterative,nroots)
   if(iterative.and.nroots>nO-nC) error stop 'Faddeev IP root count exceeds active occupied space'
-  if(pairs==2.and.backward) error stop 'CCD pair interactions are currently defined only for FTDA'
   if(pairs==2.and.coupling==4) error stop 'Dressed sources for CCD pair interactions are not defined'
   if(coupling==5.or.pairs==2) then
     allocate(t(nO-nC,nO-nC,nV-nR,nV-nR))
@@ -42,7 +41,11 @@ subroutine R_Faddeev(working_dir,backward,dotest,nBas,nOrb,nC,nO,nV,nR,nS,ENuc,E
     call ccd_sources(t,Teh,Thh)
     Tee=Thh
     if(pairs==2) then
-      write(*,*) 'Faddeev: static CCD pair interactions'
+      if(backward) then
+        write(*,*) 'Faddeev: CCD pair interactions with projected RPA metric'
+      else
+        write(*,*) 'Faddeev: static CCD pair interactions'
+      end if
       ccd_ph=Teh; ccd_pp=Thh
     end if
     deallocate(t)
