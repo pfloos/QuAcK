@@ -52,14 +52,16 @@ def main():
                                       str(case), '-x', 'target', '-b', str(basis), '-nc'])
         for index, method in enumerate(('FTDA', 'FRPA')):
             (case / 'input/methods').write_text(modify(methods, '# FTDA FRPA', {index: 'T'}))
-            for coupling in (2, 3, 4, 5):
-                opts = modify(options, '# Faddeev:', {2: str(coupling), 5: 'F', 6: str(nroots)})
+            for pairs, coupling in ((0, 2), (0, 3), (0, 4), (0, 5), (2, 3), (2, 5)):
+                opts = modify(options, '# Faddeev:', {1: str(pairs), 2: str(coupling), 5: 'F', 6: str(nroots)})
                 (case / 'input/options').write_text(opts)
-                dense = run(case, f'{name}-{method}-{coupling}-dense')
+                dense = run(case, f'{name}-{method}-{pairs}-{coupling}-dense')
+                if method == 'FRPA' and pairs == 2:
+                    assert 'CCD pair interactions with projected RPA metric' in dense
                 exact = {orb: energy for orb, _, energy, _ in table(dense, 'dominant poles:', 4)}
                 weights = table(dense, 'poles: index, energy', 3)
                 (case / 'input/options').write_text(modify(opts, '# Faddeev:', {5: 'T'}))
-                iterative = run(case, f'{name}-{method}-{coupling}-davidson')
+                iterative = run(case, f'{name}-{method}-{pairs}-{coupling}-davidson')
                 assignments = table(iterative, 'Faddeev HF assignments:', 3)
                 poles = table(iterative, 'Faddeev-Parquet IP roots:', 5)
                 assert len(assignments) == len(poles) == nroots
@@ -67,7 +69,7 @@ def main():
                     assert abs(exact[orbital] - pole) < 2e-6
                     assert abs(sum(w for _, energy, w in weights if abs(energy-pole) < 2e-6) - z) < 2e-7
                     assert residual < 1.0001e-8
-                print(f'PASS {name} {method} coupling {coupling} dense/Davidson')
+                print(f'PASS {name} {method} pairs {pairs} coupling {coupling} dense/Davidson')
         (case / 'input/methods').write_text(modify(methods, '# evParquet ', {0: 'T'}))
         (case / 'input/options').write_text(modify(options, '# Parquet self-energy:', {0: '2'}))
         run(case, name + '-retired-parquet-selector', error='Faddeev moved to standalone FTDA/FRPA')
