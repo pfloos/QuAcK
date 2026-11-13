@@ -333,6 +333,16 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 
   end if
 
+! Total energy including the GM correlation energy (from Xo(iw))
+
+  write(*,*)
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(2X,A50,F20.10,A3)') 'qsGW@RHF (imag. axis) electronic + nuclear energy = ',ENuc + EqsGW,' au'
+  write(*,'(2X,A50,F20.10,A3)') 'GM correlation energy from Xo(iw)               = ',EcGM,' au'
+  write(*,'(2X,A50,F20.10,A3)') 'GM@qsGW@RHF total energy (incl. correlation)     = ',ENuc + EqsGW + EcGM,' au'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)
+
 ! Deallocate memory
 
   deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,err,err_diis,F_diis,vMAT,wweight,wcoord,eTmp)
