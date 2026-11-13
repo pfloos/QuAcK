@@ -106,6 +106,10 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
   double precision,allocatable  :: err(:,:)
   double precision,allocatable  :: vMAT(:,:),wweight(:),wcoord(:),eTmp(:)
   double precision              :: EcRPA_iw
+  character(len=32)             :: envval
+  integer                       :: envstat,iunit,nBas_r,nOrb_r
+  logical                       :: file_exists
+  double precision,allocatable  :: Zfac(:)
   integer                       :: ip,iq,ir,is,nOrb2
   
 
@@ -183,6 +187,26 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
   F_diis(:,:)   = 0d0
   err_diis(:,:) = 0d0
   rcond         = 0d0
+  EcRPA         = 0d0
+  EcGM          = 0d0
+  EqsGW         = 0d0
+  SigC(:,:)     = 0d0
+
+! Restart: GWIW_RESTART=1 reads the converged orbitals from ./qsGW_iw_restart.bin and skips the SCF cycles
+
+  call get_environment_variable('GWIW_RESTART',envval,status=envstat)
+  if(envstat == 0 .and. envval(1:1) /= '0') then
+    inquire(file='./qsGW_iw_restart.bin',exist=file_exists)
+    if(.not.file_exists) error stop 'qsRGW_iw: GWIW_RESTART set but ./qsGW_iw_restart.bin not found'
+    open(newunit=iunit,file='./qsGW_iw_restart.bin',form='unformatted',status='old')
+    read(iunit) nBas_r,nOrb_r
+    if(nBas_r /= nBas .or. nOrb_r /= nOrb) error stop 'qsRGW_iw: restart file has wrong dimensions'
+    read(iunit) c,eGW,SigC,EcGM,EcRPA,EqsGW
+    close(iunit)
+    Conv = 0d0
+    write(*,*) 'Converged qsGW orbitals read from ./qsGW_iw_restart.bin: SCF cycles skipped'
+    write(*,*)
+  end if
 
 !------------------------------------------------------------------------
 ! Main loop
@@ -329,6 +353,38 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     stop
 
   end if
+
+! Save the converged orbitals so that the final stage can be rerun without the SCF cycles
+
+  open(newunit=iunit,file='./qsGW_iw_restart.bin',form='unformatted',status='replace')
+  write(iunit) nBas,nOrb
+  write(iunit) c,eGW,SigC,EcGM,EcRPA,EqsGW
+  close(iunit)
+
+! Quasiparticle renormalization factors Z, once, on the converged orbitals (imaginary-axis data only)
+
+  call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI_MO)
+  allocate(Zfac(nOrb))
+  call RGW_iw_Z(flow,nOrb,nC,nO,nV,nR,eGW,ERI_MO,nfreqs,Zfac)
+
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(1X,A)') 'Converged qsGW@RHF (imag. axis SRG): quasiparticle renormalization factors'
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,'(1X,A1,1X,A3,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1,1X,A15,1X,A1)') &
+            '|','#','|','e_HF (eV)','|','Sig_SRG (eV)','|','Z','|','e_GW (eV)','|'
+  write(*,*)'-------------------------------------------------------------------------------'
+  do ip=nC+1,nO
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1)') &
+      '|',ip,'|',eHF(ip)*HaToeV,'|',SigC(ip,ip)*HaToeV,'|',Zfac(ip),'|',eGW(ip)*HaToeV,'|'
+  end do
+  write(*,*)'-------------------------------------------------------------------------------'
+  do ip=nO+1,nOrb-nR
+    write(*,'(1X,A1,1X,I3,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1,1X,F15.6,1X,A1)') &
+      '|',ip,'|',eHF(ip)*HaToeV,'|',SigC(ip,ip)*HaToeV,'|',Zfac(ip),'|',eGW(ip)*HaToeV,'|'
+  end do
+  write(*,*)'-------------------------------------------------------------------------------'
+  write(*,*)
+  deallocate(Zfac)
 
 ! Deallocate memory
 
