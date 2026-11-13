@@ -1,10 +1,13 @@
 subroutine RGW_iw_Z(flow,nOrb,nC,nO,nV,nR,eHF,ERI,nfreqs,Z)
 
-! Quasiparticle renormalization factor  Z_p = 1/(1 - Re dSigma_c,pp/dw |_{w=e_p})  from imaginary-axis data only
-! (no poles of W). Sigma_c,pp(z) is evaluated by contour deformation exactly as in RGW_SRG_iw_self_energy
-! (energy-specific least-squares weights on the greenX grid + residues of the continued W) and differentiated
-! by a central finite difference along the real direction, at z = e_p +- h + i dZ (defaults h = 0.002, dZ = 0.01 Ha;
-! GWIW_ZH / GWIW_ZDELTA override). A large dZ (e.g. 1/sqrt(s)) smears Sigma_c and biases Z (H2: 0.64 vs 0.51 for orbital 7).
+! SRG quasiparticle renormalization factor of Marie and Loos (restricted case), from imaginary-axis data only:
+!
+!   1/Z_p = 1 + sum_{r,nu} M_pr,nu^2 g_s(e_p - w_r,nu) ,   g_s(D) = (1 - exp(-2 s D^2))/D^2   (entire function)
+!         = 1 - (1/pi) Im  int dx  g_s(e_p - z) Sigma_c,pp(z) ,   z = x + i delta
+!
+! (same contour representation as the static SRG self-energy, with the kernel K_s(D,D) replaced by g_s).
+! Sigma_c,pp(z) is evaluated by contour deformation exactly as in RGW_SRG_iw_self_energy (energy-specific
+! least-squares weights on the greenX grid + residues of the continued W). No finite differences.
 !
 ! Intended to be called once, at the end of the SCF cycles. Frozen core is not implemented (nC = nR = 0).
 
@@ -26,15 +29,18 @@ subroutine RGW_iw_Z(flow,nOrb,nC,nO,nV,nR,eHF,ERI,nfreqs,Z)
 
   integer,parameter             :: nTest = 600
   integer,parameter             :: nblkmax = 400
+  integer                       :: n2,p,q,r,k,iref,nref,nrow,nb
 
-  integer                       :: n2,p,q,r,k,iref,nref,nrow,nb,is
-  double precision              :: mu,gap,delta,Omin,Omax,Rpool,D,h,dZ,wall0,wall1
-  character(len=32)             :: envval
-  integer                       :: envstat
+  integer,parameter             :: nnodes_max = 3000000
+  integer                       :: j,nnodes
+  double precision              :: mu,gap,delta,Omin,Omax,Rpool,D,wall0,wall1
+  double precision,allocatable  :: xnode(:),wnode(:),S(:)
+  complex(kind=8)               :: zc,Dl,u,gz
+  complex(kind=8),allocatable   :: Sg(:)
   double precision,allocatable  :: e(:),wk(:),Omtest(:),P_lsq(:,:),vMAT(:,:),coef(:,:,:,:)
   integer,allocatable           :: nblk(:,:)
   complex(kind=8),allocatable   :: omref(:),Wref(:,:,:,:),Fref(:),Wtmp(:,:,:),zk(:)
-  complex(kind=8)               :: zz(2),Sg(2),a
+  complex(kind=8)               :: a
   complex(kind=8),external      :: GWiw_AC_sym_even_eval
 
   if(nC /= 0 .or. nR /= 0) error stop 'RGW_iw_Z: frozen core / removed virtuals not implemented'
@@ -56,16 +62,8 @@ subroutine RGW_iw_Z(flow,nOrb,nC,nO,nV,nR,eHF,ERI,nfreqs,Z)
   D     = delta
   nrow  = int(Rpool/D)
   nref  = nfreqs + nrow
-  h     = 0.002d0
-  dZ    = 0.01d0
-  call get_environment_variable('GWIW_ZH',envval,status=envstat)
-  if(envstat == 0) read(envval,*) h
-  call get_environment_variable('GWIW_ZDELTA',envval,status=envstat)
-  if(envstat == 0) read(envval,*) dZ
-  write(*,'(A,2F10.5)') '   Finite-difference step h and contour height for Z = ',h,dZ
-
   write(*,*)
-  write(*,*) '*** Z factors from imaginary-axis data (finite difference of Sigma_c(z)) ***'
+  write(*,*) '*** SRG Z factors from imaginary-axis data (contour integral) ***'
   write(*,*)
 
   allocate(vMAT(n2,n2))
@@ -117,40 +115,57 @@ subroutine RGW_iw_Z(flow,nOrb,nC,nO,nV,nR,eHF,ERI,nfreqs,Z)
   end do
   !$OMP END PARALLEL DO
 
-! Z_p from dSigma_c,pp/dw at w = e_p
+! Contour integral
 
-  Z = 0d0
+  allocate(xnode(nnodes_max),wnode(nnodes_max))
+  call GWiw_SRG_contour_nodes(nOrb,e,flow,delta,Omax,nnodes_max,nnodes,xnode,wnode)
+  write(*,'(A,I8)') '   Contour nodes                  = ',nnodes
 
-  !$OMP PARALLEL DO PRIVATE(p,is,r,k,a,zz,Sg,zk) SHARED(nOrb,nO,nfreqs,e,dZ,h,P_lsq,Omtest,Wref,coef,nblk,Z) &
-  !$OMP DEFAULT(NONE) SCHEDULE(DYNAMIC)
-  do p=1,nOrb
-    allocate(zk(nfreqs))
-    zz(1) = cmplx(e(p)-h,dZ,kind=8)
-    zz(2) = cmplx(e(p)+h,dZ,kind=8)
-    Sg    = (0d0,0d0)
-    do is=1,2
-      do r=1,nOrb
-        a = zz(is) - e(r)
-        call GWiw_LSQ_weights(nfreqs,nTest,P_lsq,Omtest,a,zk)
+  allocate(S(nOrb))
+  S = 0d0
+
+  !$OMP PARALLEL PRIVATE(j,zc,a,Sg,zk,r,p,k,Dl,u,gz) SHARED(nnodes,xnode,wnode,delta,e,nOrb,nO,nfreqs,P_lsq,Omtest,Wref,coef,nblk,flow) &
+  !$OMP REDUCTION(+:S) DEFAULT(NONE)
+  allocate(Sg(nOrb),zk(nfreqs))
+  !$OMP DO SCHEDULE(STATIC)
+  do j=1,nnodes
+    zc = cmplx(xnode(j),delta,kind=8)
+    Sg = (0d0,0d0)
+    do r=1,nOrb
+      a = zc - e(r)
+      call GWiw_LSQ_weights(nfreqs,nTest,P_lsq,Omtest,a,zk)
+      do p=1,nOrb
         do k=1,nfreqs
-          Sg(is) = Sg(is) + zk(k)*Wref(p,p,r,k)
+          Sg(p) = Sg(p) + zk(k)*Wref(p,p,r,k)
         end do
         if(r <= nO .and. real(a) < 0d0) then
-          Sg(is) = Sg(is) - GWiw_AC_sym_even_eval(nblk(p,r),coef(1,1,p,r),e(r)-zz(is))
+          Sg(p) = Sg(p) - GWiw_AC_sym_even_eval(nblk(p,r),coef(1,1,p,r),e(r)-zc)
         else if(r > nO .and. real(a) >= 0d0) then
-          Sg(is) = Sg(is) + GWiw_AC_sym_even_eval(nblk(p,r),coef(1,1,p,r),zz(is)-e(r))
+          Sg(p) = Sg(p) + GWiw_AC_sym_even_eval(nblk(p,r),coef(1,1,p,r),zc-e(r))
         end if
       end do
     end do
-    Z(p) = 1d0/(1d0 - real(Sg(2)-Sg(1))/(2d0*h))
-    deallocate(zk)
+    do p=1,nOrb
+      Dl = e(p) - zc
+      u  = 2d0*flow*Dl*Dl
+      if(abs(u) < 1d-6) then
+        gz = 2d0*flow*(1d0 - u/2d0 + u*u/6d0)
+      else
+        gz = (1d0 - exp(-u))/(Dl*Dl)
+      end if
+      S(p) = S(p) - aimag(gz*Sg(p))*wnode(j)/pi
+    end do
   end do
-  !$OMP END PARALLEL DO
+  !$OMP END DO
+  deallocate(Sg,zk)
+  !$OMP END PARALLEL
+
+  Z(:) = 1d0/(1d0 + S(:))
 
   call wall_time(wall1)
   write(*,'(A,F10.3,A)') '   Wall time for the Z factors = ',wall1-wall0,' seconds'
   write(*,*)
 
-  deallocate(e,vMAT,wk,Omtest,P_lsq,omref,Wref,coef,nblk)
+  deallocate(e,vMAT,wk,Omtest,P_lsq,omref,Wref,coef,nblk,xnode,wnode,S)
 
 end subroutine
