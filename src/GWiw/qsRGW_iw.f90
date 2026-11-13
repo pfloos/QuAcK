@@ -5,7 +5,8 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 
 ! Quasiparticle self-consistent GW with the SRG static self-energy computed from imaginary-axis data only
 ! (RGW_SRG_iw_self_energy, no poles of W). Same structure as qsRGW; the pole-based
-! SigC is replaced by the imaginary-axis one. Z and EcGM are not computed here (printed as 1 and 0).
+! SigC is replaced by the imaginary-axis one. EcGM (and a check of EcRPA) come from Xo(iw)
+! (EcRPA_EcGM_w_RHF, unregularised GM energy). Z is not computed here (printed as 1).
 ! BSE and linearized-density-matrix options are not available in this variant.
 
   implicit none
@@ -104,6 +105,9 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
   double precision,allocatable  :: SigCp(:,:)
   double precision,allocatable  :: Z(:)
   double precision,allocatable  :: err(:,:)
+  double precision,allocatable  :: vMAT(:,:),wweight(:),wcoord(:),eTmp(:)
+  double precision              :: EcRPA_iw
+  integer                       :: ip,iq,ir,is,nOrb2
   
 
 ! Hello world
@@ -161,6 +165,11 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
   allocate(XpY(nS,nS))
   allocate(XmY(nS,nS))
 
+  nOrb2 = nOrb*nOrb
+  allocate(vMAT(nOrb2,nOrb2),wweight(nfreqs),wcoord(nfreqs),eTmp(nOrb))
+  call GWiw_read_wweight(nfreqs,wweight)
+  call GWiw_read_wcoord(nfreqs,wcoord)
+
   allocate(err_diis(nBas_Sq,max_diis))
   allocate(F_diis(nBas_Sq,max_diis))
 
@@ -213,7 +222,21 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
 
     call RGW_SRG_iw_self_energy(flow,nOrb,nC,nO,nV,nR,eGW,ERI_MO,nfreqs,SigC)
     Z(:)  = 1d0
-    EcGM  = 0d0
+
+    ! GM (and RPA) correlation energies from Xo(iw): vMAT(r+(p-1)n, s+(q-1)n) = <pq|rs>
+
+    do ip=1,nOrb
+      do iq=1,nOrb
+        do ir=1,nOrb
+          do is=1,nOrb
+            vMAT(1+(ir-1)+(ip-1)*nOrb,1+(is-1)+(iq-1)*nOrb) = ERI_MO(ip,iq,ir,is)
+          end do
+        end do
+      end do
+    end do
+    eTmp(:) = eGW(:)
+    call EcRPA_EcGM_w_RHF(nOrb,nO,0,eTmp,nfreqs,0,wweight,wcoord,vMAT,0d0,EcRPA_iw,EcGM)
+    if(print_W) write(*,'(A,2F16.10)') ' EcRPA (phRLR, Xo(iw)) = ',EcRPA,EcRPA_iw
 
     ! Make correlation self-energy Hermitian and transform it back to AO basis
    
@@ -305,14 +328,14 @@ subroutine qsRGW_iw(dotest,maxSCF,thresh,max_diis,doACFDT,exchange_kernel,doXBS,
     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     write(*,*)
 
-    deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,err,err_diis,F_diis)
+    deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,err,err_diis,F_diis,vMAT,wweight,wcoord,eTmp)
     stop
 
   end if
 
 ! Deallocate memory
 
-  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,err,err_diis,F_diis)
+  deallocate(c,cp,P,F,Fp,J,K,SigC,SigCp,Z,Om,XpY,XmY,err,err_diis,F_diis,vMAT,wweight,wcoord,eTmp)
   
 ! Testing zone
 
