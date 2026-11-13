@@ -295,7 +295,7 @@ subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np
   if(dressed) then
     ns=(nO-nC)*(nOrb-nR-nO); nh=(nO-nC)*(nO-nC-1)/2
     ne=(nOrb-nR-nO)*(nOrb-nR-nO-1)/2
-    allocate(ph(nOrb,nOrb),hh(nOrb,nOrb),ee(nOrb,nOrb))
+    allocate(ph(nOrb,nOrb),hh(nOrb,nOrb),ee(nOrb,nOrb),t2(0,0,0,0))
     ph=0; hh=0; ee=0; r=0
     do i=nC+1,nO
       do a=nO+1,nOrb-nR
@@ -315,6 +315,7 @@ subroutine G_TDA_Faddeev_vertices(adc2,reg_PA,eta,nERI,nOrb,nC,nO,nR,nphys,nm,np
       end do
     end do
   else
+  allocate(ph(0,0),hh(0,0),ee(0,0))
   allocate(t2(nC+1:nO,nC+1:nO,nO+1:nOrb-nR,nO+1:nOrb-nR))
   do b=nO+1,nOrb-nR
     do a=nO+1,nOrb-nR

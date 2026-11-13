@@ -261,8 +261,8 @@ contains
     double precision,allocatable :: W(:,:),B(:,:),C(:,:),Z(:,:),D(:,:),eval(:),mu(:)
     double precision :: cutoff,norm
     integer :: i,k,rank,nn
+    allocate(W(size(AV,1),size(AV,2)),B(m,m),C(m,m))
     W=AV-shift*V
-    allocate(B(m,m),C(m,m))
     call dgemm('T','N',m,m,size(V,1),1d0,V,size(V,1),W,size(W,1),0d0,B,m)
     B=0.5d0*(B+transpose(B))
     call dgemm('T','N',m,m,size(W,1),1d0,W,size(W,1),W,size(W,1),0d0,C,m)
