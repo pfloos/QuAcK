@@ -692,8 +692,6 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
                             maxSCF_COT,scThreshold,maxDIIS_COT,rootWidth,useCOTSRG,srgFlow)
       if(useCOTSRG) then
         write(*,'(A,ES12.4)') 'COT dynamical SRG-GW flow (Eh^-2): ',srgFlow
-      else
-        srgFlow=0d0
       end if
       if(doosCOT) then
         allocate(hCOT(nOrb,nOrb),hHerm(nOrb,nOrb),eCOT(nOrb),T_MO(nOrb,nOrb),V_MO(nOrb,nOrb),fock(nOrb,nOrb))
@@ -705,7 +703,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
           fock(p,p)=eHF(p)
         end do
         call osCOT(TDA_COT,useCOTDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
-                   ENuc,T_MO,V_MO,fock,eHF,ERI_MO,hCOT,hHerm,eCOT,totalEnergyCOT,infoCOT,'RHF',0d0,srgFlow)
+                   ENuc,T_MO,V_MO,fock,eHF,ERI_MO,hCOT,hHerm,eCOT,totalEnergyCOT,infoCOT,'RHF',0d0,useCOTSRG,srgFlow)
         if(infoCOT /= 0) then
           write(*,'(A,I0)') 'osCOT failed with info = ',infoCOT
           error stop 'osCOT calculation failed'
@@ -716,7 +714,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
       end if
       if(doscCOT) then
         call wall_time(start_COT)
-        call scCOT(TDA_COT,useCOTDavidson,davidsonThreshold,maxSCF_COT,scThreshold,maxDIIS_COT,rootWidth,srgFlow, &
+        call scCOT(TDA_COT,useCOTDavidson,davidsonThreshold,maxSCF_COT,scThreshold,maxDIIS_COT,rootWidth,useCOTSRG,srgFlow, &
                    nBas,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,Hc,ERI_AO,cHF,eHF,infoCOT)
         if(infoCOT /= 0) then
           write(*,'(A,I0)') 'scCOT failed with info = ',infoCOT

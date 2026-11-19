@@ -1,4 +1,4 @@
-subroutine scCOT(TDA_COT,useDavidson,davidsonThreshold,maxSCF,threshold,maxDIIS,rootWidth,srgFlow, &
+subroutine scCOT(TDA_COT,useDavidson,davidsonThreshold,maxSCF,threshold,maxDIIS,rootWidth,useSRG,srgFlow, &
                  nBas,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,Hc,ERI_AO,cHF,eHF,info)
 
 ! Iterate the Hermitian COT Hamiltonian in the fixed RHF orbital basis.
@@ -7,7 +7,7 @@ subroutine scCOT(TDA_COT,useDavidson,davidsonThreshold,maxSCF,threshold,maxDIIS,
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
 
-  logical,intent(in) :: TDA_COT,useDavidson
+  logical,intent(in) :: TDA_COT,useDavidson,useSRG
   integer,intent(in) :: maxSCF,maxDIIS,nBas,nOrb,nC,nO,nV,nR,nS
   double precision,intent(in) :: davidsonThreshold,threshold,rootWidth,srgFlow,ENuc
   double precision,intent(in) :: T(nBas,nBas),V(nBas,nBas),Hc(nBas,nBas)
@@ -66,7 +66,7 @@ subroutine scCOT(TDA_COT,useDavidson,davidsonThreshold,maxSCF,threshold,maxDIIS,
     end if
     call AOtoMO_ERI_RHF(nBas,nOrb,c,ERI_AO,ERI)
     call osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
-               ENuc,T_MO,V_MO,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,'',rootWidth,srgFlow)
+               ENuc,T_MO,V_MO,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,'',rootWidth,useSRG,srgFlow)
     if(info /= 0) return
 
     hOutput=matmul(rotation,matmul(hHerm(first:last,first:last),transpose(rotation)))
@@ -80,7 +80,7 @@ subroutine scCOT(TDA_COT,useDavidson,davidsonThreshold,maxSCF,threshold,maxDIIS,
       call AOtoMO(nBas,nOrb,c,T,T_MO)
       call AOtoMO(nBas,nOrb,c,V,V_MO)
       call osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
-                 ENuc,T_MO,V_MO,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,'scCOT input',rootWidth,srgFlow)
+                 ENuc,T_MO,V_MO,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,'scCOT input',rootWidth,useSRG,srgFlow)
       return
     end if
     if(iteration == maxSCF) exit

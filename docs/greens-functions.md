@@ -60,13 +60,16 @@ one-to-one assignment. The default of 0 uses unweighted orbital character.
 A positive width can change the selected poles. `osCOT` always uses
 unweighted orbital character.
 
-`SRG = T` enables the finite-flow dynamical SRG-GW supermatrix for both
-COT methods. The second-order static correction enters the physical block
-and the exponentially flowed couplings retain the frequency-dependent
-self-energy after downfolding. The auxiliary energies are kept at zeroth
-order. The gaps use the eigenvalues of the physical Fock block and the
-auxiliary energies. `flow` is in inverse squared hartree. At zero flow
-the original supermatrix is recovered.
+`SRG = T` enables complementary dynamical SRG damping for both COT
+methods. The physical Fock block and auxiliary energies are unchanged.
+Each coupling is multiplied by
+\(\sqrt{1-\exp[-2t(\varepsilon_p-D_\alpha)^2]}\), using the reference
+orbital energies and auxiliary poles. This preserves a Hermitian
+supermatrix and reproduces the diagonal SRG-GW self-energy at the
+reference energies. The numerator is frozen in frequency and the
+off-diagonal residues use the product of the two coupling factors.
+`flow` is in inverse squared hartree. Zero flow with SRG enabled
+removes the dynamical couplings. Set `SRG = F` for the bare GW supermatrix.
 
 `Davidson = T` uses the current reference orbitals as seeds to follow one
 pole per active occupied and virtual orbital without storing the supermatrix.

@@ -1,5 +1,5 @@
 subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
-                   ENuc,T,V,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,reportReference,rootWidth,srgFlow)
+                   ENuc,T,V,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,reportReference,rootWidth,useSRG,srgFlow)
 
 ! One-shot GW-based correlated-orbital theory (COT), restricted closed shell.
 !
@@ -42,7 +42,7 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   implicit none
   include 'parameters.h'
 
-  logical,intent(in)            :: TDA_COT,useDavidson
+  logical,intent(in)            :: TDA_COT,useDavidson,useSRG
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
   double precision,intent(in)   :: davidsonThreshold,rootWidth,srgFlow,ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
   double precision,intent(in)   :: fock(nOrb,nOrb),eRef(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
@@ -165,7 +165,7 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
 
   allocate(physical(nAct,nAct),roots(nH,nAct))
   physical=fock(nC+1:nOrb-nR,nC+1:nOrb-nR)
-  if(srgFlow > 0d0) call RGW_COT_SRG(nAct,nAux,srgFlow,physical,B,D)
+  if(useSRG) call RGW_COT_SRG(nAct,nAux,srgFlow,eRef(nC+1:nOrb-nR),B,D)
   call RGW_COT_roots(useDavidson,davidsonThreshold,nAct,nAux,physical,B,D, &
                      eRef(nC+1:nOrb-nR),rootWidth, &
                      eCOT(nC+1:nOrb-nR),roots,info)
