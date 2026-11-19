@@ -32,6 +32,7 @@ GF2 and GF3	evGF3	yes	—	—	src/GF	Eigenvalue-self-consistent GF3
 GF2 and GF3	scGF2	yes	—	—	src/QuAcK	Bogoliubov variant also dispatched in B
 GW	G0W0, evGW, qsGW	yes	yes	yes	src/GW	BSE support depends on the parent method and channel
 GW	scGW	yes	—	—	src/QuAcK	Bogoliubov variant also dispatched in B
+GW	COT	yes	—	—	src/GW/RGW_COT.f90	Dense single-shot correlated orbital theory for canonical RHF
 T-matrix	G0T0pp	yes	yes	yes	src/GT	Single-shot particle–particle T-matrix
 T-matrix	evGTpp, qsGTpp	yes	yes	—	src/GT	Particle–particle T-matrix with self-consistency
 T-matrix	ufG0T0pp	yes	—	—	src/GT	Upfolded particle–particle T-matrix

@@ -15,7 +15,7 @@ program QuAcK
   logical                       :: dophRPA,dophRPAx,docrRPA,doppRPA,doBRPA
   logical                       :: doOO
   logical                       :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doscGF2
-  logical                       :: doG0W0,doevGW,doqsGW
+  logical                       :: doG0W0,doevGW,doqsGW,doCOT
   logical                       :: docG0W0,docG0F2,doscGW
   logical                       :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh
   logical                       :: doCAP
@@ -217,7 +217,7 @@ program QuAcK
                     do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                        & 
                     do_ADC_GW,do_ADC_2SOSEX,                                      &
                     do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2,                       &
-                    doRtest,doUtest,doGtest)
+                    doRtest,doUtest,doGtest,doCOT)
 
   write(*,*) '============================================================'
   write(*,*) '                     Methods File                           '
@@ -408,6 +408,11 @@ program QuAcK
       error stop 'Standalone Faddeev requires the standard canonical RHF driver'
   end if
 
+  if(doCOT) then
+    if(.not.doRHF.or.doCAP.or.doROHF.or.doeRHF.or.doMOM.or.switch_hpc) &
+      error stop 'COT requires the standard canonical RHF driver'
+  end if
+
 !-----------------!
 ! Initialize Test !
 !-----------------!
@@ -440,7 +445,7 @@ program QuAcK
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     &
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doG0W0,doevGW,doqsGW,                                     &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet, &
-                  doFTDA,doFRPA, &
+                  doFTDA,doFRPA,doCOT, &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           &
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          &

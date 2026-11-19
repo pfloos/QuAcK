@@ -71,15 +71,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
   double precision,allocatable  :: eGWlin(:)
   double precision,allocatable  :: eGW(:)
 
-! GW-based COT: toggle locally, without changing QuAcK's input format.
-! The dense COT diagonalization is intended only for small systems.
-
-  logical,parameter             :: doCOT = .false.
-  integer                       :: infoCOT
-  double precision,allocatable  :: hCOT(:,:)
-  double precision,allocatable  :: hCOTH(:,:)
-  double precision,allocatable  :: eCOT(:)
-
 ! Output variables
 
   double precision,intent(out)  :: eGW_out(nOrb)
@@ -132,31 +123,6 @@ subroutine RG0W0(dotest,doACFDT,exchange_kernel,doXBS,dophBSE,dophBSE2,TDA_W,TDA
 !--------------------------!
 
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
-
-!-------------------------------!
-! GW-based COT (one-shot G0W0) !
-!-------------------------------!
-!
-! Use exactly the same RPA eigenvalues and transition densities as G0W0.
-! hCOT  = non-Hermitian Bloch effective Hamiltonian
-! hCOTH = equivalent Hermitian Hamiltonian for comparison with static qsGW
-! eCOT  = selected quasiparticle energies
-!
-! The current dense implementation is a reference calculation, not a
-! scalable solver. RGW_COT returns infoCOT /= 0 when it cannot proceed.
-
-  if(doCOT) then
-
-    allocate(hCOT(nOrb,nOrb),hCOTH(nOrb,nOrb),eCOT(nOrb))
-    call RGW_COT(nOrb,nC,nO,nR,nS,eHF,Om,rho,hCOT,hCOTH,eCOT,infoCOT)
-
-    if(infoCOT /= 0) then
-      write(*,'(A,I0)') 'Warning: GW-COT did not complete successfully; info = ',infoCOT
-    end if
-
-    deallocate(hCOT,hCOTH,eCOT)
-
-  end if
 
 !--------------------------------------!
 ! Linearized density matrix correction !

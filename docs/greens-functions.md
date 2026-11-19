@@ -26,6 +26,14 @@ routes are `G0F3`, `evGF3`, and `psdG0F3`. See the catalogue for driver coverage
 | `evGW` | Eigenvalue self-consistency with fixed orbitals | R, U, G |
 | `qsGW` | Quasiparticle self-consistency with an updated effective Hamiltonian and orbitals | R, U, G |
 | `scGW` | Fully self-consistent GW on the imaginary axis | R and a dedicated Bogoliubov branch |
+| `COT` | Single-shot correlated orbital theory based on the GW supermatrix | R |
+
+Enable `RHF` and `COT` in `input/methods` to run COT. In an older input file,
+append a `# COT` line followed by `T` on the next line. `G0W0` can be enabled
+separately for comparison. COT builds direct-RPA screening from the RHF
+reference and uses the `TDA_W` option for TDA screening. It reports the selected
+quasiparticle energies and their one-particle weights. The dense solver is
+intended for small systems and limits the supermatrix dimension to 4000.
 
 ## T-matrix
 

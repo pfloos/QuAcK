@@ -1,10 +1,10 @@
-subroutine RGW_COT(nOrb,nC,nO,nR,nS,eHF,Om,rho,hCOT,hHerm,eCOT,info)
+subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,eHF,ERI,hCOT,hHerm,eCOT,info)
 
 ! One-shot GW-based correlated-orbital theory (COT), restricted closed shell.
 !
-! This is the dense, reference implementation: diagonalize the Hermitian
-! upfolded G0W0 supermatrix, select one quasiparticle root per active orbital,
-! and construct the Bloch effective one-particle Hamiltonian.
+! Build the reference screening and diagonalize the Hermitian G0W0 supermatrix.
+! Select one quasiparticle root per active orbital and construct the Bloch
+! effective one-particle Hamiltonian.
 !
 ! Sigma_c(p,q;w) = 2 sum_{im} rho(p,i,m)rho(q,i,m)/(w-e_i+Om_m)
 !                 + 2 sum_{am} rho(p,a,m)rho(q,a,m)/(w-e_a-Om_m)
@@ -29,13 +29,16 @@ subroutine RGW_COT(nOrb,nC,nO,nR,nS,eHF,Om,rho,hCOT,hHerm,eCOT,info)
 !        3 eigensolver/SVD/linear solve failed
 !        4 selected one-particle projection ill-conditioned
 !        5 invariance/eigenvalue residual failed
+!        6 screening modes are nonfinite or have nonpositive energies
 
+  use, intrinsic :: iso_fortran_env, only: int64
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   include 'parameters.h'
 
-  integer,intent(in)            :: nOrb,nC,nO,nR,nS
-  double precision,intent(in)   :: eHF(nOrb),Om(nS)
-  double precision,intent(in)   :: rho(nOrb,nOrb,nS)
+  logical,intent(in)            :: TDA_W
+  integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
+  double precision,intent(in)   :: eHF(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(out)  :: hCOT(nOrb,nOrb),hHerm(nOrb,nOrb)
   double precision,intent(out)  :: eCOT(nOrb)
   integer,intent(out)           :: info
@@ -45,10 +48,13 @@ subroutine RGW_COT(nOrb,nC,nO,nR,nS,eHF,Om,rho,hCOT,hHerm,eCOT,info)
   double precision,parameter    :: residualTol = 1d-7
 
   integer                       :: nAct,nOcc,nVir,nAux,nH
+  integer(int64)                :: dense_dimension
   integer                       :: p,q,k,mu,i,a,m,j,ibest,pbest,istat,lwork
   integer,allocatable           :: picked(:),ipiv(:)
   logical,allocatable           :: usedState(:),usedOrb(:)
   double precision              :: best,val,condition,resid,ediff,swap
+  double precision              :: EcRPA
+  double precision,allocatable  :: Aph(:,:),Bph(:,:),Om(:),XpY(:,:),XmY(:,:),rho(:,:,:)
   double precision,allocatable  :: H(:,:),E(:),B(:,:),D(:)
   double precision,allocatable  :: RP(:,:),RQ(:,:),RPwork(:,:),rhs(:,:),S(:,:)
   double precision,allocatable  :: sig(:),work(:),N(:,:),eN(:),Nhalf(:,:)
@@ -67,20 +73,39 @@ subroutine RGW_COT(nOrb,nC,nO,nR,nS,eHF,Om,rho,hCOT,hHerm,eCOT,info)
 
   nAct=nOrb-nC-nR
   nOcc=nO-nC
-  nVir=nOrb-nR-nO
-  if(nAct < 1 .or. nOcc < 0 .or. nVir < 0 .or. nS < 0) then
+  nVir=nV-nR
+  if(nC < 0 .or. nR < 0 .or. nAct < 1 .or. nOcc < 0 .or. nVir < 0 .or. &
+     nV /= nOrb-nO .or. nS /= int(nOcc,int64)*nVir) then
     info=1
     return
   end if
-  if(nS == 0) return
+  if(nS == 0) then
+    write(*,'(A)') 'GW-COT: empty screening space. The COT Hamiltonians reduce to the RHF reference.'
+    return
+  end if
 
-  nAux=(nOcc+nVir)*nS
-  nH=nAct+nAux
-  if(nH > maxDense) then
-    write(*,'(A,I0,A,I0)') 'GW-COT: dense dimension ',nH,' exceeds limit ',maxDense
+  dense_dimension=int(nAct,int64)*(int(nS,int64)+1)
+  if(dense_dimension > maxDense) then
+    write(*,'(A,I0,A,I0)') 'GW-COT: dense dimension ',dense_dimension,' exceeds limit ',maxDense
     info=2
     return
   end if
+  nH=int(dense_dimension)
+  nAux=nH-nAct
+
+! Singlet direct RPA screening evaluated at the RHF reference.
+  allocate(Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
+  call phRLR_A(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  if(.not.TDA_W) call phRLR_B(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  if(.not.all(ieee_is_finite(Om)) .or. any(Om <= 0d0) .or. .not.all(ieee_is_finite(XpY))) then
+    write(*,'(A)') 'GW-COT: invalid screening modes at the RHF reference.'
+    info=6
+    return
+  end if
+  allocate(rho(nOrb,nOrb,nS))
+  call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
+  deallocate(Aph,Bph,XpY,XmY)
 
   allocate(H(nH,nH),E(nH),B(nAct,nAux),D(nAux),picked(nAct))
   allocate(usedState(nH),usedOrb(nAct))
@@ -110,6 +135,7 @@ subroutine RGW_COT(nOrb,nC,nO,nR,nS,eHF,Om,rho,hCOT,hHerm,eCOT,info)
       end do
     end do
   end do
+  deallocate(Om,rho)
 
   H(1:nAct,nAct+1:nH)=B
   H(nAct+1:nH,1:nAct)=transpose(B)

@@ -17,7 +17,7 @@ subroutine read_methods(working_dir,                                            
                         do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                        &
                         do_ADC_GW,do_ADC_2SOSEX,                                      &
                         do_ADC3_G3W2,do_ADC3x_G3W2,do_ADC_G3W2,                       &
-                        doRtest,doUtest,doGtest)
+                        doRtest,doUtest,doGtest,doCOT)
 
 ! Read desired methods 
 
@@ -38,6 +38,7 @@ subroutine read_methods(working_dir,                                            
   logical,intent(out)           :: doOORPA
   logical,intent(out)           :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doscGF2
   logical,intent(out)           :: doG0W0,doevGW,doqsGW,doscGW
+  logical,intent(out)           :: doCOT
   logical,intent(out)           :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp 
   logical,intent(out)           :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(out)           :: doevParquet,doqsParquet,doGWParquet,doFTDA,doFRPA
@@ -283,9 +284,10 @@ subroutine read_methods(working_dir,                                            
 
     endif
 
-  ! Accept the Faddeev record on either side of the test record.
+  ! Accept the optional method records on either side of the test record.
   doFTDA = .false.
   doFRPA = .false.
+  doCOT = .false.
   doRtest = .false.
   doUtest = .false.
   doGtest = .false.
@@ -303,6 +305,12 @@ subroutine read_methods(working_dir,                                            
         error stop 'FTDA and FRPA flags must be T or F'
       doFTDA = ans1 == 'T'
       doFRPA = ans2 == 'T'
+    else if(trim(adjustl(method_line)) == '# COT') then
+      ans1 = ' '
+      read(1,*,iostat=status) ans1
+      if(status /= 0) error stop 'Expected COT flag'
+      if(ans1 /= 'T' .and. ans1 /= 'F') error stop 'COT flag must be T or F'
+      doCOT = ans1 == 'T'
     else if(.not.read_test_flags) then
       ! The test record historically accepted any header.
       read(1,*,iostat=status) ans1,ans2,ans3
