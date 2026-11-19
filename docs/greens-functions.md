@@ -35,6 +35,11 @@ reference and uses the `TDA_W` option for TDA screening. It reports the selected
 quasiparticle energies and their one-particle weights. The dense solver is
 intended for small systems and limits the supermatrix dimension to 4000.
 
+The `COT total energy` is the RHF energy functional evaluated on the
+determinant formed by filling the lowest eigenvectors of the Hermitian COT
+active block and keeping the frozen core doubly occupied. QuAcK reports the
+kinetic, electron–nuclear, Hartree, exchange, and nuclear-repulsion terms.
+
 ## T-matrix
 
 The particle–particle and electron–hole T-matrix families sum repeated scattering

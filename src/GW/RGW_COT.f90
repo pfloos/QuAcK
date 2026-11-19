@@ -1,4 +1,4 @@
-subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,eHF,ERI,hCOT,hHerm,eCOT,info)
+subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,totalEnergy,info)
 
 ! One-shot GW-based correlated-orbital theory (COT), restricted closed shell.
 !
@@ -19,6 +19,9 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,eHF,ERI,hCOT,hHerm,eCOT,info)
 ! This is a one-shot G0W0 calculation: no qsGW orbital updates, no extra
 ! density/static correction, and no broadening/SRG regularization.
 !
+! Evaluate the restricted mean-field energy of the determinant formed from
+! the occupied eigenvectors of hHerm. T, V and ERI are in the RHF MO basis.
+!
 ! The active orbitals are nC+1 : nOrb-nR. Frozen orbitals remain diagonal.
 ! Dense diagonalization scales as O((nAct*(nS+1))^3) and should be used
 ! only as a numerical reference for modest systems.
@@ -38,9 +41,10 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,eHF,ERI,hCOT,hHerm,eCOT,info)
 
   logical,intent(in)            :: TDA_W
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
+  double precision,intent(in)   :: ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
   double precision,intent(in)   :: eHF(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(out)  :: hCOT(nOrb,nOrb),hHerm(nOrb,nOrb)
-  double precision,intent(out)  :: eCOT(nOrb)
+  double precision,intent(out)  :: eCOT(nOrb),totalEnergy
   integer,intent(out)           :: info
 
   integer,parameter             :: maxDense = 4000
@@ -60,12 +64,14 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,eHF,ERI,hCOT,hHerm,eCOT,info)
   double precision,allocatable  :: sig(:),work(:),N(:,:),eN(:),Nhalf(:,:)
   double precision,allocatable  :: NormVec(:,:),hProj(:,:),hBlock(:,:),bs(:,:),ds(:,:)
   double precision,allocatable  :: eCheck(:),eSelected(:),eigWork(:,:),rTest(:,:)
+  double precision,allocatable  :: density(:,:)
   double precision              :: dummyU(1,1),dummyVT(1,1)
 
   info=0
   hCOT=0d0
   hHerm=0d0
   eCOT=eHF
+  totalEnergy=0d0
   do p=1,nOrb
     hCOT(p,p)=eHF(p)
     hHerm(p,p)=eHF(p)
@@ -79,8 +85,17 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,eHF,ERI,hCOT,hHerm,eCOT,info)
     info=1
     return
   end if
+
+! Initialize the spin-summed density with the reference occupations.
+  allocate(density(nOrb,nOrb))
+  density=0d0
+  do i=1,nO
+    density(i,i)=2d0
+  end do
+
   if(nS == 0) then
     write(*,'(A)') 'GW-COT: empty screening space. The COT Hamiltonians reduce to the RHF reference.'
+    call compute_total_energy()
     return
   end if
 
@@ -296,6 +311,43 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,eHF,ERI,hCOT,hHerm,eCOT,info)
   if(resid > residualTol .or. ediff > residualTol) then
     write(*,*) 'GW-COT: warning, block-decoupling validation failed.'
     info=5
+    return
   end if
+
+! Fill the lowest nOcc eigenvectors of the Hermitian active block. The frozen
+! core stays doubly occupied and the excluded virtual orbitals stay empty.
+  density(nC+1:nOrb-nR,nC+1:nOrb-nR)=2d0*matmul(eigWork(:,1:nOcc),transpose(eigWork(:,1:nOcc)))
+  call compute_total_energy()
+
+contains
+
+  subroutine compute_total_energy()
+
+    double precision :: ET,EV,EJ,EK,electronicEnergy
+    double precision,allocatable :: J(:,:),K(:,:)
+
+    allocate(J(nOrb,nOrb),K(nOrb,nOrb))
+    call Hartree_matrix_AO_basis(nOrb,density,ERI,J)
+    call exchange_matrix_AO_basis(nOrb,density,ERI,K)
+
+    ! For the symmetric density, sum(P*M) equals Tr(P M). K includes its sign.
+    ET=sum(density*T)
+    EV=sum(density*V)
+    EJ=0.5d0*sum(density*J)
+    EK=0.25d0*sum(density*K)
+    electronicEnergy=ET+EV+EJ+EK
+    totalEnergy=ENuc+electronicEnergy
+
+    write(*,'(A)') 'COT mean-field energy (Eh)'
+    write(*,'(A30,F21.12)') 'Kinetic energy = ',ET
+    write(*,'(A30,F21.12)') 'Electron-nuclear energy = ',EV
+    write(*,'(A30,F21.12)') 'Hartree energy = ',EJ
+    write(*,'(A30,F21.12)') 'Exchange energy = ',EK
+    write(*,'(A30,F21.12)') 'COT electronic energy = ',electronicEnergy
+    write(*,'(A30,F21.12)') 'Nuclear repulsion = ',ENuc
+    write(*,'(A30,F21.12)') 'COT total energy = ',totalEnergy
+    write(*,*)
+
+  end subroutine compute_total_energy
 
 end subroutine RGW_COT
