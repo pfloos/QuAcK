@@ -29,7 +29,7 @@ routes are `G0F3`, `evGF3`, and `psdG0F3`. See the catalogue for driver coverage
 | `osCOT` | One-shot correlated orbital theory based on the GW supermatrix | R |
 | `scCOT` | Quasiparticle self-consistent correlated orbital theory | R |
 
-Enable `RHF` and select the desired COT methods in `input/methods`.
+Enable `RHF` and put the COT methods row above the test row in `input/methods`.
 
 ```text
 # osCOT scCOT
@@ -40,10 +40,8 @@ The legacy `# COT` flag selects `osCOT`. The shared solver settings and
 self-consistency controls in `input/options` are
 
 ```text
-# COT: Davidson TDA_COT Davidson_threshold
-       T        F       1.0e-10
-# scCOT: maxSCF thresh DIIS
-         64     1.0e-6 5
+# COT: Davidson TDA_COT Davidson_threshold maxSCF thresh DIIS
+       T        F       1.0e-10            64     1.0e-6 5
 ```
 
 `osCOT` builds the screening from the RHF orbitals and energies and applies
@@ -62,7 +60,8 @@ pole per active occupied and virtual orbital without storing the supermatrix.
 `TDA_COT` selects TDA screening for COT independently of GW. Older options
 files without the shared COT row default to Davidson and use `TDA_W` for
 COT screening. `Davidson_threshold` is the eigenpair residual tolerance in
-hartree, defaulting to `1.0e-10`.
+hartree, defaulting to `1.0e-10`. Older files with a separate `# scCOT:`
+row are also accepted.
 
 The `COT total energy` is the RHF energy functional evaluated on the
 determinant formed by filling the lowest eigenvectors of the Hermitian COT
