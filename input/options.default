@@ -34,3 +34,5 @@
            0 0 3 T F T 1
 # COT: Davidson TDA_COT Davidson_threshold
        T       F       1.0e-10
+# scCOT: maxSCF thresh DIIS
+         64     1.0e-6 5

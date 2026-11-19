@@ -3,7 +3,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doG0W0,doevGW,doqsGW,                                     &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet, &
-                  doFTDA,doFRPA,doCOT, &
+                  doFTDA,doFRPA,doosCOT,doscCOT, &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          & 
@@ -49,7 +49,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doscGF2
   logical,intent(inout)         :: doG0W0
   logical,intent(in)            :: doevGW,doqsGW
-  logical,intent(in)            :: doCOT
+  logical,intent(in)            :: doosCOT,doscCOT
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
@@ -681,27 +681,45 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
 ! GW-COT     !
 !------------!
 
-  if(doCOT) then
+  if(doosCOT.or.doscCOT) then
     block
-      integer :: infoCOT
+      integer :: infoCOT,maxSCF_COT,maxDIIS_COT,p
       logical :: useCOTDavidson,TDA_COT
-      double precision :: start_COT,end_COT,totalEnergyCOT,davidsonThreshold
-      double precision,allocatable :: hCOT(:,:),hHerm(:,:),eCOT(:),T_MO(:,:),V_MO(:,:)
+      double precision :: start_COT,end_COT,totalEnergyCOT,davidsonThreshold,scThreshold
+      double precision,allocatable :: hCOT(:,:),hHerm(:,:),eCOT(:),T_MO(:,:),V_MO(:,:),fock(:,:)
 
-      allocate(hCOT(nOrb,nOrb),hHerm(nOrb,nOrb),eCOT(nOrb))
-      allocate(T_MO(nOrb,nOrb),V_MO(nOrb,nOrb))
-      call read_COT_options(working_dir,TDA_W,useCOTDavidson,TDA_COT,davidsonThreshold)
-      call wall_time(start_COT)
-      call AOtoMO(nBas,nOrb,cHF,T,T_MO)
-      call AOtoMO(nBas,nOrb,cHF,V,V_MO)
-      call RGW_COT(TDA_COT,useCOTDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS,ENuc,T_MO,V_MO,eHF,ERI_MO, &
-                   hCOT,hHerm,eCOT,totalEnergyCOT,infoCOT)
-      if(infoCOT /= 0) then
-        write(*,'(A,I0)') 'GW-COT failed with info = ',infoCOT
-        error stop 'GW-COT calculation failed'
+      call read_COT_options(working_dir,TDA_W,useCOTDavidson,TDA_COT,davidsonThreshold, &
+                            maxSCF_COT,scThreshold,maxDIIS_COT)
+      if(doosCOT) then
+        allocate(hCOT(nOrb,nOrb),hHerm(nOrb,nOrb),eCOT(nOrb),T_MO(nOrb,nOrb),V_MO(nOrb,nOrb),fock(nOrb,nOrb))
+        call wall_time(start_COT)
+        call AOtoMO(nBas,nOrb,cHF,T,T_MO)
+        call AOtoMO(nBas,nOrb,cHF,V,V_MO)
+        fock=0d0
+        do p=1,nOrb
+          fock(p,p)=eHF(p)
+        end do
+        call osCOT(TDA_COT,useCOTDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
+                   ENuc,T_MO,V_MO,fock,eHF,ERI_MO,hCOT,hHerm,eCOT,totalEnergyCOT,infoCOT,'RHF')
+        if(infoCOT /= 0) then
+          write(*,'(A,I0)') 'osCOT failed with info = ',infoCOT
+          error stop 'osCOT calculation failed'
+        end if
+        call wall_time(end_COT)
+        write(*,'(A65,1X,F9.3,A8)') 'Total wall time for osCOT = ',end_COT-start_COT,' seconds'
+        deallocate(hCOT,hHerm,eCOT,T_MO,V_MO,fock)
       end if
-      call wall_time(end_COT)
-      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for COT = ',end_COT-start_COT,' seconds'
+      if(doscCOT) then
+        call wall_time(start_COT)
+        call scCOT(TDA_COT,useCOTDavidson,davidsonThreshold,maxSCF_COT,scThreshold,maxDIIS_COT, &
+                   nBas,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,Hc,ERI_AO,cHF,eHF,infoCOT)
+        if(infoCOT /= 0) then
+          write(*,'(A,I0)') 'scCOT failed with info = ',infoCOT
+          error stop 'scCOT calculation failed'
+        end if
+        call wall_time(end_COT)
+        write(*,'(A65,1X,F9.3,A8)') 'Total wall time for scCOT = ',end_COT-start_COT,' seconds'
+      end if
       write(*,*)
     end block
   end if

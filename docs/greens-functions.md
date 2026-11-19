@@ -26,27 +26,43 @@ routes are `G0F3`, `evGF3`, and `psdG0F3`. See the catalogue for driver coverage
 | `evGW` | Eigenvalue self-consistency with fixed orbitals | R, U, G |
 | `qsGW` | Quasiparticle self-consistency with an updated effective Hamiltonian and orbitals | R, U, G |
 | `scGW` | Fully self-consistent GW on the imaginary axis | R and a dedicated Bogoliubov branch |
-| `COT` | Single-shot correlated orbital theory based on the GW supermatrix | R |
+| `osCOT` | One-shot correlated orbital theory based on the GW supermatrix | R |
+| `scCOT` | Quasiparticle self-consistent correlated orbital theory | R |
 
-Enable `RHF` and `COT` in `input/methods` to run COT. In an older input file,
-append a `# COT` line followed by `T` on the next line. `G0W0` can be enabled
-separately for comparison. COT builds direct-RPA screening from the RHF
-reference and reports the selected quasiparticle energies and one-particle
-weights. The COT options row in `input/options` is
+Enable `RHF` and select the desired COT methods in `input/methods`.
+
+```text
+# osCOT scCOT
+  F     T
+```
+
+The legacy `# COT` flag selects `osCOT`. The shared solver settings and
+self-consistency controls in `input/options` are
 
 ```text
 # COT: Davidson TDA_COT Davidson_threshold
-       T       F       1.0e-10
+       T        F       1.0e-10
+# scCOT: maxSCF thresh DIIS
+         64     1.0e-6 5
 ```
 
-`Davidson = T` uses HF-seeded block Davidson to follow one pole per active
-occupied and virtual orbital without storing the supermatrix. `Davidson = F`
-uses dense diagonalization for comparison, with a dimension limit of 4000.
+`osCOT` builds the screening from the RHF orbitals and energies and applies
+one Hermitian COT update. `scCOT` starts from RHF and rebuilds the density,
+full Hartree–Fock matrix, MO integrals, and screening at each iteration.
+The screening and auxiliary denominators use the current COT eigenvalues.
+The orbital update diagonalizes the Hermitian COT Hamiltonian in the active
+space, with frozen and removed orbitals held fixed. `thresh` is the maximum
+absolute element of the Hamiltonian fixed-point residual in the initial
+orthonormal RHF orbital basis, in hartree. `DIIS` sets the history length,
+and 0 or 1 disables extrapolation. `maxSCF` limits the number of updates.
+
+`Davidson = T` uses the current reference orbitals as seeds to follow one
+pole per active occupied and virtual orbital without storing the supermatrix.
+`Davidson = F` uses dense diagonalization, with a dimension limit of 4000.
 `TDA_COT` selects TDA screening for COT independently of GW. Older options
-files without this row default to Davidson and use `TDA_W` for COT screening.
-`Davidson_threshold` is the positive eigenpair residual tolerance in hartree.
-It defaults to `1.0e-10` when omitted. The COT residual checks account for
-the requested Davidson accuracy.
+files without the shared COT row default to Davidson and use `TDA_W` for
+COT screening. `Davidson_threshold` is the eigenpair residual tolerance in
+hartree, defaulting to `1.0e-10`.
 
 The `COT total energy` is the RHF energy functional evaluated on the
 determinant formed by filling the lowest eigenvectors of the Hermitian COT
@@ -54,7 +70,9 @@ active block and keeping the frozen core doubly occupied. QuAcK reports the
 kinetic, electron–nuclear, Hartree, exchange, and nuclear-repulsion terms.
 
 COT also reports two full direct-RPA correlation energies for the same active
-space. `dRPA@RHF` uses the reference HF orbitals and energies. `dRPA@COT` uses
+space. `dRPA@RHF` uses the RHF reference for `osCOT`. The corresponding
+`dRPA@scCOT input` uses the reference of the final self-consistent update.
+`dRPA@COT` uses
 the Hermitian COT orbitals, their eigenvalues, and the integrals transformed
 to that orbital basis. `TDA_COT` changes the screening used to construct COT.
 Both printed correlation energies use the full direct-RPA equations.

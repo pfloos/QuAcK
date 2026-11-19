@@ -1,14 +1,14 @@
 subroutine RGW_COT_roots(useDavidson,tolerance,nAct,nAux,f,B,D,energies,roots,info)
 
 ! Select one distinct GW pole for each active HF orbital, for the symmetric
-! supermatrix [diag(f), B; transpose(B), diag(D)].
+! supermatrix [f, B; transpose(B), diag(D)].
 
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
 
   logical,intent(in) :: useDavidson
   integer,intent(in) :: nAct,nAux
-  double precision,intent(in) :: tolerance,f(nAct),B(nAct,nAux),D(nAux)
+  double precision,intent(in) :: tolerance,f(nAct,nAct),B(nAct,nAux),D(nAux)
   double precision,intent(out) :: energies(nAct),roots(nAct+nAux,nAct)
   integer,intent(out) :: info
 
@@ -32,9 +32,7 @@ contains
     write(*,'(A,I0)') 'GW-COT dense supermatrix dimension: ',n
     allocate(H(n,n),allEnergies(n),weights(n,nAct))
     H=0d0
-    do i=1,nAct
-      H(i,i)=f(i)
-    end do
+    H(1:nAct,1:nAct)=f
     do i=1,nAux
       H(nAct+i,nAct+i)=D(i)
     end do
@@ -66,15 +64,14 @@ contains
     limit=min(n,max(128,10*nAct))
     allocate(basis(n,limit),images(n,limit),projection(limit,limit),theta(limit),weights(limit,nAct))
     allocate(rootImages(n,nAct),corrections(n,nAct),trial(n),diagonal(n),denominator(n))
-    diagonal(1:nAct)=f
     diagonal(nAct+1:n)=D
 
     ! One unit vector per active occupied or virtual HF orbital.
     basis(:,1:nAct)=0d0
-    images(1:nAct,1:nAct)=0d0
+    images(1:nAct,1:nAct)=f
     do i=1,nAct
       basis(i,i)=1d0
-      images(i,i)=f(i)
+      diagonal(i)=f(i,i)
     end do
     images(nAct+1:n,1:nAct)=transpose(B)
     m=nAct
@@ -164,7 +161,7 @@ contains
     double precision,intent(in) :: x(n)
     double precision,intent(out) :: y(n)
 
-    y(1:nAct)=f*x(1:nAct)
+    y(1:nAct)=matmul(f,x(1:nAct))
     y(nAct+1:n)=D*x(nAct+1:n)
     call dgemv('N',nAct,nAux,1d0,B,nAct,x(nAct+1),1,1d0,y(1),1)
     call dgemv('T',nAct,nAux,1d0,B,nAct,x(1),1,1d0,y(nAct+1),1)

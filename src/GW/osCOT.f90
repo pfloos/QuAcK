@@ -1,5 +1,5 @@
-subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
-                   ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,totalEnergy,info)
+subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
+                   ENuc,T,V,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,reportReference)
 
 ! One-shot GW-based correlated-orbital theory (COT), restricted closed shell.
 !
@@ -10,18 +10,17 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
 ! Sigma_c(p,q;w) = 2 sum_{im} rho(p,i,m)rho(q,i,m)/(w-e_i+Om_m)
 !                 + 2 sum_{am} rho(p,a,m)rho(q,a,m)/(w-e_a-Om_m)
 !
-! H = [ A   B ]        A = diag(eHF)
+! H = [ A   B ]        A = the input Fock block
 !     [ B^T D ]        D = diag(e_i-Om_m,e_a+Om_m)
 !
 ! Given selected eigenvectors R=[RP;RQ], S=RQ RP^{-1}, and
 ! hCOT=A+B*S. Its Hermitian representative is
 ! hHerm=N^{-1/2} (Omega^T H Omega) N^{-1/2}, N=I+S^T S.
 !
-! This is a one-shot G0W0 calculation: no qsGW orbital updates, no extra
-! density/static correction, and no broadening/SRG regularization.
+! Build one COT update at fixed reference orbitals and energies.
 !
 ! Evaluate the restricted mean-field energy of the determinant formed from
-! the occupied eigenvectors of hHerm. T, V and ERI are in the RHF MO basis.
+! the occupied eigenvectors of hHerm. T, V and ERI are in the current MO basis.
 ! Evaluate full direct-RPA correlation energies for both orbital references.
 !
 ! The active orbitals are nC+1 : nOrb-nR. Frozen orbitals remain diagonal.
@@ -46,10 +45,11 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   logical,intent(in)            :: TDA_COT,useDavidson
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
   double precision,intent(in)   :: davidsonThreshold,ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
-  double precision,intent(in)   :: eHF(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in)   :: fock(nOrb,nOrb),eRef(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(out)  :: hCOT(nOrb,nOrb),hHerm(nOrb,nOrb)
   double precision,intent(out)  :: eCOT(nOrb),totalEnergy
   integer,intent(out)           :: info
+  character(*),intent(in)       :: reportReference
 
   integer,parameter             :: maxDense = 4000
   double precision,parameter    :: condLimit = 1d10
@@ -73,13 +73,12 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
 
   info=0
   hCOT=0d0
-  hHerm=0d0
-  eCOT=eHF
-  totalEnergy=0d0
   do p=1,nOrb
-    hCOT(p,p)=eHF(p)
-    hHerm(p,p)=eHF(p)
+    hCOT(p,p)=eRef(p)
   end do
+  hHerm=hCOT
+  eCOT=eRef
+  totalEnergy=0d0
 
   nAct=nOrb-nC-nR
   nOcc=nO-nC
@@ -91,16 +90,20 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   end if
 
 ! Initialize the spin-summed density with the reference occupations.
-  allocate(density(nOrb,nOrb))
-  density=0d0
-  do i=1,nO
-    density(i,i)=2d0
-  end do
+  if(len_trim(reportReference) /= 0) then
+    allocate(density(nOrb,nOrb))
+    density=0d0
+    do i=1,nO
+      density(i,i)=2d0
+    end do
+  end if
 
   if(nS == 0) then
     write(*,'(A)') 'GW-COT: empty screening space. The COT Hamiltonians reduce to the RHF reference.'
-    call compute_total_energy()
-    call print_correlation_energies(0d0,0d0)
+    if(len_trim(reportReference) /= 0) then
+      call compute_total_energy()
+      call print_correlation_energies(0d0,0d0)
+    end if
     return
   end if
 
@@ -120,16 +123,16 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
 
 ! Singlet direct RPA screening evaluated at the RHF reference.
   allocate(Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
-  call phRLR_A(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
+  call phRLR_A(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,eRef,ERI,Aph)
   call phRLR_B(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
   call phRLR(TDA_COT,nS,Aph,Bph,EcRHF,Om,XpY,XmY)
   if(.not.all(ieee_is_finite(Om)) .or. any(Om <= 0d0) .or. .not.all(ieee_is_finite(XpY))) then
-    write(*,'(A)') 'GW-COT: invalid screening modes at the RHF reference.'
+    write(*,'(A)') 'GW-COT: invalid screening modes at the current reference.'
     info=6
     return
   end if
-  if(TDA_COT) then
-    call compute_drpa_energy(eHF(nC+1:nOrb-nR),Bph,EcRHF)
+  if(TDA_COT.and.len_trim(reportReference) /= 0) then
+    call compute_drpa_energy(eRef(nC+1:nOrb-nR),Bph,EcRHF)
     if(info /= 0) return
   end if
   allocate(rho(nOrb,nOrb,nS))
@@ -143,7 +146,7 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   do i=nC+1,nO
     do m=1,nS
       mu=mu+1
-      D(mu)=eHF(i)-Om(m)
+      D(mu)=eRef(i)-Om(m)
       do p=1,nAct
         B(p,mu)=sqrt(2d0)*rho(nC+p,i,m)
       end do
@@ -152,7 +155,7 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   do a=nO+1,nOrb-nR
     do m=1,nS
       mu=mu+1
-      D(mu)=eHF(a)+Om(m)
+      D(mu)=eRef(a)+Om(m)
       do p=1,nAct
         B(p,mu)=sqrt(2d0)*rho(nC+p,a,m)
       end do
@@ -161,7 +164,7 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   deallocate(Om,rho)
 
   allocate(roots(nH,nAct))
-  call RGW_COT_roots(useDavidson,davidsonThreshold,nAct,nAux,eHF(nC+1:nOrb-nR),B,D, &
+  call RGW_COT_roots(useDavidson,davidsonThreshold,nAct,nAux,fock(nC+1:nOrb-nR,nC+1:nOrb-nR),B,D, &
                      eCOT(nC+1:nOrb-nR),roots,info)
   if(info /= 0) return
 
@@ -203,10 +206,7 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   allocate(hBlock(nAct,nAct),bs(nAct,nAct),N(nAct,nAct),eN(nAct))
   allocate(ds(nAux,nAct),hProj(nAct,nAct),Nhalf(nAct,nAct))
   bs=matmul(B,S)
-  hBlock=bs
-  do p=1,nAct
-    hBlock(p,p)=hBlock(p,p)+eHF(nC+p)
-  end do
+  hBlock=bs+fock(nC+1:nOrb-nR,nC+1:nOrb-nR)
   hCOT(nC+1:nOrb-nR,nC+1:nOrb-nR)=hBlock
 
 ! Invariant-subspace residual: B^T + D S - S hCOT = 0.
@@ -227,10 +227,7 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   do mu=1,nAux
     ds(mu,:)=D(mu)*S(mu,:)
   end do
-  hProj=bs+transpose(bs)+matmul(transpose(S),ds)
-  do p=1,nAct
-    hProj(p,p)=hProj(p,p)+eHF(nC+p)
-  end do
+  hProj=fock(nC+1:nOrb-nR,nC+1:nOrb-nR)+bs+transpose(bs)+matmul(transpose(S),ds)
 
   call diagonalize_matrix(nAct,N,eN)
   if(minval(eN) <= 0d0) then
@@ -263,20 +260,23 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   end do
   ediff=maxval(abs(eCheck-eSelected))
 
-  write(*,*)
-  write(*,'(A)') '-----------------------------------------------'
-  write(*,'(A)') '     G0W0-based correlated orbital theory     '
-  write(*,'(A)') '-----------------------------------------------'
-  write(*,'(A,I0)') 'Auxiliary dimension      : ',nAux
-  write(*,'(A,ES12.3)') 'One-particle condition # : ',condition
-  write(*,'(A,ES12.3)') 'Bloch residual (Eh)      : ',resid
-  write(*,'(A,ES12.3)') 'Hermitian eigenvalue err : ',ediff
-  write(*,'(A)') 'Orb    HF (eV)      COT (eV)      1p weight'
-  do p=1,nAct
-    write(*,'(I3,2F14.6,F14.6)') nC+p,eHF(nC+p)*HaToeV, &
-             eCOT(nC+p)*HaToeV,sum(RP(:,p)**2)
-  end do
-  write(*,*)
+  if(len_trim(reportReference) /= 0) then
+    write(*,*)
+    write(*,'(A)') '-----------------------------------------------'
+    write(*,'(A)') '     G0W0-based correlated orbital theory     '
+    write(*,'(A)') '-----------------------------------------------'
+    write(*,'(A,I0)') 'Auxiliary dimension      : ',nAux
+    write(*,'(A,ES12.3)') 'One-particle condition # : ',condition
+    write(*,'(A,ES12.3)') 'Bloch residual (Eh)      : ',resid
+    write(*,'(A,ES12.3)') 'Hermitian eigenvalue err : ',ediff
+    write(*,'(A)') 'Orb    Ref (eV)     COT (eV)      1p weight'
+    do p=1,nAct
+      write(*,'(I3,2F14.6,F14.6)') nC+p,eRef(nC+p)*HaToeV, &
+               eCOT(nC+p)*HaToeV,sum(RP(:,p)**2)
+    end do
+    write(*,*)
+
+  end if
 
   blochTol=residualTol
   eigenvalueTol=residualTol
@@ -291,6 +291,8 @@ subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
     info=5
     return
   end if
+
+  if(len_trim(reportReference) == 0) return
 
 ! Fill the lowest nOcc eigenvectors of the Hermitian active block. The frozen
 ! core stays doubly occupied and the excluded virtual orbitals stay empty.
@@ -386,10 +388,10 @@ contains
 
     double precision,intent(in) :: referenceEnergy,cotEnergy
 
-    write(*,'(A32,F21.12,A)') 'dRPA@RHF correlation energy = ',referenceEnergy,' Eh'
+    write(*,'(A,F21.12,A)') ' dRPA@'//trim(reportReference)//' correlation energy = ',referenceEnergy,' Eh'
     write(*,'(A32,F21.12,A)') 'dRPA@COT correlation energy = ',cotEnergy,' Eh'
     write(*,*)
 
   end subroutine print_correlation_energies
 
-end subroutine RGW_COT
+end subroutine osCOT

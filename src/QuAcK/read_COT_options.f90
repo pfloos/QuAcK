@@ -1,11 +1,12 @@
-subroutine read_COT_options(working_dir,TDA_W,useDavidson,TDA_COT,davidsonThreshold)
+subroutine read_COT_options(working_dir,TDA_W,useDavidson,TDA_COT,davidsonThreshold,maxSCF,scThreshold,maxDIIS)
 
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   character(*),intent(in) :: working_dir
   logical,intent(in) :: TDA_W
   logical,intent(out) :: useDavidson,TDA_COT
-  double precision,intent(out) :: davidsonThreshold
+  double precision,intent(out) :: davidsonThreshold,scThreshold
+  integer,intent(out) :: maxSCF,maxDIIS
   character(512) :: line
   character(1) :: flags(2)
   integer :: unit,status
@@ -13,12 +14,24 @@ subroutine read_COT_options(working_dir,TDA_W,useDavidson,TDA_COT,davidsonThresh
   useDavidson=.true.
   TDA_COT=TDA_W
   davidsonThreshold=1d-10
+  maxSCF=64
+  scThreshold=1d-6
+  maxDIIS=5
   open(newunit=unit,file=trim(working_dir)//'/input/options',status='old',action='read',iostat=status)
   if(status /= 0) error stop 'Cannot open COT options'
   do
     read(unit,'(A)',iostat=status) line
     if(status < 0) exit
     if(status /= 0) error stop 'Error reading COT options'
+    if(index(adjustl(line),'# scCOT:') == 1) then
+      read(unit,'(A)',iostat=status) line
+      if(status /= 0) error stop 'Missing scCOT option values'
+      read(line,*,iostat=status) maxSCF,scThreshold,maxDIIS
+      if(status /= 0) error stop 'Expected maxSCF, thresh and DIIS for scCOT'
+      if(maxSCF < 1 .or. maxDIIS < 0 .or. .not.ieee_is_finite(scThreshold) .or. scThreshold <= 0d0) &
+        error stop 'Invalid scCOT options'
+      cycle
+    end if
     if(index(adjustl(line),'# COT:') /= 1) cycle
     read(unit,'(A)',iostat=status) line
     if(status /= 0) error stop 'Missing COT option values'
@@ -31,7 +44,6 @@ subroutine read_COT_options(working_dir,TDA_W,useDavidson,TDA_COT,davidsonThresh
       error stop 'COT Davidson threshold must be finite and positive'
     useDavidson=flags(1) == 'T'
     TDA_COT=flags(2) == 'T'
-    exit
   end do
   close(unit)
 
