@@ -1,8 +1,9 @@
-subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,totalEnergy,info)
+subroutine RGW_COT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
+                   ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,totalEnergy,info)
 
 ! One-shot GW-based correlated-orbital theory (COT), restricted closed shell.
 !
-! Build the reference screening and diagonalize the Hermitian G0W0 supermatrix.
+! Build the reference screening and solve the Hermitian G0W0 eigenproblem.
 ! Select one quasiparticle root per active orbital and construct the Bloch
 ! effective one-particle Hamiltonian.
 !
@@ -29,21 +30,22 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
 !
 ! info = 0 success
 !        1 invalid dimensions
-!        2 dense problem exceeds safety limit
+!        2 supermatrix dimension exceeds the applicable limit
 !        3 eigensolver/SVD/linear solve failed
 !        4 selected one-particle projection ill-conditioned
 !        5 invariance/eigenvalue residual failed
 !        6 screening modes are nonfinite or have nonpositive energies
 !        7 direct-RPA correlation energy could not be evaluated
+!        8 Davidson root following did not converge
 
   use, intrinsic :: iso_fortran_env, only: int64
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   include 'parameters.h'
 
-  logical,intent(in)            :: TDA_W
+  logical,intent(in)            :: TDA_COT,useDavidson
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
+  double precision,intent(in)   :: davidsonThreshold,ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
   double precision,intent(in)   :: eHF(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(out)  :: hCOT(nOrb,nOrb),hHerm(nOrb,nOrb)
   double precision,intent(out)  :: eCOT(nOrb),totalEnergy
@@ -54,14 +56,13 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
   double precision,parameter    :: residualTol = 1d-7
 
   integer                       :: nAct,nOcc,nVir,nAux,nH
-  integer(int64)                :: dense_dimension
-  integer                       :: p,q,k,mu,i,a,m,j,ibest,pbest,istat,lwork
-  integer,allocatable           :: picked(:),ipiv(:)
-  logical,allocatable           :: usedState(:),usedOrb(:)
-  double precision              :: best,val,condition,resid,ediff,swap
+  integer(int64)                :: supermatrixDimension
+  integer                       :: p,q,k,mu,i,a,m,istat,lwork
+  integer,allocatable           :: ipiv(:)
+  double precision              :: condition,resid,ediff,swap,blochTol,eigenvalueTol
   double precision              :: EcRHF,EcCOT
   double precision,allocatable  :: Aph(:,:),Bph(:,:),Om(:),XpY(:,:),XmY(:,:),rho(:,:,:)
-  double precision,allocatable  :: H(:,:),E(:),B(:,:),D(:)
+  double precision,allocatable  :: B(:,:),D(:),roots(:,:)
   double precision,allocatable  :: RP(:,:),RQ(:,:),RPwork(:,:),rhs(:,:),S(:,:)
   double precision,allocatable  :: sig(:),work(:),N(:,:),eN(:),Nhalf(:,:)
   double precision,allocatable  :: NormVec(:,:),hProj(:,:),hBlock(:,:),bs(:,:),ds(:,:)
@@ -103,26 +104,31 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
     return
   end if
 
-  dense_dimension=int(nAct,int64)*(int(nS,int64)+1)
-  if(dense_dimension > maxDense) then
-    write(*,'(A,I0,A,I0)') 'GW-COT: dense dimension ',dense_dimension,' exceeds limit ',maxDense
+  supermatrixDimension=int(nAct,int64)*(int(nS,int64)+1)
+  if(supermatrixDimension > huge(nH)) then
+    write(*,'(A,I0)') 'GW-COT: supermatrix dimension exceeds the integer range: ',supermatrixDimension
     info=2
     return
   end if
-  nH=int(dense_dimension)
+  if(.not.useDavidson .and. supermatrixDimension > maxDense) then
+    write(*,'(A,I0,A,I0)') 'GW-COT: dense dimension ',supermatrixDimension,' exceeds limit ',maxDense
+    info=2
+    return
+  end if
+  nH=int(supermatrixDimension)
   nAux=nH-nAct
 
 ! Singlet direct RPA screening evaluated at the RHF reference.
   allocate(Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
   call phRLR_A(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
   call phRLR_B(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-  call phRLR(TDA_W,nS,Aph,Bph,EcRHF,Om,XpY,XmY)
+  call phRLR(TDA_COT,nS,Aph,Bph,EcRHF,Om,XpY,XmY)
   if(.not.all(ieee_is_finite(Om)) .or. any(Om <= 0d0) .or. .not.all(ieee_is_finite(XpY))) then
     write(*,'(A)') 'GW-COT: invalid screening modes at the RHF reference.'
     info=6
     return
   end if
-  if(TDA_W) then
+  if(TDA_COT) then
     call compute_drpa_energy(eHF(nC+1:nOrb-nR),Bph,EcRHF)
     if(info /= 0) return
   end if
@@ -130,13 +136,7 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
   deallocate(Aph,XpY,XmY)
 
-  allocate(H(nH,nH),E(nH),B(nAct,nAux),D(nAux),picked(nAct))
-  allocate(usedState(nH),usedOrb(nAct))
-  H=0d0
-  B=0d0
-  do p=1,nAct
-    H(p,p)=eHF(nC+p)
-  end do
+  allocate(B(nAct,nAux),D(nAux))
 
 ! The sqrt(2) is required by the QuAcK restricted-GW Lehmann residues.
   mu=0
@@ -160,54 +160,16 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
   end do
   deallocate(Om,rho)
 
-  H(1:nAct,nAct+1:nH)=B
-  H(nAct+1:nH,1:nAct)=transpose(B)
-  do mu=1,nAux
-    H(nAct+mu,nAct+mu)=D(mu)
-  end do
-
-! QuAcK's symmetric diagonalizer overwrites H with normalized eigenvectors.
-  call diagonalize_matrix(nH,H,E)
-
-! Greedy one-to-one orbital/root assignment. This selects the connected
-! quasiparticle branch when the 1p spectral weights are dominant.
-! Near strong mixing / intruder states the resulting selection is not unique;
-! the condition-number and residual checks below detect part of this problem.
-  usedState=.false.
-  usedOrb=.false.
-  picked=0
-  do k=1,nAct
-    best=-1d0
-    ibest=0
-    pbest=0
-    do p=1,nAct
-      if(usedOrb(p)) cycle
-      do j=1,nH
-        if(usedState(j)) cycle
-        val=H(p,j)**2
-        if(val > best) then
-          best=val
-          ibest=j
-          pbest=p
-        end if
-      end do
-    end do
-    if(ibest == 0) then
-      info=3
-      return
-    end if
-    picked(pbest)=ibest
-    usedState(ibest)=.true.
-    usedOrb(pbest)=.true.
-  end do
+  allocate(roots(nH,nAct))
+  call RGW_COT_roots(useDavidson,davidsonThreshold,nAct,nAux,eHF(nC+1:nOrb-nR),B,D, &
+                     eCOT(nC+1:nOrb-nR),roots,info)
+  if(info /= 0) return
 
   allocate(RP(nAct,nAct),RQ(nAux,nAct),RPwork(nAct,nAct))
   allocate(sig(nAct),work(max(1,5*nAct)))
-  do p=1,nAct
-    RP(:,p)=H(1:nAct,picked(p))
-    RQ(:,p)=H(nAct+1:nH,picked(p))
-    eCOT(nC+p)=E(picked(p))
-  end do
+  RP=roots(1:nAct,:)
+  RQ=roots(nAct+1:nH,:)
+  deallocate(roots)
 
 ! Check rank / conditioning of the projection before constructing S.
   RPwork=RP
@@ -312,12 +274,19 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
   write(*,'(A)') 'Orb    HF (eV)      COT (eV)      1p weight'
   do p=1,nAct
     write(*,'(I3,2F14.6,F14.6)') nC+p,eHF(nC+p)*HaToeV, &
-             eCOT(nC+p)*HaToeV,sum(H(1:nAct,picked(p))**2)
+             eCOT(nC+p)*HaToeV,sum(RP(:,p)**2)
   end do
   write(*,*)
-  deallocate(H)
 
-  if(resid > residualTol .or. ediff > residualTol) then
+  blochTol=residualTol
+  eigenvalueTol=residualTol
+  if(useDavidson) then
+    ! The residual matrix has nAct columns bounded by the Davidson threshold.
+    ! The Bloch residual transforms it from both sides through the projection.
+    eigenvalueTol=eigenvalueTol+sqrt(dble(nAct))*davidsonThreshold
+    blochTol=blochTol+sqrt(dble(nAct))*davidsonThreshold/sig(nAct)**2
+  end if
+  if(resid > blochTol .or. ediff > eigenvalueTol) then
     write(*,*) 'GW-COT: warning, block-decoupling validation failed.'
     info=5
     return

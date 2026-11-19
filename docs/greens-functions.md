@@ -31,9 +31,22 @@ routes are `G0F3`, `evGF3`, and `psdG0F3`. See the catalogue for driver coverage
 Enable `RHF` and `COT` in `input/methods` to run COT. In an older input file,
 append a `# COT` line followed by `T` on the next line. `G0W0` can be enabled
 separately for comparison. COT builds direct-RPA screening from the RHF
-reference and uses the `TDA_W` option for TDA screening. It reports the selected
-quasiparticle energies and their one-particle weights. The dense solver is
-intended for small systems and limits the supermatrix dimension to 4000.
+reference and reports the selected quasiparticle energies and one-particle
+weights. The COT options row in `input/options` is
+
+```text
+# COT: Davidson TDA_COT Davidson_threshold
+       T       F       1.0e-10
+```
+
+`Davidson = T` uses HF-seeded block Davidson to follow one pole per active
+occupied and virtual orbital without storing the supermatrix. `Davidson = F`
+uses dense diagonalization for comparison, with a dimension limit of 4000.
+`TDA_COT` selects TDA screening for COT independently of GW. Older options
+files without this row default to Davidson and use `TDA_W` for COT screening.
+`Davidson_threshold` is the positive eigenpair residual tolerance in hartree.
+It defaults to `1.0e-10` when omitted. The COT residual checks account for
+the requested Davidson accuracy.
 
 The `COT total energy` is the RHF energy functional evaluated on the
 determinant formed by filling the lowest eigenvectors of the Hermitian COT
@@ -43,7 +56,7 @@ kinetic, electron–nuclear, Hartree, exchange, and nuclear-repulsion terms.
 COT also reports two full direct-RPA correlation energies for the same active
 space. `dRPA@RHF` uses the reference HF orbitals and energies. `dRPA@COT` uses
 the Hermitian COT orbitals, their eigenvalues, and the integrals transformed
-to that orbital basis. `TDA_W` changes the screening used to construct COT.
+to that orbital basis. `TDA_COT` changes the screening used to construct COT.
 Both printed correlation energies use the full direct-RPA equations.
 
 ## T-matrix

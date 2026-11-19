@@ -684,15 +684,18 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
   if(doCOT) then
     block
       integer :: infoCOT
-      double precision :: start_COT,end_COT,totalEnergyCOT
+      logical :: useCOTDavidson,TDA_COT
+      double precision :: start_COT,end_COT,totalEnergyCOT,davidsonThreshold
       double precision,allocatable :: hCOT(:,:),hHerm(:,:),eCOT(:),T_MO(:,:),V_MO(:,:)
 
       allocate(hCOT(nOrb,nOrb),hHerm(nOrb,nOrb),eCOT(nOrb))
       allocate(T_MO(nOrb,nOrb),V_MO(nOrb,nOrb))
+      call read_COT_options(working_dir,TDA_W,useCOTDavidson,TDA_COT,davidsonThreshold)
       call wall_time(start_COT)
       call AOtoMO(nBas,nOrb,cHF,T,T_MO)
       call AOtoMO(nBas,nOrb,cHF,V,V_MO)
-      call RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T_MO,V_MO,eHF,ERI_MO,hCOT,hHerm,eCOT,totalEnergyCOT,infoCOT)
+      call RGW_COT(TDA_COT,useCOTDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS,ENuc,T_MO,V_MO,eHF,ERI_MO, &
+                   hCOT,hHerm,eCOT,totalEnergyCOT,infoCOT)
       if(infoCOT /= 0) then
         write(*,'(A,I0)') 'GW-COT failed with info = ',infoCOT
         error stop 'GW-COT calculation failed'

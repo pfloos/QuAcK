@@ -32,3 +32,5 @@
                        0
 # Faddeev: reference(0=HF,1=GW) pairs(0=bare,1=BSE,2=CCD) coupling(2=ADC2,3=ADC3,4=dressed,5=CCD) static3 external_GW Davidson n_IP_roots
            0 0 3 T F T 1
+# COT: Davidson TDA_COT Davidson_threshold
+       T       F       1.0e-10
