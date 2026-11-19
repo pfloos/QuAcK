@@ -684,12 +684,17 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
   if(doosCOT.or.doscCOT) then
     block
       integer :: infoCOT,maxSCF_COT,maxDIIS_COT,p
-      logical :: useCOTDavidson,TDA_COT
-      double precision :: start_COT,end_COT,totalEnergyCOT,davidsonThreshold,scThreshold,rootWidth
+      logical :: useCOTDavidson,TDA_COT,useCOTSRG
+      double precision :: start_COT,end_COT,totalEnergyCOT,davidsonThreshold,scThreshold,rootWidth,srgFlow
       double precision,allocatable :: hCOT(:,:),hHerm(:,:),eCOT(:),T_MO(:,:),V_MO(:,:),fock(:,:)
 
       call read_COT_options(working_dir,TDA_W,useCOTDavidson,TDA_COT,davidsonThreshold, &
-                            maxSCF_COT,scThreshold,maxDIIS_COT,rootWidth)
+                            maxSCF_COT,scThreshold,maxDIIS_COT,rootWidth,useCOTSRG,srgFlow)
+      if(useCOTSRG) then
+        write(*,'(A,ES12.4)') 'COT dynamical SRG-GW flow (Eh^-2): ',srgFlow
+      else
+        srgFlow=0d0
+      end if
       if(doosCOT) then
         allocate(hCOT(nOrb,nOrb),hHerm(nOrb,nOrb),eCOT(nOrb),T_MO(nOrb,nOrb),V_MO(nOrb,nOrb),fock(nOrb,nOrb))
         call wall_time(start_COT)
@@ -700,7 +705,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
           fock(p,p)=eHF(p)
         end do
         call osCOT(TDA_COT,useCOTDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
-                   ENuc,T_MO,V_MO,fock,eHF,ERI_MO,hCOT,hHerm,eCOT,totalEnergyCOT,infoCOT,'RHF',0d0)
+                   ENuc,T_MO,V_MO,fock,eHF,ERI_MO,hCOT,hHerm,eCOT,totalEnergyCOT,infoCOT,'RHF',0d0,srgFlow)
         if(infoCOT /= 0) then
           write(*,'(A,I0)') 'osCOT failed with info = ',infoCOT
           error stop 'osCOT calculation failed'
@@ -711,7 +716,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
       end if
       if(doscCOT) then
         call wall_time(start_COT)
-        call scCOT(TDA_COT,useCOTDavidson,davidsonThreshold,maxSCF_COT,scThreshold,maxDIIS_COT,rootWidth, &
+        call scCOT(TDA_COT,useCOTDavidson,davidsonThreshold,maxSCF_COT,scThreshold,maxDIIS_COT,rootWidth,srgFlow, &
                    nBas,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,Hc,ERI_AO,cHF,eHF,infoCOT)
         if(infoCOT /= 0) then
           write(*,'(A,I0)') 'scCOT failed with info = ',infoCOT

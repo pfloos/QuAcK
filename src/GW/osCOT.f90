@@ -1,5 +1,5 @@
 subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
-                   ENuc,T,V,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,reportReference,rootWidth)
+                   ENuc,T,V,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,reportReference,rootWidth,srgFlow)
 
 ! One-shot GW-based correlated-orbital theory (COT), restricted closed shell.
 !
@@ -44,7 +44,7 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
 
   logical,intent(in)            :: TDA_COT,useDavidson
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: davidsonThreshold,rootWidth,ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
+  double precision,intent(in)   :: davidsonThreshold,rootWidth,srgFlow,ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
   double precision,intent(in)   :: fock(nOrb,nOrb),eRef(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(out)  :: hCOT(nOrb,nOrb),hHerm(nOrb,nOrb)
   double precision,intent(out)  :: eCOT(nOrb),totalEnergy
@@ -62,7 +62,7 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   double precision              :: condition,resid,ediff,swap,blochTol,eigenvalueTol
   double precision              :: EcRHF,EcCOT
   double precision,allocatable  :: Aph(:,:),Bph(:,:),Om(:),XpY(:,:),XmY(:,:),rho(:,:,:)
-  double precision,allocatable  :: B(:,:),D(:),roots(:,:)
+  double precision,allocatable  :: B(:,:),D(:),roots(:,:),physical(:,:)
   double precision,allocatable  :: RP(:,:),RQ(:,:),RPwork(:,:),rhs(:,:),S(:,:)
   double precision,allocatable  :: sig(:),work(:),N(:,:),eN(:),Nhalf(:,:)
   double precision,allocatable  :: NormVec(:,:),hProj(:,:),hBlock(:,:),bs(:,:),ds(:,:)
@@ -163,8 +163,10 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   end do
   deallocate(Om,rho)
 
-  allocate(roots(nH,nAct))
-  call RGW_COT_roots(useDavidson,davidsonThreshold,nAct,nAux,fock(nC+1:nOrb-nR,nC+1:nOrb-nR),B,D, &
+  allocate(physical(nAct,nAct),roots(nH,nAct))
+  physical=fock(nC+1:nOrb-nR,nC+1:nOrb-nR)
+  if(srgFlow > 0d0) call RGW_COT_SRG(nAct,nAux,srgFlow,physical,B,D)
+  call RGW_COT_roots(useDavidson,davidsonThreshold,nAct,nAux,physical,B,D, &
                      eRef(nC+1:nOrb-nR),rootWidth, &
                      eCOT(nC+1:nOrb-nR),roots,info)
   if(info /= 0) return
@@ -207,7 +209,7 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   allocate(hBlock(nAct,nAct),bs(nAct,nAct),N(nAct,nAct),eN(nAct))
   allocate(ds(nAux,nAct),hProj(nAct,nAct),Nhalf(nAct,nAct))
   bs=matmul(B,S)
-  hBlock=bs+fock(nC+1:nOrb-nR,nC+1:nOrb-nR)
+  hBlock=bs+physical
   hCOT(nC+1:nOrb-nR,nC+1:nOrb-nR)=hBlock
 
 ! Invariant-subspace residual: B^T + D S - S hCOT = 0.
@@ -228,7 +230,7 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   do mu=1,nAux
     ds(mu,:)=D(mu)*S(mu,:)
   end do
-  hProj=fock(nC+1:nOrb-nR,nC+1:nOrb-nR)+bs+transpose(bs)+matmul(transpose(S),ds)
+  hProj=physical+bs+transpose(bs)+matmul(transpose(S),ds)
 
   call diagonalize_matrix(nAct,N,eN)
   if(minval(eN) <= 0d0) then

@@ -1,14 +1,15 @@
-subroutine read_COT_options(working_dir,TDA_W,useDavidson,TDA_COT,davidsonThreshold,maxSCF,scThreshold,maxDIIS,rootWidth)
+subroutine read_COT_options(working_dir,TDA_W,useDavidson,TDA_COT,davidsonThreshold,maxSCF,scThreshold,maxDIIS,rootWidth, &
+                            useSRG,flow)
 
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   character(*),intent(in) :: working_dir
   logical,intent(in) :: TDA_W
-  logical,intent(out) :: useDavidson,TDA_COT
-  double precision,intent(out) :: davidsonThreshold,scThreshold,rootWidth
+  logical,intent(out) :: useDavidson,TDA_COT,useSRG
+  double precision,intent(out) :: davidsonThreshold,scThreshold,rootWidth,flow
   integer,intent(out) :: maxSCF,maxDIIS
   character(512) :: line
-  character(1) :: flags(2)
+  character(1) :: flags(2),srgFlag
   integer :: unit,status,scIterations
   logical :: combinedSCF
 
@@ -19,6 +20,8 @@ subroutine read_COT_options(working_dir,TDA_W,useDavidson,TDA_COT,davidsonThresh
   scThreshold=1d-6
   maxDIIS=5
   rootWidth=0d0
+  useSRG=.false.
+  flow=500d0
   combinedSCF=.false.
   open(newunit=unit,file=trim(working_dir)//'/input/options',status='old',action='read',iostat=status)
   if(status /= 0) error stop 'Cannot open COT options'
@@ -50,12 +53,21 @@ subroutine read_COT_options(working_dir,TDA_W,useDavidson,TDA_COT,davidsonThresh
       if(status /= 0) error stop 'Expected maxSCF, thresh and DIIS on the COT options row'
       read(line,*,iostat=status) flags,davidsonThreshold,maxSCF,scThreshold,maxDIIS,rootWidth
       if(status /= 0 .and. .not.is_iostat_end(status)) error stop 'Invalid scCOT root width'
+      srgFlag='F'
+      read(line,*,iostat=status) flags,davidsonThreshold,maxSCF,scThreshold,maxDIIS,rootWidth,srgFlag
+      if(.not.is_iostat_end(status)) then
+        read(line,*,iostat=status) flags,davidsonThreshold,maxSCF,scThreshold,maxDIIS,rootWidth,srgFlag,flow
+        if(status /= 0 .or. (srgFlag /= 'T' .and. srgFlag /= 'F')) &
+          error stop 'Expected SRG (T or F) and flow on the COT options row'
+        useSRG=srgFlag == 'T'
+      end if
       combinedSCF=.true.
     end if
     useDavidson=flags(1) == 'T'
     TDA_COT=flags(2) == 'T'
   end do
   close(unit)
+  if(.not.ieee_is_finite(flow) .or. flow < 0d0) error stop 'Invalid COT SRG flow'
   if(.not.ieee_is_finite(rootWidth) .or. rootWidth < 0d0) error stop 'Invalid scCOT root width'
 
   if(maxSCF < 1 .or. maxDIIS < 0 .or. .not.ieee_is_finite(scThreshold) .or. scThreshold <= 0d0) &

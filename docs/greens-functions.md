@@ -40,8 +40,8 @@ The legacy `# COT` flag selects `osCOT`. The shared solver settings and
 self-consistency controls in `input/options` are
 
 ```text
-# COT: Davidson TDA_COT Davidson_threshold maxSCF thresh DIIS root_width
-       T        F       1.0e-10            64     1.0e-6 5    0.0
+# COT: Davidson TDA_COT Davidson_threshold maxSCF thresh DIIS root_width SRG flow
+       T        F       1.0e-10            64     1.0e-6 5    0.0        F   500.0
 ```
 
 `osCOT` builds the screening from the RHF orbitals and energies and applies
@@ -59,6 +59,14 @@ quasiparticle energy. It multiplies the orbital weight by
 one-to-one assignment. The default of 0 uses unweighted orbital character.
 A positive width can change the selected poles. `osCOT` always uses
 unweighted orbital character.
+
+`SRG = T` enables the finite-flow dynamical SRG-GW supermatrix for both
+COT methods. The second-order static correction enters the physical block
+and the exponentially flowed couplings retain the frequency-dependent
+self-energy after downfolding. The auxiliary energies are kept at zeroth
+order. The gaps use the eigenvalues of the physical Fock block and the
+auxiliary energies. `flow` is in inverse squared hartree. At zero flow
+the original supermatrix is recovered.
 
 `Davidson = T` uses the current reference orbitals as seeds to follow one
 pole per active occupied and virtual orbital without storing the supermatrix.
