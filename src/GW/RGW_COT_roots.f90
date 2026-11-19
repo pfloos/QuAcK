@@ -1,4 +1,4 @@
-subroutine RGW_COT_roots(useDavidson,tolerance,nAct,nAux,f,B,D,energies,roots,info)
+subroutine RGW_COT_roots(useDavidson,tolerance,nAct,nAux,f,B,D,reference,rootWidth,energies,roots,info)
 
 ! Select one distinct GW pole for each active HF orbital, for the symmetric
 ! supermatrix [f, B; transpose(B), diag(D)].
@@ -8,7 +8,7 @@ subroutine RGW_COT_roots(useDavidson,tolerance,nAct,nAux,f,B,D,energies,roots,in
 
   logical,intent(in) :: useDavidson
   integer,intent(in) :: nAct,nAux
-  double precision,intent(in) :: tolerance,f(nAct,nAct),B(nAct,nAux),D(nAux)
+  double precision,intent(in) :: tolerance,f(nAct,nAct),B(nAct,nAux),D(nAux),reference(nAct),rootWidth
   double precision,intent(out) :: energies(nAct),roots(nAct+nAux,nAct)
   integer,intent(out) :: info
 
@@ -44,7 +44,7 @@ contains
       info=3
       return
     end if
-    call assign_roots(weights,picked)
+    call assign_roots(weights,allEnergies,picked)
     roots=H(:,picked)
     energies=allEnergies(picked)
 
@@ -93,7 +93,7 @@ contains
       ! Form full Ritz vectors only for the roots assigned to HF orbitals.
       weights(1:m,:)=matmul(transpose(projection(1:m,1:m)),transpose(basis(1:nAct,1:m)))**2
       if(.not.all(ieee_is_finite(weights(1:m,:)))) exit
-      call assign_roots(weights(1:m,:),picked)
+      call assign_roots(weights(1:m,:),theta(1:m),picked)
       do j=1,nAct
         k=picked(j)
         energies(j)=theta(k)
@@ -190,11 +190,18 @@ contains
 
   end subroutine append_vector
 
-  subroutine assign_roots(weights,picked)
+  subroutine assign_roots(weights,poles,picked)
 
     double precision,intent(inout) :: weights(:,:)
+    double precision,intent(in) :: poles(:)
     integer,intent(out) :: picked(nAct)
     integer :: j,location(2)
+
+    if(rootWidth > 0d0) then
+      do j=1,nAct
+        weights(:,j)=weights(:,j)*(rootWidth/hypot(rootWidth,poles-reference(j)))**2
+      end do
+    end if
 
     ! Match the original dense selector's greedy one-to-one assignment,
     ! including the order of orbital and root indices used to break ties.

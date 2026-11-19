@@ -40,8 +40,8 @@ The legacy `# COT` flag selects `osCOT`. The shared solver settings and
 self-consistency controls in `input/options` are
 
 ```text
-# COT: Davidson TDA_COT Davidson_threshold maxSCF thresh DIIS
-       T        F       1.0e-10            64     1.0e-6 5
+# COT: Davidson TDA_COT Davidson_threshold maxSCF thresh DIIS root_width
+       T        F       1.0e-10            64     1.0e-6 5    0.0
 ```
 
 `osCOT` builds the screening from the RHF orbitals and energies and applies
@@ -53,6 +53,12 @@ space, with frozen and removed orbitals held fixed. `thresh` is the maximum
 absolute element of the Hamiltonian fixed-point residual in the initial
 orthonormal RHF orbital basis, in hartree. `DIIS` sets the history length,
 and 0 or 1 disables extrapolation. `maxSCF` limits the number of updates.
+The optional `root_width` (hartree) favors poles close to each input
+quasiparticle energy. It multiplies the orbital weight by
+\(1/[1+((\omega-\varepsilon)/\mathrm{root\_width})^2]\) before the usual
+one-to-one assignment. The default of 0 uses unweighted orbital character.
+A positive width can change the selected poles. `osCOT` always uses
+unweighted orbital character.
 
 `Davidson = T` uses the current reference orbitals as seeds to follow one
 pole per active occupied and virtual orbital without storing the supermatrix.

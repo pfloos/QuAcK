@@ -1,5 +1,5 @@
 subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
-                   ENuc,T,V,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,reportReference)
+                   ENuc,T,V,fock,eRef,ERI,hCOT,hHerm,eCOT,totalEnergy,info,reportReference,rootWidth)
 
 ! One-shot GW-based correlated-orbital theory (COT), restricted closed shell.
 !
@@ -44,7 +44,7 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
 
   logical,intent(in)            :: TDA_COT,useDavidson
   integer,intent(in)            :: nOrb,nC,nO,nV,nR,nS
-  double precision,intent(in)   :: davidsonThreshold,ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
+  double precision,intent(in)   :: davidsonThreshold,rootWidth,ENuc,T(nOrb,nOrb),V(nOrb,nOrb)
   double precision,intent(in)   :: fock(nOrb,nOrb),eRef(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
   double precision,intent(out)  :: hCOT(nOrb,nOrb),hHerm(nOrb,nOrb)
   double precision,intent(out)  :: eCOT(nOrb),totalEnergy
@@ -165,6 +165,7 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
 
   allocate(roots(nH,nAct))
   call RGW_COT_roots(useDavidson,davidsonThreshold,nAct,nAux,fock(nC+1:nOrb-nR,nC+1:nOrb-nR),B,D, &
+                     eRef(nC+1:nOrb-nR),rootWidth, &
                      eCOT(nC+1:nOrb-nR),roots,info)
   if(info /= 0) return
 
