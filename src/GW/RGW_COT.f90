@@ -21,6 +21,7 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
 !
 ! Evaluate the restricted mean-field energy of the determinant formed from
 ! the occupied eigenvectors of hHerm. T, V and ERI are in the RHF MO basis.
+! Evaluate full direct-RPA correlation energies for both orbital references.
 !
 ! The active orbitals are nC+1 : nOrb-nR. Frozen orbitals remain diagonal.
 ! Dense diagonalization scales as O((nAct*(nS+1))^3) and should be used
@@ -33,6 +34,7 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
 !        4 selected one-particle projection ill-conditioned
 !        5 invariance/eigenvalue residual failed
 !        6 screening modes are nonfinite or have nonpositive energies
+!        7 direct-RPA correlation energy could not be evaluated
 
   use, intrinsic :: iso_fortran_env, only: int64
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
@@ -57,7 +59,7 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
   integer,allocatable           :: picked(:),ipiv(:)
   logical,allocatable           :: usedState(:),usedOrb(:)
   double precision              :: best,val,condition,resid,ediff,swap
-  double precision              :: EcRPA
+  double precision              :: EcRHF,EcCOT
   double precision,allocatable  :: Aph(:,:),Bph(:,:),Om(:),XpY(:,:),XmY(:,:),rho(:,:,:)
   double precision,allocatable  :: H(:,:),E(:),B(:,:),D(:)
   double precision,allocatable  :: RP(:,:),RQ(:,:),RPwork(:,:),rhs(:,:),S(:,:)
@@ -65,6 +67,7 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
   double precision,allocatable  :: NormVec(:,:),hProj(:,:),hBlock(:,:),bs(:,:),ds(:,:)
   double precision,allocatable  :: eCheck(:),eSelected(:),eigWork(:,:),rTest(:,:)
   double precision,allocatable  :: density(:,:)
+  double precision,allocatable  :: ERI_COT(:,:,:,:)
   double precision              :: dummyU(1,1),dummyVT(1,1)
 
   info=0
@@ -96,6 +99,7 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
   if(nS == 0) then
     write(*,'(A)') 'GW-COT: empty screening space. The COT Hamiltonians reduce to the RHF reference.'
     call compute_total_energy()
+    call print_correlation_energies(0d0,0d0)
     return
   end if
 
@@ -111,16 +115,20 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
 ! Singlet direct RPA screening evaluated at the RHF reference.
   allocate(Aph(nS,nS),Bph(nS,nS),Om(nS),XpY(nS,nS),XmY(nS,nS))
   call phRLR_A(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,Aph)
-  if(.not.TDA_W) call phRLR_B(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
-  call phRLR(TDA_W,nS,Aph,Bph,EcRPA,Om,XpY,XmY)
+  call phRLR_B(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,Bph)
+  call phRLR(TDA_W,nS,Aph,Bph,EcRHF,Om,XpY,XmY)
   if(.not.all(ieee_is_finite(Om)) .or. any(Om <= 0d0) .or. .not.all(ieee_is_finite(XpY))) then
     write(*,'(A)') 'GW-COT: invalid screening modes at the RHF reference.'
     info=6
     return
   end if
+  if(TDA_W) then
+    call compute_drpa_energy(eHF(nC+1:nOrb-nR),Bph,EcRHF)
+    if(info /= 0) return
+  end if
   allocate(rho(nOrb,nOrb,nS))
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,XpY,rho)
-  deallocate(Aph,Bph,XpY,XmY)
+  deallocate(Aph,XpY,XmY)
 
   allocate(H(nH,nH),E(nH),B(nAct,nAux),D(nAux),picked(nAct))
   allocate(usedState(nH),usedOrb(nAct))
@@ -307,6 +315,7 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
              eCOT(nC+p)*HaToeV,sum(H(1:nAct,picked(p))**2)
   end do
   write(*,*)
+  deallocate(H)
 
   if(resid > residualTol .or. ediff > residualTol) then
     write(*,*) 'GW-COT: warning, block-decoupling validation failed.'
@@ -318,6 +327,17 @@ subroutine RGW_COT(TDA_W,nOrb,nC,nO,nV,nR,nS,ENuc,T,V,eHF,ERI,hCOT,hHerm,eCOT,to
 ! core stays doubly occupied and the excluded virtual orbitals stay empty.
   density(nC+1:nOrb-nR,nC+1:nOrb-nR)=2d0*matmul(eigWork(:,1:nOcc),transpose(eigWork(:,1:nOcc)))
   call compute_total_energy()
+
+! Rotate the active integrals with the Hermitian COT eigenvectors, whose
+! columns follow the same energy ordering as eCheck and the density above.
+  allocate(ERI_COT(nAct,nAct,nAct,nAct))
+  call AOtoMO_ERI_RHF(nAct,nAct,eigWork, &
+    ERI(nC+1:nOrb-nR,nC+1:nOrb-nR,nC+1:nOrb-nR,nC+1:nOrb-nR),ERI_COT)
+  call phRLR_B(1,.true.,nAct,0,nOcc,nVir,0,nS,1d0,ERI_COT,Bph)
+  deallocate(ERI_COT)
+  call compute_drpa_energy(eCheck,Bph,EcCOT)
+  if(info /= 0) return
+  call print_correlation_energies(EcRHF,EcCOT)
 
 contains
 
@@ -349,5 +369,58 @@ contains
     write(*,*)
 
   end subroutine compute_total_energy
+
+  subroutine compute_drpa_energy(orbitalEnergies,responseB,correlationEnergy)
+
+    double precision,intent(in)  :: orbitalEnergies(nAct),responseB(nS,nS)
+    double precision,intent(out) :: correlationEnergy
+
+    integer :: occ,vir,ia
+    double precision,external :: trace_matrix
+    double precision :: gaps(nS),sqrtGaps(nS),omegaSquared(nS),traceA,tolerance
+    double precision,allocatable :: casida(:,:)
+
+    do occ=1,nOcc
+      do vir=1,nVir
+        ia=(occ-1)*nVir+vir
+        gaps(ia)=orbitalEnergies(nOcc+vir)-orbitalEnergies(occ)
+      end do
+    end do
+    if(any(gaps < 0d0)) then
+      write(*,'(A)') 'GW-COT: negative occupied-virtual gap in the direct-RPA energy calculation.'
+      info=7
+      return
+    end if
+
+    ! For direct RPA, A-B is the diagonal gap matrix. Use only the squared
+    ! frequencies, so a zero gap needs no inverse square root.
+    traceA=sum(gaps)+trace_matrix(nS,responseB)
+    sqrtGaps=sqrt(gaps)
+    allocate(casida(nS,nS))
+    casida=2d0*responseB
+    do ia=1,nS
+      casida(ia,ia)=casida(ia,ia)+gaps(ia)
+      casida(:,ia)=sqrtGaps*casida(:,ia)*sqrtGaps(ia)
+    end do
+    call diagonalize_matrix(nS,casida,omegaSquared)
+    tolerance=100d0*epsilon(1d0)*maxval(abs(omegaSquared))
+    if(.not.all(ieee_is_finite(omegaSquared)) .or. any(omegaSquared < -tolerance)) then
+      write(*,'(A)') 'GW-COT: invalid squared frequencies in the direct-RPA energy calculation.'
+      info=7
+      return
+    end if
+    correlationEnergy=0.5d0*(sum(sqrt(max(omegaSquared,0d0)))-traceA)
+
+  end subroutine compute_drpa_energy
+
+  subroutine print_correlation_energies(referenceEnergy,cotEnergy)
+
+    double precision,intent(in) :: referenceEnergy,cotEnergy
+
+    write(*,'(A32,F21.12,A)') 'dRPA@RHF correlation energy = ',referenceEnergy,' Eh'
+    write(*,'(A32,F21.12,A)') 'dRPA@COT correlation energy = ',cotEnergy,' Eh'
+    write(*,*)
+
+  end subroutine print_correlation_energies
 
 end subroutine RGW_COT

@@ -40,6 +40,12 @@ determinant formed by filling the lowest eigenvectors of the Hermitian COT
 active block and keeping the frozen core doubly occupied. QuAcK reports the
 kinetic, electron–nuclear, Hartree, exchange, and nuclear-repulsion terms.
 
+COT also reports two full direct-RPA correlation energies for the same active
+space. `dRPA@RHF` uses the reference HF orbitals and energies. `dRPA@COT` uses
+the Hermitian COT orbitals, their eigenvalues, and the integrals transformed
+to that orbital basis. `TDA_W` changes the screening used to construct COT.
+Both printed correlation energies use the full direct-RPA equations.
+
 ## T-matrix
 
 The particle–particle and electron–hole T-matrix families sum repeated scattering
