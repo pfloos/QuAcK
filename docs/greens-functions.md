@@ -126,8 +126,11 @@ selects the dense solver.
 
 STEOM-eB uses the canonical RHF orbitals, singlet dRPA screening, and the
 static second-order electron–boson Hamiltonian. It can run independently
-or in the same job as COT. It uses the symmetrized on-shell GW one-body
-correction and the induced electron–hole terms of the minimal eB model.
+or in the same job as COT. The response starts from the TDHF blocks,
+including the bare Hartree and exchange kernel. It adds the symmetrized
+on-shell GW one-body correction and the induced electron–hole terms from
+the eB transformation. With the electron–boson coupling set to zero, the
+response reduces to TDHF, or to CIS in TDA.
 The static approximation requires nonresonant denominators, and full
 response requires a stable reference matrix. QuAcK reports the affected
 orbitals and screening mode when it encounters a resonance.

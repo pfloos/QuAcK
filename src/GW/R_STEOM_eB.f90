@@ -2,7 +2,7 @@ subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,n
 
 ! Static second-order electron-boson STEOM in the canonical RHF basis.
 ! Singlet dRPA modes supply the screening for both neutral spin manifolds.
-! The minimal eB Hamiltonian contributes no bare electron-hole kernel.
+! Build the bare electron-hole kernel from the residual two-electron interaction.
 
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
@@ -37,13 +37,16 @@ subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,n
   allocate(rho(nOrb,nOrb,nS))
   call RGW_excitation_density(nOrb,nC,nO,nR,nS,ERI,xpY,rho)
   deallocate(xpY,xmY)
-  aph=0d0
+  ! Start from the triplet TDHF blocks (Fock gaps and bare exchange).
+  ! The bare singlet Hartree term 2(ia|jb) equals 2(ia|bj) for real RHF orbitals.
+  call phRLR_A(2,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,aph)
   if(TDA) then
     deallocate(bph)
   else
-    bph=0d0
+    call phRLR_B(2,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,bph)
   end if
-  allocate(singletShift(merge(nS,0,singlet),merge(nS,0,singlet)),source=0d0)
+  allocate(singletShift(merge(nS,0,singlet),merge(nS,0,singlet)))
+  if(singlet) call phRLR_B(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,singletShift)
 
   allocate(coupling(nAct,nAct),weighted(nAct,nAct),vertex(nAct,nAct),selfEnergy(nAct,nAct))
   selfEnergy=0d0
@@ -111,7 +114,6 @@ subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,n
           ia=ia+1
           if(i == j) aph(ia,jb)=aph(ia,jb)+selfEnergy(a,b)
           if(a == b) aph(ia,jb)=aph(ia,jb)-selfEnergy(j,i)
-          if(ia == jb) aph(ia,jb)=aph(ia,jb)+energies(a)-energies(i)
         end do
       end do
     end do
