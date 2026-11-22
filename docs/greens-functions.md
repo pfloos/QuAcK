@@ -28,6 +28,7 @@ routes are `G0F3`, `evGF3`, and `psdG0F3`. See the catalogue for driver coverage
 | `scGW` | Fully self-consistent GW on the imaginary axis | R and a dedicated Bogoliubov branch |
 | `osCOT` | One-shot correlated orbital theory based on the GW supermatrix | R |
 | `scCOT` | Quasiparticle self-consistent correlated orbital theory | R |
+| `STEOM-eB` | Static second-order electron–boson neutral excitation energies | R |
 
 Enable `RHF` and put the COT methods row above the test row in `input/methods`.
 
@@ -92,6 +93,44 @@ space. `dRPA@RHF` uses the RHF reference for `osCOT`. The corresponding
 the Hermitian COT orbitals, their eigenvalues, and the integrals transformed
 to that orbital basis. `TDA_COT` changes the screening used to construct COT.
 Both printed correlation energies use the full direct-RPA equations.
+
+### STEOM-eB neutral excitation energies
+
+Enable `RHF` and set the STEOM-eB flag in `input/methods` alongside the COT row.
+
+```text
+# STEOM-eB
+  T
+```
+
+Select the response approximation and spin manifolds in `input/options`.
+
+```text
+# STEOM-eB: TDA singlet triplet Davidson n_roots threshold
+            F   T       T       F         5       1.0e-8
+```
+
+The default is full response for both singlets and triplets. Set `TDA = T`
+to diagonalize the resonant block alone. To select one spin manifold, set
+the other flag to `F`. The existing `TDA_W` option controls the screening
+independently of the response approximation.
+
+Set `Davidson = T` to compute the lowest `n_roots` in each selected spin
+manifold, up to the size of the active singles space. The threshold is the
+Euclidean Ritz residual norm in hartree for TDA and in hartree squared for
+full response. The full-response solver applies the Hermitian operator
+\(L^{\mathsf T}(A+B)L\) using triangular multiplications, where
+\(A-B=LL^{\mathsf T}\). Matrix assembly, screening and the Cholesky
+factorization still use dense routines. The original three-option row
+selects the dense solver.
+
+STEOM-eB uses the canonical RHF orbitals, singlet dRPA screening, and the
+static second-order electron–boson Hamiltonian. It can run independently
+or in the same job as COT. It uses the symmetrized on-shell GW one-body
+correction and the induced electron–hole terms of the minimal eB model.
+The static approximation requires nonresonant denominators, and full
+response requires a stable reference matrix. QuAcK reports the affected
+orbitals and screening mode when it encounters a resonance.
 
 ## T-matrix
 

@@ -3,7 +3,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
                   dodrCCD,dorCCD,docrCCD,dolCCD,doCIS,doCIS_D,doCID,doCISD,doFCI,dophRPA,dophRPAx,docrRPA,doppRPA,doOO,     & 
                   doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doG0W0,doevGW,doqsGW,                                     &
                   doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp,doG0T0eh,doevGTeh,doqsGTeh,doevParquet,doqsParquet,doGWParquet, &
-                  doFTDA,doFRPA,doosCOT,doscCOT, &
+                  doFTDA,doFRPA,doosCOT,doscCOT,doSTEOMeB, &
                   docG0W0,docG0F2,doscGW,doscGF2,                                                                           & 
                   doCAP,readFCIDUMP,restart_scGW,restart_scGF2,verbose_scGW,verbose_scGF2,chem_pot_scG,                     & 
                   do_IPEA_ADC2,do_IPEA_ADC3,do_SOSEX,do_2SOSEX,do_G3W2,do_psdG3W2,                                          & 
@@ -49,7 +49,7 @@ subroutine RQuAcK(working_dir,use_gpu,dotest,doRHF,doROHF,docRHF,doeRHF,doMOM,  
   logical,intent(in)            :: doG0F2,doevGF2,doqsGF2,doG0F3,doevGF3,dopsdG0F3,doscGF2
   logical,intent(inout)         :: doG0W0
   logical,intent(in)            :: doevGW,doqsGW
-  logical,intent(in)            :: doosCOT,doscCOT
+  logical,intent(in)            :: doosCOT,doscCOT,doSTEOMeB
   logical,intent(in)            :: doG0T0pp,doevGTpp,doqsGTpp,doufG0T0pp
   logical,intent(in)            :: doG0T0eh,doevGTeh,doqsGTeh
   logical,intent(in)            :: docG0W0,docG0F2
@@ -723,6 +723,23 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
         call wall_time(end_COT)
         write(*,'(A65,1X,F9.3,A8)') 'Total wall time for scCOT = ',end_COT-start_COT,' seconds'
       end if
+      write(*,*)
+    end block
+  end if
+
+  if(doSTEOMeB) then
+    block
+      logical :: TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB,davidson_STEOMeB
+      double precision :: start_STEOMeB,end_STEOMeB,tolerance_STEOMeB
+      integer :: nRoots_STEOMeB
+
+      call read_STEOM_eB_options(working_dir,TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB, &
+                                  davidson_STEOMeB,nRoots_STEOMeB,tolerance_STEOMeB)
+      call wall_time(start_STEOMeB)
+      call R_STEOM_eB(TDA_W,TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB,davidson_STEOMeB, &
+                      nRoots_STEOMeB,tolerance_STEOMeB,nOrb,nC,nO,nV,nR,nS,eHF,ERI_MO)
+      call wall_time(end_STEOMeB)
+      write(*,'(A65,1X,F9.3,A8)') 'Total wall time for STEOM-eB = ',end_STEOMeB-start_STEOMeB,' seconds'
       write(*,*)
     end block
   end if
