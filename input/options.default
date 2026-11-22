@@ -34,5 +34,5 @@
            0 0 3 T F T 1
 # COT: Davidson TDA_COT Davidson_threshold maxSCF thresh DIIS root_width SRG flow
        T        F       1.0e-10            64     1.0e-6 5    0.0        F   500.0
-# STEOM-eB: TDA singlet triplet Davidson n_roots threshold
-            F   T       T       F         5       1.0e-8
+# STEOM-eB: TDA singlet triplet Davidson n_roots threshold model
+            F   T       T       F         5       1.0e-8   COT2

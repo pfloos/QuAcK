@@ -34,7 +34,7 @@ GW	G0W0, evGW, qsGW	yes	yes	yes	src/GW	BSE support depends on the parent method 
 GW	scGW	yes	—	—	src/QuAcK	Bogoliubov variant also dispatched in B
 GW	osCOT	yes	—	—	src/GW/osCOT.f90	One-shot correlated orbital theory from canonical RHF
 GW	scCOT	yes	—	—	src/GW/scCOT.f90	Quasiparticle self-consistent correlated orbital theory from canonical RHF
-GW	STEOM-eB	yes	—	—	src/GW/R_STEOM_eB.f90	Static second-order neutral response with independent TDA and spin selection
+GW	STEOM-eB	yes	—	—	src/GW/R_STEOM_eB.f90	Second-order osCOT neutral singles with independent screening TDA and spin selection
 T-matrix	G0T0pp	yes	yes	yes	src/GT	Single-shot particle–particle T-matrix
 T-matrix	evGTpp, qsGTpp	yes	yes	—	src/GT	Particle–particle T-matrix with self-consistency
 T-matrix	ufG0T0pp	yes	—	—	src/GT	Upfolded particle–particle T-matrix

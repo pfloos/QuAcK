@@ -1,12 +1,12 @@
-subroutine STEOM_eB_davidson(TDA,n,nRoots,tolerance,matrix,factor,diagonal,roots,iterations,residual,info)
+subroutine STEOM_eB_davidson(TDA,symmetric,n,nRoots,tolerance,matrix,factor,diagonal,roots,iterations,residual,info)
 
-! Lowest roots of A (TDA) or L^T (A+B) L, where A-B = L L^T.
+! Lowest real roots of the singles matrix or L^T (A+B) L, where A-B = L L^T.
 ! Cache images of the orthonormal Davidson basis and restart with Ritz vectors.
 
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
 
-  logical,intent(in) :: TDA
+  logical,intent(in) :: TDA,symmetric
   integer,intent(in) :: n,nRoots
   double precision,intent(in) :: tolerance,matrix(n,n),factor(n,merge(0,n,TDA)),diagonal(n)
   double precision,intent(out) :: roots(nRoots),residual
@@ -15,12 +15,16 @@ subroutine STEOM_eB_davidson(TDA,n,nRoots,tolerance,matrix,factor,diagonal,roots
   integer,parameter :: maxIterations=200
   integer :: limit,m,previous,k,p,seed,lapackInfo
   logical :: available(n)
-  double precision :: floor,guessMix
+  double precision :: floor,guessMix,dummy(1,1)
+  integer,allocatable :: order(:)
   double precision,allocatable :: basis(:,:),image(:,:),projected(:,:),values(:),work(:)
+  double precision,allocatable :: imaginary(:),projectedRight(:,:)
   double precision,allocatable :: vectors(:,:),ritzImage(:,:),errors(:,:),norms(:),trial(:),denominator(:),buffer(:)
 
   limit=min(n,max(32,6*nRoots+8))
-  allocate(basis(n,limit),image(n,limit),projected(limit,limit),values(limit),work(max(1,3*limit-1)))
+  allocate(basis(n,limit),image(n,limit),projected(limit,limit),values(limit),work(max(1,4*limit)))
+  p=merge(0,limit,symmetric)
+  allocate(imaginary(p),projectedRight(p,p),order(p))
   allocate(vectors(n,nRoots),ritzImage(n,nRoots),errors(n,nRoots),norms(nRoots),trial(n),denominator(n),buffer(n))
   roots=0d0
   residual=huge(1d0)
@@ -46,10 +50,26 @@ subroutine STEOM_eB_davidson(TDA,n,nRoots,tolerance,matrix,factor,diagonal,roots
 
   do iterations=1,maxIterations
     call dgemm('T','N',m,m,n,1d0,basis,n,image,n,0d0,projected,limit)
-    call dsyev('V','U',m,projected,limit,values,work,size(work),lapackInfo)
+    if(symmetric) then
+      call dsyev('V','U',m,projected,limit,values,work,size(work),lapackInfo)
+    else
+      call dgeev('N','V',m,projected,limit,values,imaginary,dummy,1,projectedRight,limit,work,size(work),lapackInfo)
+    end if
     if(lapackInfo /= 0 .or. .not.all(ieee_is_finite(values(1:m)))) then
       info=2
       return
+    end if
+
+    if(.not.symmetric) then
+      order(1:m)=[(k,k=1,m)]
+      call quick_sort(values,order,m)
+      ! Complex Ritz vectors require a complex subspace; use the dense
+      ! nonsymmetric solver when any targeted Ritz pair is complex.
+      if(any(imaginary(order(1:nRoots)) /= 0d0)) then
+        info=3
+        return
+      end if
+      projected(1:m,1:nRoots)=projectedRight(1:m,order(1:nRoots))
     end if
 
     roots=values(1:nRoots)
@@ -66,9 +86,18 @@ subroutine STEOM_eB_davidson(TDA,n,nRoots,tolerance,matrix,factor,diagonal,roots
     end if
 
     if(m > limit-count(norms > tolerance) .and. limit < n) then
-      basis(:,1:nRoots)=vectors
-      image(:,1:nRoots)=ritzImage
-      m=nRoots
+      ! Right Ritz vectors of a general matrix need not be orthogonal.
+      if(symmetric) then
+        basis(:,1:nRoots)=vectors
+        image(:,1:nRoots)=ritzImage
+        m=nRoots
+      else
+        m=0
+        do k=1,nRoots
+          trial=vectors(:,k)
+          call append_trial()
+        end do
+      end if
     end if
 
     previous=m
@@ -106,7 +135,11 @@ contains
 
     buffer=basis(:,m)
     if(.not.TDA) call dtrmv('L','N','N',n,factor,n,buffer,1)
-    call dsymv('U',n,1d0,matrix,n,buffer,1,0d0,image(:,m),1)
+    if(symmetric) then
+      call dsymv('U',n,1d0,matrix,n,buffer,1,0d0,image(:,m),1)
+    else
+      call dgemv('N',n,n,1d0,matrix,n,buffer,1,0d0,image(:,m),1)
+    end if
     if(.not.TDA) call dtrmv('L','T','N',n,factor,n,image(:,m),1)
   end subroutine append_trial
 

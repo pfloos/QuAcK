@@ -28,7 +28,7 @@ routes are `G0F3`, `evGF3`, and `psdG0F3`. See the catalogue for driver coverage
 | `scGW` | Fully self-consistent GW on the imaginary axis | R and a dedicated Bogoliubov branch |
 | `osCOT` | One-shot correlated orbital theory based on the GW supermatrix | R |
 | `scCOT` | Quasiparticle self-consistent correlated orbital theory | R |
-| `STEOM-eB` | Static second-order electron–boson neutral excitation energies | R |
+| `STEOM-eB` | Second-order osCOT neutral excitation energies from the electron–boson singles block | R |
 
 Enable `RHF` and put the COT methods row above the test row in `input/methods`.
 
@@ -103,37 +103,41 @@ Enable `RHF` and set the STEOM-eB flag in `input/methods` alongside the COT row.
   T
 ```
 
-Select the response approximation and spin manifolds in `input/options`.
+Select the model, spin manifolds, and solver in `input/options`.
 
 ```text
-# STEOM-eB: TDA singlet triplet Davidson n_roots threshold
-            F   T       T       F         5       1.0e-8
+# STEOM-eB: TDA singlet triplet Davidson n_roots threshold model
+            F   T       T       F         5       1.0e-8   COT2
 ```
 
-The default is full response for both singlets and triplets. Set `TDA = T`
-to diagonalize the resonant block alone. To select one spin manifold, set
-the other flag to `F`. The existing `TDA_W` option controls the screening
-independently of the response approximation.
+`COT2` is the default, including when the model field is omitted. It
+diagonalizes the forward singles block of the second-order electron–boson
+transformation in the canonical RHF basis. Both spin manifolds are enabled
+by default. The independent GW option `TDA_W` selects TDA screening when
+set to `T`. The STEOM-eB response option `TDA` applies to the legacy model.
 
-Set `Davidson = T` to compute the lowest `n_roots` in each selected spin
-manifold, up to the size of the active singles space. The threshold is the
-Euclidean Ritz residual norm in hartree for TDA and in hartree squared for
-full response. The full-response solver applies the Hermitian operator
-\(L^{\mathsf T}(A+B)L\) using triangular multiplications, where
-\(A-B=LL^{\mathsf T}\). Matrix assembly, screening and the Cholesky
-factorization still use dense routines. The original three-option row
-selects the dense solver.
+The second-order model uses first-order osCOT amplitudes from one RHF
+screening calculation and runs independently of the `osCOT` method flag.
+The occupied-row, virtual-column boson-creation amplitude is set to zero.
+The remaining amplitudes are
+\(L^\nu_{pq}=-V^\nu_{pq}/(\Omega_\nu+\epsilon_p-\epsilon_q)\).
+The singles matrix adds one-body dressing and induced two-body terms to
+the CIS matrix, including its bare Hartree–exchange kernel. It reduces
+to CIS at zero electron–boson coupling. QuAcK identifies the orbitals
+and screening mode if an amplitude denominator is resonant.
 
-STEOM-eB uses the canonical RHF orbitals, singlet dRPA screening, and the
-static second-order electron–boson Hamiltonian. It can run independently
-or in the same job as COT. The response starts from the TDHF blocks,
-including the bare Hartree and exchange kernel. It adds the symmetrized
-on-shell GW one-body correction and the induced electron–hole terms from
-the eB transformation. With the electron–boson coupling set to zero, the
-response reduces to TDHF, or to CIS in TDA.
-The static approximation requires nonresonant denominators, and full
-response requires a stable reference matrix. QuAcK reports the affected
-orbitals and screening mode when it encounters a resonance.
+Set `Davidson = T` for the lowest `n_roots` in each selected manifold, up
+to the singles-space dimension. For `COT2`, the threshold is the Euclidean
+right Ritz residual in hartree. The matrix is generally non-Hermitian.
+QuAcK switches to a dense general eigensolver if Davidson encounters a
+complex target or fails to converge and reports any significant imaginary
+parts in the returned roots.
+
+Use `legacy` as the model to reproduce the earlier symmetric response.
+In that model, `TDA = T` selects the resonant block and `TDA = F` uses the
+full response with the Hermitian reduction \(L^{\mathsf T}(A+B)L\),
+where \(A-B=LL^{\mathsf T}\). The legacy full-response Davidson threshold
+is in hartree squared.
 
 ## T-matrix
 
