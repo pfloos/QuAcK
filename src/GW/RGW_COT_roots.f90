@@ -215,3 +215,75 @@ contains
   end subroutine assign_roots
 
 end subroutine RGW_COT_roots
+
+subroutine RGW_COT_auxiliaries(nOrb,nAct,nC,nOcc,nS,eRef,Om,rho,B,D)
+
+! Shared auxiliary order is (orbital, mode), with occupied orbitals first.
+  implicit none
+  integer,intent(in) :: nOrb,nAct,nC,nOcc,nS
+  double precision,intent(in) :: eRef(nOrb),Om(nS),rho(nOrb,nOrb,nS)
+  double precision,intent(out) :: B(nAct,nAct*nS),D(nAct*nS)
+  integer :: q,mode,mu
+
+  do q=1,nAct
+    do mode=1,nS
+      mu=(q-1)*nS+mode
+      D(mu)=eRef(nC+q)+merge(-Om(mode),Om(mode),q <= nOcc)
+      B(:,mu)=sqrt(2d0)*rho(nC+1:nC+nAct,nC+q,mode)
+    end do
+  end do
+end subroutine RGW_COT_auxiliaries
+
+subroutine RGW_COT_wave_operator(useDavidson,tolerance,nAct,nAux,f,B,D,reference,rootWidth, &
+                                energies,S,weights,condition,residual,info)
+
+! Match the physical and auxiliary projections of the same joint roots.
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+  implicit none
+  logical,intent(in) :: useDavidson
+  integer,intent(in) :: nAct,nAux
+  double precision,intent(in) :: tolerance,f(nAct,nAct),B(nAct,nAux),D(nAux),reference(nAct),rootWidth
+  double precision,intent(out) :: energies(nAct),S(nAux,nAct),weights(nAct),condition,residual
+  integer,intent(out) :: info
+  double precision,allocatable :: roots(:,:),physical(:,:),rhs(:,:),check(:,:),effective(:,:)
+  double precision :: sigma(nAct),work(5*nAct),dummyU(1,1),dummyVT(1,1),bound
+  integer :: nH,lapackInfo,mu,pivot(nAct)
+
+  nH=nAct+nAux
+  allocate(roots(nH,nAct),physical(nAct,nAct))
+  call RGW_COT_roots(useDavidson,tolerance,nAct,nAux,f,B,D,reference,rootWidth,energies,roots,info)
+  if(info /= 0) return
+
+  physical=roots(1:nAct,:)
+  call dgesvd('N','N',nAct,nAct,physical,nAct,sigma,dummyU,1,dummyVT,1,work,size(work),lapackInfo)
+  info=3
+  if(lapackInfo /= 0 .or. .not.all(ieee_is_finite(sigma))) return
+  info=4
+  if(sigma(nAct) < 1d-10) return
+  condition=sigma(1)/sigma(nAct)
+  if(condition > 1d10) return
+
+  ! Solve R_P^T S^T = R_Q^T without explicitly inverting R_P.
+  physical=transpose(roots(1:nAct,:))
+  allocate(rhs(nAct,nAux))
+  rhs=transpose(roots(nAct+1:nH,:))
+  weights=sum(roots(1:nAct,:)**2,dim=1)
+  deallocate(roots)
+  call dgesv(nAct,nAux,physical,nAct,pivot,rhs,nAct,lapackInfo)
+  info=3
+  if(lapackInfo /= 0 .or. .not.all(ieee_is_finite(rhs))) return
+  S=transpose(rhs)
+  deallocate(rhs)
+
+  effective=f+matmul(B,S)
+  check=transpose(B)-matmul(S,effective)
+  do mu=1,nAux
+    check(mu,:)=check(mu,:)+D(mu)*S(mu,:)
+  end do
+  residual=maxval(abs(check))
+  bound=1d-7
+  if(useDavidson) bound=bound+sqrt(dble(nAct))*tolerance/sigma(nAct)**2
+  info=5
+  if(.not.ieee_is_finite(residual) .or. residual > bound) return
+  info=0
+end subroutine RGW_COT_wave_operator

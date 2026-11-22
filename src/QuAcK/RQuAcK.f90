@@ -729,15 +729,23 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
 
   if(doSTEOMeB) then
     block
-      logical :: TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB,davidson_STEOMeB,COT2_STEOMeB
-      double precision :: start_STEOMeB,end_STEOMeB,tolerance_STEOMeB
-      integer :: nRoots_STEOMeB
+      logical :: TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB,davidson_STEOMeB
+      logical :: chargedDavidson,TDA_COT,useSRG
+      double precision :: start_STEOMeB,end_STEOMeB,tolerance_STEOMeB,chargedTolerance,scThreshold,rootWidth,srgFlow
+      integer :: nRoots_STEOMeB,maxSCF_COT,maxDIIS_COT
+      character(16) :: model_STEOMeB
 
       call read_STEOM_eB_options(working_dir,TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB, &
-                                  davidson_STEOMeB,nRoots_STEOMeB,tolerance_STEOMeB,COT2_STEOMeB)
+                                 davidson_STEOMeB,nRoots_STEOMeB,tolerance_STEOMeB,model_STEOMeB)
+      chargedDavidson=.true.
+      chargedTolerance=1d-10
+      if(model_STEOMeB == 'osCOT') &
+        call read_COT_options(working_dir,TDA_W,chargedDavidson,TDA_COT,chargedTolerance, &
+                             maxSCF_COT,scThreshold,maxDIIS_COT,rootWidth,useSRG,srgFlow)
       call wall_time(start_STEOMeB)
       call R_STEOM_eB(TDA_W,TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB,davidson_STEOMeB, &
-                      nRoots_STEOMeB,tolerance_STEOMeB,nOrb,nC,nO,nV,nR,nS,eHF,ERI_MO,COT2_STEOMeB)
+                      nRoots_STEOMeB,tolerance_STEOMeB,nOrb,nC,nO,nV,nR,nS,eHF,ERI_MO, &
+                      model_STEOMeB,chargedDavidson,chargedTolerance)
       call wall_time(end_STEOMeB)
       write(*,'(A65,1X,F9.3,A8)') 'Total wall time for STEOM-eB = ',end_STEOMeB-start_STEOMeB,' seconds'
       write(*,*)

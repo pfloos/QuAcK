@@ -52,24 +52,21 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
   character(*),intent(in)       :: reportReference
 
   integer,parameter             :: maxDense = 4000
-  double precision,parameter    :: condLimit = 1d10
   double precision,parameter    :: residualTol = 1d-7
 
   integer                       :: nAct,nOcc,nVir,nAux,nH
   integer(int64)                :: supermatrixDimension
-  integer                       :: p,q,k,mu,i,a,m,istat,lwork
-  integer,allocatable           :: ipiv(:)
-  double precision              :: condition,resid,ediff,swap,blochTol,eigenvalueTol
+  integer                       :: p,q,k,mu,i
+  double precision              :: condition,resid,ediff,swap,eigenvalueTol
   double precision              :: EcRHF,EcCOT
   double precision,allocatable  :: Aph(:,:),Bph(:,:),Om(:),XpY(:,:),XmY(:,:),rho(:,:,:)
-  double precision,allocatable  :: B(:,:),D(:),roots(:,:),physical(:,:)
-  double precision,allocatable  :: RP(:,:),RQ(:,:),RPwork(:,:),rhs(:,:),S(:,:)
-  double precision,allocatable  :: sig(:),work(:),N(:,:),eN(:),Nhalf(:,:)
+  double precision,allocatable  :: B(:,:),D(:),physical(:,:)
+  double precision,allocatable  :: S(:,:),poleWeights(:)
+  double precision,allocatable  :: N(:,:),eN(:),Nhalf(:,:)
   double precision,allocatable  :: NormVec(:,:),hProj(:,:),hBlock(:,:),bs(:,:),ds(:,:)
-  double precision,allocatable  :: eCheck(:),eSelected(:),eigWork(:,:),rTest(:,:)
+  double precision,allocatable  :: eCheck(:),eSelected(:),eigWork(:,:)
   double precision,allocatable  :: density(:,:)
   double precision,allocatable  :: ERI_COT(:,:,:,:)
-  double precision              :: dummyU(1,1),dummyVT(1,1)
 
   info=0
   hCOT=0d0
@@ -141,84 +138,21 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
 
   allocate(B(nAct,nAux),D(nAux))
 
-! The sqrt(2) is required by the QuAcK restricted-GW Lehmann residues.
-  mu=0
-  do i=nC+1,nO
-    do m=1,nS
-      mu=mu+1
-      D(mu)=eRef(i)-Om(m)
-      do p=1,nAct
-        B(p,mu)=sqrt(2d0)*rho(nC+p,i,m)
-      end do
-    end do
-  end do
-  do a=nO+1,nOrb-nR
-    do m=1,nS
-      mu=mu+1
-      D(mu)=eRef(a)+Om(m)
-      do p=1,nAct
-        B(p,mu)=sqrt(2d0)*rho(nC+p,a,m)
-      end do
-    end do
-  end do
+  call RGW_COT_auxiliaries(nOrb,nAct,nC,nOcc,nS,eRef,Om,rho,B,D)
   deallocate(Om,rho)
 
-  allocate(physical(nAct,nAct),roots(nH,nAct))
+  allocate(physical(nAct,nAct),S(nAux,nAct),poleWeights(nAct))
   physical=fock(nC+1:nOrb-nR,nC+1:nOrb-nR)
   if(useSRG) call RGW_COT_SRG(nAct,nAux,srgFlow,eRef(nC+1:nOrb-nR),B,D)
-  call RGW_COT_roots(useDavidson,davidsonThreshold,nAct,nAux,physical,B,D, &
-                     eRef(nC+1:nOrb-nR),rootWidth, &
-                     eCOT(nC+1:nOrb-nR),roots,info)
+  call RGW_COT_wave_operator(useDavidson,davidsonThreshold,nAct,nAux,physical,B,D, &
+                            eRef(nC+1:nOrb-nR),rootWidth,eCOT(nC+1:nOrb-nR),S,poleWeights,condition,resid,info)
   if(info /= 0) return
-
-  allocate(RP(nAct,nAct),RQ(nAux,nAct),RPwork(nAct,nAct))
-  allocate(sig(nAct),work(max(1,5*nAct)))
-  RP=roots(1:nAct,:)
-  RQ=roots(nAct+1:nH,:)
-  deallocate(roots)
-
-! Check rank / conditioning of the projection before constructing S.
-  RPwork=RP
-  lwork=size(work)
-  call dgesvd('N','N',nAct,nAct,RPwork,nAct,sig,dummyU,1,dummyVT,1,work,lwork,istat)
-  if(istat /= 0) then
-    info=3
-    return
-  end if
-  if(sig(nAct) < 1d-10) then
-    info=4
-    return
-  end if
-  condition=sig(1)/sig(nAct)
-  if(condition > condLimit) then
-    info=4
-    return
-  end if
-
-! Solve RP^T S^T = RQ^T, without explicitly computing RP^{-1}.
-  allocate(rhs(nAct,nAux),ipiv(nAct),S(nAux,nAct))
-  RPwork=transpose(RP)
-  rhs=transpose(RQ)
-  call dgesv(nAct,nAux,RPwork,nAct,ipiv,rhs,nAct,istat)
-  if(istat /= 0) then
-    info=3
-    return
-  end if
-  S=transpose(rhs)
 
   allocate(hBlock(nAct,nAct),bs(nAct,nAct),N(nAct,nAct),eN(nAct))
   allocate(ds(nAux,nAct),hProj(nAct,nAct),Nhalf(nAct,nAct))
   bs=matmul(B,S)
   hBlock=bs+physical
   hCOT(nC+1:nOrb-nR,nC+1:nOrb-nR)=hBlock
-
-! Invariant-subspace residual: B^T + D S - S hCOT = 0.
-  allocate(rTest(nAux,nAct))
-  rTest=transpose(B)-matmul(S,hBlock)
-  do mu=1,nAux
-    rTest(mu,:)=rTest(mu,:)+D(mu)*S(mu,:)
-  end do
-  resid=maxval(abs(rTest))
 
 ! Hermitian model-space Hamiltonian in an orthonormal metric:
 ! Omega^T H Omega = A+BS+(BS)^T+S^T D S.
@@ -275,21 +209,15 @@ subroutine osCOT(TDA_COT,useDavidson,davidsonThreshold,nOrb,nC,nO,nV,nR,nS, &
     write(*,'(A)') 'Orb    Ref (eV)     COT (eV)      1p weight'
     do p=1,nAct
       write(*,'(I3,2F14.6,F14.6)') nC+p,eRef(nC+p)*HaToeV, &
-               eCOT(nC+p)*HaToeV,sum(RP(:,p)**2)
+               eCOT(nC+p)*HaToeV,poleWeights(p)
     end do
     write(*,*)
 
   end if
 
-  blochTol=residualTol
   eigenvalueTol=residualTol
-  if(useDavidson) then
-    ! The residual matrix has nAct columns bounded by the Davidson threshold.
-    ! The Bloch residual transforms it from both sides through the projection.
-    eigenvalueTol=eigenvalueTol+sqrt(dble(nAct))*davidsonThreshold
-    blochTol=blochTol+sqrt(dble(nAct))*davidsonThreshold/sig(nAct)**2
-  end if
-  if(resid > blochTol .or. ediff > eigenvalueTol) then
+  if(useDavidson) eigenvalueTol=eigenvalueTol+sqrt(dble(nAct))*davidsonThreshold
+  if(ediff > eigenvalueTol) then
     write(*,*) 'GW-COT: warning, block-decoupling validation failed.'
     info=5
     return

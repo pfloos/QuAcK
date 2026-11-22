@@ -126,8 +126,28 @@ the CIS matrix, including its bare Hartree–exchange kernel. It reduces
 to CIS at zero electron–boson coupling. QuAcK identifies the orbitals
 and screening mode if an amplitude denominator is resonant.
 
+Use `osCOT` in the model column to build the amplitudes from a single
+joint IP+EA \(G_0W_0\) supermatrix at the RHF reference. QuAcK extracts
+the wave operator \(R_QR_P^{-1}\) from the selected roots. Both cross
+blocks enter the mixed electron–boson dressing of the reference, while
+the diagonal blocks dress an existing hole and particle. This model
+uses `TDA_W` for screening and the `Davidson` and
+`Davidson_threshold` settings on the COT options row for the charged
+solve. The charged supermatrix uses the unregularized GW vertices and
+the osCOT root selection. The separate `osCOT` method flag is optional.
+
+The neutral calculation embeds the four blocks linearly as a
+one-boson generator and retains the similarity transformation through
+degree two in the vertex and generator. The neutral conversion
+coefficients absent from the charged projection are fixed to zero in
+the generator. This is a quadratic approximation using finite-amplitude
+osCOT data. The reported Bloch residual tests the charged supermatrix
+wave operator. The neutral problem still diagonalizes the forward
+electronic singles block. QuAcK reports the residual singlet
+single-to-pure-boson coupling in both directions at the same order.
+
 Set `Davidson = T` for the lowest `n_roots` in each selected manifold, up
-to the singles-space dimension. For `COT2`, the threshold is the Euclidean
+to the singles-space dimension. For `COT2` and `osCOT`, the threshold is the Euclidean
 right Ritz residual in hartree. The matrix is generally non-Hermitian.
 QuAcK switches to a dense general eigensolver if Davidson encounters a
 complex target or fails to converge and reports any significant imaginary

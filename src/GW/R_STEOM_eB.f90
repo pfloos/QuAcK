@@ -1,29 +1,36 @@
-subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,nC,nO,nV,nR,nS,eHF,ERI,COT2)
+subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,nC,nO,nV,nR,nS,eHF,ERI, &
+                      model,chargedDavidson,chargedTolerance)
 
 ! Static second-order electron-boson STEOM in the canonical RHF basis.
 ! Singlet dRPA modes supply the screening for both neutral spin manifolds.
 ! Build the bare electron-hole kernel from the residual two-electron interaction.
 
+  use, intrinsic :: iso_fortran_env, only: int64
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
   implicit none
   include 'parameters.h'
 
-  logical,intent(in) :: TDA_W,TDA,singlet,triplet,Davidson,COT2
+  logical,intent(in) :: TDA_W,TDA,singlet,triplet,Davidson,chargedDavidson
+  character(*),intent(in) :: model
   integer,intent(in) :: nRoots,nOrb,nC,nO,nV,nR,nS
-  double precision,intent(in) :: tolerance,eHF(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in) :: tolerance,chargedTolerance,eHF(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
 
   integer :: nAct,nOcc,i,j,a,b,ia,jb,p,q,mode
   double precision :: ec,omega,delta,plus,minus,poleTolerance,denominator
   double precision,allocatable :: aph(:,:),bph(:,:),singletShift(:,:),om(:),xpY(:,:),xmY(:,:),rho(:,:,:)
   double precision,allocatable :: energies(:),coupling(:,:),weighted(:,:),vertex(:,:),selfEnergy(:,:)
 
-  if(COT2) then
+  select case(model)
+  case('osCOT')
+    write(*,'(/,A)') 'STEOM-eB (joint osCOT amplitudes, quadratic transformation, forward singles)'
+    write(*,'(A,L1)') '  TDA screening: ',TDA_W
+  case('COT2')
     write(*,'(/,A)') 'STEOM-eB (second-order osCOT, canonical RHF, forward singles)'
     write(*,'(A,L1)') '  TDA screening: ',TDA_W
-  else
+  case default
     write(*,'(/,A)') 'STEOM-eB (legacy response, canonical RHF)'
     write(*,'(A,L1,A,L1)') '  TDA response: ',TDA,'   TDA screening: ',TDA_W
-  end if
+  end select
   if(nS == 0) then
     write(*,'(A)') '  No active electron-hole pairs.'
     return
@@ -47,8 +54,12 @@ subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,n
   call phRLR_A(2,.false.,nOrb,nC,nO,nV,nR,nS,1d0,eHF,ERI,aph)
   allocate(singletShift(merge(nS,0,singlet),merge(nS,0,singlet)))
   if(singlet) call phRLR_B(1,.true.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,singletShift)
-  if(COT2) then
-    deallocate(bph)
+  if(model /= 'legacy') then
+    if(model == 'osCOT' .and. singlet) then
+      call phRLR_B(1,.false.,nOrb,nC,nO,nV,nR,nS,1d0,ERI,bph)
+    else
+      deallocate(bph)
+    end if
     call assemble_COT_singles()
     deallocate(rho)
     if(triplet) call print_COT_spectrum('triplet')
@@ -145,49 +156,115 @@ subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,n
 
 contains
 
+  subroutine joint_COT_amplitudes(graph)
+    double precision,allocatable,intent(out) :: graph(:,:)
+    double precision,allocatable :: fock(:,:),B(:,:),D(:),poles(:),weights(:)
+    double precision :: condition,residual,crossFromHoles,crossFromParticles
+    integer :: nAux,info,q,first,last
+    integer(int64) :: nH
+
+    nH=int(nAct,int64)*(int(nS,int64)+1)
+    if(nH > huge(nAux)) error stop 'STEOM-eB joint GW supermatrix exceeds the integer range'
+    if(.not.chargedDavidson .and. nH > 4000) error stop 'Enable COT Davidson for joint GW dimensions above 4000'
+    nAux=int(nH)-nAct
+    allocate(fock(nAct,nAct),B(nAct,nAux),D(nAux),graph(nAux,nAct),poles(nAct),weights(nAct))
+    fock=0d0
+    do q=1,nAct
+      fock(q,q)=energies(q)
+    end do
+    call RGW_COT_auxiliaries(nOrb,nAct,nC,nOcc,nS,eHF,om,rho,B,D)
+    call RGW_COT_wave_operator(chargedDavidson,chargedTolerance,nAct,nAux,fock,B,D,energies,0d0, &
+                              poles,graph,weights,condition,residual,info)
+    if(info /= 0) then
+      write(*,'(A,I0)') 'STEOM-eB joint osCOT wave operator failed with info = ',info
+      error stop 'Cannot construct joint osCOT amplitudes for STEOM-eB'
+    end if
+    first=nOcc*nS+1
+    last=nOcc*nS
+    crossFromHoles=norm2(graph(first:nAux,1:nOcc))
+    crossFromParticles=norm2(graph(1:last,nOcc+1:nAct))
+    write(*,'(A,ES12.4)') '  Joint osCOT Bloch residual (Eh) = ',residual
+    write(*,'(A,2ES12.4)') '  Joint osCOT cross-block norms (hole, particle) = ',crossFromHoles,crossFromParticles
+  end subroutine joint_COT_amplitudes
+
   subroutine assemble_COT_singles()
-    double precision,allocatable :: Vmode(:,:),amplitude(:,:),dressing(:,:)
-    integer :: nVir
+    double precision,allocatable :: Vmode(:,:),creation(:,:),annihilation(:,:),commutator(:,:),dressing(:,:),graph(:,:)
+    double precision,allocatable :: rightMixed(:),leftMixed(:),bareCoupling(:)
+    double precision :: forwardNorm,reverseNorm
+    integer :: nVir,mu,nMixed
 
     nVir=nAct-nOcc
-    allocate(Vmode(nAct,nAct),amplitude(nAct,nAct),dressing(nAct,nAct))
+    allocate(Vmode(nAct,nAct),creation(nAct,nAct),dressing(nAct,nAct))
+    allocate(annihilation(nAct,nAct),commutator(nAct,nAct))
+    if(model == 'osCOT') then
+      call joint_COT_amplitudes(graph)
+    else
+      allocate(graph(0,0))
+    end if
+    nMixed=merge(nS,0,model == 'osCOT' .and. singlet)
+    allocate(rightMixed(nMixed),leftMixed(nMixed),bareCoupling(nMixed))
     dressing=0d0
+    forwardNorm=0d0
+    reverseNorm=0d0
     do mode=1,nS
       Vmode=sqrt(2d0)*rho(nC+1:nOrb-nR,nC+1:nOrb-nR,mode)
       if(.not.all(ieee_is_finite(Vmode))) error stop 'Nonfinite STEOM-eB mode couplings'
 
-      ! Boson-creation amplitude L. The occupied/virtual block is fixed to zero.
-      amplitude=0d0
-      do q=1,nAct
-        do p=1,nAct
-          if(p <= nOcc .and. q > nOcc) cycle
-          if(Vmode(p,q) == 0d0) cycle
-          delta=energies(p)-energies(q)
-          denominator=om(mode)+delta
-          poleTolerance=sqrt(epsilon(1d0))*max(1d0,abs(delta),om(mode))
-          if(abs(denominator) <= poleTolerance) call resonance('osCOT amplitude',p,q,mode,denominator)
-          amplitude(p,q)=-Vmode(p,q)/denominator
+      creation=0d0
+      if(model == 'osCOT') then
+        ! Embed all four graph blocks as the coefficients of a one-boson
+        ! generator. Leave the unprescribed neutral conversion blocks zero.
+        annihilation=0d0
+        do q=1,nOcc
+          mu=(q-1)*nS+mode
+          creation(1:nOcc,q)=-graph(mu,1:nOcc)
+          annihilation(q,:)=graph(mu,:)
         end do
-      end do
-
-      ! D = sum_modes (V P_virtual L - L P_occupied V).
-      call dgemm('N','N',nAct,nAct,nVir,1d0,Vmode(1,nOcc+1),nAct,amplitude(nOcc+1,1),nAct,1d0,dressing,nAct)
-      call dgemm('N','N',nAct,nAct,nOcc,-1d0,amplitude,nAct,Vmode,nAct,1d0,dressing,nAct)
-
-      !$omp parallel do default(none) shared(nS,nOcc,nVir,aph,singlet,singletShift,Vmode,amplitude) &
-      !$omp private(jb,j,b,ia,i,a)
-      do jb=1,nS
-        j=(jb-1)/nVir+1
-        b=mod(jb-1,nVir)+nOcc+1
-        do ia=1,nS
-          i=(ia-1)/nVir+1
-          a=mod(ia-1,nVir)+nOcc+1
-          aph(ia,jb)=aph(ia,jb)-Vmode(a,b)*amplitude(j,i)-amplitude(a,b)*Vmode(j,i)
-          if(singlet) singletShift(ia,jb)=singletShift(ia,jb)+2d0*amplitude(a,i)*Vmode(j,b)
+        do p=nOcc+1,nAct
+          mu=(p-1)*nS+mode
+          creation(p,:)=graph(mu,:)
+          annihilation(nOcc+1:nAct,p)=-graph(mu,nOcc+1:nAct)
         end do
-      end do
-      !$omp end parallel do
+        do q=1,nAct
+          commutator(:,q)=Vmode(:,q)+(om(mode)+energies-energies(q))*creation(:,q)
+        end do
+        ! The zero-boson correction is E(V) E(A) - E(B) E(C),
+        ! with A and B the creation and annihilation amplitudes and
+        ! C = V + [F,A] + Omega*A. Keep terms through degree two in V and K.
+        call add_one_body_product(annihilation,commutator,-1d0,nVir,dressing)
+        if(singlet) then
+          do i=1,nOcc
+            do a=nOcc+1,nAct
+              ia=(i-1)*nVir+a-nOcc
+              rightMixed(ia)=creation(a,i)
+              leftMixed(ia)=annihilation(i,a)
+              bareCoupling(ia)=Vmode(i,a)
+            end do
+          end do
+          ! [W_N,K] contracts the mixed amplitudes with the bare singlet
+          ! TDHF B block. The pure bosons are outside the final singles space.
+          forwardNorm=hypot(forwardNorm,norm2(bareCoupling+matmul(bph,rightMixed)))
+          reverseNorm=hypot(reverseNorm,norm2(bareCoupling-matmul(bph,leftMixed)))
+        end if
+      else
+        do q=1,nAct
+          do p=1,nAct
+            if(p <= nOcc .and. q > nOcc) cycle
+            if(Vmode(p,q) == 0d0) cycle
+            delta=energies(p)-energies(q)
+            denominator=om(mode)+delta
+            poleTolerance=sqrt(epsilon(1d0))*max(1d0,abs(delta),om(mode))
+            if(abs(denominator) <= poleTolerance) call resonance('osCOT amplitude',p,q,mode,denominator)
+            creation(p,q)=-Vmode(p,q)/denominator
+          end do
+        end do
+      end if
+      call add_one_body_product(Vmode,creation,1d0,nVir,dressing)
     end do
+
+    if(nMixed > 0) write(*,'(A,2ES12.4)') &
+      '  Singlet singles/pure-boson coupling norms (forward, reverse, Eh) = ', &
+      sqrt(2d0)*forwardNorm,sqrt(2d0)*reverseNorm
 
     do jb=1,nS
       j=(jb-1)/nVir+1
@@ -200,6 +277,31 @@ contains
       end do
     end do
   end subroutine assemble_COT_singles
+
+  subroutine add_one_body_product(X,Y,scale,nVir,dressing)
+    integer,intent(in) :: nVir
+    double precision,intent(in) :: X(nAct,nAct),Y(nAct,nAct),scale
+    double precision,intent(inout) :: dressing(nAct,nAct)
+    integer :: jb,j,b,ia,i,a
+
+    ! Reference-subtracted singles matrix of the product of two normal-
+    ! ordered one-body operators. The contraction is X Pv Y - Y Po X.
+    call dgemm('N','N',nAct,nAct,nVir,scale,X(1,nOcc+1),nAct,Y(nOcc+1,1),nAct,1d0,dressing,nAct)
+    call dgemm('N','N',nAct,nAct,nOcc,-scale,Y,nAct,X,nAct,1d0,dressing,nAct)
+    !$omp parallel do default(none) shared(nS,nOcc,nVir,aph,singlet,singletShift,X,Y,scale) &
+    !$omp private(jb,j,b,ia,i,a)
+    do jb=1,nS
+      j=(jb-1)/nVir+1
+      b=mod(jb-1,nVir)+nOcc+1
+      do ia=1,nS
+        i=(ia-1)/nVir+1
+        a=mod(ia-1,nVir)+nOcc+1
+        aph(ia,jb)=aph(ia,jb)-scale*(X(a,b)*Y(j,i)+Y(a,b)*X(j,i))
+        if(singlet) singletShift(ia,jb)=singletShift(ia,jb)+2d0*scale*(X(a,i)*Y(j,b)+Y(a,i)*X(j,b))
+      end do
+    end do
+    !$omp end parallel do
+  end subroutine add_one_body_product
 
   subroutine print_COT_spectrum(manifold)
     character(*),intent(in) :: manifold
