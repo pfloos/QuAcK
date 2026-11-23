@@ -165,6 +165,24 @@ full response with the Hermitian reduction \(L^{\mathsf T}(A+B)L\),
 where \(A-B=LL^{\mathsf T}\). The legacy full-response Davidson threshold
 is in hartree squared.
 
+#### Charged-sector and neutral-sector checks
+
+Run `python tests/check_steom_eb_lift.py` with PySCF, NumPy and SciPy for a
+two-orbital Fock-space check on H₂ and HeH⁺. The script constructs all four GW
+blocks by projecting the electron–boson commutator and compares the selected
+GW poles with the charged spectra of the parent Hamiltonian.
+
+The reference solver fits a normal-ordered exponential with independent boson
+creation and annihilation amplitudes multiplying spin-summed electronic
+one-body operators and pair excitations/de-excitations. It simultaneously
+matches the osCOT graph and zeros the selected charged commutator elements.
+A separate diagnostic supplies the exact finite-space ground state as the
+reference column. Even then the charged constraints admit different projected
+singlet matrix elements. The script also tests imposing the forward
+singles-to-pure-boson decoupling equation as an additional neutral condition.
+These checks use a finite boson space and are independent of the production
+quadratic excitation-energy calculation.
+
 ## T-matrix
 
 The particle–particle and electron–hole T-matrix families sum repeated scattering
