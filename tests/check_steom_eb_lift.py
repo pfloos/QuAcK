@@ -181,11 +181,12 @@ def audit(data, cap, fit, stationary=False):
         assert np.linalg.norm(neutral_fit.fun) < 2.e-8
         print(f"  residual including neutral singles-to-boson condition {np.linalg.norm(neutral_fit.fun):.3e}")
 
+        amplitudes = neutral_fit.x
         step = 1.e-6
         axes = np.eye(len(amplitudes))
         gradient = np.array([(singlet_energy(amplitudes+step*d)-singlet_energy(amplitudes-step*d))/(2*step)
                              for d in axes])
-        jac = np.array([(residual(amplitudes+step*d)-residual(amplitudes-step*d))/(2*step)
+        jac = np.array([(with_neutral_condition(amplitudes+step*d)-with_neutral_condition(amplitudes-step*d))/(2*step)
                         for d in axes]).T
         _, singular, vh = np.linalg.svd(jac,full_matrices=True)
         null = vh[np.count_nonzero(singular > 1.e-8):]
@@ -194,7 +195,7 @@ def audit(data, cap, fit, stationary=False):
             direction /= np.linalg.norm(direction)
             shift = .01
             def second_solution(x):
-                return np.r_[residual(x), direction@(x-amplitudes)-shift]
+                return np.r_[with_neutral_condition(x), direction@(x-amplitudes)-shift]
             alt = least_squares(second_solution,amplitudes+shift*direction,
                                 ftol=1.e-14, xtol=1.e-14, gtol=1.e-13)
             assert np.linalg.norm(alt.fun) < 2.e-8
