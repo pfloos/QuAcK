@@ -733,10 +733,11 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
       logical :: chargedDavidson,TDA_COT,useSRG
       double precision :: start_STEOMeB,end_STEOMeB,tolerance_STEOMeB,chargedTolerance,scThreshold,rootWidth,srgFlow
       integer :: nRoots_STEOMeB,maxSCF_COT,maxDIIS_COT
+      double precision :: minQPWeight
       character(16) :: model_STEOMeB
 
       call read_STEOM_eB_options(working_dir,TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB, &
-                                 davidson_STEOMeB,nRoots_STEOMeB,tolerance_STEOMeB,model_STEOMeB)
+                                 davidson_STEOMeB,nRoots_STEOMeB,tolerance_STEOMeB,model_STEOMeB,minQPWeight)
       chargedDavidson=.true.
       chargedTolerance=1d-10
       if(model_STEOMeB == 'osCOT') &
@@ -745,7 +746,7 @@ doGF = doG0F2 .or. doevGF2 .or. doqsGF2 .or. doG0F3 .or. doevGF3 .or. dopsdG0F3 
       call wall_time(start_STEOMeB)
       call R_STEOM_eB(TDA_W,TDA_STEOMeB,singlet_STEOMeB,triplet_STEOMeB,davidson_STEOMeB, &
                       nRoots_STEOMeB,tolerance_STEOMeB,nOrb,nC,nO,nV,nR,nS,eHF,ERI_MO, &
-                      model_STEOMeB,chargedDavidson,chargedTolerance)
+                      model_STEOMeB,chargedDavidson,chargedTolerance,minQPWeight)
       call wall_time(end_STEOMeB)
       write(*,'(A65,1X,F9.3,A8)') 'Total wall time for STEOM-eB = ',end_STEOMeB-start_STEOMeB,' seconds'
       write(*,*)

@@ -106,9 +106,15 @@ Enable `RHF` and set the STEOM-eB flag in `input/methods` alongside the COT row.
 Select the model, spin manifolds, and solver in `input/options`.
 
 ```text
-# STEOM-eB: TDA singlet triplet Davidson n_roots threshold model
-            F   T       T       F         5       1.0e-8   COT2
+# STEOM-eB: TDA singlet triplet Davidson n_roots threshold model min_QP_weight
+            F   T       T       F         5       1.0e-8   COT2  0.0
 ```
+
+For `osCOT`, the optional `min_QP_weight` retains a neutral pair only when
+both assigned GW roots have total physical-space weight at least the cutoff.
+The weights are sums over all active one-particle components of each normalized
+charged root. Screening and the charged osCOT transformation use the full active
+space. The default of zero retains every pair.
 
 `COT2` is the default, including when the model field is omitted. It
 diagonalizes the forward singles block of the second-order electron–boson

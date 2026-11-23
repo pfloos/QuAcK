@@ -1,4 +1,4 @@
-subroutine read_STEOM_eB_options(working_dir,TDA,singlet,triplet,Davidson,nRoots,tolerance,model)
+subroutine read_STEOM_eB_options(working_dir,TDA,singlet,triplet,Davidson,nRoots,tolerance,model,minQPWeight)
 
   use, intrinsic :: iso_fortran_env, only: iostat_end
   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
@@ -8,7 +8,7 @@ subroutine read_STEOM_eB_options(working_dir,TDA,singlet,triplet,Davidson,nRoots
   logical,intent(out) :: TDA,singlet,triplet,Davidson
   character(*),intent(out) :: model
   integer,intent(out) :: nRoots
-  double precision,intent(out) :: tolerance
+  double precision,intent(out) :: tolerance,minQPWeight
   character(512) :: line
   character(1) :: flags(4)
   integer :: unit,status
@@ -19,6 +19,7 @@ subroutine read_STEOM_eB_options(working_dir,TDA,singlet,triplet,Davidson,nRoots
   Davidson=.false.
   nRoots=5
   tolerance=1d-8
+  minQPWeight=0d0
   model='COT2'
 
   open(newunit=unit,file=trim(working_dir)//'/input/options',status='old',action='read',iostat=status)
@@ -49,12 +50,19 @@ subroutine read_STEOM_eB_options(working_dir,TDA,singlet,triplet,Davidson,nRoots
     if(status /= 0) error stop 'Expected STEOM-eB Davidson root count and threshold'
     read(line,*,iostat=status) flags,nRoots,tolerance,model
     if(status /= 0 .and. status /= iostat_end) error stop 'Error reading the STEOM-eB model'
+    if(status == 0) then
+      read(line,*,iostat=status) flags,nRoots,tolerance,model,minQPWeight
+      if(status /= 0 .and. status /= iostat_end) error stop 'Invalid STEOM-eB minimum QP weight'
+    end if
     exit
   end do
   close(unit)
 
   if(model /= 'COT2' .and. model /= 'legacy' .and. model /= 'osCOT') &
     error stop 'Expected COT2, legacy or osCOT for the STEOM-eB model'
+  if(.not.ieee_is_finite(minQPWeight) .or. minQPWeight < 0d0 .or. minQPWeight > 1d0) &
+    error stop 'STEOM-eB minimum QP weight must be in [0,1]'
+  if(minQPWeight > 0d0 .and. model /= 'osCOT') error stop 'A QP weight cutoff requires the osCOT model'
   if(nRoots <= 0 .or. .not.ieee_is_finite(tolerance) .or. tolerance <= 0d0) &
     error stop 'STEOM-eB Davidson requires a positive root count and finite positive threshold'
   if(.not.(singlet.or.triplet)) error stop 'STEOM-eB requires at least one spin manifold'

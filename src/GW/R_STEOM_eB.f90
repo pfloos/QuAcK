@@ -1,5 +1,5 @@
 subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,nC,nO,nV,nR,nS,eHF,ERI, &
-                      model,chargedDavidson,chargedTolerance)
+                      model,chargedDavidson,chargedTolerance,minQPWeight)
 
 ! Static second-order electron-boson STEOM in the canonical RHF basis.
 ! Singlet dRPA modes supply the screening for both neutral spin manifolds.
@@ -13,9 +13,10 @@ subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,n
   logical,intent(in) :: TDA_W,TDA,singlet,triplet,Davidson,chargedDavidson
   character(*),intent(in) :: model
   integer,intent(in) :: nRoots,nOrb,nC,nO,nV,nR,nS
-  double precision,intent(in) :: tolerance,chargedTolerance,eHF(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
+  double precision,intent(in) :: tolerance,chargedTolerance,minQPWeight,eHF(nOrb),ERI(nOrb,nOrb,nOrb,nOrb)
 
   integer :: nAct,nOcc,i,j,a,b,ia,jb,p,q,mode
+  integer,allocatable :: keptPairs(:)
   double precision :: ec,omega,delta,plus,minus,poleTolerance,denominator
   double precision,allocatable :: aph(:,:),bph(:,:),singletShift(:,:),om(:),xpY(:,:),xmY(:,:),rho(:,:,:)
   double precision,allocatable :: energies(:),coupling(:,:),weighted(:,:),vertex(:,:),selfEnergy(:,:)
@@ -62,6 +63,11 @@ subroutine R_STEOM_eB(TDA_W,TDA,singlet,triplet,Davidson,nRoots,tolerance,nOrb,n
     end if
     call assemble_COT_singles()
     deallocate(rho)
+    if(allocated(keptPairs)) then
+      if(size(keptPairs) == 0) return
+      aph=aph(keptPairs,keptPairs)
+      if(singlet) singletShift=singletShift(keptPairs,keptPairs)
+    end if
     if(triplet) call print_COT_spectrum('triplet')
     if(singlet) then
       aph=aph+singletShift
@@ -179,6 +185,24 @@ contains
       write(*,'(A,I0)') 'STEOM-eB joint osCOT wave operator failed with info = ',info
       error stop 'Cannot construct joint osCOT amplitudes for STEOM-eB'
     end if
+    if(minQPWeight > 0d0) then
+      block
+        logical :: keep(nS)
+        integer :: pair,hole,particle,nVir
+        nVir=nAct-nOcc
+        do pair=1,nS
+          hole=(pair-1)/nVir+1
+          particle=nOcc+mod(pair-1,nVir)+1
+          keep(pair)=min(weights(hole),weights(particle)) >= minQPWeight
+        end do
+        keptPairs=pack([(pair,pair=1,nS)],keep)
+        write(*,'(A,F9.6,A,I0,A,I0)') '  Minimum QP weight = ',minQPWeight, &
+          ', retained electron-hole pairs = ',size(keptPairs),' / ',nS
+        do q=1,nAct
+          if(weights(q) < minQPWeight) write(*,'(A,I0,A,F10.7)') '    Excluded orbital ',q+nC,', QP weight = ',weights(q)
+        end do
+      end block
+    end if
     first=nOcc*nS+1
     last=nOcc*nS
     crossFromHoles=norm2(graph(first:nAux,1:nOcc))
@@ -198,6 +222,9 @@ contains
     allocate(annihilation(nAct,nAct),commutator(nAct,nAct))
     if(model == 'osCOT') then
       call joint_COT_amplitudes(graph)
+      if(allocated(keptPairs)) then
+        if(size(keptPairs) == 0) return
+      end if
     else
       allocate(graph(0,0))
     end if
@@ -243,8 +270,15 @@ contains
           end do
           ! [W_N,K] contracts the mixed amplitudes with the bare singlet
           ! TDHF B block. The pure bosons are outside the final singles space.
-          forwardNorm=hypot(forwardNorm,norm2(bareCoupling+matmul(bph,rightMixed)))
-          reverseNorm=hypot(reverseNorm,norm2(bareCoupling-matmul(bph,leftMixed)))
+          rightMixed=bareCoupling+matmul(bph,rightMixed)
+          leftMixed=bareCoupling-matmul(bph,leftMixed)
+          if(allocated(keptPairs)) then
+            forwardNorm=hypot(forwardNorm,norm2(rightMixed(keptPairs)))
+            reverseNorm=hypot(reverseNorm,norm2(leftMixed(keptPairs)))
+          else
+            forwardNorm=hypot(forwardNorm,norm2(rightMixed))
+            reverseNorm=hypot(reverseNorm,norm2(leftMixed))
+          end if
         end if
       else
         do q=1,nAct
@@ -307,18 +341,20 @@ contains
     character(*),intent(in) :: manifold
     double precision,allocatable :: matrix(:,:),roots(:),imaginary(:),work(:),diagonal(:)
     integer,allocatable :: order(:)
-    double precision :: residual,leftDummy(1,1),rightDummy(1,1),workQuery(1),noFactor(nS,0)
-    integer :: nReport,info,iterations,k
+    double precision :: residual,leftDummy(1,1),rightDummy(1,1),workQuery(1),noFactor(size(aph,1),0)
+    integer :: nReport,info,iterations,k,nPairs
+
+    nPairs=size(aph,1)
 
     if(.not.all(ieee_is_finite(aph))) error stop 'Nonfinite STEOM-eB singles matrix'
-    nReport=nS
+    nReport=nPairs
     if(Davidson) then
-      nReport=min(nRoots,nS)
-      allocate(roots(nReport),diagonal(nS))
-      do k=1,nS
+      nReport=min(nRoots,nPairs)
+      allocate(roots(nReport),diagonal(nPairs))
+      do k=1,nPairs
         diagonal(k)=aph(k,k)
       end do
-      call STEOM_eB_davidson(.true.,.false.,nS,nReport,tolerance,aph,noFactor,diagonal,roots,iterations,residual,info)
+      call STEOM_eB_davidson(.true.,.false.,nPairs,nReport,tolerance,aph,noFactor,diagonal,roots,iterations,residual,info)
       if(info == 0) then
         write(*,'(A,A,A,I0,A,I0,A,ES12.4)') 'STEOM-eB Davidson (',manifold,'): ',nReport, &
           ' roots, iterations = ',iterations,', max residual = ',residual
@@ -330,15 +366,15 @@ contains
     end if
 
     matrix=aph
-    allocate(roots(nS),imaginary(nS),order(nS))
-    call dgeev('N','N',nS,matrix,nS,roots,imaginary,leftDummy,1,rightDummy,1,workQuery,-1,info)
+    allocate(roots(nPairs),imaginary(nPairs),order(nPairs))
+    call dgeev('N','N',nPairs,matrix,nPairs,roots,imaginary,leftDummy,1,rightDummy,1,workQuery,-1,info)
     if(info /= 0) error stop 'STEOM-eB nonsymmetric eigensolver workspace query failed'
     allocate(work(int(workQuery(1))))
-    call dgeev('N','N',nS,matrix,nS,roots,imaginary,leftDummy,1,rightDummy,1,work,size(work),info)
+    call dgeev('N','N',nPairs,matrix,nPairs,roots,imaginary,leftDummy,1,rightDummy,1,work,size(work),info)
     if(info /= 0 .or. .not.all(ieee_is_finite(roots)) .or. .not.all(ieee_is_finite(imaginary))) &
       error stop 'STEOM-eB nonsymmetric diagonalization failed'
-    order=[(k,k=1,nS)]
-    call quick_sort(roots,order,nS)
+    order=[(k,k=1,nPairs)]
+    call quick_sort(roots,order,nPairs)
     imaginary=imaginary(order)
 
     if(any(abs(imaginary(1:nReport)) > 1d-8)) then
